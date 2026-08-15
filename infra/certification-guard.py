@@ -35,6 +35,23 @@ from typing import Final
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from registers import bug_rows  # noqa: E402
 
+# ⛔ **Imported, never restated.** `REQUIRED_GATES` and `MINIMUM_COVERAGE` are
+# the certification package's, and this file used to carry its own answer for
+# both — a hardcoded `95.0` and no notion of a required gate at all (B-435).
+# **A copy of a registry is wrong the first time the registry grows**, and this
+# one grew on 2026-08-15 when the product owner added `frontend-suite` and
+# `eslint`. `record.py` is stdlib-only, so importing it costs nothing.
+#
+# ⚠️ **Imported by PACKAGE path, not by adding the leaf directory to `sys.path`.**
+# Both work at runtime; only this one resolves when a type checker is pointed at
+# the file from `backend/`, where `tests.certification` is a real package. The
+# leaf-directory form produced `Cannot find implementation or library stub for
+# module named "record"` — **the standalone-checking artifact B-435 warned would
+# be mistaken for a defect**, and the way to not have that argument is to not
+# produce the artifact.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "backend"))
+from tests.certification.record import MINIMUM_COVERAGE, REQUIRED_GATES  # noqa: E402
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MANIFEST = REPO_ROOT / "certification" / "manifest.json"
 MIGRATIONS = REPO_ROOT / "backend" / "migrations" / "versions"
@@ -267,7 +284,7 @@ def _promote(sha: str) -> int:
     failures: list[str] = []
 
     matching = [run for run in _runs() if str(run.get("commit", "")) == target]
-    ok = any(_satisfied(run)[0] for run in matching)
+    ok = any(_promotable(run)[0] for run in matching)
     print(f"  {'PASS' if ok else 'FAIL'}  certified — this exact commit")
     if not ok:
         failures.append(f"{target[:7]} is not a certified commit")
@@ -359,21 +376,107 @@ def _runs() -> list[dict[str, object]]:
     return list(seen.values())
 
 
+def _entries(run: dict[str, object], key: str) -> tuple[list[dict[str, object]], list[str]]:
+    """The `gates` or `scenarios` list, or a failure saying it was unreadable.
+
+    ⛔ **`run.get(key) or []` is what this replaces, and the `or []` was the
+    defect.** A record with no `gates` key, or with a `gates` value that is not a
+    list, iterated zero times and produced zero failures — so **absence read as
+    success.** 📁 That is the empty-array class `36-empty-array-checks.md` found
+    in nine CHECK constraints, and `REQUIRED_GATES`' own comment names it:
+    *"a run recording no gates at all would otherwise satisfy 'every gate
+    passed' vacuously."* **The package defended against it; this file did not**
+    ([B-435](../docs/BUGS.md)).
+
+    **A malformed record is refused, never silently read as empty** — the
+    repository's standing preference for operations that refuse an unsafe state
+    over ones that recover from it quietly.
+    """
+    raw = run.get(key)
+    if raw is None:
+        return [], [f"the record carries no '{key}' at all, so nothing about it can be checked"]
+    if not isinstance(raw, list):
+        return [], [f"'{key}' is {type(raw).__name__}, not a list — the record is unreadable"]
+    entries = [item for item in raw if isinstance(item, dict)]
+    if len(entries) != len(raw):
+        bad = len(raw) - len(entries)
+        return entries, [f"'{key}' holds {bad} entr(y/ies) that are not objects"]
+    return entries, []
+
+
 def _satisfied(run: dict[str, object]) -> tuple[bool, list[str]]:
-    """Derived exactly as `CertificationRun.satisfied` derives it, and for the
-    same reason: an outcome field could disagree with the facts beside it."""
-    failures: list[str] = []
-    for gate in run.get("gates") or []:
+    """Whether every gate this run **recorded** passed — a question about the run.
+
+    ⚠️ **This is deliberately NOT `CertificationRun.satisfied`, and the docstring
+    that claimed it was is what [B-435](../docs/BUGS.md) is about.** The package's
+    predicate additionally requires that **every member of today's
+    `REQUIRED_GATES` actually ran**, which re-judges history the moment the set
+    grows — by design, and the product owner accepted that effect on 2026-08-15.
+
+    ⛔ **`--audit-main` must not inherit it**, for two reasons — and the first
+    one QE got wrong before measuring it.
+
+    ⚠️ **NOT because history would be refused.** Applying today's eight-gate set
+    to the 230 stored records leaves **2** satisfied, and QE first wrote that this
+    would make the audit refuse 209 commits on `main`. **It does not.** The audit
+    accepts *"an ancestor of a certified commit that is itself on `main`"*, and a
+    certified commit near the tip vouches for everything behind it — fire-tested
+    2026-08-15: with this predicate made strict, the audit still reports the
+    guarantee holding. **The ancestor rule absorbs it.**
+
+    ⚡ **The real hazard is the window, and it is sharp.** `certified_all` becomes
+    **empty** whenever no stored record satisfies the current set — which is
+    exactly the state between widening `REQUIRED_GATES` and the first run under
+    the new set. With nothing to be an ancestor *of*, **every non-Closeout commit
+    on `main` becomes a violation at once** and the audit reports the repository's
+    central release guarantee broken. **A historical audit whose verdict depends
+    on a gate added this morning is not a historical audit.**
+
+    ✅ **And independently: the product owner ruled it.** *"The records remain
+    historical records under the gate set that existed at the time."* Judging them
+    by today's bar is the reinterpretation that ruling declined.
+
+    ✅ **`_promotable()` below is the forward-looking question, and that one does
+    require the full set** — because a record written today must meet today's bar.
+    **Two questions, two predicates, both named.** What B-435 found was one
+    predicate quietly answering both.
+    """
+    gates, failures = _entries(run, "gates")
+    scenarios, scenario_failures = _entries(run, "scenarios")
+    failures = [*failures, *scenario_failures]
+    for gate in gates:
         if not gate.get("passed"):
             failures.append(f"gate '{gate.get('name')}' failed")
-    for scenario in run.get("scenarios") or []:
+    for scenario in scenarios:
         if not scenario.get("passed"):
             failures.append(f"scenario '{scenario.get('name')}' failed")
     if not run.get("tree_clean"):
         failures.append("the working tree was dirty, so the tree certified was never stored")
     coverage = run.get("coverage")
-    if isinstance(coverage, int | float) and coverage < 95.0:
-        failures.append(f"coverage {coverage}% is below 95.0%")
+    if isinstance(coverage, int | float) and coverage < MINIMUM_COVERAGE:
+        failures.append(f"coverage {coverage}% is below {MINIMUM_COVERAGE}%")
+    return not failures, failures
+
+
+def _promotable(run: dict[str, object]) -> tuple[bool, list[str]]:
+    """`_satisfied`, plus every member of today's `REQUIRED_GATES` having run.
+
+    ⚡ **The gate that stops an uncertified promotion, and until
+    [B-435](../docs/BUGS.md) it did not check this at all.** A record that simply
+    never executed `frontend-suite` was promotable, which is exactly
+    [B-122](../docs/BUGS.md)'s scenario: the gate was absent from 228 runs and
+    absence was never a failure here.
+
+    ⛔ **Tightening this costs no history.** It is consulted only when somebody
+    asks to promote a commit *now*, and a run recorded under a narrower set was
+    promoted under that set at the time. **Re-promoting such a commit is refused,
+    which is correct** — the bar it would be promoted against is today's.
+    """
+    satisfied, failures = _satisfied(run)
+    gates, _ = _entries(run, "gates")
+    ran = {str(gate.get("name")) for gate in gates}
+    for missing in sorted(REQUIRED_GATES - ran):
+        failures.append(f"required gate '{missing}' did not run")
     return not failures, failures
 
 
@@ -1373,7 +1476,7 @@ def main() -> int:
             )
             print("  Run `--audit-main` for the guarantee across the whole branch.")
             return 0
-        certified = [str(r.get("commit", ""))[:7] for r in _runs() if _satisfied(r)[0]]
+        certified = [str(r.get("commit", ""))[:7] for r in _runs() if _promotable(r)[0]]
         print(f"REFUSED — {short} has no certification record.\n")
         print(
             "  A commit is promoted because it was certified, never because it is\n"
@@ -1389,7 +1492,7 @@ def main() -> int:
         return 1
 
     run = matching[-1]
-    satisfied, failures = _satisfied(run)
+    satisfied, failures = _promotable(run)
     if not satisfied:
         print(f"REFUSED — {short} has a certification record, and it did not pass.\n")
         for failure in failures:
@@ -1418,7 +1521,10 @@ def main() -> int:
     print(f"CERTIFIED — {short} may be promoted.")
     print(f"  certified at   {run.get('certified_at')}")
     print(f"  migration head {certified_head}")
-    print(f"  gates          {len(run.get('gates') or [])} passed, coverage {run.get('coverage')}%")
+    print(
+        f"  gates          {len(_entries(run, 'gates')[0])} of {len(REQUIRED_GATES)} required"
+        f", coverage {run.get('coverage')}%"
+    )
     print(
         "\n  Promote this SHA and no other:\n"
         f"    git checkout main && git merge --ff-only {target}"

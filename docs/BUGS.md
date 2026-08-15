@@ -90,6 +90,58 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-1002 · 🟠 The promotion guard's idea of CERTIFIED diverged from the certification package's, and the missing condition was the one the product owner had just changed
+
+| | |
+|---|---|
+| **Module** | **QE gates** — [`infra/certification-guard.py`](../infra/certification-guard.py), `_satisfied` |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — ⛔ **a record that never executed a required gate was PROMOTABLE.** ⚡ **[B-122](#b-122)'s scenario exactly**: `frontend-suite` was absent from 228 runs, and **absence was never a failure here**, so the guard would have passed every one of them |
+| **Status** | ✅ **`FIXED` — QE, 2026-08-15.** ⛔ **`VERIFIED` is QE's to set and QE wrote the fix, so it stays `FIXED`** (§20e) |
+| **Found** | **2026-08-15**, by QE investigating **[B-435](#b-435)**, Lane C's row that `infra/` sits outside the type gate. ⚡ **The three `mypy` errors were the symptom; this is what was under them** |
+| **Commit found** | **`c411aaa3`** |
+
+> ⚠️ **Distinct from [B-435](#b-435), which stays open.** **B-435 is *`infra/` is not type-checked* — 15 of 25 files fail when checked directly, and widening the gate is a change to what a check *means* ([B-131](#b-131)) that belongs to whoever owns `infra/`.** ⚡ **This row is the defect B-435 exposed in one file, and only that file is repaired.** ⛔ **The other five `ruff` findings in it are pre-existing and deliberately untouched** — measured against `HEAD` before editing, 6 findings after and 5 before, and **the one that is mine is the one that went away.**
+
+### 🔴 What it was
+
+📁 `_satisfied()` was a **second implementation** of the certification predicate, and its docstring claimed a parity it did not have: *"Derived exactly as `CertificationRun.satisfied` derives it."*
+
+| `Record.failures` | the guard |
+|---|---|
+| dirty tree | ✅ |
+| any recorded gate failed | ✅ |
+| any scenario failed | ✅ |
+| coverage below the floor | ⚠️ **yes — against a hardcoded `95.0`** |
+| 🔴 **a `REQUIRED_GATES` member did not run** | ⛔ **absent; the file never referenced `REQUIRED_GATES` at all** |
+
+⛔ **Four of five, and the missing one is the one that changed on 2026-08-15.** 📁 **`for gate in run.get("gates") or []` meant a record with no `gates` key iterated zero times, produced zero failures, and read as satisfied** — the empty-array class `36-empty-array-checks.md` found in nine CHECK constraints, which `REQUIRED_GATES`' own comment already names: *"a run recording no gates at all would otherwise satisfy 'every gate passed' vacuously."* **The package defended against it. The guard did not.**
+
+### ✅ The fix — two named predicates, because there were always two questions
+
+| | asks | required-gate check |
+|---|---|---|
+| **`_satisfied`** | *did this run's recorded gates pass?* — **about the past** | ⛔ **no, deliberately** |
+| **`_promotable`** | *may this be promoted **now**?* — **about today** | ✅ **yes** |
+
+**Three call sites moved to `_promotable`: the promotion gate, `--guard-check`, and the certified-commits listing.** **`--audit-main` and the planning floor keep the historical one.** ✅ **`REQUIRED_GATES` and `MINIMUM_COVERAGE` are imported from `record.py`, never restated** — [B-1001](#b-1001)'s rule, applied the same day it was written.
+
+**Verified live:** `ac622c24ad30`, a six-gate record, is **REFUSED** for promotion naming `eslint` and `frontend-suite`; `136f112bea79` reads `8 of 8 required`; **`--audit-main` is unchanged at 208 / 1679 / 5.**
+
+### 🔴 QE's stated reason for the split was WRONG, and the fire test is what found it
+
+⛔ **QE wrote that making `_satisfied` strict would make `--audit-main` refuse 209 commits on `main`.** ✅ **Fire-tested. It does not.** **The audit accepts *an ancestor of a certified commit that is itself on `main`*, and a certified commit near the tip vouches for everything behind it** — with the predicate made strict the audit still prints *the guarantee holds*.
+
+⚠️ **The 209 was a real measurement of the wrong quantity** — commits the two predicates *disagree about*, which is not the quantity the audit consumes. 📁 **A number consumed without its mapping, produced while writing [B-1000](#b-1000) about exactly that.**
+
+⚡ **The design survives on the argument the fire test found instead.** **`certified_all` is EMPTY whenever no stored record satisfies the current set — precisely the window between widening `REQUIRED_GATES` and the first run under it.** ⛔ **With nothing to be an ancestor of, every non-Closeout commit on `main` becomes a violation simultaneously.** **A historical audit whose verdict depends on a gate added this morning is not a historical audit.** ✅ **And independently, the product owner ruled it: *"the records remain historical records under the gate set that existed at the time."***
+
+### ✅ 13 tests, fire-tested four ways
+
+**Dropping the required-gate loop → 3 red · restoring `or []` → 1 red · making `_satisfied` strict → 2 red · re-hardcoding the coverage floor → 1 red.**
+
+⚡ **The `or []` result is the useful one and it is recorded in the test.** **Only `no-scenarios-key-at-all` goes red** — the four `gates` cases are **double-protected** by `_promotable`'s required-gate check and do not isolate `_entries` at all. ⛔ **`scenarios` has no `REQUIRED_SCENARIOS` backstop, so it is the only case carrying that guarantee**, and it is the least obvious member of the list.
+
 ### B-1001 · 🟢 This register carried a second copy of the identifier allocation table, and it had been wrong for thirteen days
 
 | | |
