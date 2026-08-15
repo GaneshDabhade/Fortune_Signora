@@ -310,6 +310,40 @@ class TestAttributeSemantics:
         for attribute in ClaimAttribute:
             assert attribute in ATTRIBUTE_KINDS
 
+    def test_a_commercial_fact_is_state_because_its_signal_is_that_it_moved(
+        self,
+    ) -> None:
+        """🔴 **[ADR-0409](../../../docs/architecture/adr/0409-commercial-account-facts.md)'s
+        three, and the classification is what makes the design's figures
+        buildable** — [TASK-1477](../../../docs/BACKLOG.md).
+
+        ⛔ **Classified `OCCURRENCE`, each would emit ONE first sighting per
+        account and never speak again.** ⚡ **Every figure the design draws from
+        them is a TRANSITION:**
+
+        · *"Weakest link: Negotiation → Closed won, down 9 points"*
+        · *"Negotiation since 12 Jun. **Two close-date changes**."*
+        · *"the deal has slipped twice inside 30 days"*
+
+        ⚠️ **`RENEWAL_DATE` is the one that reads like an occurrence**, and QE
+        said so during validation. 📁 **The date is the VALUE, not the moment
+        of assertion**: a funding round happened once and is re-reported, **a
+        renewal date is re-asserted every sync and the whole product interest
+        is in it changing.**
+
+        ✅ **And the model refuses the alternative outright**, which is stronger
+        than this assertion: **flipping `RENEWAL_DATE` to `OCCURRENCE` fails
+        three tests, two of them `occurrence_key`'s** — ⛔ **a bare date
+        identifies no occurrence**, so the classification is not merely wrong
+        but unrepresentable.
+        """
+        for attribute in (
+            ClaimAttribute.OPEN_ACV,
+            ClaimAttribute.RENEWAL_DATE,
+            ClaimAttribute.COMMERCIAL_STAGE,
+        ):
+            assert ATTRIBUTE_KINDS[attribute] is AttributeKind.STATE
+
     def test_an_unclassified_attribute_fails_loudly(self) -> None:
         class Invented(str):
             value = "invented"

@@ -104,6 +104,32 @@ ATTRIBUTE_KINDS: Final[dict[ClaimAttribute, AttributeKind]] = {
     # a re-report of week 3 in week 5 deduplicates and the weekly series
     # survives intact as a series of observations.
     ClaimAttribute.INTENT_TOPIC_SURGE: AttributeKind.OCCURRENCE,
+    # ── commercial — [ADR-0409](../../../../docs/architecture/adr/
+    #    0409-commercial-account-facts.md), [TASK-1477](../../../../docs/BACKLOG.md)
+    #
+    # **All three are STATE, and the design is what settles it rather than the
+    # names.** A customer's CRM asserts what is true of a deal *now*, and every
+    # figure the design draws from these is a TRANSITION between consecutive
+    # assertions:
+    #
+    #   · *"Weakest link: Negotiation → Closed won, down 9 points"* — a stage
+    #     funnel is transitions, and an occurrence model would give first
+    #     sightings with nothing to divide.
+    #   · *"Negotiation since 12 Jun. **Two close-date changes**."* — the
+    #     renewal date's VALUE is a date and its SIGNAL is that it moved.
+    #   · *"the deal has slipped twice inside 30 days"* — the same again.
+    #
+    # ⚠️ **`RENEWAL_DATE` is the one worth arguing about, and QE said so.** It
+    # reads as *a fact with a date*, which is the shape of an occurrence —
+    # ⛔ **but the date is the VALUE, not the moment of assertion.** A funding
+    # round happened once and is re-reported; a renewal date is re-asserted
+    # every sync and **the product's interest is entirely in it changing.**
+    # ⚡ **Classified as OCCURRENCE it would emit one first sighting per deal
+    # and never speak again** — the slipped-renewal signal the design is built
+    # on would be unbuildable.
+    ClaimAttribute.OPEN_ACV: AttributeKind.STATE,
+    ClaimAttribute.RENEWAL_DATE: AttributeKind.STATE,
+    ClaimAttribute.COMMERCIAL_STAGE: AttributeKind.STATE,
 }
 
 #: Attributes whose values are counts, so an arithmetic delta is meaningful.
