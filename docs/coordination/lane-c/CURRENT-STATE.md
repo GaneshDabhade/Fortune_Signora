@@ -24,10 +24,14 @@
 
 ## Open product-owner decisions
 
-⛔ **Five. Each has a prepared recommendation and needs one word.** Full analysis in [`LANE_COORDINATION.md`](../../LANE_COORDINATION.md).
+⛔ **Eight. Each has a prepared recommendation and needs one word.** Full analysis in [`LANE_COORDINATION.md`](../../LANE_COORDINATION.md).
 
 | | Recommendation | Blocks |
 |---|---|---|
+| **C-1512** | 🔴 **[ADR-0413](../../architecture/adr/0413-customer-authored-notes-and-tasks.md) creates a bounded context and names no module.** ✅ **Verified independently: the ADR names no module anywhere, §7's exclusion list omits it, and nothing exists — no table, no migration, no `tenancy_policy.py` row, no route, 20 modules and none of them this.** ⚡ **Lane A recommends a new module, `notes_and_tasks`. This office concurs and adds one thing the package must answer: ADR-0411's TAGS are also customer-authored and went to `commercial_profile` (migration `0051`), so a reader will ask why notes do not** — 📁 **the answer is [ADR-0413](../../architecture/adr/0413-customer-authored-notes-and-tasks.md) §1's own: a tag is a label, a note is CONTENT, and only content makes Signora a system of record owing retention, export and audit** | ⛔ **Nothing** — **Lane A raised it before writing a line and moved to slice ⓸** |
+| **C-1511** | **Lane A's — the Companies `Segment` column and `Segments` panel are disjoint vocabularies.** ⚡ **This office flagged the observation and declined to reopen a `CLOSED` item on it; Lane A hit it while building and raised it, which is the right order** | Nothing |
+| **C-1435-class · [B-122](../../BUGS.md)** | ⚡ **Do `frontend-suite` and `eslint` join `REQUIRED_GATES`?** ✅ **The objection against it does NOT hold — `satisfied` is derived, so widening re-judges history rather than falsifying it, and `tsc`'s own addition is the worked precedent.** ⛔ **QE will not decide what certification MEANS** ([ADR-0032](../../architecture/adr/0032-release-certification.md)) | **Nothing** — QE runs `vitest` in the cheap gates already |
+| **QE's identifier block** | 🔴 **97 of 100 used and the last free one is spent. QE has ZERO and refuses to grant itself a range** — 📁 **Lane C's `1400`+ and Lane A's `C-1500`+ were both explicit product-owner instructions.** ⚠️ **Already cost: `B-200`/`B-201` mis-filed into Lane A's block, and a verified defect handed to Lane A because QE could not number it** | ⛔ **QE cannot file a finding** |
 | **C-1433** | ⚡ **FIRST: is it already [ADR-0412](../../architecture/adr/0412-environment-and-secret-safe-logging.md) §6 applied?** ⛔ **This office drafted that clause and will not read it as deciding its own recommendation** | Nothing today |
 | **C-1510** | ⚡ **Lane A's third option — restore faithfully AND report which accounts returned to somebody who has left.** ⚠️ **Authored on `lane-a`, NOT on `integration`** — this office cannot move a row it cannot see, and has told Lane A to set the state itself | **Nothing** — the shipped path is a documented assumption |
 | **C-1508** | Lane A's — `20-provider-simulation.md`'s budget band | Nothing |
