@@ -429,6 +429,17 @@ state-check:
 ## There are no options. A mode that skipped a gate would produce a run that
 ## cannot certify, and a command whose convenient path yields worthless evidence
 ## teaches people to use it.
+## ⛔ **`DESTRUCTIVE_DB_ENV` here is REDUNDANCY, never the guarantee.**
+##
+## **The real isolation is `backend/tests/certification/database.py`**: the run
+## creates a disposable `signora_certify_<sha12>` and `__main__.py:446` applies
+## its three URLs with `os.environ.update(...)` before any gate is spawned —
+## built for [B-106](docs/BUGS.md) and covered by `test_disposable_database.py`.
+##
+## 🔴 **Do not remove that as duplication of this line.** This target was briefly
+## and wrongly recorded as exposed in [B-270](docs/BUGS.md), because the parent's
+## environment was measured and the variables are injected into the child. **The
+## correction cost a killed certification run.**
 certify: release-preflight
 	@python3 infra/environment-lease.py run certify -- sh -c 'cd backend && $(call DESTRUCTIVE_DB_ENV,$(SIGNORA_DB)) uv run python -m tests.certification'
 

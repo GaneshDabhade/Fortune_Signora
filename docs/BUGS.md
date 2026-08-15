@@ -690,7 +690,19 @@ SIGNORA_TEST_ADMIN_DATABASE_URL=…@localhost:5732/signora \
 | `conftest.py:70` · `:74` | **fallback `localhost:5432/signora`** |
 | `environments.py:138` | **`return "signora" if self.slot == 0`** — 🔴 **slot 0 IS human review's** |
 
-🔴 **And the sweep found four more, one of which is worse than the reported one.** ⛔ **`certify` — the gate QE runs every cycle — carried the bare consent flag with no database.** **So did `demo-seed`, `demo-narrate`, and the E2E family only escaped because `E2E_ENV` happened to name one.**
+🔴 **The sweep found three more targets with the same shape: `demo-seed`, `demo-narrate`, and — apparently — `certify`.** ✅ **The E2E family was already safe because `E2E_ENV` names the database explicitly.**
+
+> ## 🔴 CORRECTION, same day — `certify` was NEVER exposed, and this row said it was
+>
+> **The claim *"`make certify` has been truncating whatever database the shell held"* was FALSE and is withdrawn.** ⚠️ **It was the strongest sentence in this row, and under [§2](../CLAUDE.md) a register asserting it is worse than no row.**
+>
+> 📁 **Verified in the code rather than accepted from the correction: `backend/tests/certification/database.py:99–103` returns `SIGNORA_TEST_APP_DATABASE_URL` · `SIGNORA_TEST_ADMIN_DATABASE_URL` · `SIGNORA_DATABASE_URL`, all pointing at `signora_certify_<sha12>` (`:168`), and `__main__.py:446` applies them with `os.environ.update(target.environment)` before any gate is spawned.** ✅ **A disposable database per run, built deliberately for [B-106](#b-106) and covered by `test_disposable_database.py`.**
+>
+> ⛔ **The four observations behind the wrong claim were each individually true** — `certify:` does carry a bare consent flag, `environment-lease.py:263` does add only the lease. 🔴 **The inference failed: I measured the PARENT's environment, and the variables are injected into the CHILD.**
+>
+> ⚠️ **And it cost a real certification run.** **QE read `/proc/<pid>/environ`, saw the same absence, and killed a valid cycle-232 run on it** — `make: *** Error 143`, their own SIGTERM. ⛔ **A parent process that does not need a variable is not evidence that its child lacks one.**
+>
+> ⚡ **`certify` still gains `DESTRUCTIVE_DB_ENV`, and it is REDUNDANCY, never a fix for an exposure.** 🔴 **Stated that way deliberately: if it reads as the fix, whoever next touches `database.py` will not know the disposable-database isolation is load-bearing and will remove it as duplication.**
 
 ✅ **The repair makes the two inseparable rather than adding a check.** **`DESTRUCTIVE_DB_ENV` is one definition taking a database name, and every recipe that consents to truncation now gets the consent *from* it** — so a future target cannot acquire the flag without naming a database. 📁 **[§2](../CLAUDE.md): one representation, and `E2E_ENV` derives from it rather than restating the URLs.**
 
@@ -701,6 +713,8 @@ test · e2e · demo-seed · demo-narrate · certify   →   consent=1  db=1
 ```
 
 ⚡ **`make test` in this clone now resolves `localhost:5932/signora_lane_c`. It resolved `localhost:5432/signora`.**
+
+⚠️ **`consent=1 db=1` is a statement about the recipe's own expansion and nothing more** — 📁 **the correction above is what that measurement cannot see.** ⛔ **`make -n` shows what the parent sets; it cannot show what a child injects.**
 
 > ⛔ **What is NOT fixed, and it is the better half: the guard still never asks *which* database.** 📁 **Lane A's analysis is exactly right** — `require_explicit_consent_to_truncate` asks *"do you consent?"*, the answer was correctly **yes**, and the only thing wrong was the target. **`environments.py` already computes `slot == 0`, so refusing destructive fixtures against slot 0 is one condition.**
 >
