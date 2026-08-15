@@ -6,6 +6,10 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { cn } from '@/lib/design/cn';
 import { RAIL_WIDTH } from '@/lib/shell/rail';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
+// ⚡ **Shared with the standalone chooser** — [TASK-1421](../../../docs/BACKLOG.md).
+// ⛔ Two implementations would eventually render different initials for one
+// organization, in the rail and on the chooser.
+import { initialsFor } from '@/lib/workspace/initials';
 
 /**
  * **The workspace switcher, in the rail** — [TASK-1441](../../../docs/BACKLOG.md),
@@ -83,15 +87,6 @@ const SEARCH_APPEARS_ABOVE = 6;
 
 /** 📁 *"1–9 selects by position."* ⛔ Nine, because a tenth has no key. */
 const POSITION_KEYS = 9;
-
-function initialsFor(name: string): string {
-  const words = name.trim().split(/\s+/).filter(Boolean);
-  const first = words[0];
-  if (first === undefined) return '??';
-  const last = words[words.length - 1] ?? first;
-  if (words.length === 1) return first.slice(0, 2).toUpperCase();
-  return `${first.slice(0, 1)}${last.slice(0, 1)}`.toUpperCase();
-}
 
 /**
  * 📁 *"Administrative actions are always the last two rows."*

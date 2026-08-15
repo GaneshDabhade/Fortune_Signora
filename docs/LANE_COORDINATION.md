@@ -517,6 +517,55 @@ databaseUrl: required(
 
 ---
 
+## C-1517 · The Workspace Chooser's verbatim copy says *workspace*; ADR-0034 says that is the platform's word
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-15, starting [TASK-1421](BACKLOG.md) — ⚡ **before writing a string**, which is where this has to be caught |
+| **Owner** | 🔴 **Product owner**, through Lane C — ⛔ **[ADR-0034](architecture/adr/0034-ubiquitous-language.md) is ratified and the design snapshot is the implementation authority ([D-138](DECISION_REGISTER.md)); a lane may not choose between them** |
+| **Type** | ⚠️ **A conflict between a ratified ADR and the finalized design.** ✅ **Not blocking — implemented in the direction the ADR and the shipped product already take, and raised rather than resolved quietly** |
+| **Blocks** | ✅ **Nothing.** ⚡ **The screen is built; only which noun it uses is in question** |
+| **Status** | **`OPEN`** |
+
+### 🔴 The two documents use different words for one concept
+
+📁 **`Fortune Signora Workspace Chooser.dc.html`, §04 *WS-B rendered*, under *Copy — verbatim*:**
+
+> **"Choose a workspace"** · **"You are a member of four. Signora will remember this choice on this device…"** · **"Search four workspaces"** · **"Create a workspace"**
+
+📁 **[ADR-0034](architecture/adr/0034-ubiquitous-language.md):**
+
+> ✅ ***"A customer says Organization… The platform says workspace, tenant, provider…"*** **"Both are correct; exactly one reaches a screen."**
+
+⛔ **And it is enforced, not merely stated**: `frontend/tests/components/vocabulary.test.tsx` lists `workspace` first among `INTERNAL_TERMS` and fails any screen literal containing it.
+
+### ⚠️ The design's own banned list is what makes this a question rather than a slip
+
+📁 **§09: *"Banned: 'Select a tenant', **'Organisation'**, 'No workspaces found', 'Access denied' alone…"***
+
+⚡ **Two readings, and they lead to opposite screens:**
+
+| | |
+|---|---|
+| **① The British SPELLING is banned** | ✅ **Compatible with ADR-0034** — which uses *Organization*. **The rest of the design's copy would then be describing the concept in engineering's words, as design documents often do** |
+| **② The CONCEPT is banned on this screen** | ⛔ **Directly contradicts ADR-0034**, and would make *workspace* the customer's word here and nowhere else |
+
+⛔ **Neither reading is available from the document**, and the difference is every string on the screen.
+
+### ✅ What was built, and why that direction
+
+**The customer's vocabulary — *organization*.** ⚡ **Three reasons, in order of weight:**
+
+1. 📁 **[ADR-0034](architecture/adr/0034-ubiquitous-language.md) is ratified architecture with an enforcing gate.** ⛔ **The design's verbatim copy fails that gate**, and a screen that cannot pass the repository's own vocabulary test is not shippable as written.
+2. ⚡ **The shipped WS-A switcher already made this call** — `components/shell/workspace-switcher.tsx` renders *"Switch organization"*, *"Filter organizations"*, *"No organization matches …"*. 🔴 **The design's own §03 says both surfaces render the same row and differ only in container** — ⛔ **so a chooser saying *workspace* beside a switcher saying *organization* would be the two surfaces disagreeing about what the thing is called.**
+3. ⚠️ **The ROUTE is unchanged and stays `/workspaces`.** 📁 ADR-0034: *"no table, column, API path, JWT claim, module, type or architecture document is renamed."* ✅ **The translation is at the edge, exactly as it says.**
+
+### ⚠️ What is actually being asked
+
+**Which reading of the banned list is right** — ⛔ **not which word is better.** ✅ **If ① , nothing changes and this row closes.** ⚠️ **If ②, it is a change to ADR-0034 rather than to this screen**, because the shipped switcher, the team screens and the entry gates all already say *organization* — 📁 `gates.ts:111` offers *"Go to your organizations"*, **and that is the label on the control that sends somebody to this very route.**
+
+---
+
 ## C-1516 · A raw record says where a payload came from, never what it IS
 
 | | |

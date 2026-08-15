@@ -88,6 +88,17 @@ ENTERED_FROM_OUTSIDE: Final = {
         "check — rule 05; the challenge itself is TASK-1410's, and this row "
         "renders the gate so that capability has somewhere to land"
     ),
+    "/workspaces": (
+        "reached by the entry engine at rules 09, 10, 13 and 14 — the residue "
+        "the eight selection rules cannot decide. **It DOES have an in-product "
+        "link and this check cannot see it**: `gates.ts` names it as "
+        "`action: { href: '/workspaces' }` on INTENT_NOT_MEMBER, and "
+        "`gate-screen.tsx` renders it through `<Link href={copy.action.href}>` "
+        "— a literal in one file, a link element in another, and neither "
+        "pattern matches alone. That is the documented bias of "
+        "`_navigations` working as intended: a false orphan rather than a "
+        "hidden one. Declared by Lane A on B-123's delegation, TASK-1421"
+    ),
     "/workspaces/none": (
         "reached by the entry engine when somebody belongs to no organization "
         "— rule 10; by definition there is no organization to link from"
