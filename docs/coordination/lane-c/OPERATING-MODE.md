@@ -104,6 +104,28 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 **The test before building one: *if this check goes green, what will the reader stop asking?*** ⚠️ **If the answer is the actual question, the check is the problem.**
 
+### 🔴 The mutation is under test too — 2026-08-15, QE, from their own near-miss
+
+> ## **Read what the failure says, not that there was one.**
+
+⛔ **QE fire-tested a canonicalisation guard by substituting a name that does not exist. `pytest` printed `Interrupted: 1 error during collection` — `1 error in 0.27s`.** ⚠️ **A red-looking result, which is exactly what a fire test is supposed to produce, and they were one glance from recording it as a pass.**
+
+🔴 **So a BROKEN MUTATION and a WORKING GUARD produce the same colour.** ⚡ **A neuter that fails to import is not a neuter.** ✅ **Their second attempt was a real pass-through and it fired properly.**
+
+📁 **This is [§5g-2](#5g-2--report-a-sha-from-the-shared-ref-never-from-the-one-you-control)'s *absence was the finding* with the sign flipped:** **there the missing output was the signal; here the PRESENT output was the wrong one.** ⛔ **And QE's own framing of it, which is less comfortable than mine: they did not discover this — they made the mistake and the tooling told them, and what is worth keeping is that they almost did not read it.**
+
+### ⚠️ Two from the same slice, both Lane A's
+
+> ## **`json.loads(a) == json.loads(b)` is TRUE of two strings whose keys differ in order.**
+
+⛔ **A vendor-agreement test looked like it compared two vendors' output and actually compared two parse trees.** 📁 **The same shape as *an authorization test where every subject holds the grant* — one module over, same lane, same week.**
+
+> ## **A fixture written in the canonical form makes a canonicalisation guard untestable.**
+
+**The byte-identical test PASSED with the re-serialisation removed, because the fixture happened to be canonical.** ✅ **Lane A's repair is the part worth copying: the fixture's spacing is now deliberately NON-canonical, with an in-place comment forbidding tidying** — **so the next person to "clean up" that string meets the warning where they are standing.**
+
+📁 **Same reason [B-270](../../BUGS.md) carries *"`make -n` shows what the parent sets"* beside the measurement rather than in its correction block.** ⚡ **QE's sentence: *a warning in a register is read by somebody looking for it; a warning in the file is read by the person about to break it.***
+
 ### ⚡ When a guard's output is advice, the advice is under test — not just the refusal
 
 **Recorded 2026-08-15, QE's wording, from `refuse-slot-0` in the `Makefile`.**
