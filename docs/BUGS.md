@@ -97,7 +97,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | **QE process** — branch triage, and the standing instruction to resolve an *ahead* count by patch-id |
 | **Current assignee** | **QE** |
 | **Severity** | 🟠 — ⛔ **nothing unsafe shipped and no gate was weakened.** 🔴 **What it cost was nearly concrete: the operative version of the belief makes a future slice WORK AROUND SOMETHING ALREADY BUILT**, and QE had told two lanes and written it into three promoted records |
-| **Status** | ✅ **`FIXED` — QE, 2026-08-16.** ⛔ **`FIXED` not `VERIFIED`: QE wrote it** (§20e) |
+| **Status** | 🔵 **`FIXING` — REOPENED 2026-08-16, same day, by its own stated condition.** ⛔ **It recurred in the very next poll: the patch-id resolution was RUN and BOUNDED with `--since=2026-08-10`, and `ba904596` is dated 2026-08-07.** ⚡ **The original diagnosis — *QE skipped the instruction* — is false as a general account, and the refusal to build a check is withdrawn** |
 | **Found** | **2026-08-16** by **Lane A**, who ran one `cat-file` against a warning QE had given them; **verified independently by Lane C**, who had queued the same false claim for a product decision and withdrew it |
 | **Commit found** | **`f6c12a43`** |
 
@@ -145,9 +145,44 @@ patch-id fd0f55cd  057beed982b2  → already on main as ba904596
 
 ⚠️ **QE told BOTH lanes the false version and it propagated**: Lane C queued it for a product decision, and D-240 ruled a relevance check on work that needed none. ⚡ **The ruling is not wasted — it is now the standing answer for the next genuinely stranded branch — but it was ruled on a false premise and that is recorded here rather than left tidy.**
 
-### ⛔ What this row does NOT propose
+### ⛔ What this row ORIGINALLY proposed, and why that was wrong within the hour
 
-**A check.** 📁 **The instruction already exists and is explicit; adding a script to enforce an instruction QE skipped would be treating a discipline failure as a tooling gap.** ⚠️ **If it recurs, that reasoning is wrong and the row should be reopened with the second instance as evidence** — **which is the same standard [B-1008](#b-1008) applies to itself.**
+**It said: no check.** 📁 *"The instruction already exists and is explicit; adding a script to enforce an instruction QE skipped would be treating a discipline failure as a tooling gap."* ⚠️ **It also set the condition for its own reversal:** *"If it recurs, that reasoning is wrong and the row should be reopened with the second instance as evidence."*
+
+### 🔴 REOPENED the same day — it recurred, in the poll immediately after this row was written
+
+**Status changed to `FIXING`.** ⛔ **QE ran the patch-id resolution this time — and bounded it.**
+
+```bash
+git log origin/integration --format='%H' --since=2026-08-10   # ← the defect
+```
+
+**`ba904596` is dated 2026-08-07.** ⛔ **Outside the window.** ⚡ **So the scan reported `fd0f55cd` as `NEW` — the identical false conclusion this row was filed about, reached by a different route, roughly one hour later.**
+
+**Unbounded, it is unambiguous:**
+
+```
+fd0f55cd  patch-id  057beed982b2
+ba904596  patch-id  057beed982b2   ← match
+```
+
+### ⚠️ The reversal, stated plainly rather than quietly amended
+
+⛔ **The first diagnosis was *QE skipped the instruction*. That was true of instance one and is FALSE as a general account.** ✅ **Instance two ran the instruction and still got the wrong answer**, because **a patch-id search is only as good as the set it searches, and nothing about `--since` announces that it has narrowed the question.**
+
+🔴 **So this is an instrument defect after all, and the original refusal to build a check was wrong.** ⚡ **It is also, precisely, the family this whole session has been about** — *an instrument answering a checkable question adjacent to the one asked* — **and the adjacent question here was *"is this patch-id on integration SINCE A DATE I PICKED?"***
+
+📁 **Lane C predicted this shape in its own words hours earlier**: *"knowing the mechanism did not stop me producing the instance, which is the uncomfortable version and the true one."* ⛔ **QE filed a row naming the mechanism and produced the next instance of it before the row was pushed.**
+
+### ✅ What the fix must be, and what it must not be
+
+| ✅ | ⛔ |
+|---|---|
+| **Never bound the search set** — the correct operand is every commit reachable from the target ref | A `--since` tuned to a "safe" window, which only moves the boundary |
+| **Report the SET SIZE searched**, so a reader can see what was covered | A bare `NEW`/`DUP` verdict with no statement of scope |
+| **Refuse rather than answer** when the search set is empty or truncated | Returning `NEW` on a set that could not have contained a match |
+
+⛔ **Not built in this cycle.** ⚠️ **A check written in the same hour as the defect it detects has not been fire-tested against anything but the author's memory of what went wrong** — and 📁 **that is the reasoning [B-1008](#b-1008) used to defer its own check, which still holds.** ✅ **What has changed is that the check is now warranted; only its timing is deferred, and the difference is recorded so the deferral is not read as the earlier refusal.**
 
 ### B-1008 · 🟠 The dashboard published a Security Invariant count from the cycle before last, four cycles after a footnote was added warning against exactly that
 
