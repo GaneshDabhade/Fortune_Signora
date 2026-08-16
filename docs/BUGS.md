@@ -90,6 +90,65 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-1009 · 🟠 QE reported a slice as "never offered to QE" from a ref count, and its content was byte-identical on `main`
+
+| | |
+|---|---|
+| **Module** | **QE process** — branch triage, and the standing instruction to resolve an *ahead* count by patch-id |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — ⛔ **nothing unsafe shipped and no gate was weakened.** 🔴 **What it cost was nearly concrete: the operative version of the belief makes a future slice WORK AROUND SOMETHING ALREADY BUILT**, and QE had told two lanes and written it into three promoted records |
+| **Status** | ✅ **`FIXED` — QE, 2026-08-16.** ⛔ **`FIXED` not `VERIFIED`: QE wrote it** (§20e) |
+| **Found** | **2026-08-16** by **Lane A**, who ran one `cat-file` against a warning QE had given them; **verified independently by Lane C**, who had queued the same false claim for a product decision and withdrew it |
+| **Commit found** | **`f6c12a43`** |
+
+### 🔴 The claim, and the measurement that disproves it
+
+**QE wrote, in `PROJECT_STATUS.md`, `SESSION_HANDOFF.md` and `ACTIVE_ASSIGNMENTS.md`:**
+
+> ⛔ *"carrying `affiliation_reader.py` and **276 test lines** never offered to QE."*
+
+```
+origin/main:…/people/infrastructure/affiliation_reader.py       PRESENT
+git log -1 origin/main -- …/affiliation_reader.py  → ba904596
+
+blob on main    7fab4469c054e77dcde5bb22c59fc27ce5786457
+blob on lane-b  7fab4469c054e77dcde5bb22c59fc27ce5786457      ← byte-identical
+patch-id fd0f55cd  057beed982b2  → already on main as ba904596
+```
+
+⛔ **Only `2e3d33e0` — a claim commit — is genuinely unpromoted, and a claim alone is not a stranded slice.**
+
+### ⛔ The mechanism, which is the whole row
+
+**The measurement was `git rev-list --left-right --count`: `2` ahead, `1163` behind.** ✅ **Both true, and both facts about a REF.** 🔴 **QE converted them into a claim about CONTENT — *this work has never been offered* — and never checked the content.**
+
+⚠️ **The standing instruction exists for exactly this and was skipped:**
+
+> ⛔ **RESOLVE EVERY "ahead" COUNT BY PATCH-ID BEFORE BELIEVING IT.**
+
+📁 **QE resolved the merge-base *(2026-08-07)* and the file list *(507 insertions)* and stopped there.** ⚡ **Both of those made the branch look MORE substantial, which is the direction that made the wrong conclusion feel better supported.**
+
+### ⚡ It is the exact mirror of the same session's other finding, and the pair names the root
+
+| | the ref | the content |
+|---|---|---|
+| **Cycle 237 — orphaned board SHAs** | ⛔ **on no ref** | ✅ **promoted** |
+| **This row** | ⛔ **1163 behind, cannot fast-forward** | ✅ **promoted** |
+
+⛔ **In both, an instrument read the ref and a human reported the work.** ⚡ **`git show` succeeds on an unreachable commit and `rev-list --count` succeeds on a duplicated one — neither command is wrong, and neither answers the question that was asked.**
+
+📁 **Same family as everything else this session: an instrument answering a checkable question adjacent to the real one.** 🔴 **The difference is that here the instrument was fine and QE supplied the wrong question.**
+
+### ✅ What made it visible, and it was not a gate
+
+**A lane declined to accept a warning and spent one command on it.** ⛔ **No check in this repository would have caught it** — nothing compares a stale branch's patch-ids against `main`, and `state-check` reports board and register consistency, not branch content.
+
+⚠️ **QE told BOTH lanes the false version and it propagated**: Lane C queued it for a product decision, and D-240 ruled a relevance check on work that needed none. ⚡ **The ruling is not wasted — it is now the standing answer for the next genuinely stranded branch — but it was ruled on a false premise and that is recorded here rather than left tidy.**
+
+### ⛔ What this row does NOT propose
+
+**A check.** 📁 **The instruction already exists and is explicit; adding a script to enforce an instruction QE skipped would be treating a discipline failure as a tooling gap.** ⚠️ **If it recurs, that reasoning is wrong and the row should be reopened with the second instance as evidence** — **which is the same standard [B-1008](#b-1008) applies to itself.**
+
 ### B-1008 · 🟠 The dashboard published a Security Invariant count from the cycle before last, four cycles after a footnote was added warning against exactly that
 
 | | |

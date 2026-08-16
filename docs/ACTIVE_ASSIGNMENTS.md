@@ -91,7 +91,7 @@
 >
 > 🔴 **[B-1008](BUGS.md): the dashboard published cycle 235's invariant count during cycle 236's Closeout**, hedged as `458+` where the record said `632`. ⛔ **A recurrence four cycles after the footnote warning against it, in the same file.** ✅ **Caught by re-deriving every figure rather than re-reading any.**
 >
-> ⛔ **Lane B's slice has been stranded nine days and no instrument reported it** — 1163 behind, merge-base 2026-08-07, cannot fast-forward, carrying 276 test lines never offered to QE. 📁 **The board records what a lane claimed, not that its branch drifted out of reach.**
+> 🔴 **CORRECTED — the BRANCH is stranded, the WORK is on `main`.** ⛔ **This entry claimed Lane B carried *276 test lines never offered to QE*.** **Byte-identical blobs (`7fab4469`), and `fd0f55cd`'s patch-id is on `main` as `ba904596`.** ✅ **Nothing to adopt, because nothing is missing.** 🔴 **[B-1009](BUGS.md): a count about a REF reported as a claim about CONTENT.**
 >
 > ✅ **Activity 3 performed rather than assumed: [TASK-1473](BACKLOG.md) and [TASK-1421](BACKLOG.md) removed.** ⛔ **Both read `IN VALIDATION` and both are on `main`** — the collapsed rail at 1024–1279, and somebody with two organizations choosing which to work in. ⚡ **This is the activity [B-1000](BUGS.md) was filed for skipping, and it was skipped again for two cycles.**
 >

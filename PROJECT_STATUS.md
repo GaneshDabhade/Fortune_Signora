@@ -211,9 +211,29 @@ origin/integration  2e7f5da6 → e4e64885     working tree  2e7f5da6 (unmoved)
 | **Two mislabelled figures** | *"60 ADRs"* counted `README.md`; *"148 numbered architecture documents"* counted two unnumbered files. ✅ **59 and 146.** ⛔ **No re-measurement would have caught these** — the counts matched the commands that produced them, and the words above them asked something else |
 | **Closeout activity 3, skipped twice** | [TASK-1473](docs/BACKLOG.md) and [TASK-1421](docs/BACKLOG.md) read `IN VALIDATION` and were on `main`. ⚡ **Their rows cited `45fd90c8` and `9a03ffd6` — SHAs on NO ref**, orphaned when Lane A rebased. **`git show` still works on both**, so reading the SHA cannot distinguish them from live commits; `merge-base --is-ancestor` can |
 
-### ⛔ Lane B's slice has been stranded nine days, and no instrument reported it
+### 🔴 CORRECTED 2026-08-16 — the branch is stranded, the WORK is on `main`, and this section said otherwise
 
-`origin/lane-b-commercial-profile`: **1163 behind**, merge-base **2026-08-07**, **cannot fast-forward**, carrying `affiliation_reader.py` and **276 test lines** never offered to QE. 📁 **The board records what a lane claimed, not that its branch drifted out of reach.** ✅ **[D-240](docs/DECISION_REGISTER.md) ruled it — adopt only on a bounded relevance check, and *"do not spend time preserving historical work merely because it exists."***
+**What this section asserted, and it was false:** *"carrying `affiliation_reader.py` and 276 test lines never offered to QE."*
+
+⛔ **Measured after Lane A challenged it, and Lane C verified independently:**
+
+```
+origin/main:…/people/infrastructure/affiliation_reader.py   PRESENT
+git log -1 origin/main -- …/affiliation_reader.py
+  → ba904596  M-I · who has held a role at a company, and who left
+blob on main   7fab4469c054e77dcde5bb22c59fc27ce5786457
+blob on lane-b 7fab4469c054e77dcde5bb22c59fc27ce5786457   ← byte-identical
+```
+
+✅ **Resolved by patch-id, which is what should have been done first**: `fd0f55cd`'s patch-id `057beed982b2` **is already on `main` as `ba904596`.** ⛔ **Only `2e3d33e0`, a claim commit, is genuinely unpromoted — and a claim alone is not a stranded slice.**
+
+**So the true statement is narrower and points the other way:** `origin/lane-b-commercial-profile` is **1163 behind** and **cannot fast-forward**, and **there is nothing on it to adopt, because nothing is missing.** ⚡ **The relevance check D-240 asked for is answered without being run** — adopting it would mean re-applying commits already promoted.
+
+🔴 **How QE got it wrong, because the mechanism matters more than the correction** ([B-1009](docs/BUGS.md)). **The measurement was `git rev-list --count`: 2 ahead, 1163 behind — a true fact about a REF, converted into a claim about CONTENT that was never checked.** ⛔ **The standing instruction is *resolve every "ahead" count by patch-id before believing it*, and QE resolved the merge-base and the file list and skipped the patch-id.**
+
+⚠️ **It is the mirror of the same cycle's other finding.** 📁 **Cycle 237 found board rows citing SHAs that resolve but are on no ref — *the citation looks live and the work is promoted*.** **This is the reverse — *the branch looks stranded and the work is promoted*.** ⚡ **One root: the ref and the content are different operands, and every instrument here reads the ref.**
+
+⛔ **The cost avoided was concrete**: the operative version of this belief would have made a future slice **work around something already built.**
 
 ### ⚡ The week's dominant defect family reached six instances, two of them found by lanes
 
