@@ -883,3 +883,63 @@ class TestTheGroupsSayWhatWasSearched:
             kind=EntityKind.COMPANY, coverage=SearchCoverage.SEARCHED
         )
         assert group.matches == ()
+
+class TestTheHeaderCanStateHowBigTheBookIs:
+    """📁 **The design's Companies header prints two numbers** — *"8,412 total ·
+    312 in view"*.
+
+    ⚡ **They are different facts, and only one is derivable on the client.**
+    *In view* is a property of the page the customer is looking at; **total is a
+    property of the workspace**, and `entity_page` returns at most `limit + 1`
+    rows — so a caller counting them learns whether more exist and never how
+    many.
+
+    ⛔ **Which is why the count is its own read.** `CursorPage` is
+    platform-owned and frozen ([§20a](../../../CLAUDE.md)), and attaching a
+    `COUNT(*)` to every page would charge it to a customer who is only
+    scrolling.
+    """
+
+    @staticmethod
+    def _with(count: int, workspace: UUID = WORKSPACE) -> FakeGraphRepository:
+        repository = FakeGraphRepository()
+        for _ in range(count):
+            entity = Entity.create(workspace_id=workspace, kind=EntityKind.COMPANY, now=NOW)
+            repository.entities[entity.id] = entity
+        return repository
+
+    async def test_it_counts_every_account_rather_than_one_page(self) -> None:
+        """🔴 **The defect this exists to catch.**
+
+        ⛔ **A count implemented by lengthening a page returns the page size** —
+        the header would read *"50 total"* over a book of a hundred and twenty,
+        and would grow more wrong with every page the customer loaded.
+
+        ⚡ **120 is deliberately larger than any page limit the endpoint
+        allows**, so a page-derived implementation cannot accidentally agree.
+        """
+        queries = GraphQueries(repository=self._with(120), claims=FakeClaimReader())
+
+        assert await queries.count_accounts(WORKSPACE) == 120
+
+    async def test_it_counts_this_workspace_and_no_other(self) -> None:
+        """🔴 **A `COUNT` that lost its tenant predicate returns every
+        workspace's total at once** — ⚠️ **and unlike a leaked row, there is
+        nothing on screen that looks out of place.** The number is simply too
+        large, and entirely believable.
+        """
+        somebody_else = uuid4()
+        repository = self._with(1)
+        for _ in range(2):
+            other = Entity.create(workspace_id=somebody_else, kind=EntityKind.COMPANY, now=NOW)
+            repository.entities[other.id] = other
+        queries = GraphQueries(repository=repository, claims=FakeClaimReader())
+
+        assert await queries.count_accounts(WORKSPACE) == 1
+
+    async def test_an_empty_book_counts_zero_rather_than_failing(self) -> None:
+        """⚡ **Zero is a real answer and the header states it.** 📁 The designed
+        empty state is reached *through* this read, never instead of it."""
+        queries = GraphQueries(repository=FakeGraphRepository(), claims=FakeClaimReader())
+
+        assert await queries.count_accounts(WORKSPACE) == 0

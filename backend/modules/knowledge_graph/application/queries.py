@@ -451,6 +451,21 @@ class GraphQueries:
             for entity_id, found in grouped.items()
         }
 
+    async def count_accounts(self, workspace_id: UUID) -> int:
+        """How many accounts this workspace holds.
+
+        📁 **The design's header prints it beside the page count** — *"8,412
+        total · 312 in view"* — ⚡ **and the two are different facts.** The
+        second is what the customer is looking at; **the first is the size of
+        their book, and a screen cannot infer it from a page.**
+
+        ⛔ **A separate read rather than a field on the page.** The page
+        envelope is `CursorPage`, which is platform-owned and frozen
+        ([§20a](../../../../CLAUDE.md)) — **and a count on every page request
+        would charge a `COUNT(*)` to a customer who is only scrolling.**
+        """
+        return await self._repository.count_entities(workspace_id)
+
     async def list_accounts(
         self, workspace_id: UUID, *, after: CursorPosition | None = None, limit: int = 50
     ) -> "AccountPage":

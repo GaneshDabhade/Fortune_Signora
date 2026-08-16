@@ -21,6 +21,7 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Query
+from pydantic import BaseModel, ConfigDict, Field
 
 from apps.api.composition.accounts import GraphRead
 from modules.knowledge_graph.interface.schemas import (
@@ -192,3 +193,44 @@ async def account_search(
 
 
 __all__ = ["router"]
+
+
+class AccountCountResponse(BaseModel):
+    """How many accounts this workspace holds.
+
+    📁 **The design's header prints two numbers** — *"8,412 total · 312 in
+    view"*. ⚡ **This is the first.** The second is the page the customer is
+    looking at, which the screen already knows.
+
+    ⛔ **Its own read rather than a field on the page.** `CursorPage` is
+    platform-owned and frozen ([§20a](../../../CLAUDE.md)), and **a `COUNT(*)`
+    attached to every page would be charged to a customer who is only
+    scrolling.**
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    total: int = Field(
+        ge=0,
+        description="Every account in this workspace, not only the loaded page. "
+        "Zero is a real answer and means the book is empty.",
+    )
+
+
+@router.get(
+    "/workspaces/{workspace_id}/accounts-count",
+    response_model=AccountCountResponse,
+    summary="How many accounts this workspace holds",
+)
+async def accounts_count(
+    context: CurrentWorkspace,
+    queries: GraphRead,
+) -> AccountCountResponse:
+    """The total the Companies header states beside the page count.
+
+    ⚠️ **Separate from the list deliberately.** The list is keyset-paginated
+    and cannot know the size of the book; **a screen that printed the loaded
+    count beside the word *total* would be wrong by more with every page.**
+    """
+    context.authorize(Resource.ACCOUNT, Action.READ)
+    return AccountCountResponse(total=await queries.count_accounts(context.workspace_id))

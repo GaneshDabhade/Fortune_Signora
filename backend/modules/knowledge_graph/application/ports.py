@@ -71,6 +71,27 @@ class GraphRepository(Protocol):
         """
         ...
 
+    async def count_entities(self, workspace_id: UUID) -> int:
+        """How many accounts this workspace holds, in total.
+
+        📁 **The design's header states two numbers** — *"8,412 total · 312 in
+        view"* — **and they answer different questions.** ⚡ *In view* is a
+        property of the page the customer is looking at and the frontend
+        already knows it; **total is a property of the book and only the
+        database can answer it.**
+
+        ⛔ **Not derivable from a page.** `entity_page` returns at most `limit`
+        rows plus one, so a caller counting them learns whether more exist and
+        never how many — **and a screen that printed the loaded count beside
+        the word *total* would be stating a falsehood that grows with every
+        page.**
+
+        ⚠️ **A count, never a fetch.** Reading every row to length it would be
+        the unbounded fetch [§14](../../../../CLAUDE.md) calls a defect at
+        write time, on the one table that grows without limit.
+        """
+        ...
+
     async def entity_page(
         self, workspace_id: UUID, *, after: CursorPosition | None, limit: int
     ) -> tuple[Entity, ...]:

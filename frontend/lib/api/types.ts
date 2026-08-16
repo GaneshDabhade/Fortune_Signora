@@ -1329,3 +1329,24 @@ export interface RoleChangePreview {
   current: EffectivePermissions;
   proposed: EffectivePermissions;
 }
+
+/**
+ * **How many accounts the workspace holds** —
+ * `GET /workspaces/{id}/accounts-count`.
+ *
+ * 📁 **The design's Companies header prints two numbers** — *"8,412 total · 312
+ * in view"* — ⚡ **and they answer different questions.** *In view* is a
+ * property of the page the customer is looking at and the screen already knows
+ * it; **total is a property of their whole book.**
+ *
+ * ⛔ **Not derivable from the list.** `accounts-list` is keyset-paginated and
+ * returns at most a page, so a screen counting loaded rows learns how much it
+ * has fetched — **and printing that beside the word *total* would be a
+ * falsehood that grows with every page.**
+ */
+export interface AccountCount {
+  /** Every account in the workspace. **Zero is a real answer**, and the
+   * designed empty state is reached through this read rather than instead of
+   * it. */
+  total: number;
+}

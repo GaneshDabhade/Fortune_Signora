@@ -70,6 +70,21 @@ export interface PageHeaderProps {
    * render, and re-deciding it here would be a second answer to *where am I*.
    */
   eyebrow?: ReactNode;
+  /**
+   * ⚡ **Set beside the title, on the title's own baseline** — 📁 the finalized
+   * Companies design draws *"Companies  8,412 total · 312 in view"* as one
+   * line, and **the counts are part of the heading rather than a sentence
+   * under it.**
+   *
+   * ⛔ **Not folded into `title`.** The `h1` is the route's name and a screen
+   * reader announces it; **a heading that read *"Companies 8,412 total 312 in
+   * view"* would make the landmark a sentence.** ✅ Two nodes, one line.
+   *
+   * ⚠️ **A slot rather than `total: number`** — the shape of the meta differs
+   * per screen, and a numeric prop here would decide the wording for every
+   * caller.
+   */
+  titleMeta?: ReactNode;
   /** A sentence under the title. 📁 Optional — §08's page header often has none. */
   description?: ReactNode;
   /**
@@ -88,7 +103,7 @@ export interface PageHeaderProps {
  * *"table plane, dialog, drawer, assistant panel"* and which
  * [TASK-1453](../../../docs/BACKLOG.md) corrected the dialog onto.
  */
-const PLANE = 'rounded-xl border border-border bg-surface shadow-sm';
+const PLANE = 'rounded-xl border border-border-soft bg-surface shadow-sm';
 
 function Actions({
   primaryAction,
@@ -113,6 +128,7 @@ function Actions({
 export function PageHeader({
   title,
   eyebrow,
+  titleMeta,
   description,
   primaryAction,
   secondaryActions,
@@ -126,7 +142,16 @@ export function PageHeader({
         <div className="min-w-0 flex-1">
           {/* 📁 §04's `Title` role — 26px / 1.15 / 700 / −0.026em, all four
               numbers, which is why `text-title` is a tuple in the config. */}
-          <h1 className="truncate text-title text-content">{title}</h1>
+          {/* ⚡ **One line, two elements** — 📁 the design sets the counts on
+              the title's baseline, not beneath it. ⛔ **`items-baseline`, so
+              the 26px heading and the 13px meta sit on one optical line**
+              rather than being centred against each other. */}
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h1 className="truncate text-title text-content">{title}</h1>
+            {titleMeta !== undefined ? (
+              <span className="text-sm text-content-muted">{titleMeta}</span>
+            ) : null}
+          </div>
           {description !== undefined ? (
             <p className="mt-1.5 text-sm leading-6 text-content-muted">{description}</p>
           ) : null}

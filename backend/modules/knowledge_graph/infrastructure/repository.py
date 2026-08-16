@@ -17,7 +17,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import or_, select, tuple_, update
+from sqlalchemy import func, or_, select, tuple_, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.knowledge_graph.domain.identity import (
@@ -273,6 +273,25 @@ class SqlGraphRepository:
             .order_by(IdentityBindingModel.provider, IdentityBindingModel.provider_external_id)
         )
         return tuple(_to_binding(row) for row in rows.scalars())
+
+    async def count_entities(self, workspace_id: UUID) -> int:
+        """`COUNT(*)`, scoped both ways.
+
+        ⛔ **The count happens in the database.** Selecting the rows and
+        lengthening them in Python would read the whole book into memory to
+        learn one integer — 📁 [§14](../../../../CLAUDE.md).
+
+        **Both predicates, always.** RLS is the authoritative control and the
+        explicit `workspace_id` is defence in depth (§8) — ⚠️ **and on a
+        `COUNT` the consequence of losing one is a number from every tenant at
+        once rather than a row that looks out of place.**
+        """
+        total = await self._session.scalar(
+            select(func.count())
+            .select_from(EntityModel)
+            .where(EntityModel.workspace_id == workspace_id)
+        )
+        return int(total or 0)
 
     async def entity_page(
         self, workspace_id: UUID, *, after: CursorPosition | None, limit: int

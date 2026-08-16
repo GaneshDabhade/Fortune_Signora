@@ -104,6 +104,11 @@ class FakeGraphRepository:
             found.extend(await self.bindings_for_entity(workspace_id, entity_id))
         return tuple(found)
 
+    async def count_entities(self, workspace_id: UUID) -> int:
+        # ⛔ **Scoped, like every other method here.** A fake that counted every
+        # workspace would make a tenancy defect pass its own unit test.
+        return sum(1 for e in self.entities.values() if e.workspace_id == workspace_id)
+
     async def entity_page(
         self, workspace_id: UUID, *, after: CursorPosition | None, limit: int
     ) -> tuple[Entity, ...]:

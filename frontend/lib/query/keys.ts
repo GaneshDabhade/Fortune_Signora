@@ -64,6 +64,16 @@ export const queryKeys = {
    */
   accountsList: (workspaceId: string) =>
     ['workspace', workspaceId, 'accounts-list'] as const,
+  /**
+   * 📁 **The Companies header's *total*** — [TASK-1475](../../../docs/BACKLOG.md).
+   *
+   * ⛔ **Its own key, not folded into `accountsList`.** The list is an infinite
+   * query whose cache grows page by page; **the total is one integer that does
+   * not change as the customer scrolls**, and sharing a key would refetch a
+   * `COUNT(*)` on every page.
+   */
+  accountsCount: (workspaceId: string) =>
+    ['workspace', workspaceId, 'accounts-count'] as const,
   /** 📁 [TASK-466](../../../docs/BACKLOG.md) — the workspace's tag vocabulary. */
   accountTags: (workspaceId: string) =>
     ['workspace', workspaceId, 'account-tags'] as const,

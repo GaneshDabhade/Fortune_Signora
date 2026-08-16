@@ -71,6 +71,7 @@ import {
   visibleColumns,
 } from '@/lib/accounts/table';
 import { cn } from '@/lib/design/cn';
+import { useAccountsCount } from '@/lib/query/hooks/accounts-count';
 import { useAccountsList } from '@/lib/query/hooks/accounts-list';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
@@ -117,6 +118,15 @@ export default function CompaniesPage() {
   const { activeWorkspace } = useWorkspaceContext();
   const workspaceId = activeWorkspace?.id ?? null;
   const accounts = useAccountsList(workspaceId);
+  /**
+   * 📁 **The design's header states the size of the book beside the size of
+   * the page** — *"8,412 total · 312 in view"*.
+   *
+   * ⛔ **The loaded count cannot answer the first.** `accounts-list` is
+   * keyset-paginated, so counting what has arrived measures the fetch — **and
+   * printing that beside the word *total* is wrong by more with every page.**
+   */
+  const total = useAccountsCount(workspaceId);
 
   /**
    * 🔴 **Previous / Next over the cursor, and it REPLACED *Load more*** —
@@ -272,6 +282,24 @@ export default function CompaniesPage() {
     <>
       <PageHeader
         title="Companies"
+        /* 📁 **The design's two counts, on the title's line.** ⚡ **The total
+           comes from its own read**; ⛔ **it is omitted rather than guessed
+           while that read is in flight or has failed** — a header that printed
+           the loaded count as the total would be the quiet kind of wrong. */
+        titleMeta={
+          <span className="tabular-nums">
+            {/* ⛔ **Guarded on the NUMBER, not the object.** ⚠️ A response
+                that arrived without a total is still a defined object, and
+                `data !== undefined` let it through — **the header crashed on
+                `toLocaleString`, which the component suite caught.** ✅ The
+                total is printed when there is one, and omitted when there is
+                not. */}
+            {typeof total.data?.total === 'number'
+              ? `${total.data.total.toLocaleString()} total · `
+              : ''}
+            {shown.length.toLocaleString()} in view
+          </span>
+        }
         description={
           <>
             Every account you can see, in one surface.{' '}
