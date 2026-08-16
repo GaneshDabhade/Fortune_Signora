@@ -113,3 +113,33 @@
 ✅ **Workflow 9 — User Profile — is no longer blocked on an unanswered architectural question.** ⛔ **What remains is ordinary implementation work: one migration, one list entry, one Security Invariant, and the typed façades each consuming module publishes.**
 
 ⚠️ **[C-307](../LANE_COORDINATION.md) is answered rather than closed by this office** — **it was raised by another lane, and [§20e](../../CLAUDE.md) gives the close to the requesting lane.**
+
+---
+
+## 8 · The second table of this class — `notification_read`, 2026-08-16
+
+**[TASK-480](../BACKLOG.md), ruled by [D-239](../DECISION_REGISTER.md).** ⚡ **`person_preferences` was the first; this is the second, and it is recorded here because the CLASS is what this document owns.**
+
+✅ **The shape is followed exactly rather than adapted**: **`workspace_id` non-nullable · forced RLS · `user_id = current_setting('app.user_id')` in every policy · and the repository filters by both again**, which is 📁 [§8](../../CLAUDE.md)'s defence-in-depth earned by the person predicate for the same reason the tenant one earns it.
+
+### 🔴 What the second instance taught that the first did not
+
+⚠️ **§8 requires policies covering `SELECT`/`INSERT`/`UPDATE` separately.** ⛔ **`notification_read` has no `UPDATE` grant and no `UPDATE` policy, and the Security Invariant caught it.**
+
+⚡ **Two wrong repairs were available** — **add a grant nothing needs, or weaken the test.** ✅ **`IMMUTABLE_TENANT_TABLES` is how this repository had already resolved the tension**, and its own comment is the argument: 📁 ***"requiring one would mean weakening immutability to satisfy a test, which is exactly backwards."***
+
+> 🔴 **So a person-scoped table may ALSO be immutable, and the two classifications compose.** ⚡ **`person_preferences` is mutable — a preference is a current answer.** ⛔ **A read is a record of something that happened, and the time it happened is not a field that can be corrected.**
+
+### ⚡ The modelling rule this instance contributes
+
+⛔ **A read is a FACT; an unread is the ABSENCE of one.**
+
+⚠️ **The obvious alternative is a `read: bool` per person per notification, and it fails on volume before it fails on principle**: **it requires a row to exist BEFORE anybody does anything**, so a workspace of 200 people receiving 50 notifications holds **10,000 rows describing inaction.**
+
+✅ **And the derived count follows from it** — 📁 [§2](../../CLAUDE.md), *truth has exactly one authoritative representation*. ⛔ **A stored counter is a second copy of what the rows already say, and the two disagree the first time a delivery fails half-way.**
+
+### ⚠️ What a person-scoped table still cannot do, restated because it was tested
+
+📁 **§5 of this document already says the person predicate does not survive a background worker.** ⚡ **`notification_read` inherits that unchanged**: **every read of it happens inside a request that has set `app.user_id`**, and **a worker computing unread counts would see none of them.**
+
+⛔ **Not a limitation this row hit** — the badge is rendered in a request — ⚠️ **but the first row that wants a digest email will, and it should find this sentence rather than the surprise.**
