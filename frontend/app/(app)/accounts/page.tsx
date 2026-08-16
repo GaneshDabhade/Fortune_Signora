@@ -45,6 +45,7 @@ import { EntityName } from '@/components/intelligence/entity-name';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
 import {
+  Breadcrumb,
   Button,
   Card,
   EmptyState,
@@ -282,6 +283,33 @@ export default function CompaniesPage() {
     <>
       <PageHeader
         title="Companies"
+        /* 📁 **The design's breadcrumb** — *"Accounts / Companies"*. ⚡ Shell
+           rule 6: *"mandatory below the first level"*, and this is the second.
+           ⛔ **The trail mirrors the data hierarchy, not the click path** —
+           `Breadcrumb`'s own rule, so a deep link from Slack reads the same as
+           a click from the rail. */
+        eyebrow={
+          <Breadcrumb
+            trail={[
+              { label: 'Accounts', kind: 'link', href: '/accounts' },
+              { label: 'Companies', kind: 'current' },
+            ]}
+          />
+        }
+        /* 🔴 **The design's header actions, and only the one that exists.**
+           📁 It draws *Import · Export · New company*. ⚡ **Export has a
+           contract and is rendered here, in the design's position** — it was
+           sitting in the toolbar, which is not where the design puts it.
+           ⛔ **Import and New company are NOT rendered as disabled buttons**:
+           📁 [B-255](../../../../docs/BUGS.md) — *a control that silently does
+           nothing is worse than one that is absent* — and neither has an
+           endpoint behind it. **Their absence is stated in the description
+           rather than drawn as dead chrome.** */
+        secondaryActions={
+          <Button variant="ghost" onClick={exportCsv}>
+            Export
+          </Button>
+        }
         /* 📁 **The design's two counts, on the title's line.** ⚡ **The total
            comes from its own read**; ⛔ **it is omitted rather than guessed
            while that read is in flight or has failed** — a header that printed
@@ -350,9 +378,9 @@ export default function CompaniesPage() {
             onFilters={setFilters}
             kinds={choicesFor(current, 'kind')}
             sources={choicesFor(current, 'source')}
+            total={typeof total.data?.total === 'number' ? total.data.total : null}
             shown={shown.length}
             loaded={current.length}
-            onExport={exportCsv}
           />
 
           {/* ⛔ **A filter that matches nothing is not an empty book.** ⚡ **The

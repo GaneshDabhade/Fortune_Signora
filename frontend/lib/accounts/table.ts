@@ -26,6 +26,7 @@
  * > ⛔ **A column of `—` is worse than an absent column**: it says Signora
  * > looked and found nothing, when the truth is that nothing was ever asked.
  */
+import { formatDay } from '@/components/intelligence/dates';
 import type { ListedAccount } from '@/lib/api/types';
 
 export type ColumnId =
@@ -84,7 +85,24 @@ export const COLUMNS: readonly ColumnSpec[] = [
   {
     id: 'freshness',
     label: 'Last observed',
-    read: (r) => r.account.last_observed_at ?? 'Never',
+    /**
+     * ⚡ **A date a person reads, not the wire format.**
+     *
+     * ⛔ **This printed the raw ISO string** — `2026-07-28T00:00:00Z` — **in a
+     * table cell.** 🔴 **The headed screenshot is what found it**: every gate
+     * was green, because a timestamp rendered verbatim is a correct string.
+     *
+     * ✅ **`formatDay` is reused rather than reimplemented** — 📁 the
+     * intelligence surfaces already answer *what day was this* and a second
+     * formatter would eventually disagree with the first
+     * ([§2](../../../CLAUDE.md), truth has one representation).
+     *
+     * ⚠️ **`Never` is kept as-is.** 📁 Null means no source has ever reported
+     * anything, and that is a different fact from an old date rather than a
+     * missing one.
+     */
+    read: (r) =>
+      r.account.last_observed_at === null ? 'Never' : formatDay(r.account.last_observed_at),
   },
   // ⚡ **Released by [C-1425](../../../docs/LANE_COORDINATION.md)**, which the
   // header above records as one of the five columns with no source. **It has
