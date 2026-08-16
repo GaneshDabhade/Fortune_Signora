@@ -59,6 +59,7 @@ import {
   Table,
 } from '@/components/ui';
 import { AccountsToolbar } from './toolbar';
+import { ViewTabs } from './view-tabs';
 import {
   DEFAULT_COLUMNS,
   NO_FILTERS,
@@ -73,6 +74,7 @@ import {
 } from '@/lib/accounts/table';
 import { cn } from '@/lib/design/cn';
 import { useAccountsCount } from '@/lib/query/hooks/accounts-count';
+import { useSavedViews } from '@/lib/query/hooks/saved-views';
 import { useAccountsList } from '@/lib/query/hooks/accounts-list';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
@@ -128,6 +130,17 @@ export default function CompaniesPage() {
    * printing that beside the word *total* is wrong by more with every page.**
    */
   const total = useAccountsCount(workspaceId);
+  /**
+   * 📁 **The design's tab row** — the workspace's shared views.
+   *
+   * ⛔ **Selecting one does not yet narrow the table.** ⚡ **`declaration` is
+   * the view's own query and this screen does not interpret it**; applying it
+   * would mean re-implementing a query language on the client, and a tab that
+   * silently filtered by a rule nobody could see would be worse than one that
+   * only marks where you are. **The gap is the apply, not the read.**
+   */
+  const savedViews = useSavedViews(workspaceId);
+  const [selectedView, setSelectedView] = useState<string | null>(null);
 
   /**
    * 🔴 **Previous / Next over the cursor, and it REPLACED *Load more*** —
@@ -367,21 +380,31 @@ export default function CompaniesPage() {
         />
       ) : (
         <>
-          <AccountsToolbar
-            mode={mode}
-            onMode={setMode}
-            density={density}
-            onDensity={setDensity}
-            columns={columns}
-            onColumns={setColumns}
-            filters={filters}
-            onFilters={setFilters}
-            kinds={choicesFor(current, 'kind')}
-            sources={choicesFor(current, 'source')}
-            total={typeof total.data?.total === 'number' ? total.data.total : null}
-            shown={shown.length}
-            loaded={current.length}
-          />
+          {/* 📁 **The design's saved-view row, with the switcher on its right.**
+          ⛔ **The switcher was above the filters**, which is not a place the
+          design has. */}
+      <ViewTabs
+        views={savedViews.data?.items ?? []}
+        loading={savedViews.isLoading}
+        selected={selectedView}
+        onSelect={setSelectedView}
+        mode={mode}
+        onMode={setMode}
+      />
+
+      <AccountsToolbar
+        density={density}
+        onDensity={setDensity}
+        columns={columns}
+        onColumns={setColumns}
+        filters={filters}
+        onFilters={setFilters}
+        kinds={choicesFor(current, 'kind')}
+        sources={choicesFor(current, 'source')}
+        total={typeof total.data?.total === 'number' ? total.data.total : null}
+        shown={shown.length}
+        loaded={current.length}
+      />
 
           {/* ⛔ **A filter that matches nothing is not an empty book.** ⚡ **The
               two are different sentences and this screen has both**: the empty

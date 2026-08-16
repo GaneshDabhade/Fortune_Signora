@@ -282,7 +282,23 @@ describe('the type and radius scales are tokens too', () => {
     const declared = [...declaredScale('borderRadius'), 'full', 'none'];
     const used = new Set<string>();
     for (const { source } of ALL_COMPONENTS) {
-      for (const [, step] of source.matchAll(/\brounded-([a-z0-9]+)\b/g)) {
+      /**
+       * ⚠️ **The side is skipped, and the token after it is what is checked.**
+       *
+       * ⛔ **This read `rounded-t-md` as the token `t`** and failed a class
+       * that is entirely correct — 📁 the finalized Companies design draws its
+       * saved-view tabs at `border-radius:8px 8px 0 0`, **which is
+       * `rounded-t-md`: the declared `md` step, applied to one side.**
+       *
+       * 🔴 **A guard that fires on the wrong fact teaches people to widen
+       * it** ([§2](../../../CLAUDE.md)) — and the widening here would have
+       * been to declare `t` a radius, which is not a radius at all. ✅ **The
+       * side variants are consumed and the step is still checked**, so an
+       * undeclared `rounded-t-7px` fails exactly as it should.
+       */
+      for (const [, step] of source.matchAll(
+        /\brounded-(?:(?:[tblrse]|[tb][lr]|ss|se|ee|es)-)?([a-z0-9]+)\b/g,
+      )) {
         used.add(step as string);
       }
     }

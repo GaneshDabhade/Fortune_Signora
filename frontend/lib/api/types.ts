@@ -1350,3 +1350,30 @@ export interface AccountCount {
    * it. */
   total: number;
 }
+
+/**
+ * **A view somebody saved and everybody shares** —
+ * `GET /workspaces/{id}/saved-views`.
+ *
+ * 📁 **The finalized Companies design's tab row.** ⚡ **Shared rather than
+ * personal**, which is the endpoint's own rule: *"filtering by author would
+ * make a shared capability read as a private one."*
+ *
+ * ⛔ **No count and no badge.** 📁 The design draws *41* beside a name and
+ * *Live* / *AI* / *Shared* after it; **neither is published.** A count needs
+ * `declaration` executed against the book, and a badge is a classification
+ * nothing stores — **so the tabs carry names, and never a number nobody
+ * measured.**
+ */
+export interface SavedView {
+  id: string;
+  workspace_id: string;
+  name: string;
+  /** ⚠️ **The view's own query, shape defined by whoever wrote it.** ⛔ Not
+   * interpreted here: this screen renders the name and selects by id. */
+  declaration: Record<string, unknown>;
+  created_by: string;
+  created_at: string;
+  supersedes: string | null;
+  retired_at: string | null;
+}

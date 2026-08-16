@@ -1,7 +1,6 @@
 'use client';
 
 import { Button, Select } from '@/components/ui';
-import { cn } from '@/lib/design/cn';
 import {
   COLUMNS,
   type ColumnId,
@@ -22,8 +21,6 @@ import {
  * count beside them says which it is.**
  */
 export interface ToolbarProps {
-  readonly mode: 'table' | 'cards';
-  readonly onMode: (mode: 'table' | 'cards') => void;
   readonly density: Density;
   readonly onDensity: (density: Density) => void;
   readonly columns: readonly ColumnId[];
@@ -47,8 +44,6 @@ export interface ToolbarProps {
 }
 
 export function AccountsToolbar({
-  mode,
-  onMode,
   density,
   onDensity,
   columns,
@@ -69,27 +64,6 @@ export function AccountsToolbar({
       className="mb-4 flex flex-col gap-3 border-b border-border-soft pb-4"
     >
       <div className="flex flex-wrap items-center gap-2">
-        {/* 📁 *"Table · Cards · Board"* — ⛔ **Board is absent**: it groups by a
-            column, and every groupable column the design names is
-            [C-209](../../../../docs/LANE_COORDINATION.md)'s. **A third tab that
-            grouped by `kind` would be the design's word on a different idea.** */}
-        <div role="group" aria-label="View" className="flex rounded-md bg-surface-sunken p-0.5">
-          {(['table', 'cards'] as const).map((value) => (
-            <button
-              key={value}
-              type="button"
-              aria-pressed={mode === value}
-              onClick={() => onMode(value)}
-              className={cn(
-                'rounded px-3 py-1 text-sm capitalize transition-colors',
-                mode === value ? 'bg-surface text-content shadow-sm' : 'text-content-muted',
-              )}
-            >
-              {value}
-            </button>
-          ))}
-        </div>
-
         {/* 📁 *"Density"* — ⚡ **the profile's own vocabulary**, because a person
             already sets this about themselves. */}
         <Select

@@ -74,6 +74,9 @@ export const queryKeys = {
    */
   accountsCount: (workspaceId: string) =>
     ['workspace', workspaceId, 'accounts-count'] as const,
+  /** 📁 **The Companies design's tab row** — the workspace's shared views. */
+  savedViews: (workspaceId: string) =>
+    ['workspace', workspaceId, 'saved-views'] as const,
   /** 📁 [TASK-466](../../../docs/BACKLOG.md) — the workspace's tag vocabulary. */
   accountTags: (workspaceId: string) =>
     ['workspace', workspaceId, 'account-tags'] as const,
