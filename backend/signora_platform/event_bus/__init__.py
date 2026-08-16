@@ -13,7 +13,11 @@ from signora_platform.event_bus.dispatch import (
     UnknownConsumerError,
 )
 from signora_platform.event_bus.envelope import EventEnvelope
-from signora_platform.event_bus.models import DeadLetterEventModel, ProcessedEventModel
+from signora_platform.event_bus.models import (
+    DeadLetterEventModel,
+    ProcessedEventModel,
+    WebhookDeliveryModel,
+)
 from signora_platform.event_bus.outbox_model import OutboxEventModel
 from signora_platform.event_bus.publisher import (
     EventPublisher,
@@ -44,6 +48,7 @@ __all__ = [
     "SYSTEM_USER_ID",
     "ArqQueuePublisher",
     "DeadLetterEventModel",
+    "WebhookDeliveryModel",
     "DispatchResult",
     "DuplicateSubscriptionError",
     "EventDispatcher",
