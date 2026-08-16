@@ -2700,6 +2700,30 @@ A  backend/migrations/versions/0060_webhook_delivery.py
 
 📁 **Same shape as [B-1006](BUGS.md)** — `--audit-main` answering about a **ref** using the manifest in whichever **tree** it stands in — **and the same shape as this morning's notice channel, where the office believed it had routed something it had not.** ⛔ **Three instances, one cause: reporting your own side of a thing whose whole purpose is to be seen from the other side.**
 
+### 🔴 FOUND 2026-08-16 WHILE EXECUTING THE LANE B RETIREMENT — this item may be moot, and for a reason nobody has cited
+
+**[D-230](DECISION_REGISTER.md), product owner, 2026-08-12:**
+
+> ⚡ **① `platform_foundation` and `apps` MOVE FROM LANE C TO LANE A**, closing the last two exceptions.
+> ⛔ **④ Lane C retains NO implementation module.** *It governs, reviews, holds design authority and prepares decisions — **and builds nothing.***
+> ⚠️ **⑤ [D-022](DECISION_REGISTER.md) is superseded in its Platform Foundation half only.**
+
+**[D-240](DECISION_REGISTER.md) §2, product owner, 2026-08-16 — four days later:** ⛔ **corrected `modules.toml` from `Lane A` back to `Lane C`, on the authority of `CLAUDE.md` §20e and D-022.** ✅ **`modules.toml` reads `platform_foundation → Lane C, settled` today.**
+
+🔴 **So the registry was restored to an ownership D-230 had already moved, citing the decision D-230 explicitly superseded.**
+
+### ⚠️ The root, and it is not that anybody was careless
+
+⛔ **`CLAUDE.md` §20e still describes D-022's grant, because it was never amended after D-230.** 📁 **So a reader consulting the constitution — which is the authoritative document, and which every lane is told to prefer over a registry — finds D-022's arrangement and reasonably concludes the registry is wrong.**
+
+⚡ **That is this item's own general form, arriving one layer up**: **a ruling that is never written into the document lanes read gets silently reversed by somebody reading the stale document correctly.** 📁 **The same shape as [D-230](DECISION_REGISTER.md) ② itself — it moved four Lane B rows to Lane A on 2026-08-12, and on 2026-08-16 three of them still named Lane B** ([TASK-300](BACKLOG.md), [TASK-406](BACKLOG.md), [TASK-205](BACKLOG.md)), **which is what QE was reassigning when this surfaced.**
+
+### ⛔ What it does to this item
+
+**If D-230 stands, C-108's first half does not need answering**: **Lane C builds nothing, so TASK-1481 is not theirs to implement**, and the `signora_platform/` path question never arises for them. ⚡ **The §8 half survives untouched** — **a tenant-owned RLS table inside the substrate is a design question whoever implements it, and Lane C's bounded-context recommendation is still the best answer on the table.**
+
+⛔ **QE is not ruling this and has changed no ownership.** ✅ **Three artifacts disagree — [D-230](DECISION_REGISTER.md), [D-240](DECISION_REGISTER.md) §2 and [`CLAUDE.md`](../CLAUDE.md) §20e — and only the product owner may say which governs.** ⚠️ **Whichever way it goes, `CLAUDE.md` §20e needs the amendment D-230 ⑤ implied and nobody made**, or this recurs the next time somebody reads it.
+
 ### ⚡ The three answers that would each settle it
 
 **①** `modules.toml` is right — **amend `CLAUDE.md` §20e so D-022's grant names `signora_platform/` rather than `simulation/**`.**
