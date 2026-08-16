@@ -79,6 +79,17 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # business module may never query, and a profile panel queries this on
         # every render. Recorded at C-247 rather than settled here.
         "person_preferences",
+        # Notification read state (TASK-480, D-239), migration 0058. **The
+        # SECOND table of `person_preferences`' class** — 492 §0's narrowing,
+        # `workspace_id` non-nullable with every tenancy guarantee intact and
+        # `user_id` added on top, in all three policies as well as in the
+        # query. ⛔ **No `UPDATE` grant and no `UPDATE` policy**: a read is a
+        # record of something that happened (§2, immutability), so there is
+        # nothing about one to amend — and *mark as unread*, if the product
+        # ever asks for it, is a DELETE rather than an edit to when it was
+        # read. ⚡ **A read is recorded; an unread is the ABSENCE of a row**,
+        # so the badge count is derived and never stored.
+        "notification_read",
         # Onboarding (TASK-469, Workflow 8), migration 0043. **Every answer
         # column is nullable and the table is still tenant-owned** — a
         # skippable step is a nullable column, not an exempt table, and the
@@ -437,6 +448,14 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         # legitimate in-place change in the module, and it is not an edit of a
         # fact. See migration 0040, which argues it rather than assuming it.
         "person",
+        # Notification read state (TASK-480, D-239), migration 0058. **A read
+        # is a record of something that happened**, so there is nothing about
+        # one to amend: the time a person read a notification is not a field
+        # that can be corrected, it is the fact the row exists to hold. ⛔ **And
+        # *mark as unread*, if the product ever asks for it, is a DELETE rather
+        # than an edit** — the row stops existing, which is the same shape as
+        # *an unread is the absence of a row*.
+        "notification_read",
         # Both Action Batch tables, and neither argues an exception. An
         # approval that can be edited is an approval nobody can cite, and
         # nothing here has `affiliation`'s shape — every row is a fact about a

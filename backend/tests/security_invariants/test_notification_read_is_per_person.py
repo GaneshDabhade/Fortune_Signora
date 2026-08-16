@@ -1,0 +1,126 @@
+"""**One person's read state is not another's, and the badge is bounded.**
+
+📁 **[TASK-480](../../../docs/BACKLOG.md), on
+[D-239](../../../docs/DECISION_REGISTER.md)** — `workspace_tenancy` owns
+per-person, per-workspace notification state, following `person_preferences`.
+
+## 🔴 Why this is a Security Invariant
+
+⚡ **The narrowing is the guarantee.** 📁 492 §0: *"a NARROWING of tenant-owned,
+never a parallel to it… one predicate is added."* ⛔ **A defect here does not
+render a wrong number — it shows one person what another has and has not
+read**, which is a disclosure inside a workspace where every other control
+assumes the workspace is the boundary.
+
+⚠️ **Two people in one workspace is the case that matters**, because tenant
+isolation does not help: **they are legitimately in the same tenant, and only
+the person predicate separates them.**
+"""
+
+from __future__ import annotations
+
+from datetime import UTC, datetime
+from uuid import uuid4
+
+import pytest
+
+from modules.workspace_tenancy.domain.notification_state import (
+    CAP,
+    NotificationRead,
+    NotificationStateError,
+    UnreadCount,
+    unread,
+)
+
+NOW = datetime(2026, 8, 16, 12, 0, tzinfo=UTC)
+
+
+class TestTheBadgeIsBounded:
+    """⚡ **The cap is in the domain so the QUERY can be bounded by it.**"""
+
+    def test_a_count_below_the_cap_is_exact_and_not_capped(self) -> None:
+        assert unread(total=3) == UnreadCount(value=3, capped=False)
+
+    def test_exactly_the_cap_is_not_capped(self) -> None:
+        """🔴 **The off-by-one that decides whether the badge reads `9` or `9+`.**"""
+        assert unread(total=CAP) == UnreadCount(value=CAP, capped=False)
+
+    def test_one_past_the_cap_is_capped(self) -> None:
+        """⚡ **The extra row the query fetches is what distinguishes these two.**"""
+        assert unread(total=CAP + 1) == UnreadCount(value=CAP, capped=True)
+
+    def test_far_past_the_cap_is_indistinguishable_from_one_past(self) -> None:
+        """✅ **Which is the point** — ⛔ **a query that counted further would be
+        answering a question the badge cannot render.**"""
+        assert unread(total=CAP + 1) == unread(total=10_000)
+
+    def test_nothing_unread_is_zero_rather_than_absent(self) -> None:
+        assert unread(total=0) == UnreadCount(value=0, capped=False)
+
+    def test_a_negative_total_is_refused_rather_than_clamped(self) -> None:
+        """🔴 **A negative badge means the derivation subtracted reads from a
+        total it did not have** — ⛔ **a defect to surface, never a number to
+        clamp to zero and render.**"""
+        with pytest.raises(NotificationStateError, match="not a count"):
+            unread(total=-1)
+
+    def test_a_count_cannot_be_built_above_the_cap_directly(self) -> None:
+        """⛔ **The constructor refuses it, not only the factory.**
+
+        ⚡ **A repository building an `UnreadCount` by hand would bypass
+        `unread()`** — and the value that reaches the badge is what matters.
+        """
+        with pytest.raises(NotificationStateError, match="exceeds the cap"):
+            UnreadCount(value=CAP + 1, capped=True)
+
+    def test_a_negative_count_cannot_be_built_directly_either(self) -> None:
+        with pytest.raises(NotificationStateError, match="not a count"):
+            UnreadCount(value=-1, capped=False)
+
+
+class TestAReadIsAFactAndCarriesBothIdentities:
+    def test_a_read_names_a_workspace_and_a_person(self) -> None:
+        """🔴 **Both required, no defaults.**
+
+        ⛔ **A read that names no workspace is a cross-tenant fact; one that
+        names no person is the collective state D-239 refuses.**
+        """
+        read = NotificationRead(
+            workspace_id=uuid4(),
+            user_id=uuid4(),
+            notification_id=uuid4(),
+            read_at=NOW,
+        )
+        assert read.workspace_id is not None
+        assert read.user_id is not None
+
+    def test_a_naive_read_time_is_refused(self) -> None:
+        """⚠️ **A time without a timezone is a claim about no particular
+        moment**, and it would be the only one a report could not order.
+        """
+        with pytest.raises(NotificationStateError, match="without a timezone"):
+            NotificationRead(
+                workspace_id=uuid4(),
+                user_id=uuid4(),
+                notification_id=uuid4(),
+                read_at=datetime(2026, 8, 16, 12, 0),  # noqa: DTZ001
+            )
+
+    def test_there_is_no_way_to_un_read_a_read(self) -> None:
+        """⛔ **The absence IS the invariant, so it is asserted.**
+
+        📁 **A read is a record of something that happened** ([§2](../../../CLAUDE.md)),
+        the table has no `UPDATE` grant, and **a method offering one would
+        promise what the database refuses.** ⚡ ***Mark as unread*, if the
+        product ever asks for it, is a DELETE** — the row stops existing, which
+        is the same shape as *an unread is the absence of a row*.
+        """
+        surface = {n for n in dir(NotificationRead) if not n.startswith("_")}
+
+        assert not {n for n in surface if "unread" in n.lower() or "undo" in n.lower()}
+        # ⚡ **Frozen, so a caller cannot edit the moment either.**
+        read = NotificationRead(
+            workspace_id=uuid4(), user_id=uuid4(), notification_id=uuid4(), read_at=NOW
+        )
+        with pytest.raises((AttributeError, TypeError)):
+            read.read_at = NOW  # type: ignore[misc]

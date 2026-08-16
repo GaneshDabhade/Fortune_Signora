@@ -395,3 +395,37 @@ class CapabilityAssignmentModel(Base, WorkspaceScopedMixin, TimestampMixin, Audi
         ForeignKey("capability_role.role_id", ondelete="RESTRICT"),
         nullable=True,
     )
+
+
+class NotificationReadRow(Base):
+    """One person has read one notification — **[TASK-480](../../../../docs/BACKLOG.md)**.
+
+    ⛔ **A read is recorded; an unread is the ABSENCE of a row.** ⚡ **So this
+    table holds only what happened**, and the badge count is derived from it
+    rather than stored beside it (📁 [§2](../../../../CLAUDE.md)).
+
+    🔴 **Person-scoped, following `person_preferences` exactly** —
+    [D-239](../../../../docs/DECISION_REGISTER.md) and 492 §0: **a NARROWING of
+    tenant-owned, never a parallel to it.** ⚡ **`workspace_id` is non-nullable
+    and every tenancy guarantee still applies; `user_id` is the one predicate
+    added on top, in the policy as well as in the query.**
+    """
+
+    __tablename__ = "notification_read"
+
+    workspace_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("workspace.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    user_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    #: ⛔ **No foreign key.** ⚡ **Notifications are not this module's** — 📁
+    #: [ADR-0017](../../../../docs/architecture/adr/0017-notifications.md) owns
+    #: delivery and [TASK-495](../../../../docs/BACKLOG.md) builds it. **A
+    #: constraint here would make this table wait for one that does not exist.**
+    notification_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    #: ⚠️ **The database owns it** — 📁 [§2](../../../../CLAUDE.md), *the least
+    #: powerful author*: a `DEFAULT now()` cannot be mistaken.
+    read_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )

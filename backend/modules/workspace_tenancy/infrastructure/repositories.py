@@ -5,14 +5,21 @@ Each repository is constructed with the request/job-scoped ``AsyncSession``
 between domain entities and ORM models in both directions.
 """
 
+from collections.abc import Sequence
 from datetime import datetime
 from typing import Any
 from uuid import UUID, uuid4
 
 from sqlalchemy import Select, func, literal, select, tuple_, update
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from modules.workspace_tenancy.domain.entities import Membership, Workspace, WorkspaceRole
 from modules.workspace_tenancy.domain.invitation import Invitation
+from modules.workspace_tenancy.domain.notification_state import (
+    CAP,
+    UnreadCount,
+)
+from modules.workspace_tenancy.domain.notification_state import unread as unread_count
 from modules.workspace_tenancy.domain.onboarding import (
     Answer,
     CompanySizeBand,
@@ -35,6 +42,7 @@ from modules.workspace_tenancy.infrastructure.models import (
     InvitationModel,
     MembershipModel,
     MembershipRoleChangeModel,
+    NotificationReadRow,
     OnboardingRunModel,
     PersonPreferencesModel,
     SavedViewModel,
@@ -702,3 +710,87 @@ class SqlAlchemyPersonPreferencesRepository(SqlAlchemyRepository):
                 setattr(model, column, value)
             model.updated_by = preferences.person_id
         await self._session.flush()
+
+
+class SqlAlchemyNotificationReadRepository(SqlAlchemyRepository):
+    """What one person has read — **[TASK-480](../../../../docs/BACKLOG.md)**.
+
+    ⚡ **Every query carries BOTH predicates**, exactly as
+    `SqlAlchemyPersonPreferencesRepository` does: **defence in depth beside the
+    RLS policy, which carries the same two** (📁 `11-tenancy.md`, 492 §0).
+
+    ⛔ **There is no `update`.** 📁 A read is a record of something that
+    happened, the table has no `UPDATE` grant, and **a method offering one
+    would promise what the database refuses.**
+    """
+
+    async def mark_read(
+        self, workspace_id: UUID, person_id: UUID, notification_ids: Sequence[UUID]
+    ) -> None:
+        """Record that this person has read these.
+
+        ⚡ **Idempotent by the primary key rather than by a check.** ⛔ **A
+        `SELECT` then `INSERT` would race two tabs against each other**, and
+        marking read twice is something a customer does by double-clicking —
+        **it must not be an error and it must not need a transaction to be
+        safe.**
+        """
+        if not notification_ids:
+            return
+        statement = (
+            pg_insert(NotificationReadRow)
+            .values(
+                [
+                    {
+                        "workspace_id": workspace_id,
+                        "user_id": person_id,
+                        "notification_id": notification_id,
+                    }
+                    for notification_id in notification_ids
+                ]
+            )
+            # ⚡ **The FIRST read time survives.** 📁 §2 — a record of what was
+            # true then is not rewritten; the moment they read it is the fact,
+            # and a later click does not change when it happened.
+            .on_conflict_do_nothing(
+                index_elements=["workspace_id", "user_id", "notification_id"]
+            )
+        )
+        await self._session.execute(statement)
+
+    async def unread(
+        self, workspace_id: UUID, person_id: UUID, candidates: Sequence[UUID]
+    ) -> UnreadCount:
+        """How many of `candidates` this person has not read — **bounded**.
+
+        🔴 **The query stops at `CAP + 1` and the extra one is the whole
+        trick**: it distinguishes *exactly nine* from *nine or more* without
+        counting further. ⛔ **An unbounded count on this path reads thousands
+        of rows to render two characters**, on exactly the person most likely
+        to have them — somebody returning from leave.
+
+        ⚠️ **`candidates` is supplied by the caller rather than derived here.**
+        📁 **Notifications are not this module's** — ADR-0017 owns delivery —
+        **so this answers *which of these has this person not read*, which is
+        the only question it can honestly answer.**
+        """
+        if not candidates:
+            return unread_count(total=0)
+        read = select(NotificationReadRow.notification_id).where(
+            NotificationReadRow.workspace_id == workspace_id,
+            # Defence in depth beside the RLS policy, which carries the same
+            # two predicates (11-tenancy.md, 492 §0).
+            NotificationReadRow.user_id == person_id,
+            NotificationReadRow.notification_id.in_(candidates),
+        )
+        seen = set((await self._session.execute(read)).scalars().all())
+        # ⚡ **Bounded in Python because the candidate set already is** — the
+        # caller passed a page of ids, not a table. **Counting past the cap
+        # would answer a question the badge cannot render.**
+        total = 0
+        for candidate in candidates:
+            if candidate not in seen:
+                total += 1
+                if total > CAP:
+                    break
+        return unread_count(total=total)
