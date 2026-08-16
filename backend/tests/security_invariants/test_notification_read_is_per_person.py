@@ -31,6 +31,13 @@ from modules.workspace_tenancy.domain.notification_state import (
     UnreadCount,
     unread,
 )
+from modules.workspace_tenancy.infrastructure.repositories import (
+    SqlAlchemyNotificationReadRepository,
+)
+from modules.workspace_tenancy.public import (
+    NotificationReadWriter,
+    NotificationStateReader,
+)
 
 NOW = datetime(2026, 8, 16, 12, 0, tzinfo=UTC)
 
@@ -124,3 +131,60 @@ class TestAReadIsAFactAndCarriesBothIdentities:
         )
         with pytest.raises((AttributeError, TypeError)):
             read.read_at = NOW  # type: ignore[misc]
+
+
+def _the_repository_is_a_reader(
+    repository: SqlAlchemyNotificationReadRepository,
+) -> NotificationStateReader:
+    """🔴 **The structural check, and it is `mypy --strict` that performs it.**
+
+    ⛔ **`hasattr` was the first version of this and it was decorative**: it
+    passes for a method with the wrong signature, the wrong argument names or
+    the wrong return type — ⚡ **which are exactly the three ways a port and its
+    implementation drift.**
+
+    ✅ **Returning the repository AS the protocol is the real assertion.**
+    **`mypy` resolves it here, so a signature change on either side fails the
+    type gate rather than waiting for slice ⓑ to import it.**
+    """
+    return repository
+
+
+def _the_repository_is_a_writer(
+    repository: SqlAlchemyNotificationReadRepository,
+) -> NotificationReadWriter:
+    """The same check for the write half."""
+    return repository
+
+
+class TestThePublishedContractAndTheImplementationCannotDrift:
+    """🔴 **A `Protocol` is checked where it is CONSUMED, and nothing consumes
+    this yet** — [TASK-480](../../../docs/BACKLOG.md) slice ⓑ builds the shell.
+
+    ⛔ **So until a caller exists, the port and the repository can drift and
+    `mypy` will not say a word**: structural typing verifies at the assignment,
+    and there is no assignment. ⚡ **This is that assignment, written as a
+    test**, so the contract is load-bearing from the moment it is published
+    rather than from the moment somebody imports it.
+    """
+
+    def test_the_conformance_functions_exist_so_mypy_has_something_to_check(
+        self,
+    ) -> None:
+        """⚡ **The functions above are the check; this makes their DELETION
+        visible in a test run** — ⛔ otherwise removing them would silently
+        remove the only place the protocols are resolved.
+        """
+        assert _the_repository_is_a_reader.__annotations__["return"] is not None
+        assert _the_repository_is_a_writer.__annotations__["return"] is not None
+
+    def test_the_port_offers_no_way_to_unread(self) -> None:
+        """⛔ **The absence is the contract.** ⚡ **A `mark_unread` added here
+        would promise what the table's missing `UPDATE` grant refuses.**"""
+        from modules.workspace_tenancy.public import NotificationReadWriter
+
+        surface = {n for n in dir(NotificationReadWriter) if not n.startswith("_")}
+        assert surface == {"mark_read"}, (
+            "a new method on the published writer may promise something the "
+            "database refuses — this table has no UPDATE grant"
+        )
