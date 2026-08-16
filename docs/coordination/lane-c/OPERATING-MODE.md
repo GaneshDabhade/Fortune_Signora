@@ -436,6 +436,32 @@ origin/integration 🟠      origin/lane-qe 🟠      origin/main 🟠
 
 ✅ **So the test before releasing: *what would the implementing lane find in the first ten minutes that this row does not say?*** 📁 **Six of seven had an answer, and five of those were checkable from here.**
 
+### 5g-3b · Moving a deliverable between rows edits TWO specifications — and feels like editing one status
+
+**Recorded 2026-08-16, from Lane A's claim of [TASK-495](../../BACKLOG.md). ⚡ The instance 5g-3 predicted, arriving by claim exactly as it says.**
+
+⛔ **I moved the shell bell from `TASK-480` to `TASK-495` and wrote it in the `Status` cell.** ⚠️ **`TASK-495` was, until that moment, a vendor adapter with no surface — so SIX cells said so:**
+
+**Shared layout · Manual review gate · Reusable components · Approved design · Playwright · the Definition of Done.**
+
+🔴 **Playwright is the one that would have cost something.** ⛔ ***"none — not a customer journey"* about a bell in the top bar of every authenticated screen.** ⚡ **A lane building to the body would have shipped it with no journey and no headed review — correctly, according to the row.**
+
+> ## **A `Status` edit announces WHAT changed. It cannot announce what the change made false.**
+
+✅ **The mechanism, and it is why this is not just 5g-3 again:** **a preparer moving scope is thinking about the two `Status` cells, which is where the *decision* lives.** ⛔ **The specification cells are where the decision *lands*, and nothing about editing a `Status` puts them in front of you.**
+
+✅ **So: when scope moves between rows, re-read the RECEIVING row end to end** — ⚠️ **every cell written under *"this row has no surface"* is now a claim about a surface.** ⛔ **Annotating them is not enough: a stale cell beside a correction is still a cell somebody reads.**
+
+⚡ **And the Definition of Done was the sixth** — 📁 **it still demanded Novu, which the same `Status` edit had already ruled out in its own text.** **The row contradicted itself in the two cells that decide what "done" means.**
+
+### 5g-3c · A free identifier in the wrong block is not free
+
+⛔ **I allocated `C-1526` for this and it is LANE A's block.** ✅ **Caught in the working tree; it is `C-1436`.**
+
+⚠️ **And the near-miss underneath it: `C-1434` is free by `grep` of the registers and is NOT free** — 📁 **it is referenced in this file as a withdrawn item.** **Which is [B-263](../../BUGS.md)'s lesson read from the other side: that scan endorsed a collision by asking *"what has a heading?"* when the question was *"what is referenced anywhere?"***
+
+> **Two questions, and only one of them is *"may I use this number?"*: ⓐ is it in MY block · ⓑ is it referenced ANYWHERE.**
+
 ## 5h · A hand-maintained copy of a registry is the defect. Derive it.
 
 **Three instances in two days, in three different kinds of artefact.**
