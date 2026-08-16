@@ -2246,3 +2246,39 @@ if (workspaceId === null) return [];   // absent  AND  not-yet-arrived
 ✅ **What deleting the branch DOES produce is `resolving` forever — a person stranded on a spinner inside a flow whose only exit is this decision.** 🔴 **So the test asserts *failure is distinguishable from loading*, which goes red, rather than *failure does not redirect*, which does not.**
 
 > ⚡ **The rule this earns: when two properties look like one guard, fire-test to find out which one the guard has. The claim you would have written is usually the more impressive of the two.**
+
+---
+
+## Decorative Logic arrives by deletion as well as by addition — 2026-08-16
+
+**Named by QE on [TASK-1482](../BACKLOG.md), and recorded here because the next person to delete a route will hit it.**
+
+📁 **[§2](../../CLAUDE.md) describes Decorative Logic as something WRITTEN**: *"implementation that appears to enforce a property but whose removal does not change the property it claims to protect."* ⚡ **Every instance the repository had found arrived by somebody adding a branch.**
+
+⛔ **This one arrived by removing a route.**
+
+### 🔴 The mechanism
+
+📁 **`navigation-rail.test.tsx` opened with:**
+
+```ts
+// ⚡ The rail reads the current route to mark the active destination. `/` is
+// Attention's, so the active-state assertion below has something to assert.
+vi.mock('next/navigation', () => ({ usePathname: () => '/' }));
+```
+
+⚠️ **The comment is doing real work: it names the DEPENDENCY between the mock and the entry.** ⛔ **[TASK-1482](../BACKLOG.md) removed the entry, and `/` stopped being any destination's.**
+
+⚡ **The active-state assertions did not fail. They had nothing left to assert and passed.** ✅ **A guard that stopped guarding without anybody touching it.**
+
+### ⛔ Why the suite cannot catch this class
+
+**A deleted subject leaves a test GREEN.** ⚡ **Every mechanism this repository trusts — the suite, the coverage gate, `tsc`, a fire test on the CODE — reports a passing test as a working one.** 🔴 **The only signal is the comment, and only if somebody reads it while deleting the thing it names.**
+
+> ✅ **The rule: when you delete a destination, a route or a fixture, grep for it in TEST SETUP as well as in assertions.** ⛔ **An assertion that names it fails loudly. A mock, a fixture or a `beforeEach` that names it goes quiet.**
+
+### ⚡ The neighbouring instance, and it is the same family
+
+**Replacing `{ path: '/', name: 'Attention' }` in `tests/e2e/fixtures/layout-invariants.ts` with `{ path: '/business' }` duplicated an entry already below it.** ⛔ **Every responsive invariant would have run twice against one route** — **and reported it as wider coverage.** 📁 **QE's name for that shape is [B-1008](../BUGS.md)'s: *a number that goes up while meaning less.***
+
+✅ **Removed rather than replaced**, and the list now says in place that whether `/` is retired is a question [D-240](../DECISION_REGISTER.md) did not answer — ⛔ **so it does not decide that by omission either.**
