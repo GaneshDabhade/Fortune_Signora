@@ -253,6 +253,37 @@ context requires.
 no person's name, anywhere. Role-based and organization-level only.
 """
 
+[machine_credentials]
+context = "A third party authenticates inbound to Signora — issuance, rotation, one-time display, revocation, per-call audit"
+current_owner = "Lane A"
+future_owner = "Lane A"
+transition = "settled"
+implementation = 15
+basis = "TASK-1413 slice ⓐ, 2026-08-16 — the domain and its Security Invariants. No table, no endpoint, no application layer yet"
+last_work = "TASK-1413 slice ⓐ — the credential, the scope, and 159 invariants"
+next_milestone = "TASK-1413 slice ⓑ — the table, the repository and the endpoints"
+paired_with = "workspace_tenancy"
+note = """
+⚡ CREATED BY ADR-0414 (ACCEPTED, product owner, 2026-08-13, ruling C-1404 ⓐ),
+which is the approval the 🔴 Change Budget on TASK-1413 requires. The lane did
+not decide the bounded context; it implemented one already ratified.
+
+⛔ THE NEAR-MISS IS `integrations`, and the ADR is explicit about why it is
+wrong: that module owns OUTBOUND credentials, and §13 forbids reusing one
+direction's credential for the other. An inbound machine credential placed
+there is that defect with new nouns.
+
+⛔ WEBHOOK DELIVERY IS NOT HERE. It appeared beside API keys in C-1404 and in
+the Settings design, and the ADR refuses the association: delivery is the
+existing outbox/relay pattern (ADR-0011), and TASK-1481 owns it.
+
+🔴 BLOCKED ABOVE THE DOMAIN — C-1524. `AuthenticatedPrincipal` in
+signora_platform/auth/ is human-only, and 495 ratified the fix without it being
+built. A key-authenticated request has nowhere to say it is not a person, and
+signora_platform/** is 🔴. The credential lifecycle, hashing, one-time display
+and per-call record all sit ABOVE that boundary and are proceeding.
+"""
+
 [action_batch]
 context = "A change is proposed, approved, applied as one named thing, and can be taken back"
 current_owner = "Lane A"

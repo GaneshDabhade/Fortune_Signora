@@ -517,6 +517,155 @@ databaseUrl: required(
 
 ---
 
+## C-1524 · The platform's principal type is human-only, and the row that needs it is claimed
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-16, auditing [TASK-1413](BACKLOG.md) before writing a line |
+| **Owner** | 🔴 **Product owner + ADR** — 📁 [§20a](../CLAUDE.md), `signora_platform/**` is frozen |
+| **Type** | 🔴 **A ratified model that was never built, and a claimed row that needs it** |
+| **Blocks** | ⛔ **The authentication half of [TASK-1413](BACKLOG.md).** ✅ **Not the credential lifecycle, the hashing, the one-time display or the per-call record — those sit above this boundary** |
+| **Status** | **`OPEN`** |
+
+### 🔴 An API-key request has nowhere to say it is not a person
+
+📁 **`signora_platform/auth/principal.py`:**
+
+```python
+@dataclass(frozen=True)
+class AuthenticatedPrincipal:
+    user_id: UUID
+    session_id: str
+    email: str
+    email_verified: bool
+    active_workspace_id: UUID | None
+    token_id: str
+```
+
+⛔ **Every field is human**, and its own docstring says it is *"the ONLY representation of caller identity in the system."*
+
+📁 **[495](architecture/495-principal-and-identity-boundary.md) already measured this and said it in the same words** — *"every field is human, and every non-human caller in [D-176](DECISION_REGISTER.md) §1 is unrepresentable"* — **and ratified the repair:**
+
+> ✅ ***"One principal type. A `kind`. A `subject_id`. A workspace. And — the field that does the real work — `acting_for`."***
+
+⚠️ **Ratified 2026-08-13 and not built.** ⛔ **`signora_platform/**` is 🔴, so a lane may not build it** ([§20a](../CLAUDE.md)).
+
+### ⚡ The asymmetry, and the frontend is the one that got it right
+
+📁 **`frontend/lib/entry/principal.ts` ships `PRINCIPAL_KINDS` and `resolveEntryFor(principal, …)`**, delivered by [TASK-1407](BACKLOG.md) with an explicit argument for the timing:
+
+> ✅ ***"Widened while `resolveEntry` has ZERO callers — after the shell, the compositions and the cards consume it, the same change is a refactor across six."***
+
+⛔ **The backend platform never received the same widening**, and [TASK-1413](BACKLOG.md) is the first row that cannot proceed without it.
+
+🔴 **And the argument for ruling it SOON is that the asymmetry is now inverted, which QE named**: **`resolveEntry` was widened at zero callers deliberately; `AuthenticatedPrincipal` already has MORE than zero.** ⚡ **Its own docstring is the measure of that** — *"this is the ONLY representation of caller identity in the system. Nothing downstream re-reads the token."* ⛔ **So every request path in the product goes through it, and the cost of the widening only rises from here.** ⚠️ **The frontend row paid the cheap version of this bill on purpose; the backend is being offered the expensive one, and it gets more expensive every slice.** ⚡ **[TASK-1413](BACKLOG.md)'s own body predicted this**: *"TASK-1407 widens the entry engine to admit a NON-HUMAN principal. This row is where non-human principals come from. The two must agree on what a service principal is."*
+
+### ⛔ A second thing, and it is a design decision this lane is TAKING rather than asking
+
+📁 **[ADR-0414 §4](architecture/adr/0414-machine-credentials-bounded-context.md) hands this row *"the key format and hashing scheme"* and *"the API shape"*, so this is stated rather than asked** — ⚠️ **but it interacts with the Security Invariant and is worth reading before validation.**
+
+📁 **`Authorizer.is_allowed(role, workspace_id, resource, action)` — the subject term is a ROLE STRING.** ⛔ **A key has a SCOPE, not a role, and *"a scope narrower than its creator's"* cannot be a Casbin subject**: 📁 `policy.csv` is read-only at runtime by design ([ADR-0010](architecture/adr/0010-identity-and-access.md) — *"policy changes ship as code review"*), **so a per-key policy row cannot be written at issuance.**
+
+✅ **The model this row adopts:**
+
+> 🔴 ***The GRANT is Casbin's alone. A key's scope can only SUBTRACT.***
+
+⛔ **A key can never permit what Casbin denies for its owner's role.** ⚡ **The scope is a filter applied AFTER the enforcer answers, never a second enforcer** — which is 📁 [TASK-1413](BACKLOG.md)'s own invariant, *"enforced by the same enforcer as a human's, never by a parallel check"*, satisfied exactly rather than approximately.
+
+✅ **And it is checkable rather than assertable**: for every `(resource, action)` pair the product defines, `key_allowed ⊆ casbin_allowed(owner_role)` — **an invariant that enumerates the product rather than sampling it.**
+
+### ✅ What is asked
+
+**Whether [495](architecture/495-principal-and-identity-boundary.md)'s principal model is built now, and by whom.** ⚠️ **It is `signora_platform/**`, so not a lane's.** ⚡ **Lane A continues on everything above that boundary meanwhile and will say plainly which half is missing at handoff.**
+
+---
+
+## C-1522 · The engine's last-used hint exists, and its key is private to a frozen module
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-15, wiring [TASK-1401](BACKLOG.md) — ⚡ **found by trying to build the caller, which is the only way it could have been found** |
+| **Owner** | 🔴 **Product owner** — 📁 [§20c](../CLAUDE.md), the frontend foundation is 🔴 and `lib/state` is named in it |
+| **Type** | ⚠️ **A budget question, not a design one.** ✅ **Nothing is wrong; the fact is simply not reachable from where it is needed** |
+| **Blocks** | ⚠️ **Degrades [TASK-1401](BACKLOG.md) rather than blocking it** — rules 12 and 14 cannot fire, so rules 11-14 resolve on membership COUNT alone |
+| **Status** | **`OPEN`** |
+
+### 🔴 The fact exists and the engine cannot read it
+
+📁 **`frontend/lib/state/workspace-provider.tsx:18`:**
+
+```ts
+const ACTIVE_WORKSPACE_KEY = 'signora.activeWorkspaceId';
+```
+
+⛔ **Not exported.** 📁 **`EntrySession.lastUsedWorkspaceId` is what rules 12 and 14 read**, and its own comment names the hazard it manages — [D-196](DECISION_REGISTER.md), *"a stored preference that OUTLIVES membership."*
+
+⚠️ **Re-declaring the string inside `lib/entry` was considered and refused**: 📁 [§2](../CLAUDE.md), *truth has exactly one authoritative representation.* ⛔ **Two copies of a storage key drift in the one way nothing catches — the engine reads a key nobody writes, and every person silently becomes *no last-used*.**
+
+### ⛔ And `activeWorkspace` is not a substitute, which is the part worth reading
+
+⚡ **The provider already exposes `activeWorkspace`, so the obvious move is to use it.** 🔴 **It is a different fact.** 📁 The provider's own effect:
+
+```ts
+return isStillAMember ? stored : first.id;
+```
+
+⛔ **It falls back to `workspaces[0]`, so it is NEVER null while a membership exists.** ⚠️ **Feeding it to the engine would make rule 13 (`AMBIGUOUS`) unreachable** — and rule 13 is the one that shows the chooser. ⚡ **So the product would silently enter somebody's first workspace where the design specifies asking them**, and it would look correct because they would land somewhere plausible.
+
+### ✅ What is asked
+
+**Either** ⓐ **export the constant** — one word, no behaviour, and the narrowest possible change to a 🔴 file — **or** ⓑ **have `WorkspaceContextValue` publish `lastUsedWorkspaceId` as the RAW stored hint, distinct from `activeWorkspace`.**
+
+⚡ **ⓑ is better and larger**: it names the distinction above in the type, so the next lane cannot make the substitution this item exists to warn about. ⛔ **ⓐ is what unblocks the rules tomorrow.**
+
+⚠️ **Lane A has implemented neither.** 📁 [§20e](../CLAUDE.md) — *touching a file outside your budget is a finding to raise, not a change to make.*
+
+---
+
+## C-1523 · Nothing in the repository produces the intent the entry engine reads
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-15, wiring [TASK-1401](BACKLOG.md) |
+| **Owner** | 🔴 **Product owner** — 📁 [§20c](../CLAUDE.md), **Routing** is frontend foundation |
+| **Type** | 🔴 **An unreachable primitive, and a promoted one** |
+| **Blocks** | ⛔ **Rules 06-09 entirely** — the four intent rules — **and with them the customer-visible half of [TASK-1401](BACKLOG.md)** |
+| **Status** | **`OPEN`** |
+
+### 🔴 A promoted module with no producer
+
+📁 **[TASK-1402](BACKLOG.md) is `PROMOTED` and shipped `lib/entry/intent.ts`** — `captureIntent · encodeIntent · decodeIntent · classifyIntent`, 21 tests, the open-redirect refusal, the local `not_member` decision. ✅ **All of it correct.**
+
+⛔ **Measured 2026-08-15: `git grep` for a writer of `?next=` across `app/`, `components/` and `lib/` returns NOTHING outside `lib/entry` itself.** ⚡ **The consumer was built and the producer never was**, so four of the engine's twenty-four rules read a parameter no code sets.
+
+### ⚠️ Where the producer would have to live, and why it is 🔴
+
+📁 **`frontend/app/(app)/layout.tsx:35`:**
+
+```ts
+if (!session?.user) redirect('/signin');
+```
+
+🔴 **That line is where the attempted route is discarded**, and it is the only place that sees a signed-out person asking for a protected page. ⛔ **A Next 15 server layout cannot read the pathname** — the supported mechanism is a root `middleware.ts`, **which does not exist in this repository and is Routing.**
+
+⚠️ **Alternatives were measured and each is worse**: **per-page capture** puts the rule in every page under `(app)` and is what the layout's own comment already rejects — 📁 *"declared on the segment, so it covers every page beneath it rather than relying on five files each remembering"* — and **`Referer`** is referrer-policy dependent and silently absent, which is the worst failure mode for a security-sensitive input.
+
+### ⛔ A second finding, delivered with it: three of *the five* are not the engine's
+
+📁 **[TASK-1401](BACKLOG.md) names five call sites.** ⚡ **Three of them happen BEFORE authentication succeeds** — `register-form` → `/verify`, `reset-password-form` → `/reset/done`, and the `(app)/layout` line above → `/signin`.
+
+🔴 **There is no reason code for *never signed in*.** 📁 **All twenty-four rules presume an identity** — `AccountStanding` is *active · locked · suspended · deleted · pending_deletion* and `SessionStanding` is *valid · expired · step_up_required*; **none of them means *nobody is here*.**
+
+⛔ **Mapping it to `SESSION_EXPIRED` would write a false answer into the record support reads** — 📁 the diagnostics bundle exists precisely to answer *"why did I land here"*, and telling somebody their session expired when they never had one is the [§10](../CLAUDE.md) *failure attribution must be truthful* rule in the routing layer.
+
+✅ **The engine's own name is the resolution: it is the AUTHENTICATED Entry engine.** ⚡ **The row's five are two.**
+
+### ✅ What is asked
+
+**Whether a root `middleware.ts` may exist**, and if so **whether it is Lane A's to write or the foundation's.** ⛔ **Lane A has not written one.**
+
+---
+
 ## C-1521 · A released row is invisible by the route the protocol sends a lane down
 
 | | |

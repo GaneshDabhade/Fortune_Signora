@@ -422,6 +422,20 @@ Other modules reach it through **`SecurityEventWriter` in `public/`** and never 
 
 ⚠️ **`action_batch` is the bounded-context identity, not the product's word.** **No customer-facing name is ratified** — [ADR-0034](adr/0034-ubiquitous-language.md)'s test applies and [D-127](../DECISION_REGISTER.md) forbids a placeholder becoming production terminology because implementation started first.
 
+### Machine Credentials
+
+**A third party authenticating INBOUND to Signora.** **Ratified [ADR-0414](adr/0414-machine-credentials-bounded-context.md), [D-237](../DECISION_REGISTER.md), ruling [C-1404](../LANE_COORDINATION.md).**
+
+**It owns the inbound API-key credential lifecycle** — issuance · rotation · one-time display · revocation · per-call audit.
+
+⛔ **It is NOT `integrations`, and that is the near-miss the ADR spends most of its length on.** 📁 **That module publishes `Credential`, `ConnectedAccount` and `ExecutionContext` for the OPPOSITE direction** — Signora authenticating outbound to a provider — and 📁 [§13](../../CLAUDE.md) forbids exactly this class of reuse: *"a sign-in OAuth token must never be reused as an integration OAuth token."* ⚡ **An inbound machine credential placed in the module that owns outbound ones is that defect with new nouns.**
+
+⛔ **It does not own webhook delivery.** 📁 The ADR: *"webhook delivery must not be placed in this context merely because both appear in C-1404"* — that is the existing outbox/relay pattern ([ADR-0011](adr/0011-background-processing-and-event-bus-transport.md)) and [TASK-1481](../BACKLOG.md).
+
+⛔ **It does not own the ownership anchors.** 📁 `workspace_tenancy` keeps the workspace, the member, and machine-principal ownership, unchanged — **a key is issued by this context, owned by a member, and scoped to a workspace.**
+
+⚠️ **Added 2026-08-16 by [TASK-1413](../BACKLOG.md) slice ⓐ**, which is the change that created the module. 🔴 **The 🔴 in that row's Change Budget — *a new module or a new bounded area* — is satisfied by the ADR, not by the implementing lane's judgement**; this section records a decision already taken ([§2](../../CLAUDE.md), *governance describes reality; it never quietly changes it*).
+
 ### Timeline
 
 **Purpose:** A cross-cutting, read-optimized module that builds and serves a chronological feed of everything that has happened for a given entity.
