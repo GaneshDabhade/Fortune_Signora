@@ -206,7 +206,7 @@ export function CommandPalette({
         aria-label={placeholder}
         // §12's shared plane, the same three terms as Drawer and Dialog.
         className={cn(
-          'flex w-full flex-col overflow-hidden rounded-xl border border-border',
+          'flex w-full flex-col overflow-hidden rounded-xl border border-border-soft',
           'bg-surface text-content shadow-lg',
         )}
         style={{ maxWidth: PALETTE.width }}
@@ -218,7 +218,7 @@ export function CommandPalette({
         {scope === undefined ? null : (
           <p
             data-testid="palette-scope"
-            className="border-b border-border px-4 pb-2 pt-3 text-xs text-content-subtle"
+            className="border-b border-border-soft px-4 pb-2 pt-3 text-xs text-content-subtle"
           >
             Searching {scope}
           </p>
@@ -234,7 +234,7 @@ export function CommandPalette({
           aria-controls={listId}
           aria-activedescendant={index >= 0 ? `${listId}-${index}` : undefined}
           className={cn(
-            'w-full border-b border-border bg-transparent px-4 py-3 text-sm',
+            'w-full border-b border-border-soft bg-transparent px-4 py-3 text-sm',
             'text-content placeholder:text-content-subtle focus:outline-none',
           )}
         />
@@ -279,7 +279,7 @@ export function CommandPalette({
           )}
         </div>
 
-        <footer className="flex gap-4 border-t border-border px-4 py-2 text-2xs text-content-subtle">
+        <footer className="flex gap-4 border-t border-border-soft px-4 py-2 text-2xs text-content-subtle">
           {KEY_MAP.map((key) => (
             <span key={key.hint}>{key.hint}</span>
           ))}

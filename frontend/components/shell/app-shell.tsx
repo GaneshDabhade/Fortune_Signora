@@ -249,7 +249,7 @@ export function AppShell({
         data-collapsed={rail.collapsed}
         data-sheet-open={compact && navOpen ? 'true' : undefined}
         className={cn(
-          'shrink-0 border-r border-border bg-surface',
+          'shrink-0 border-r border-border-soft bg-surface',
           // 🔴 **A COLUMN, and this is a defect the sheet exposed rather than
           // introduced** — measured at 390×844: 📁 the rail's `<nav>` is
           // `h-full`, so it took the container's whole 844px **while starting

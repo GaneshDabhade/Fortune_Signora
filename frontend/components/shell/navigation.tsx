@@ -718,7 +718,7 @@ export function Navigation({
           column: a margin would put them below the fold on a short viewport. */}
       <div className="flex-1" />
 
-      <div className="flex flex-col gap-0.5 border-t border-border pt-2">
+      <div className="flex flex-col gap-0.5 border-t border-border-soft pt-2">
         {visibleDestinations(UTILITIES).map((item) => {
           const entry = item as RailEntry;
           // ⛔ **The utilities are static and none carries a `[workspace]`

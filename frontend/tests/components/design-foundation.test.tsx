@@ -191,3 +191,48 @@ describe('the dark theme is the design\'s, not an inversion', () => {
     }
   });
 });
+
+describe('containers consume the design’s soft hairline, not the strong one', () => {
+  /**
+   * 🔴 **The token values were never the problem. The consumption was.**
+   *
+   * 📁 **Measured across all 34 finalized design documents**: borders naming
+   * `--line-soft` outnumber `--line` **1873 to 323** — the soft hairline is the
+   * ordinary divider and the strong one is the exception. ⛔ **The
+   * implementation was inverted, 11 to 137**, so nearly every card edge,
+   * divider, panel and rail rendered one step darker than the design.
+   *
+   * ⚠️ **`design-foundation`'s existing tests all passed throughout**, because
+   * they assert that each token HOLDS the design's value — ⚡ **and both tokens
+   * did.** ✅ **This asserts which token a container REACHES FOR**, which is the
+   * half no value check can see.
+   *
+   * ⛔ **Interactive control outlines are deliberately absent**: 📁 the design
+   * outlines its own buttons with `border:1px solid var(--line)`, so `input`
+   * and `select` keeping the strong token is correct rather than an oversight.
+   */
+  const CONTAINERS = [
+    'components/ui/card.tsx',
+    'components/ui/table.tsx',
+    'components/ui/dialog.tsx',
+    'components/ui/drawer.tsx',
+    'components/ui/empty-state.tsx',
+    'components/ui/error-state.tsx',
+    'components/shell/app-shell.tsx',
+    'components/shell/navigation.tsx',
+    'components/shell/top-bar.tsx',
+  ];
+
+  for (const file of CONTAINERS) {
+    it(`${file.split('/').pop()} draws its edges with the soft hairline`, () => {
+      const source = readFileSync(join(process.cwd(), file), 'utf8');
+      // ⛔ **`border-border` with a word boundary** — `border-border-soft` and
+      // `border-border-strong` are both legitimate and must not match.
+      const strong = source.match(/border-border(?![-\w])/g) ?? [];
+      expect(
+        strong,
+        `${file} reaches for the strong hairline; the design uses --line-soft for containers`,
+      ).toEqual([]);
+    });
+  }
+});

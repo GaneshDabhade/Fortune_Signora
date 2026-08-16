@@ -102,14 +102,14 @@ export function Drawer({ open, onClose, title, scope, children, footer, width }:
       aria-labelledby={headingId}
       className={cn(
         // §12's shared plane: 16px radius, hairline border, --e4.
-        'flex h-full w-full flex-col rounded-xl border border-border bg-surface',
+        'flex h-full w-full flex-col rounded-xl border border-border-soft bg-surface',
         'text-content shadow-lg outline-none',
       )}
       // ⛔ **A style, not a Tailwind arbitrary value** — the number belongs to
       // the design's contract and a class would put it in a second place.
       style={width === undefined ? undefined : { maxWidth: width }}
     >
-      <header className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
+      <header className="flex items-start justify-between gap-3 border-b border-border-soft px-5 py-4">
         <div className="flex flex-col gap-1">
           <h2 id={headingId} className="text-base font-semibold">
             {title}
@@ -132,7 +132,7 @@ export function Drawer({ open, onClose, title, scope, children, footer, width }:
       {children ? <div className="flex-1 overflow-y-auto px-5 py-4">{children}</div> : null}
 
       {footer ? (
-        <footer className="border-t border-border px-5 py-3">{footer}</footer>
+        <footer className="border-t border-border-soft px-5 py-3">{footer}</footer>
       ) : null}
     </aside>
   );

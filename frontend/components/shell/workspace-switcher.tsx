@@ -235,10 +235,10 @@ export function WorkspaceSwitcher({ collapsed = false }: { collapsed?: boolean }
           // 📁 *"Menu 340px at --e4."* ⚡ `--shadow-xl` IS `--e4` — the fourth
           // elevation TASK-491 added for surfaces that sit over the page.
           style={{ width: 340, maxWidth: `calc(100vw - ${RAIL_WIDTH.collapsed}px)` }}
-          className="absolute left-3 top-[calc(100%+6px)] z-30 overflow-hidden rounded-lg border border-border bg-surface shadow-xl"
+          className="absolute left-3 top-[calc(100%+6px)] z-30 overflow-hidden rounded-lg border border-border-soft bg-surface shadow-xl"
         >
           {searchable ? (
-            <div className="border-b border-border p-2">
+            <div className="border-b border-border-soft p-2">
               <input
                 ref={searchRef}
                 type="search"
@@ -302,7 +302,7 @@ export function WorkspaceSwitcher({ collapsed = false }: { collapsed?: boolean }
           </ul>
 
           {/* 📁 *"Administrative actions are always the last two rows."* */}
-          <div className="border-t border-border py-1">
+          <div className="border-t border-border-soft py-1">
             {ADMIN_ACTIONS.map((action) => (
               <Link
                 key={action.href}

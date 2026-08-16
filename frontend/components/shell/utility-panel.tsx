@@ -312,14 +312,14 @@ export function UtilityPanel({
         // 📁 *"Non-modal, pushes content"* — ⚡ **in flow, never `fixed` and
         // never over the content.** A panel that covered the table would make
         // the customer close it to read what it describes.
-        'hidden shrink-0 border-l border-border bg-surface smalllaptop:flex',
+        'hidden shrink-0 border-l border-border-soft bg-surface smalllaptop:flex',
         'flex-col transition-[width] duration-150',
       )}
     >
       <div
         role="tablist"
         aria-label="Utility panel sections"
-        className={cn('flex gap-1 border-b border-border p-1', !open && 'flex-col')}
+        className={cn('flex gap-1 border-b border-border-soft p-1', !open && 'flex-col')}
       >
         {PANEL_TABS.map((tab) => (
           <button

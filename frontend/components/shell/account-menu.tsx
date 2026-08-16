@@ -161,7 +161,7 @@ export function AccountMenu({ email, name, role, signOut }: AccountMenuProps) {
           role="menu"
           aria-label="Account"
           // 📁 *"280px, right-aligned to the avatar, 8px below the top bar."*
-          className="absolute right-0 top-[calc(100%+8px)] z-20 w-[280px] rounded-md border border-border bg-surface shadow-lg"
+          className="absolute right-0 top-[calc(100%+8px)] z-20 w-[280px] rounded-md border border-border-soft bg-surface shadow-lg"
         >
           {/* 📁 *"Always states name, email, role and workspace."*
               🔴 **[B-429](../../../docs/BUGS.md): the name is stated now, and
@@ -175,7 +175,7 @@ export function AccountMenu({ email, name, role, signOut }: AccountMenuProps) {
               ✅ **The half of that comment which was right is kept**: a name is
               never derived from the address. ⛔ **When the session carries
               none, the email stands alone**, exactly as it did before. */}
-          <div className="border-b border-border px-3 py-3">
+          <div className="border-b border-border-soft px-3 py-3">
             {name === null ? null : (
               <p className="truncate text-sm font-medium text-content" title={name}>
                 {name}
@@ -219,7 +219,7 @@ export function AccountMenu({ email, name, role, signOut }: AccountMenuProps) {
               guard was right and the duplicate is gone** — this slot supplies
               the design's POSITION for the control, and the control is the one
               that already existed. */}
-          <div className="border-b border-border px-3 py-2.5">
+          <div className="border-b border-border-soft px-3 py-2.5">
             <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-content-subtle">
               Appearance
             </p>
@@ -241,7 +241,7 @@ export function AccountMenu({ email, name, role, signOut }: AccountMenuProps) {
           </div>
 
           {/* 📁 *"then sign out below a hairline."* */}
-          <div className="border-t border-border px-3 py-2.5">{signOut}</div>
+          <div className="border-t border-border-soft px-3 py-2.5">{signOut}</div>
         </div>
       ) : null}
     </div>

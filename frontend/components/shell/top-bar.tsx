@@ -142,7 +142,7 @@ export function TopBar({
   const widened = searchFocused && bandFor(viewportWidth) === 'desktop';
 
   return (
-    <header className="flex h-topbar shrink-0 items-center gap-2 border-b border-border bg-surface px-4">
+    <header className="flex h-topbar shrink-0 items-center gap-2 border-b border-border-soft bg-surface px-4">
       {/* 📁 **The sheet trigger** — [TASK-1461](../../../docs/BACKLOG.md).
           ⛔ **Not a slot, on the wordmark's own precedent below**: 📁
           [`lib/shell/top-bar.ts`](../../lib/shell/top-bar.ts)'s union is the

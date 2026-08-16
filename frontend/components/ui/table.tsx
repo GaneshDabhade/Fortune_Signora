@@ -69,12 +69,12 @@ export interface TableProps extends HTMLAttributes<HTMLTableElement> {
  */
 export function Table({ className, summary, onDismissSummary, ...props }: TableProps) {
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-surface">
+    <div className="overflow-hidden rounded-xl border border-border-soft bg-surface">
       {summary !== undefined ? (
         <div
           // 📁 *"tinted with the intelligence hue"* — `--color-ai`'s subtle
           // pair, which is the token the design's `--ai-tint` maps to.
-          className="flex items-start gap-3 border-b border-border bg-ai-subtle px-4 py-3"
+          className="flex items-start gap-3 border-b border-border-soft bg-ai-subtle px-4 py-3"
           data-summary-row=""
         >
           <div className="min-w-0 flex-1 text-sm leading-6 text-ai">{summary}</div>
@@ -185,7 +185,7 @@ export function TH({
         // list, not reasoned about**: `sticky` was simply absent.
         // ⚡ `sticky` already establishes the positioning context the `::after`
         // fade needs, so nothing is lost.
-        'sticky top-0 border-b border-border bg-surface-sunken',
+        'sticky top-0 border-b border-border-soft bg-surface-sunken',
         'px-4 py-2.5 text-left font-medium text-content-muted',
         pinned(pin),
         // The pinned header outranks the sticky header it sits inside, so the
@@ -209,7 +209,7 @@ export function TD({
         // ⚠️ `relative` is safe here and is NOT safe on `TH` — see the note
         // there. A pinned `TD` gets `sticky` from `pinned()` below, which
         // tailwind-merge resolves in that call's favour because it comes after.
-        'relative border-b border-border px-4 py-3 text-content last:border-b-0',
+        'relative border-b border-border-soft px-4 py-3 text-content last:border-b-0',
         // 📁 **Rule ②'s edge, on the pinned cell** so it reads at the row's
         // start where the eye lands — and it is 2px, which is what makes
         // selection legible without colour.

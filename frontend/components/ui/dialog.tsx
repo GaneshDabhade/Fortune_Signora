@@ -123,7 +123,7 @@ export function Dialog({
       ref={ref}
       aria-labelledby={titleId}
       className={cn(
-        'w-full max-w-md rounded-xl border border-border bg-surface p-0 text-content shadow-lg',
+        'w-full max-w-md rounded-xl border border-border-soft bg-surface p-0 text-content shadow-lg',
         'backdrop:bg-backdrop/40',
       )}
       // Clicking the backdrop closes; clicking the panel must not. The
@@ -133,7 +133,7 @@ export function Dialog({
         if (event.target === ref.current) onClose();
       }}
     >
-      <div className="flex items-start gap-3 border-b border-border px-5 py-4">
+      <div className="flex items-start gap-3 border-b border-border-soft px-5 py-4">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <h2 id={titleId} className="text-base font-semibold">
             {title}
@@ -164,7 +164,7 @@ export function Dialog({
       </div>
       {children ? <div className="px-5 py-4">{children}</div> : null}
       {footer ? (
-        <div className="flex justify-end gap-2 border-t border-border px-5 py-3">
+        <div className="flex justify-end gap-2 border-t border-border-soft px-5 py-3">
           {footer}
         </div>
       ) : null}

@@ -115,7 +115,7 @@ export function Tabs<T extends string>({
               selected
                 ? // 📁 §10: sunken fill, ink at 600, brand edge.
                   'border-accent bg-surface-sunken font-semibold text-content'
-                : 'border-border text-content-muted hover:text-content',
+                : 'border-border-soft text-content-muted hover:text-content',
             )}
           >
             {item.label}
