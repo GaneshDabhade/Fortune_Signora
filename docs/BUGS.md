@@ -1626,6 +1626,34 @@ logger.info("connecting to postgres://signora_app:S3cr3tPassw0rd@db:5432/signora
 | **Status** | 🔵 **`OPEN`** — ✅ **the shipped behaviour is the safe half**: a preference is **not stored** rather than stored under a guess |
 | **Found** | **2026-08-12, by Lane A** |
 
+#### ⚡ AUDIT 2026-08-16, Lane A — the obvious fix is forbidden by this module's own design
+
+⚠️ **Recorded before anybody writes it, because the obvious repair is the wrong one and the reason is two files away.**
+
+🔴 **`knowledge_graph` is Lane A's** (`current_owner = "Lane A"`), **serves BOTH reads from one router**, and 📁 **already exports `EntityKind` from its `public/`.** ⚡ **So the field is not missing from the module — it is missing from one of its two answers.**
+
+⛔ **Do NOT add `kind` to `AccountIdentity`.** 📁 **`ListedAccount` composes it rather than extending it, and says why in its own words:**
+
+```python
+account: AccountIdentity
+kind: EntityKind
+created_at: datetime   # …AccountIdentity deliberately holds no such field:
+                       # it answers "who is this?", not "when did we learn about it?"
+```
+
+⚡ **The same argument governs `kind` exactly**: **`AccountIdentity` answers *who is this*, and `kind` answers *what kind of thing is it*.** ⛔ **Folding it in would put a classification inside an identity resolver** — and 📁 **the interface layer already models the separation**: `ListedAccountResponse` carries `account: AccountIdentityResponse` **beside** `kind: EntityKind`, never inside it.
+
+#### ✅ The two proportionate options, so the next lane starts from the analysis
+
+| | | |
+|---|---|---|
+| **ⓐ** | **Extend `account-identities`' RESPONSE to carry `kind` beside the identity**, in the composition idiom `ListedAccountResponse` already uses | ✅ **Additive · one field · no new endpoint** · ⚡ **the endpoint's own summary already reads *"who these accounts are"*, and *what kind* is the same question about the same set** |
+| **ⓑ** | **A dedicated ids-keyed read returning identity + kind** | ⛔ **A second endpoint answering a question the first already almost answers** — ⚠️ **and the row's own objection to the list read applies: disproportionate to the thing it keys** |
+
+⚡ **ⓐ is the recommendation.** ⛔ **Neither is started**: 🔴 **a backend field with no consumer is the unreachable-primitive class this lane has now found five times**, so **the read and Account 360's use of it belong in ONE slice**, with the frontend `AccountIdentity` type and `AccountSectionShell`'s `kind` prop changing in the same change.
+
+⚠️ **Not converted into a `TASK-` row by this lane** — 📁 [§20e](../CLAUDE.md): *a lane never invents work*, and **the backlog is the product owner's.** ✅ **Recorded here so the fix is one reading rather than one rediscovery.**
+
 #### 📁 The rule
 
 > 📁 **`Fortune Signora Account 360.dc.html` §*States*, Collapsed:** ***"State persists per user and per account TYPE, not per record."***
