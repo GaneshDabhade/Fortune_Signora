@@ -306,7 +306,7 @@ describe('a research read that failed is not an account nobody has researched', 
       <ResearchPanel research={null} onRequest={() => {}} isRequesting={false} isError />,
     );
 
-    expect(screen.getByRole('button', { name: /research/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^(refresh research|research this account)$/i })).toBeDisabled();
   });
 
   it('still invites a run when nobody has genuinely asked', () => {
@@ -314,6 +314,130 @@ describe('a research read that failed is not an account nobody has researched', 
     render(<ResearchPanel research={null} onRequest={() => {}} isRequesting={false} />);
 
     expect(screen.getByText(/usually takes a minute or two/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /research/i })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /^(refresh research|research this account)$/i })).toBeEnabled();
+  });
+});
+
+describe('the design’s six states — Collapsed and Expanded', () => {
+  /**
+   * 📁 ***"Each of the 27 sections above ships in all six states"*** — Normal,
+   * Loading, Error, Empty, **Collapsed** and **Expanded**. ⚠️ **The last two
+   * were absent from this section entirely**, which made it the only
+   * intelligence section on the page that could not be folded away.
+   */
+  it('folds to a summary that still states the count', async () => {
+    render(
+      <ResearchPanel
+        id="research"
+        research={research()}
+        onRequest={vi.fn()}
+        isRequesting={false}
+        viewerId="user-1"
+        kind="account"
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /research summary/i }));
+
+    // 🔴 📁 ***"A collapsed section still states its count and its worst
+    // status, so collapsing never hides a risk."***
+    expect(screen.getByText(/2 comparisons/i)).toBeVisible();
+    // ⛔ **The body is gone, not merely hidden behind opacity.**
+    expect(screen.queryByText(/rest on one provider/i)).not.toBeVisible();
+  });
+
+  it('remembers the fold per viewer and per account kind, never per record', async () => {
+    window.localStorage.clear();
+    render(
+      <ResearchPanel
+        id="research"
+        research={research()}
+        onRequest={vi.fn()}
+        isRequesting={false}
+        viewerId="user-1"
+        kind="account"
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /research summary/i }));
+
+    const key = Object.keys(window.localStorage).find((k) => k.includes('collapse'));
+    expect(key).toBeDefined();
+    // ⛔ **The account id must not appear in the key** — 📁 the collapse law's
+    // own rule, and the reason `collapseKey` is shared rather than rebuilt.
+    expect(key).not.toContain('22222222');
+    expect(window.localStorage.getItem(key!)).toBe('collapsed');
+  });
+
+  it('offers focus mode only when the page can carry the URL', () => {
+    panel(research());
+
+    // ⛔ **Absent rather than inert.** 📁 The design's expansion *"keeps the URL
+    // so the expanded view is shareable"* — a control that could not do that
+    // would be advertising a capability the page does not have.
+    expect(screen.queryByRole('button', { name: /focus mode/i })).toBeNull();
+  });
+
+  it('asks the page to expand, rather than expanding itself', async () => {
+    const onToggleExpanded = vi.fn();
+    render(
+      <ResearchPanel
+        id="research"
+        research={research()}
+        onRequest={vi.fn()}
+        isRequesting={false}
+        onToggleExpanded={onToggleExpanded}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /open research in focus mode/i }));
+
+    // ⚡ **The URL is the page's to write**, so the section reports intent and
+    // the page owns `withExpanded`. ⛔ A component writing the query string
+    // would be a second definition of the shareable-view rule.
+    expect(onToggleExpanded).toHaveBeenCalledWith(true);
+  });
+
+  it('leaves focus mode on Escape', async () => {
+    const onToggleExpanded = vi.fn();
+    render(
+      <ResearchPanel
+        id="research"
+        research={research()}
+        onRequest={vi.fn()}
+        isRequesting={false}
+        isExpanded
+        onToggleExpanded={onToggleExpanded}
+      />,
+    );
+
+    await userEvent.keyboard('{Escape}');
+
+    // 📁 ***"Esc returns to the record at the same scroll position."***
+    expect(onToggleExpanded).toHaveBeenCalledWith(false);
+  });
+
+  it('widens the grid in focus mode rather than only renaming a state', async () => {
+    const { container, rerender } = render(
+      <ResearchPanel research={research()} onRequest={vi.fn()} isRequesting={false} />,
+    );
+    const narrow = container.querySelector('[class*="grid-cols"]')?.className ?? '';
+
+    rerender(
+      <ResearchPanel
+        research={research()}
+        onRequest={vi.fn()}
+        isRequesting={false}
+        isExpanded
+        onToggleExpanded={vi.fn()}
+      />,
+    );
+    const wide = container.querySelector('[class*="grid-cols"]')?.className ?? '';
+
+    // 📁 ***"Expansion widens to the full content region."*** ⛔ **A guard that
+    // cannot fail is documentation pretending to be code** (§2) — so the
+    // widening is asserted as a real difference, not as a prop being set.
+    expect(wide).not.toEqual(narrow);
+    expect(wide).toContain('laptop:grid-cols-3');
   });
 });

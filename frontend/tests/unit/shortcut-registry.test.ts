@@ -64,6 +64,12 @@ const LOCAL_TO_A_COMPONENT: Readonly<Record<string, string>> = {
   // drawer above implements — 📁 **not a published chord**: the design's `<1024`
   // band names one control, *"a top-bar button"*, and no key.
   'components/shell/app-shell.tsx': 'Escape closes the navigation sheet while it is open',
+  // ⚡ **Account 360's Research summary, focus mode** — 📁 the design says it
+  // in terms: *"Esc returns to the record at the same scroll position."*
+  // ⛔ **Not a published chord**: it is scoped to a section that is expanded,
+  // and it is only bound while it is — the same contract the drawer above
+  // implements, one surface along.
+  'components/intelligence/research.tsx': 'Escape leaves the section’s focus mode',
 };
 
 

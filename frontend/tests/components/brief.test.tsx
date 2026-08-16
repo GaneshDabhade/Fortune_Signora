@@ -42,7 +42,11 @@ vi.mock('next/navigation', () => ({
   useParams: () => ({ accountId: '22222222-2222-4222-8222-222222222222' }),
   // The account sequence binds `j`/`k` to move through the ranked list. Not
   // this test's subject, and it needs a router to exist.
-  useRouter: () => ({ push: vi.fn(), prefetch: vi.fn() }),
+  useRouter: () => ({ push: vi.fn(), prefetch: vi.fn(), replace: vi.fn() }),
+  // ⚡ **Research's focus mode writes the expanded section into the URL** — 📁
+  // the design: *"keeps the URL so the expanded view is shareable"* — so the
+  // page now reads its own path to rebuild the query without losing it.
+  usePathname: () => '/accounts/22222222-2222-4222-8222-222222222222',
 }));
 
 vi.mock('@/lib/state/workspace-provider', () => ({

@@ -2,7 +2,7 @@
 
 import { ArrowLeft, Briefcase, Lock, Scale } from 'lucide-react';
 import Link from 'next/link';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
 
 import {
@@ -22,8 +22,13 @@ import {
 import { useUtilityPanel } from '@/components/shell/utility-panel';
 import { AbsentSection, OnThisPage } from '@/components/accounts/sections';
 import { AccountSectionShell } from '@/components/accounts/section';
-import { contributionSeverities, correlationOf } from '@/lib/accounts/section-state';
-import { absent } from '@/lib/accounts/sections';
+import {
+  contributionSeverities,
+  correlationOf,
+  expandedSection,
+  withExpanded,
+} from '@/lib/accounts/section-state';
+import { ACCOUNT_SECTIONS, absent } from '@/lib/accounts/sections';
 import { CompetitorContext } from '@/components/intelligence/competitors';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { SystemState } from '@/components/ui/system-state';
@@ -113,6 +118,8 @@ import { ReadingColumn } from '../../reading-column';
 export default function AccountBriefPage() {
   const { accountId } = useParams<{ accountId: string }>();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   /**
    * 🔴 **The entry engine's 403, rendered where it says to render it** —
    * [TASK-1467](../../../../../docs/BACKLOG.md).
@@ -581,6 +588,19 @@ export default function AccountBriefPage() {
               : { correlationId: correlationOf(researchError)! })}
             onRequest={() => requestResearch.mutate()}
             isRequesting={requestResearch.isPending}
+            viewerId={viewerId}
+            kind={accountKind}
+            /* 📁 The design: *"keeps the URL so the expanded view is
+               shareable."* ⚡ **`withExpanded` and `expandedSection` were built
+               with the section law and had NO caller** — this is the first. */
+            isExpanded={expandedSection(searchParams, ACCOUNT_SECTIONS) === 'research'}
+            onToggleExpanded={(next) => {
+              const query = withExpanded(
+                new URLSearchParams(searchParams.toString()),
+                next ? 'research' : null,
+              ).toString();
+              router.replace(query === '' ? pathname : `${pathname}?${query}`, { scroll: false });
+            }}
             {...(score === null
               ? {}
               : {

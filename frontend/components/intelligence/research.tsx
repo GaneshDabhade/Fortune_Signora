@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { ChevronDown, Maximize2, Minimize2, Sparkles } from 'lucide-react';
 
 import { formatDay } from '@/components/intelligence/dates';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
+import { collapseKey } from '@/lib/accounts/section-state';
 import { Badge, Dialog, SkeletonText } from '@/components/ui';
 import type { AccountResearch, ResearchFinding, ResearchStatus } from '@/lib/api/types';
 
@@ -61,6 +62,10 @@ export function ResearchPanel({
   isRequesting,
   isError = false,
   onOpenEvidence,
+  viewerId = null,
+  kind = null,
+  isExpanded = false,
+  onToggleExpanded,
   /**
    * ⚡ **The design's section id, so the *"On this page"* rail can anchor
    * this** — [TASK-1476](../../../docs/BACKLOG.md). ⛔ **Optional**: the page
@@ -87,9 +92,56 @@ export function ResearchPanel({
   /** 📁 The design's *"Open all evidence"* — ⛔ **absent rather than inert**
    *  when the page has no evidence surface to open. */
   onOpenEvidence?: () => void;
+  /** 📁 The collapse law's key is per viewer per account KIND — ⛔ never per
+   *  record ([`collapseKey`](../../lib/accounts/section-state.ts)). */
+  viewerId?: string | null;
+  kind?: string | null;
+  /** ⚡ **Expanded is the URL's**, so the view is shareable — 📁 the design:
+   *  *"keeps the URL so the expanded view is shareable."* */
+  isExpanded?: boolean;
+  onToggleExpanded?: (next: boolean) => void;
 }) {
   const [open, setOpen] = useState<ResearchFinding | null>(null);
   const artifact = research?.artifact ?? null;
+
+  // ── Collapsed ─────────────────────────────────────────────────────────
+  // 📁 *"State persists per user per account type."* ⚡ **The key comes from
+  // the shared law rather than being built here** — ⛔ a second key shape would
+  // be a second definition of a rule `section-state.ts` already owns.
+  const [expandedBody, setExpandedBody] = useState(true);
+  const persistKey = viewerId === null || kind === null || id === undefined
+    ? null
+    : collapseKey(viewerId, kind, id);
+
+  // ⚠️ **Read after mount, never during render** — `localStorage` does not
+  // exist on the server, and a value read during render would make the first
+  // client paint disagree with the server's.
+  useEffect(() => {
+    if (persistKey === null) return;
+    setExpandedBody(window.localStorage.getItem(persistKey) !== 'collapsed');
+  }, [persistKey]);
+
+  const toggleBody = () => {
+    const next = !expandedBody;
+    setExpandedBody(next);
+    if (persistKey !== null) {
+      window.localStorage.setItem(persistKey, next ? 'open' : 'collapsed');
+    }
+  };
+
+  // ── Expanded ──────────────────────────────────────────────────────────
+  // 📁 *"Esc returns to the record at the same scroll position."* ⚡ **Returning
+  // focus to the control is the half usually dropped** — without it a keyboard
+  // reader who leaves focus mode is returned to the top of the document.
+  const leaveFocus = useCallback(() => onToggleExpanded?.(false), [onToggleExpanded]);
+  useEffect(() => {
+    if (!isExpanded) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') leaveFocus();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isExpanded, leaveFocus]);
   const findings = new Map((artifact?.findings ?? []).map((f) => [f.ref, f]));
 
   const artifactCells = artifact === null ? [] : cells(artifact, findings);
@@ -110,17 +162,47 @@ export function ResearchPanel({
           previous generation's wording and had no basis in the finalized
           design — 📁 the design says **Research summary**. */}
       <div className="flex items-center gap-2.5 border-b border-ai bg-ai-subtle px-4 py-3">
-        <span className="grid h-[22px] w-[22px] flex-none place-items-center rounded bg-ai">
+        <span className="grid h-6 w-6 flex-none place-items-center rounded bg-ai">
           <Sparkles aria-hidden className="h-3 w-3 text-surface" />
         </span>
         <div className="min-w-0">
-          <h2 id={id === undefined ? undefined : `${id}-title`} className="text-sm font-semibold tracking-tight text-content">
-            Research summary
+          {/* 🔴 **The button lives INSIDE the heading**, which is the standard
+              disclosure pattern and the one `AccountSectionShell` already
+              earned: ⛔ a heading nested in a button removes the section from
+              the document outline, and 📁 the design requires *"every section
+              is a labelled region WITH A HEADING, reachable by landmark
+              navigation"* — **in every state, collapsed included.** */}
+          <h2
+            id={id === undefined ? undefined : `${id}-title`}
+            className="text-sm font-semibold tracking-tight text-content"
+          >
+            <button
+              type="button"
+              onClick={toggleBody}
+              aria-expanded={expandedBody}
+              aria-controls={id === undefined ? undefined : `${id}-body`}
+              className={[
+                'flex items-center gap-1.5 rounded text-left',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+              ].join(' ')}
+            >
+              <ChevronDown
+                aria-hidden
+                className={['h-3.5 w-3.5 transition-transform', expandedBody ? '' : '-rotate-90'].join(' ')}
+              />
+              Research summary
+            </button>
           </h2>
-          {/* 📁 The design's own subtitle, verbatim. */}
-          <p className="mt-px text-xs text-content-muted">
-            Company, market and relationship research · refreshed weekly, or on demand
-          </p>
+          {/* 📁 The design's own subtitle, verbatim. ⚡ **It folds with the
+              body**: 📁 a collapsed section keeps its COUNT and its worst
+              status, not its description. */}
+          {expandedBody ? (
+            <p className="mt-px pl-5 text-xs text-content-muted">
+              Company, market and relationship research · refreshed weekly, or on demand
+            </p>
+          ) : (
+            <CollapsedSummary research={research} />
+          )}
         </div>
         <Refresh
           research={research}
@@ -128,10 +210,33 @@ export function ResearchPanel({
           isRequesting={isRequesting}
           isError={isError}
         />
+        {onToggleExpanded === undefined ? null : (
+          <button
+            type="button"
+            onClick={() => onToggleExpanded(!isExpanded)}
+            aria-pressed={isExpanded}
+            /* 📁 The design's *"Focus mode"* control. ⛔ **Absent rather than
+               inert** when the page cannot carry the URL that makes the
+               expanded view shareable. */
+            aria-label={isExpanded ? 'Leave focus mode' : 'Open research in focus mode'}
+            className={[
+              'shrink-0 rounded p-1 text-content-subtle',
+              'transition-colors hover:text-content',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+            ].join(' ')}
+          >
+            {isExpanded ? (
+              <Minimize2 aria-hidden className="h-3.5 w-3.5" />
+            ) : (
+              <Maximize2 aria-hidden className="h-3.5 w-3.5" />
+            )}
+          </button>
+        )}
       </div>
 
       {/* ── The body ─────────────────────────────────────────────────────
           ⚡ **Four states share this region and only one of them is the grid.** */}
+      <div id={id === undefined ? undefined : `${id}-body`} hidden={!expandedBody}>
       {isError ? (
         <div className="px-4 py-4">
           <Unavailable {...(correlationId === undefined ? {} : { correlationId })} />
@@ -151,7 +256,15 @@ export function ResearchPanel({
           {/* 📁 *"grid-template-columns:repeat(2,1fr)"* — ⚡ **two columns from
               `smalllaptop` up, one below it**: a 12.5px paragraph in half of a
               phone is four words a line. */}
-          <div className="grid grid-cols-1 smalllaptop:grid-cols-2">
+          <div
+            className={[
+              'grid grid-cols-1',
+              /* 📁 *"Expansion widens to the full content region."* ⚡ **Three
+                 columns at `laptop` in focus mode, two otherwise** — ⛔ the
+                 widening is real rather than a class name. */
+              isExpanded ? 'smalllaptop:grid-cols-2 laptop:grid-cols-3' : 'smalllaptop:grid-cols-2',
+            ].join(' ')}
+          >
             {artifactCells.map((cell) => (
               <ResearchCell key={cell.key} cell={cell} onOpen={(f) => setOpen(f)} />
             ))}
@@ -159,10 +272,41 @@ export function ResearchPanel({
           <Footer artifact={artifact!} onOpenEvidence={onOpenEvidence} />
         </>
       )}
+      </div>
 
       <FindingDialog finding={open} onClose={() => setOpen(null)} />
     </section>
   );
+}
+
+
+/**
+ * 📁 ***"A collapsed section still states its count and its worst status, so
+ * collapsing never hides a risk."***
+ *
+ * ⚡ **The design's own sample is the shape**: *"14 detected · 1 competitor
+ * present"*, *"4 · 1 regulatory, acts on renewal"* — **a count and the thing
+ * worth knowing.**
+ *
+ * ⛔ **Research has no severity to fold** — nothing in `ResearchArtifact`
+ * carries one — **so the count and the run's outcome are what survive**, and no
+ * status dot is invented to fill the slot.
+ */
+function CollapsedSummary({ research }: { research: AccountResearch | null }) {
+  const artifact = research?.artifact ?? null;
+
+  const summary =
+    research === null
+      ? 'Not researched yet'
+      : artifact !== null
+        ? `${artifact.findings.length} ${artifact.findings.length === 1 ? 'comparison' : 'comparisons'} · ${formatDay(artifact.produced_at)}`
+        : research.status === 'nothing_to_research'
+          ? 'Nothing to compare on this account'
+          : research.status === 'failed'
+            ? 'Last run could not finish'
+            : 'Running';
+
+  return <p className="mt-px pl-5 text-xs text-content-muted">{summary}</p>;
 }
 
 /**
@@ -222,6 +366,14 @@ function Footer({
 }: {
   artifact: NonNullable<AccountResearch['artifact']>;
   onOpenEvidence?: () => void;
+  /** 📁 The collapse law's key is per viewer per account KIND — ⛔ never per
+   *  record ([`collapseKey`](../../lib/accounts/section-state.ts)). */
+  viewerId?: string | null;
+  kind?: string | null;
+  /** ⚡ **Expanded is the URL's**, so the view is shareable — 📁 the design:
+   *  *"keeps the URL so the expanded view is shareable."* */
+  isExpanded?: boolean;
+  onToggleExpanded?: (next: boolean) => void;
 }) {
   const sources = new Set(artifact.findings.flatMap((finding) => finding.cites)).size;
 
