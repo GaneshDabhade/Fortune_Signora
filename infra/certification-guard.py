@@ -75,6 +75,51 @@ RULE_RATIFIED_AT = "e44819b89352c4f1f800f665b53501cad6cc2f45"
 CLOSEOUT_PATHS = ("certification/", "docs/", "PROJECT_STATUS.md", "README.md", "CLAUDE.md")
 CLOSEOUT_SUFFIXES = (".md", ".json")
 
+#: Planning projections — regenerated from the registers, read by lanes and by
+#: `infra/coordination.py`, and executed by nothing.
+#:
+#: ⚡ **D-240 §1, on B-1005**, which ruled the repair **path-based and never
+#: suffix-based**: *"recognize the specific authoritative path/role of
+#: `modules.toml`, while `coordination.toml` and `queues/*.toml` keep their
+#: existing projection semantics."*
+#:
+#: ⛔ **`docs/coordination/modules.toml` is DELIBERATELY ABSENT.**
+#: `_audit_claims` reads it — `_git("show", f"{commit}:docs/coordination/modules.toml")`
+#: — so it is an **operand of a gate**, exactly the property `CLOSEOUT_PATHS`
+#: excludes `infra/` for. Admitting it would let an ownership change reach
+#: `main` outside a certified snapshot and silently alter what the claim audit
+#: accepts. That is B-014, one directory over.
+#:
+#: ⚠️ **An allowlist rather than "every `.toml` under `docs/coordination/` except
+#: `modules.toml`", and the direction of the failure is the whole reason.**
+#: A new projection file omitted here classifies as executable and costs one
+#: unnecessary certification. A new *gate operand* added under that directory
+#: would, under a denylist, be absorbed as documentation and become
+#: Closeout-legal without anybody deciding it. **The first is cheap and visible;
+#: the second is the failure this rule exists to prevent.**
+PLANNING_PROJECTIONS = (
+    "docs/coordination/coordination.toml",
+    "docs/coordination/notices.toml",
+    "docs/coordination/workflows.toml",
+)
+
+#: Prefixes whose every `.toml` is a per-lane projection.
+PLANNING_PROJECTION_DIRS = ("docs/coordination/queues/",)
+
+
+def _is_non_executable(path: str) -> bool:
+    """Whether a single changed path can change what the software does.
+
+    **One predicate, shared by `_is_closeout` and the impact classifier.**
+    B-1005 was two classifiers reaching the same blind spot by different
+    routes; they were unified once already, and this keeps them unified.
+    """
+    if path.startswith(CLOSEOUT_PATHS) and path.endswith(CLOSEOUT_SUFFIXES):
+        return True
+    if path in PLANNING_PROJECTIONS:
+        return True
+    return path.startswith(PLANNING_PROJECTION_DIRS) and path.endswith(".toml")
+
 
 def _git(*args: str) -> str:
     result = subprocess.run(
@@ -499,11 +544,7 @@ def _is_closeout(commit: str) -> tuple[bool, list[str]]:
     exactly what this refuses to accept.
     """
     changed = [line for line in _git("show", "--name-only", "--format=", commit).splitlines() if line]
-    offending = [
-        path
-        for path in changed
-        if not (path.startswith(CLOSEOUT_PATHS) and path.endswith(CLOSEOUT_SUFFIXES))
-    ]
+    offending = [path for path in changed if not _is_non_executable(path)]
     return (not offending and bool(changed)), offending
 
 
@@ -669,7 +710,7 @@ def _impacts(paths: list[str]) -> dict[str, set[str]]:
         # classifiers in one file, disagreeing on their first disagreement.**
         # That is the exact failure this design was written to avoid, so the
         # rule is shared rather than restated.
-        if not hits and path.startswith(CLOSEOUT_PATHS) and path.endswith(CLOSEOUT_SUFFIXES):
+        if not hits and _is_non_executable(path):
             hits = {"documentation"}
         if not hits:
             hits = {"platform"}
