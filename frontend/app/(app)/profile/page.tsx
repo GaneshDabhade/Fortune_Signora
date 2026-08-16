@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 
 import { auth } from '@/lib/auth/server';
 
+import { AccessibilityPanel } from './accessibility-panel';
 import { AiPanel } from './ai-panel';
 import { AppearancePanel } from './appearance-panel';
 import { LocalePanel } from './locale-panel';
@@ -37,7 +38,23 @@ export default async function ProfilePage() {
       <ProfilePanel name={user?.name ?? null} email={user?.email ?? ''} />
       <LocalePanel />
       <AppearancePanel />
+      {/* 📁 **The design's `04 · Accessibility`.** ⚡ **In the design's own
+          order** — it sits directly after Appearance, before AI preferences. */}
+      <AccessibilityPanel />
       <AiPanel />
+
+      {/* ⛔ **Keyboard shortcuts is deliberately NOT here.**
+
+          📁 The design gives User Profile a *Keyboard shortcuts* section, and
+          **`SHORTCUT_GROUPS` is already rendered by the shell's Shortcuts
+          overlay** ([`shortcuts-reference.tsx`](../../../components/shell/shortcuts-reference.tsx)).
+          ⚡ **The registry is the single source and the overlay is its
+          canonical surface** — a second reference here would be two lists of
+          one truth, disagreeing the first time a chord changes.
+
+          ⚠️ **The design's section is a REFERENCE, not a customiser**: its
+          items carry a label and keys and nothing editable, so there is no
+          behaviour here that the overlay does not already provide. */}
 
       {/**
        * 🔴 **The Security Center's entrance** —

@@ -69,6 +69,24 @@ const DATA_USE = [
     detail: 'Never. Not for your organization, and not for anyone else’s.',
     holds: false,
   },
+  {
+    // 🔴 **The design offers this as a TOGGLE — *"Write risk flags to the
+    // CRM"* — and Signora cannot honour one.** ⚡ **Measured rather than
+    // assumed**: the provider port's verbs are `store_records`,
+    // `save_watermark` and `get`, all inbound. **There is no write path to a
+    // connected system anywhere in the contract.**
+    //
+    // ⛔ **So it is stated as a fact rather than rendered as a control.** 📁
+    // The precedent is this file's own line three above and
+    // [`navigation.tsx`](../../../components/shell/navigation.tsx)'s: *"an
+    // entry that leads nowhere advertises absence"* — **and a disabled toggle
+    // would invite the question of who may enable it**, which is the sentence
+    // twelve lines up.
+    fact: 'Written back to your connected systems',
+    detail:
+      'Never. Signora reads from your CRM and calendar; it does not write to them. Risk flags stay in Signora.',
+    holds: false,
+  },
 ] as const;
 
 export function AiPanel() {

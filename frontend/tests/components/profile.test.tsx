@@ -330,7 +330,9 @@ describe('screen 04 · consent must read as consent', () => {
     render(<AiPanel />);
 
     expect(await screen.findByText(/Never\. Not for your organization/)).toBeInTheDocument();
-    expect(screen.getByText(': never')).toBeInTheDocument();
+    // ⚡ **Two facts now read `never`** — training, and writing back to a
+    // connected system — so this asks for the marks rather than the one.
+    expect(screen.getAllByText(': never')).toHaveLength(2);
   });
 
   it('⚠️ does not claim a workspace confidence floor that does not exist', async () => {
@@ -351,13 +353,35 @@ describe('screen 04 · consent must read as consent', () => {
     expect(changePreferences).toHaveBeenCalledWith('ws-1', { always_show_citations: true });
   });
 
-  it('⛔ offers no control for writing to the CRM, because no workspace policy exists', async () => {
-    // The design draws it as "switched off for everyone in this workspace".
-    // That is a workspace setting and none exists — C-249.
+  it('⛔ offers no CONTROL for writing to the CRM, and states the fact instead', async () => {
+    /**
+     * ⚠️ **The reason is unchanged and the assertion is narrower.**
+     *
+     * 📁 The design draws this as *"switched off for everyone in this
+     * workspace"* — **a workspace setting, and none exists**
+     * ([C-249](../../../docs/LANE_COORDINATION.md)). ⛔ **So there is still no
+     * toggle, and a disabled one would invite the question of who may enable
+     * it.**
+     *
+     * ✅ **What changed is that the absence is now STATED rather than silent.**
+     * ⚡ **Measured before it was written**: the provider port's verbs are
+     * `store_records`, `save_watermark` and `get` — **all inbound, with no
+     * write path to a connected system anywhere in the contract** — so *"it
+     * does not write to them"* is a fact this screen can defend.
+     *
+     * 🔴 **The original assertion was `queryByText(/risk flags/i)` is null**,
+     * which forbade the words as well as the control. **This forbids the
+     * control**, which is what C-249 was about.
+     */
     render(<AiPanel />);
     await screen.findByText('AI preferences');
 
-    expect(screen.queryByText(/risk flags/i)).toBeNull();
+    expect(screen.queryByRole('checkbox', { name: /risk flags/i })).toBeNull();
+    expect(screen.queryByRole('switch', { name: /risk flags/i })).toBeNull();
+    expect(screen.queryByRole('radio', { name: /risk flags/i })).toBeNull();
+    // ✅ **And the fact is present**, so removing it fails here rather than
+    // leaving the screen silent about a capability the design promises.
+    expect(screen.getByText(/does not write to them/i)).toBeInTheDocument();
   });
 });
 
