@@ -114,6 +114,20 @@ export function AppearancePanel() {
         </p>
       ) : null}
 
+      {/* 🔴 **The controls appear when they can work, and not before.**
+
+          ⛔ **They were rendered while the read was still in flight**, and the
+          optimistic update bails when there is no current value to spread over
+          — so a click moved nothing and the screen said nothing. ⚡ **The
+          headed journey reported it as *"clicking did not change its
+          state"***, which is [B-255](../../../../docs/BUGS.md)'s shape: a
+          control that silently does nothing is worse than one that is absent.
+
+          ✅ **The loading line above is the stated wait.** ⛔ **Not `disabled`
+          on `SegmentedControl`** — that prop does not exist, and adding one to
+          a shared component to suit one page is what [§20c](../../../../CLAUDE.md)
+          forbids. */}
+      {prefs === null ? null : (
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-1.5">
           <SegmentedControl
@@ -137,6 +151,7 @@ export function AppearancePanel() {
           <FieldOriginTag origin="yours" className="self-start" />
         </div>
       </div>
+      )}
 
       {/* A status, not an alert — 4.1.3. Changing a theme should not interrupt. */}
       <p role="status" className="text-sm text-content-muted">

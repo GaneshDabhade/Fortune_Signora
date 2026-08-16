@@ -144,16 +144,27 @@ test.describe('Workflow 9 · a person makes Signora theirs', () => {
    * from, not to this browser"* — **and only a reload proves the round trip.**
    */
   test('@journey every accessibility preference survives a reload', async ({ page }) => {
+    /**
+     * ⚡ **Declared slow rather than trimmed.**
+     *
+     * ⛔ **Six preferences set, a reload, six read back and six restored is
+     * TWELVE round trips**, each its own `PATCH` — and it exceeded the default
+     * 60s. ✅ **`test.slow()` is Playwright's own mechanism for a scenario that
+     * is legitimately long**; ⛔ **dropping the restore or asserting a subset
+     * would make it faster by verifying less**, which is the trade this file
+     * exists not to make.
+     */
+    test.slow();
     await openProfile(page);
     await expect(page.getByRole('heading', { name: 'Accessibility' })).toBeVisible();
     // ⚡ **The controls are disabled until the read lands**, so a click before
     // then would be a click on a stated wait rather than on a preference.
-    await expect(page.getByRole('checkbox', { name: /Reduce motion/ })).toBeEnabled();
+    await expect(page.getByRole('checkbox', { name: /^Reduce motion\b/ })).toBeEnabled();
 
-    const reduceMotion = page.getByRole('checkbox', { name: /Reduce motion/ });
-    const contrast = page.getByRole('checkbox', { name: /Increase contrast/ });
-    const focusRing = page.getByRole('checkbox', { name: /Always show focus ring/ });
-    const underline = page.getByRole('checkbox', { name: /Underline links/ });
+    const reduceMotion = page.getByRole('checkbox', { name: /^Reduce motion\b/ });
+    const contrast = page.getByRole('checkbox', { name: /^Increase contrast\b/ });
+    const focusRing = page.getByRole('checkbox', { name: /^Always show focus ring\b/ });
+    const underline = page.getByRole('checkbox', { name: /^Underline links\b/ });
 
     // 📁 **The design's defaults**: links underlined, everything else off.
     // ⛔ **Reduce motion off does NOT mean *animate everything*** — the
@@ -166,28 +177,28 @@ test.describe('Workflow 9 · a person makes Signora theirs', () => {
     await contrast.check();
     await focusRing.check();
     await underline.uncheck();
-    await page.getByRole('radio', { name: '125%' }).check();
-    await page.getByRole('radio', { name: 'Concise' }).check();
+    await page.getByRole('radio', { name: /^125%$/ }).check();
+    await page.getByRole('radio', { name: /^Concise$/ }).check();
     await expect(page.getByText('Saved').first()).toBeVisible();
 
     await page.reload();
     await expect(page.getByRole('heading', { name: 'Accessibility' })).toBeVisible();
 
-    await expect(page.getByRole('checkbox', { name: /Reduce motion/ })).toBeChecked();
-    await expect(page.getByRole('checkbox', { name: /Increase contrast/ })).toBeChecked();
-    await expect(page.getByRole('checkbox', { name: /Always show focus ring/ })).toBeChecked();
-    await expect(page.getByRole('checkbox', { name: /Underline links/ })).not.toBeChecked();
-    await expect(page.getByRole('radio', { name: '125%' })).toBeChecked();
-    await expect(page.getByRole('radio', { name: 'Concise' })).toBeChecked();
+    await expect(page.getByRole('checkbox', { name: /^Reduce motion\b/ })).toBeChecked();
+    await expect(page.getByRole('checkbox', { name: /^Increase contrast\b/ })).toBeChecked();
+    await expect(page.getByRole('checkbox', { name: /^Always show focus ring\b/ })).toBeChecked();
+    await expect(page.getByRole('checkbox', { name: /^Underline links\b/ })).not.toBeChecked();
+    await expect(page.getByRole('radio', { name: /^125%$/ })).toBeChecked();
+    await expect(page.getByRole('radio', { name: /^Concise$/ })).toBeChecked();
 
     // ⚡ **Left as the design's defaults**, so this journey does not hand the
     // next one a screen it did not expect.
-    await page.getByRole('checkbox', { name: /Reduce motion/ }).uncheck();
-    await page.getByRole('checkbox', { name: /Increase contrast/ }).uncheck();
-    await page.getByRole('checkbox', { name: /Always show focus ring/ }).uncheck();
-    await page.getByRole('checkbox', { name: /Underline links/ }).check();
-    await page.getByRole('radio', { name: '100%' }).check();
-    await page.getByRole('radio', { name: 'Detailed' }).check();
+    await page.getByRole('checkbox', { name: /^Reduce motion\b/ }).uncheck();
+    await page.getByRole('checkbox', { name: /^Increase contrast\b/ }).uncheck();
+    await page.getByRole('checkbox', { name: /^Always show focus ring\b/ }).uncheck();
+    await page.getByRole('checkbox', { name: /^Underline links\b/ }).check();
+    await page.getByRole('radio', { name: /^100%$/ }).check();
+    await page.getByRole('radio', { name: /^Detailed$/ }).check();
   });
 
   /**
@@ -200,20 +211,30 @@ test.describe('Workflow 9 · a person makes Signora theirs', () => {
   test('@journey the theme offers System and keeps it as System', async ({ page }) => {
     await openProfile(page);
     await expect(page.getByRole('heading', { name: 'Appearance' })).toBeVisible();
-    await expect(page.getByRole('radio', { name: 'System' })).toBeEnabled();
+    await expect(page.getByRole('radio', { name: /^System\b/ })).toBeEnabled();
 
-    for (const label of ['Light', 'Dark', 'System']) {
+    /**
+     * ⚠️ **Anchored at the START of the accessible name, and that is the whole
+     * fix.** ⛔ **`{ name: 'Light' }` matched TWO radios**: the design's own
+     * supporting line for Dark is *"For low light and long sessions"*, and the
+     * accessible name of a segmented option is its label plus that line.
+     *
+     * ✅ **The product is unchanged** — the descriptions are the design's, and
+     * removing one to make a locator unambiguous would be the test dictating
+     * the screen.
+     */
+    for (const label of [/^Light\b/, /^Dark\b/, /^System\b/]) {
       await expect(page.getByRole('radio', { name: label })).toBeVisible();
     }
 
-    await page.getByRole('radio', { name: 'Dark' }).check();
+    await page.getByRole('radio', { name: /^Dark\b/ }).check();
     await expect(page.getByText('Saved').first()).toBeVisible();
-    await page.getByRole('radio', { name: 'System' }).check();
+    await page.getByRole('radio', { name: /^System\b/ }).check();
     await page.reload();
 
     // ⛔ **Still `System` after a round trip.** A screen that read it back as
     // `Dark` would have resolved the deferral on the server's behalf.
-    await expect(page.getByRole('radio', { name: 'System' })).toBeChecked();
+    await expect(page.getByRole('radio', { name: /^System\b/ })).toBeChecked();
   });
 
   /**
