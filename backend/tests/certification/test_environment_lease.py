@@ -97,7 +97,25 @@ class TestAKilledRunDoesNotBlockForever:
     in cycle 25. A lease surviving it would turn one stuck run into a
     permanently stuck repository."""
 
-    def test_a_lease_held_by_a_dead_process_is_reclaimed(self) -> None:
+    def test_a_lease_held_by_a_dead_process_is_reclaimed(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """⚡ **Amended for [B-436](../../../docs/BUGS.md), and the amendment is
+        the condition this test always assumed without saying so.**
+
+        **A killed run must still not block forever** — that guarantee is
+        unchanged and is what this class is named for. ⛔ **What changed is that
+        a dead pid alone no longer proves the machine is free**: it now reclaims
+        only where the stack is *evidenced idle*.
+
+        🔴 **And the stack state is now pinned rather than inherited.** Before
+        B-436 nothing consulted docker, so this test passed on any workstation.
+        Afterwards its result would depend on whichever containers happened to
+        be running on the machine — **a hidden input** (`CLAUDE.md` §2), and one
+        that would have made this test pass on CI and fail on a developer's
+        laptop with a stack up.
+        """
+        monkeypatch.setattr(lease, "_running_containers", lambda: [])
         lease._lease_path().write_text(
             json.dumps(
                 {
@@ -111,6 +129,24 @@ class TestAKilledRunDoesNotBlockForever:
         )
         assert lease.holder() is None
         assert not lease._lease_path().exists()
+
+    def test_a_dead_process_does_NOT_reclaim_a_stack_that_is_still_running(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """🔴 **The half this class was missing — [B-436](../../../docs/BUGS.md).**
+
+        ⛔ **QE's near-miss**: the recorded pid was dead *and* another clone had a
+        live run the record never knew about. **A plain retry would have
+        reclaimed the environment and run beside it**, with no force and no
+        message — doing automatically what QE had correctly declined to do by
+        hand.
+        """
+        monkeypatch.setattr(lease, "_running_containers", lambda: ["signora-v2-postgres-1"])
+        lease._lease_path().write_text(
+            json.dumps({"id": "dead00000002", "label": "dr", "pid": 2**30})
+        )
+        assert lease.holder() is not None
+        assert lease._lease_path().exists()
 
     def test_a_partially_written_lease_is_not_a_permanent_block(self) -> None:
         """A process killed mid-acquire leaves a truncated file."""

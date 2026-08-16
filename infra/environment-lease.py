@@ -180,22 +180,96 @@ def _read() -> dict[str, Any] | None:
         return None
 
 
+def _running_containers() -> list[str] | None:
+    """The stack's containers that are up, or ``None`` if nothing can be asked.
+
+    **[B-436](../docs/BUGS.md).** The pid was only ever a *proxy* for the
+    question the lease actually asks — *is this stack busy?* This asks the
+    stack.
+
+    ⛔ **``None`` and ``[]`` are different answers and must not be collapsed.**
+    ``[]`` is *"docker answered, and nothing is running"*; ``None`` is *"nobody
+    answered"*. A helper returning ``[]`` for both would turn "I could not tell"
+    into "it is free", which is the whole defect this exists to remove.
+    """
+    project = _compose_project_from_file()
+    if project is None:
+        return None
+    try:
+        result = subprocess.run(
+            ["docker", "ps", "--filter", f"label=com.docker.compose.project={project}",
+             "--format", "{{.Names}}"],
+            capture_output=True, text=True, timeout=10, check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        # ⚡ No docker on this workstation means no compose stack on it either,
+        # so there is nothing a second run could contaminate. Distinct from
+        # docker answering with an error, which is handled below.
+        return None
+    if result.returncode != 0:
+        return None
+    return [name for name in result.stdout.split() if name]
+
+
 def holder() -> dict[str, Any] | None:
-    """The live holder, if any. **A stale lease is reclaimed silently** — it
-    describes a process that no longer exists, and reporting it as a conflict
-    would send the operator hunting for something that already died."""
+    """The live holder, if any.
+
+    ## 🔴 A dead pid is evidence about the RECORD, not about the MACHINE — B-436
+
+    **This used to reclaim silently on a dead pid**, and its reasoning was
+    sound for the case it was written for: a crashed run leaving a lock nobody
+    can clear. ⛔ **It was wrong for the case QE hit** — the recorded pid was
+    dead *and* another clone had a live run the record never knew about. **A
+    plain retry of ``make dr`` would have reclaimed and run, with no force, no
+    prompt and no ``BLOCKED`` message.** QE judged that a dead pid did not prove
+    the machine was free and declined to force; this function would have done it
+    for them, without the judgement.
+
+    ✅ **So a dead pid now asks the stack before reclaiming.** The fix is
+    deliberately neither *never reclaim* nor *always reclaim* — B-436 records
+    that both failure modes are real — but a third behaviour: **reclaim only
+    where there is evidence the stack is idle, and fall back to the previous
+    behaviour only where there is no evidence either way.**
+
+    ⚡ **Strictly better, never worse.** Where nothing can be asked, this does
+    exactly what it did before. Where docker answers, it answers the question
+    the lease was always trying to ask.
+    """
     current = _read()
     if current is None:
         return None
-    if not _alive(int(current.get("pid", -1))):
-        _lease_path().unlink(missing_ok=True)
-        return None
-    return current
+    if _alive(int(current.get("pid", -1))):
+        return current
+
+    running = _running_containers()
+    if running:
+        # 🔴 **The record is stale AND the stack is busy** — precisely QE's
+        # near-miss. ⛔ Reclaiming here hands a live stack to a second run.
+        # ✅ The containers replace the pid as the evidence, so the operator is
+        # sent to something that exists rather than hunting a dead process.
+        return {
+            **current,
+            "pid": "gone",
+            "label": current.get("label", "?"),
+            "evidence": (
+                f"the recorded process is gone, and {len(running)} container(s) "
+                f"of this stack are still running: {', '.join(sorted(running)[:4])}"
+            ),
+        }
+
+    # ✅ Nothing is running, or nothing could be asked. Reclaim, as before.
+    _lease_path().unlink(missing_ok=True)
+    return None
 
 
 def _describe(current: dict[str, Any]) -> str:
     started = current.get("started_at", "?")
     clone = current.get("clone")
+    # ⚡ **B-436** — where the pid is gone but the stack is up, the containers
+    # ARE the evidence, and naming the dead pid would send the operator hunting
+    # for something that already died.
+    if evidence := current.get("evidence"):
+        return f"    {current.get('label', '?')}  — {evidence}"
     where = "" if clone in (None, str(REPO_ROOT)) else f"\n    in {clone}"
     mine = "  (this clone)" if clone == str(REPO_ROOT) else ""
     return (
