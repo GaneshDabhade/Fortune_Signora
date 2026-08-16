@@ -1,12 +1,15 @@
 'use client';
 
-import { ArrowLeft, Lock, Scale } from 'lucide-react';
+import { ArrowLeft, Briefcase, Lock, Scale } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
 
 import {
   ContestedMark,
+  HeldSince,
+  Ownership,
+  ScoreMovement,
   EvidenceHealth,
   WhyNow,
 } from '@/components/intelligence/attention';
@@ -579,6 +582,80 @@ export default function AccountBriefPage() {
             onRequest={() => requestResearch.mutate()}
             isRequesting={requestResearch.isPending}
           />
+
+          {/* ⚡ **`id="opportunities"`** — [TASK-1483](../../../../docs/BACKLOG.md).
+              📁 `lib/accounts/sections.ts` has marked this section `supplied`
+              since [TASK-1476](../../../../docs/BACKLOG.md), and *On this page*
+              has linked to it — ⛔ **at nothing.** 🔴 **The anchor existed and
+              the section did not**, so a rep clicking *Open opportunities*
+              landed wherever the browser gave up.
+
+              ✅ **PRESENTATION ONLY.** ⚡ **`useAccountOpportunity` was already
+              imported, already called, and its data already rendered twice
+              further down** — so this adds no contract, no endpoint, no read
+              and no seed. **It gives the page's own data the section the design
+              draws for it.**
+
+              ⛔ **Not the deal record** — 📁 [TASK-1469](../../../../docs/BACKLOG.md)
+              is a different screen and is `SEQUENCED` on a `Deals` route that
+              does not exist. */}
+          <AccountSectionShell
+            id="opportunities"
+            heading="Open opportunities"
+            // ⛔ **No severity.** ⚡ **An opportunity's stage is not a
+            // judgement about the account** — the header folds severities into
+            // a summary mark, and inventing one here would put a verdict on a
+            // section whose whole content is *where this stands*.
+            severities={[]}
+            viewerId={viewerId}
+            kind={accountKind}
+            isLoading={isLoading}
+            lastKnownCount={opportunity ? 1 : 0}
+          >
+            {workflowUnavailable ? (
+              /* 🔴 **[P-A](../../../../docs/DOMAIN_DISCOVERY_REGISTER.md): a
+                 failed read must never render as an empty result.** ⛔ **On
+                 this section the empty result reads *nobody is working this
+                 account*, which is a statement about the team rather than
+                 about the request.**
+
+                 ✅ **`workflowUnavailable` is REUSED rather than a second
+                 split** — 📁 it already exists above for exactly this, and a
+                 parallel `neverQualified` would have been two answers to one
+                 question ([§2](../../../../CLAUDE.md)). */
+              <StatedAbsence as="card" icon={Briefcase} subject="this account's opportunity" />
+            ) : opportunity ? (
+              <Card>
+                <CardBody className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3">
+                  <HeldSince stage={opportunity.stage} since={opportunity.opened_at} />
+                  <Ownership
+                    ownerId={opportunity.owner_id}
+                    stage={opportunity.stage}
+                    viewerId={viewerId}
+                  />
+                  {/* ⚠️ **`AccountOpportunity` carries `score_change_since_open`
+                      and NO `trend`** — measured, not assumed. ⛔ **So the
+                      direction is passed as `null` rather than derived from the
+                      sign of the change**: the contract that owns trend is
+                      `AccountAttention`'s, and computing one here would be a
+                      second author for a field this module does not own
+                      ([§2](../../../../CLAUDE.md)). */}
+                  <ScoreMovement trend={null} change={opportunity.score_change_since_open} />
+                  <ContestedMark contested={opportunity.contested_at_open} />
+                </CardBody>
+              </Card>
+            ) : (
+              /* ⚠️ **Empty is *nobody has taken this on*, and it is a real
+                 answer rather than a gap.** ⛔ **Distinct from the error above,
+                 which is the request failing** — 📁 the 404/outage split this
+                 page already draws for narration and research. */
+              <EmptyState
+                icon={Briefcase}
+                title="Nobody is working this account yet"
+                description="An opportunity opens when somebody qualifies this account. Until then there is nothing here to track."
+              />
+            )}
+          </AccountSectionShell>
 
           {/* **After the reasoning, before the evidence.** Somebody asking
               what happened here before them is asking a different question
