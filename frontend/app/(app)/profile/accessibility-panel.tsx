@@ -101,7 +101,23 @@ export function AccessibilityPanel() {
     setPrefs((current) => (current === null ? current : { ...current, ...changes }));
     setStatus('saving');
     try {
-      setPrefs(await changePreferences(workspaceId, changes));
+      const saved = await changePreferences(workspaceId, changes);
+      /**
+       * 🔴 **Merge the keys THIS call changed, never the whole response.**
+       *
+       * ⛔ **Replacing `prefs` wholesale lost preferences.** ⚡ **Six controls
+       * changed in quick succession are six `PATCH`es in flight, and a slower
+       * earlier response lands AFTER a faster later one** — carrying the state
+       * from before the later change and silently undoing it. **The headed
+       * journey caught it as a preference that did not survive a reload.**
+       *
+       * ✅ **The server stays authoritative for what it was asked to change**,
+       * and the local copy keeps every other field — so an out-of-order
+       * response can no longer clobber a sibling.
+       */
+      setPrefs((current) =>
+        current === null ? saved : { ...current, ...(changes as Partial<Preferences>) },
+      );
       setStatus('saved');
     } catch {
       setStatus('error');

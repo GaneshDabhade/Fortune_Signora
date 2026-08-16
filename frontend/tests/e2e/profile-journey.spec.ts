@@ -197,8 +197,23 @@ test.describe('Workflow 9 · a person makes Signora theirs', () => {
     await contrast.setChecked(true);
     await focusRing.setChecked(true);
     await underline.setChecked(false);
-    await page.getByRole('radio', { name: /^125%$/ }).check();
-    await page.getByRole('radio', { name: /^Concise$/ }).check();
+    /**
+     * 🔴 **Clicked by label, and the trace is why.**
+     *
+     * ⛔ **`.check()` on the input never completes**: the trace's own words are
+     * *"`<span>125%</span>` … subtree intercepts pointer events"*, and
+     * Playwright retried the click every 500ms until the scenario timed out.
+     * ⚡ **`SegmentedControl` draws the option as a `<label>` wrapping a native
+     * radio**, so the input is behind its own label by design.
+     *
+     * ✅ **Clicking the label is what a person does**, and it is not a
+     * weakening: the assertions below still read `toBeChecked()` on the input.
+     * ⛔ **`force: true` would have been the weakening** — it clicks through
+     * whatever is on top, which is exactly the class of defect a journey exists
+     * to catch.
+     */
+    await page.getByText('125%', { exact: true }).click();
+    await page.getByText('Concise', { exact: true }).click();
     await expect(page.getByText('Saved').first()).toBeVisible();
 
     await page.reload();
@@ -217,8 +232,8 @@ test.describe('Workflow 9 · a person makes Signora theirs', () => {
     await page.getByRole('checkbox', { name: /^Increase contrast\b/ }).setChecked(false);
     await page.getByRole('checkbox', { name: /^Always show focus ring\b/ }).setChecked(false);
     await page.getByRole('checkbox', { name: /^Underline links\b/ }).setChecked(true);
-    await page.getByRole('radio', { name: /^100%$/ }).check();
-    await page.getByRole('radio', { name: /^Detailed$/ }).check();
+    await page.getByText('100%', { exact: true }).click();
+    await page.getByText('Detailed', { exact: true }).click();
   });
 
   /**
