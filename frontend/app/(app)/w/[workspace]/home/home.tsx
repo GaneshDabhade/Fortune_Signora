@@ -70,8 +70,18 @@ import type { WorkspaceRole } from '@/lib/state/permissions';
  * nothing. ⛔ **That is the resolver's decision, not this file's**, and it is
  * why nothing here branches on a role.
  *
- * ⛔ **`REGISTRY` is empty: no module has contributed a card.** ✅ **So Home
- * renders its question and says what is missing** — 📁 the row's own words,
+ * ⚠️ **`REGISTRY` held NOTHING when this file was written and holds TWO now** —
+ * `connect-calls` and `pipeline-health`, contributed by
+ * [TASK-1425](../../../../../../docs/BACKLOG.md). 🔴 **This line said *"`REGISTRY`
+ * is empty"* until 2026-08-16 and it was read as current**: it nearly cost Lane
+ * C a verification, because **this is the file somebody opens to decide whether
+ * Home can replace `/`.** ⛔ **A doc-comment that was true when written and
+ * asserts a state the code has left is the [B-252](../../../../../../docs/BUGS.md)
+ * class**, and an enumeration is the shape most likely to go stale.
+ *
+ * ✅ **The reasoning below is unchanged and still governs**: **where the
+ * resolver's composition contributes no renderable card, Home renders its
+ * question and says what is missing** — 📁 the row's own words,
  * *"an empty Home is a designed state, not a failure"* — and
  * [§20c](../../../../../../CLAUDE.md): **a screen with no shipped module behind
  * it ships a designed empty state, never invented cards.**
