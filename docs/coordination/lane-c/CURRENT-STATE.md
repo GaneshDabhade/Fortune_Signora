@@ -51,6 +51,12 @@
 
 ⚠️ **Everything else visible in the register is routing, not a decision.** The queue was measured at **29 live items, not 60** — the difference was five ownership/state schemas, one of which a single-schema sweep cannot see.
 
+### ⚠️ Ruled but not actionable — one operational step, tracked here so it does not go quiet
+
+| | |
+|---|---|
+| 🟠 **C-1525 / [TASK-202](../../BACKLOG.md)** | ✅ **RULED [D-240](../../DECISION_REGISTER.md) §3: proceed with the evaluation-only hosted credential.** 🔴 **But approved is not configured, and the row unblocks on the KEY, not the ruling.** 📁 **Verified: `ai_platform/infrastructure/composition.py:108` — `if settings.openai_api_key:` — so a hosted vendor is registered only where its credential is present, and `backend/.env` carries ZERO configured keys.** ⛔ **With no key, `for_model` resolves nothing and `make eval-reasoning` measures the same local model that already failed twice.** ⚡ **So the row stays `BLOCKED`, correctly, and Lane A reported that rather than flipping it on the ruling** — 📁 **the five states: PRODUCT OWNER APPROVED is not AVAILABLE FOR IMPLEMENTATION.** ✅ **The remaining step is operational, not a decision: somebody configures the credential. Then Lane A takes the row in the same poll and one command discharges Epic G's blocker** |
+
 ## Lanes
 
 | | |
