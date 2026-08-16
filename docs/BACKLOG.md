@@ -3792,7 +3792,7 @@
 |---|---|
 | **Epic** | **Epic H**, [437](architecture/437-ai-platform-future-epic.md) |
 | **Module** | `ai_platform` |
-| **Status** | **`SEQUENCED`** — after [TASK-420](#task-420) |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-15, on the supply investigation.** ⚡ **Its stated predecessor has landed: [TASK-420](#task-420)'s commit `b0048fea` — *a second hosted vendor reaches production* — is on `origin/integration`, verified with `git log origin/integration --grep=TASK-420`.** ⚠️ **The row itself reads `IN VALIDATION` rather than `PROMOTED`, and released on that basis per [D-169](DECISION_REGISTER.md) — *"Lane A should never stop and wait"* — but the stronger fact is that the CODE is on the ref a lane builds from, not merely the claim.** **Was:** ⏸️ **`SEQUENCED` — after TASK-420** |
 | **Objective** | **A masking pass at the port boundary, and a Security Invariant that fails when an unmasked field crosses it** |
 | **Why it is the largest true gap** | **Measured 2026-08-05: `pii`, `redact` and `mask` appear in zero files under `ai_platform`.** Every inference sends an evidence set to a third party and **nothing inspects it first** |
 | **Needs first** | **ADR-C — what is masked, by whom, and how the invariant proves it.** A masking rule with no executable check is a comment |
