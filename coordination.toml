@@ -9,26 +9,26 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "1dc2c39"
+generated_from = "fa8cae0"
 task_count     = 56
 
 [lane.Lane_A]
-notice             = "NOTICE WITHHELD — it names TASK-495 as work for this lane, and none of them is in this lane's computed backlog (D-144, B-221). Either the row is not yet integrated, or it belongs to another lane. Read the backlog array in this file for what is actually claimable."
-backlog            = ["TASK-421", "TASK-1416", "TASK-1424", "TASK-1478"]
+notice             = "Workflow 13 is the product owner's single sequence and TASK-1484 is now on integration, so the palette and the status pill are claimable the moment the bell lands. The design names SEVEN palette groups; shell-palette.tsx quotes it as four, which is why it reads finished. Render what /ready already returns. Do not touch the filter strip or invent a context drawer."
+backlog            = ["TASK-421", "TASK-1416", "TASK-1424", "TASK-1478", "TASK-1484"]
 assigned_total     = 47
-claimable          = 6
-claimable_now      = 4
-awaiting_sync      = 2
-in_flight          = 22
-actionable         = 7
+claimable          = 5
+claimable_now      = 5
+awaiting_sync      = 0
+in_flight          = 23
+actionable         = 6
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 19
-lane_utilization   = 4.4
-idle_prediction_days   = 0.9
-dependency_wait_days   = 4.3
-blocked_duration_days  = 1.7
+lane_utilization   = 4.6
+idle_prediction_days   = 0.7
+dependency_wait_days   = 4.4
+blocked_duration_days  = 1.8
 critical_path_max      = 2
 
 [lane.Lane_C]
@@ -46,8 +46,8 @@ supply_state       = "working"
 blocked            = 3
 lane_utilization   = 0.4
 idle_prediction_days   = 0.1
-dependency_wait_days   = 3.2
-blocked_duration_days  = 3.2
+dependency_wait_days   = 3.3
+blocked_duration_days  = 3.3
 critical_path_max      = 0
 
 [[task]]
@@ -63,7 +63,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— on [R11-06](architecture/39-product-review-findings.md)'s own trigge"
 waiting_for    = "— on [R11-06](architecture/39-product-review-findings.md)'s own trigger: **real reviewer evidence**.** ✅ **[C-338](LANE_COORDINATION.md) is `CLOSED`, "
-blocked_days   = 3.2
+blocked_days   = 3.3
 on_integration = true
 
 [[task]]
@@ -271,7 +271,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 4.3
+blocked_days   = 4.4
 on_integration = true
 
 [[task]]
@@ -357,24 +357,8 @@ on_integration = true
 [[task]]
 id            = "TASK-1482"
 title         = "Remove the legacy `Attention` navigation entry"
-state         = "ASSIGNED"
-declared      = "READY"
-lane          = "Lane A"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = false
-
-[[task]]
-id            = "TASK-1483"
-title         = "Account 360's Opportunities section — the contract already works"
 state         = "IN FLIGHT"
-declared      = "CLAIMED"
+declared      = "IN VALIDATION"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
@@ -384,7 +368,23 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
+
+[[task]]
+id            = "TASK-1483"
+title         = "Account 360's Opportunities section — the contract already works"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-1484"
@@ -400,7 +400,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-200"
@@ -479,7 +479,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 4.3
+blocked_days   = 4.4
 on_integration = true
 
 [[task]]
@@ -758,7 +758,7 @@ on_integration = true
 id            = "TASK-495"
 title         = "Notification delivery through the ratified vendor"
 state         = "IN FLIGHT"
-declared      = "CLAIMED"
+declared      = "IN PROGRESS"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
@@ -768,7 +768,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-496"
@@ -879,7 +879,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION."
 waiting_for    = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION.md), both `OPEN` and both the product owner's.** ⛔ **Corrected from `READY` by L"
-blocked_days   = 3.2
+blocked_days   = 3.3
 on_integration = true
 
 [[task]]
@@ -895,7 +895,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved ou"
 waiting_for    = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved out of `READY` by Lane C, 2026-08-05**, on [C-412](LANE_COORDINATION.md)'s finding"
-blocked_days   = 3.2
+blocked_days   = 3.3
 on_integration = true
 
 [[task]]
@@ -911,7 +911,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 4.3
+blocked_days   = 4.4
 on_integration = true
 
 [[task]]
@@ -927,7 +927,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 4.3
+blocked_days   = 4.4
 on_integration = true
 
 [[task]]
