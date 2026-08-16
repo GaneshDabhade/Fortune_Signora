@@ -102,7 +102,12 @@ describe('while it runs', () => {
   it('cannot be asked again', () => {
     panel(research({ status: 'running', artifact: null }));
 
-    expect(screen.getByRole('button', { name: /researching/i })).toBeDisabled();
+    // 📁 **The finalized design has ONE label** — *"Refresh research"* — so the
+    // control no longer renames itself while a run is in flight. ⚡ **What it is
+    // doing is said by the body**, which is where a reader is already looking.
+    // ⛔ **Disabled is unchanged, and that was never a design question**: a
+    // minute of a worker and two model calls is not spent on a guess.
+    expect(screen.getByRole('button', { name: /refresh research/i })).toBeDisabled();
   });
 
   it('says what is happening rather than spinning', () => {
@@ -143,7 +148,7 @@ describe('finding nothing is an answer, not an error', () => {
   it('lets the account be asked again', () => {
     panel(research({ status: 'nothing_to_research', artifact: null }));
 
-    expect(screen.getByRole('button', { name: /research again/i })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /refresh research/i })).toBeEnabled();
   });
 });
 
@@ -170,29 +175,50 @@ describe('when it fails', () => {
   });
 });
 
-describe('the brief separates what was computed from what was written', () => {
-  it('shows both halves, labelled', () => {
+describe('the brief keeps the deterministic half legible inside the design’s grid', () => {
+  /**
+   * 🔴 **The property these protect is unchanged; the structure that carried it
+   * is not.**
+   *
+   * ⚠️ **The previous generation split this into two labelled lists** —
+   * *What was compared* above *What it means* — **and the finalized design has
+   * ONE grid** (`grid-template-columns:repeat(2,1fr)`), each cell a key, a
+   * paragraph and a citation.
+   *
+   * ⛔ **Collapsing them naively would have presented a computed comparison as
+   * model prose.** ✅ **So the distinction moved INTO the cell**: the key is the
+   * domain expert's question, the paragraph is the model's sentence, and the
+   * whole card carries the intelligence hue — **which is what these now
+   * assert.**
+   */
+  it('titles itself as the design does, not as the previous generation did', () => {
     panel(research());
 
-    expect(screen.getByText('What was compared')).toBeVisible();
-    expect(screen.getByText('What it means')).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Research summary' })).toBeVisible();
+    // ⛔ **The superseded wording is gone rather than aliased.**
+    expect(screen.queryByText('Deeper research')).toBeNull();
+    expect(screen.queryByText('What was compared')).toBeNull();
+    expect(screen.queryByText('What it means')).toBeNull();
   });
 
-  it('puts the computed half first', () => {
+  it('marks the whole card as machine-authored, so no cell reads as unattributed', () => {
     const { container } = render(
       <ResearchPanel research={research()} onRequest={vi.fn()} isRequesting={false} />,
     );
 
-    // **The order is the argument.** A reader who scrolls no further has still
-    // seen the half nobody has to trust.
-    const text = container.textContent ?? '';
-    expect(text.indexOf('What was compared')).toBeLessThan(text.indexOf('What it means'));
+    // ⚡ **The intelligence hue is the attribution now that the headings are
+    // gone** — 📁 the design's `--ai` border and `--ai-tint` band. ⛔ **A token,
+    // never a literal colour** (§20c).
+    expect(container.querySelector('section')?.className).toContain('border-ai');
+    expect(container.querySelector('.bg-ai-subtle')).not.toBeNull();
   });
 
-  it('says outright that the comparisons were not written', () => {
+  it('still names the model and the prompt that wrote the sentences', () => {
     panel(research());
 
-    expect(screen.getByText(/computed, not written/i)).toBeVisible();
+    // ⚡ **Provenance survived the restructure.** ⛔ It moved into the design's
+    // footer rather than being dropped with the heading that used to carry it.
+    expect(screen.getByText(/llama3\.1/i)).toBeVisible();
   });
 
   it('shows each finding under the catalog’s own question', () => {

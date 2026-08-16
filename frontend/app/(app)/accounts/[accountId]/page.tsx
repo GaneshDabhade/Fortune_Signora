@@ -581,6 +581,18 @@ export default function AccountBriefPage() {
               : { correlationId: correlationOf(researchError)! })}
             onRequest={() => requestResearch.mutate()}
             isRequesting={requestResearch.isPending}
+            {...(score === null
+              ? {}
+              : {
+                  // 📁 The design's *"Open all evidence"*. ⚡ **It opens the
+                  // drawer this page already owns** — ⛔ not a second evidence
+                  // surface, and absent entirely when there is no ledger line
+                  // to open, rather than rendered inert.
+                  onOpenEvidence: () => {
+                    const first = score.contributions[0];
+                    if (first !== undefined) evidence.open(first.business_event_id);
+                  },
+                })}
           />
 
           {/* ⚡ **`id="opportunities"`** — [TASK-1483](../../../../docs/BACKLOG.md).

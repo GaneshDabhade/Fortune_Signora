@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 import { formatDay } from '@/components/intelligence/dates';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
-import { Badge, Button, Dialog } from '@/components/ui';
+import { Badge, Dialog, SkeletonText } from '@/components/ui';
 import type { AccountResearch, ResearchFinding, ResearchStatus } from '@/lib/api/types';
 
 /**
@@ -60,6 +60,7 @@ export function ResearchPanel({
   onRequest,
   isRequesting,
   isError = false,
+  onOpenEvidence,
   /**
    * ⚡ **The design's section id, so the *"On this page"* rail can anchor
    * this** — [TASK-1476](../../../docs/BACKLOG.md). ⛔ **Optional**: the page
@@ -83,16 +84,45 @@ export function ResearchPanel({
    * block above it does.
    */
   isError?: boolean;
+  /** 📁 The design's *"Open all evidence"* — ⛔ **absent rather than inert**
+   *  when the page has no evidence surface to open. */
+  onOpenEvidence?: () => void;
 }) {
   const [open, setOpen] = useState<ResearchFinding | null>(null);
   const artifact = research?.artifact ?? null;
   const findings = new Map((artifact?.findings ?? []).map((f) => [f.ref, f]));
 
+  const artifactCells = artifact === null ? [] : cells(artifact, findings);
+
   return (
-    <section id={id} className="flex flex-col gap-3">
-      <div className="flex items-baseline justify-between gap-4">
-        <h2 className="text-sm font-semibold text-content">Deeper research</h2>
-        <Ask
+    <section
+      id={id}
+      aria-labelledby={id === undefined ? undefined : `${id}-title`}
+      /* 📁 **The design's card** — *"border-radius:14px; border:1px solid
+         var(--ai-line)"*. ⚡ **The AI border rather than the neutral one**: this
+         is the only section on the page whose body a model wrote, and the
+         chrome says so before a word is read. */
+      className="overflow-hidden rounded-lg border border-ai bg-surface shadow-sm"
+    >
+      {/* ── The header band ──────────────────────────────────────────────
+          📁 *"background:var(--ai-tint); border-bottom:1px solid var(--ai-line)"*.
+          ⚠️ **This replaces a plain `Deeper research` heading**, which was the
+          previous generation's wording and had no basis in the finalized
+          design — 📁 the design says **Research summary**. */}
+      <div className="flex items-center gap-2.5 border-b border-ai bg-ai-subtle px-4 py-3">
+        <span className="grid h-[22px] w-[22px] flex-none place-items-center rounded bg-ai">
+          <Sparkles aria-hidden className="h-3 w-3 text-surface" />
+        </span>
+        <div className="min-w-0">
+          <h2 id={id === undefined ? undefined : `${id}-title`} className="text-sm font-semibold tracking-tight text-content">
+            Research summary
+          </h2>
+          {/* 📁 The design's own subtitle, verbatim. */}
+          <p className="mt-px text-xs text-content-muted">
+            Company, market and relationship research · refreshed weekly, or on demand
+          </p>
+        </div>
+        <Refresh
           research={research}
           onRequest={onRequest}
           isRequesting={isRequesting}
@@ -100,34 +130,188 @@ export function ResearchPanel({
         />
       </div>
 
-      <div className="flex flex-col gap-3 rounded-md border border-border bg-surface-raised px-4 py-3.5">
-        {isError ? (
+      {/* ── The body ─────────────────────────────────────────────────────
+          ⚡ **Four states share this region and only one of them is the grid.** */}
+      {isError ? (
+        <div className="px-4 py-4">
           <Unavailable {...(correlationId === undefined ? {} : { correlationId })} />
-        ) : research === null ? (
+        </div>
+      ) : isRequesting || research?.status === 'requested' || research?.status === 'running' ? (
+        <Waiting status={research?.status ?? 'requested'} />
+      ) : research === null ? (
+        <div className="px-4 py-4">
           <Invitation />
-        ) : (
+        </div>
+      ) : artifactCells.length === 0 ? (
+        <div className="px-4 py-4">
           <Status research={research} />
-        )}
-
-        {artifact !== null ? (
-          <>
-            <Findings
-              findings={artifact.findings}
-              onOpen={(finding) => setOpen(finding)}
-            />
-            <Reading
-              statements={artifact.statements}
-              findings={findings}
-              onOpen={(finding) => setOpen(finding)}
-            />
-            <Provenance artifact={artifact} />
-          </>
-        ) : null}
-      </div>
+        </div>
+      ) : (
+        <>
+          {/* 📁 *"grid-template-columns:repeat(2,1fr)"* — ⚡ **two columns from
+              `smalllaptop` up, one below it**: a 12.5px paragraph in half of a
+              phone is four words a line. */}
+          <div className="grid grid-cols-1 smalllaptop:grid-cols-2">
+            {artifactCells.map((cell) => (
+              <ResearchCell key={cell.key} cell={cell} onOpen={(f) => setOpen(f)} />
+            ))}
+          </div>
+          <Footer artifact={artifact!} onOpenEvidence={onOpenEvidence} />
+        </>
+      )}
 
       <FindingDialog finding={open} onClose={() => setOpen(null)} />
     </section>
   );
+}
+
+/**
+ * One cell of the design's grid: **a deterministic key, an inferred value, and
+ * the citation between them.**
+ *
+ * ## 🔴 Why the key is a finding's question and not a heading somebody wrote
+ *
+ * ⚠️ **The previous structure split this into two lists** — *What was compared*
+ * (derived) above *What it means* (inferred) — **and the finalized design has
+ * one grid.** ⛔ **Collapsing them naively would have presented a computed
+ * comparison as model prose**, which is the one thing this file's own docstring
+ * refuses.
+ *
+ * ✅ **So the distinction moves INTO the cell rather than being lost**: `k` is
+ * the domain expert's question, computed and recomputable; `v` is the model's
+ * sentence; the citation between them is the link back to the rows. **The card
+ * carries the intelligence hue, so nothing here reads as unattributed.**
+ */
+function ResearchCell({
+  cell,
+  onOpen,
+}: {
+  cell: Cell;
+  onOpen: (finding: ResearchFinding) => void;
+}) {
+  return (
+    <div className="border-b border-border px-4 py-4 smalllaptop:[&:nth-child(odd)]:border-r">
+      {/* 📁 *"11px; 600; letter-spacing:.05em; uppercase; var(--ink-4)"* */}
+      {cell.question === null ? null : (
+        <div className="text-xs font-semibold uppercase tracking-wider text-content-subtle">
+          {cell.question}
+        </div>
+      )}
+      {/* 📁 *"12.5px; line-height:1.6; var(--ink-2)"* */}
+      <p className="mt-2 text-sm leading-relaxed text-content-muted">{cell.text}</p>
+      {/* 📁 *"11px; 600; var(--ai-ink)"* — ⚡ and it is the affordance, not a
+          label: the design's citation is where a reader goes to check. */}
+      <Cited tokens={cell.cites} finding={cell.finding} onOpen={onOpen} />
+    </div>
+  );
+}
+
+/**
+ * 📁 *"Sources: 3 filings, 2 news items, 1 job-board scan, 4 calls"* and
+ * *"Open all evidence"*.
+ *
+ * ⛔ **The typed breakdown is NOT rendered, and the gap is stated rather than
+ * approximated.** ⚡ **Nothing in `ResearchArtifact` carries a source TYPE** —
+ * findings carry refs into rows, not *filing* or *job-board scan* — **so a
+ * typed tally here would be four numbers this product cannot produce.** ✅ **The
+ * count is real and comes from the artifact.**
+ */
+function Footer({
+  artifact,
+  onOpenEvidence,
+}: {
+  artifact: NonNullable<AccountResearch['artifact']>;
+  onOpenEvidence?: () => void;
+}) {
+  const sources = new Set(artifact.findings.flatMap((finding) => finding.cites)).size;
+
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3">
+      <span className="text-xs text-content-subtle">
+        {sources} {sources === 1 ? 'source' : 'sources'} compared
+      </span>
+      <Provenance artifact={artifact} />
+      {onOpenEvidence === undefined ? null : (
+        <button
+          type="button"
+          onClick={onOpenEvidence}
+          className={[
+            'ml-auto rounded text-xs font-semibold text-ai',
+            'transition-colors hover:underline',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+          ].join(' ')}
+        >
+          Open all evidence
+        </button>
+      )}
+    </div>
+  );
+}
+
+/**
+ * 📁 The design's Loading state — ***"Row count matches the expected result, so
+ * nothing jumps when data lands."***
+ *
+ * ⚡ **Four cells, because the design's own placeholder hint is
+ * `hint-placeholder-count="4"`** — ⛔ not a number chosen here.
+ */
+function Waiting({ status }: { status: ResearchStatus }) {
+  return (
+    <div>
+      <p aria-live="polite" className="px-4 pt-4 text-sm leading-6 text-content-muted">
+        {status === 'running'
+          ? 'Comparing the evidence on this account. Usually a minute or two.'
+          : 'Queued. This usually takes a minute or two — you can leave this page and come back.'}
+      </p>
+      <div className="grid grid-cols-1 smalllaptop:grid-cols-2" aria-hidden>
+        {[0, 1, 2, 3].map((n) => (
+          <div key={n} className="border-b border-border px-4 py-4 smalllaptop:[&:nth-child(odd)]:border-r">
+            <SkeletonText lines={1} />
+            <div className="mt-2">
+              <SkeletonText lines={3} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** A cell of the design's grid, assembled from one statement. */
+interface Cell {
+  key: string;
+  /** ⛔ **`null` when no cited finding resolves** — the design has no cell
+   *  without a key, and inventing one would be this layer naming a question a
+   *  domain expert did not write. */
+  question: string | null;
+  text: string;
+  cites: string[];
+  finding: ResearchFinding | undefined;
+}
+
+/**
+ * **One cell per statement**, keyed by the question of the finding it cites.
+ *
+ * ⚡ **The order is the model's**, unchanged — 📁 *"statements in the order they
+ * were written, never joined into prose: joining would discard the mapping from
+ * claim to evidence, which is the only reason to trust any of it."*
+ */
+function cells(
+  artifact: NonNullable<AccountResearch['artifact']>,
+  findings: Map<string, ResearchFinding>,
+): Cell[] {
+  return artifact.statements.map((statement, index) => {
+    const finding = statement.cites
+      .map((token) => findings.get(token))
+      .find((f) => f !== undefined);
+    return {
+      key: `${index}:${statement.cites.join(',')}`,
+      question: finding?.question ?? null,
+      text: statement.text,
+      cites: statement.cites,
+      finding,
+    };
+  });
 }
 
 /**
@@ -208,14 +392,19 @@ function Status({ research }: { research: AccountResearch }) {
 }
 
 /**
- * The button, and what it says at each point.
+ * 📁 The design's ***"Refresh research"*** — **a text action in the header band,
+ * not a button below the heading.**
  *
- * **Disabled while a run is in flight, and the label says why.** A button that
- * stayed live would invite a second click the server answers by returning the
- * first run — correct, and confusing to somebody who thought they had started
- * something.
+ * ⚠️ **The previous generation rendered a `Button` with a magnifier and three
+ * different labels.** ⛔ **The finalized design has one label in one place**, so
+ * the label no longer changes — ✅ **what it is doing is said by the body**,
+ * which is where a reader is already looking while they wait.
+ *
+ * ⛔ **Still disabled while a run is in flight and while the read failed**: the
+ * safety argument is unchanged and is not a design question. A minute of a
+ * worker and two model calls is not something to spend on a guess.
  */
-function Ask({
+function Refresh({
   research,
   onRequest,
   isRequesting,
@@ -228,104 +417,22 @@ function Ask({
 }) {
   const status: ResearchStatus | null = research?.status ?? null;
   const inFlight = status === 'requested' || status === 'running';
+  const disabled = inFlight || isRequesting || isError;
 
   return (
-    <Button
-      variant="secondary"
-      size="sm"
+    <button
+      type="button"
       onClick={onRequest}
-      /* **Disabled when the read failed, and that is the safety half of the
-         fix.** `inFlight` is derived from a status this component could not
-         load, so on an error it is `false` and the button reads as available —
-         offering to start a run that may already be in flight. A minute of a
-         worker and a model call is not something to spend on a guess. */
-      disabled={inFlight || isRequesting || isError}
+      disabled={disabled}
+      className={[
+        'ml-auto shrink-0 rounded text-xs font-semibold text-ai',
+        'transition-colors hover:underline',
+        'disabled:cursor-not-allowed disabled:text-content-subtle disabled:no-underline',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+      ].join(' ')}
     >
-      <Search aria-hidden className="h-3.5 w-3.5" />
-      {inFlight
-        ? 'Researching…'
-        : status === null
-          ? 'Research this account'
-          : 'Research again'}
-    </Button>
-  );
-}
-
-/**
- * What was compared. **The deterministic half, and it comes first.**
- *
- * Each row is a question a domain expert wrote and an answer code computed —
- * no model authored a word of this. The row opens to the rows it compared,
- * which is where the chain rejoins the evidence drawer.
- */
-function Findings({
-  findings,
-  onOpen,
-}: {
-  findings: ResearchFinding[];
-  onOpen: (finding: ResearchFinding) => void;
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      <h3 className="text-xs font-medium uppercase tracking-wide text-content-subtle">
-        What was compared
-      </h3>
-      <ul className="flex flex-col gap-2">
-        {findings.map((finding) => (
-          <li key={finding.id}>
-            <button
-              type="button"
-              onClick={() => onOpen(finding)}
-              className={[
-                'w-full rounded text-left',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-              ].join(' ')}
-            >
-              <span className="block text-sm text-content-muted">{finding.question}</span>
-              <span className="block text-md leading-6 text-content underline decoration-dotted underline-offset-4">
-                {summarise(finding)}
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-/**
- * What the model made of it. **INFERRED, and it says so.**
- *
- * Statements in the order they were written, never joined into prose: joining
- * would discard the mapping from claim to evidence, which is the only reason to
- * trust any of it. The same refusal `NarrativeBlock` makes, for the same reason.
- */
-function Reading({
-  statements,
-  findings,
-  onOpen,
-}: {
-  statements: { text: string; cites: string[] }[];
-  findings: Map<string, ResearchFinding>;
-  onOpen: (finding: ResearchFinding) => void;
-}) {
-  return (
-    <div className="flex flex-col gap-2 border-t border-border pt-3">
-      <h3 className="text-xs font-medium uppercase tracking-wide text-content-subtle">
-        What it means
-      </h3>
-      <ol className="flex flex-col gap-2.5">
-        {statements.map((statement, index) => (
-          <li
-            key={`${index}:${statement.cites.join(',')}`}
-            className="flex items-baseline justify-between gap-4"
-          >
-            <p className="text-md leading-6 text-content">{statement.text}</p>
-            <Cited tokens={statement.cites} findings={findings} onOpen={onOpen} />
-          </li>
-        ))}
-      </ol>
-    </div>
+      {status === null ? 'Research this account' : 'Refresh research'}
+    </button>
   );
 }
 
@@ -339,32 +446,28 @@ function Reading({
  */
 function Cited({
   tokens,
-  findings,
+  finding,
   onOpen,
 }: {
   tokens: string[];
-  findings: Map<string, ResearchFinding>;
+  finding: ResearchFinding | undefined;
   onOpen: (finding: ResearchFinding) => void;
 }) {
-  const first = tokens.map((token) => findings.get(token)).find((f) => f !== undefined);
   const label = `${tokens.length} ${tokens.length === 1 ? 'comparison' : 'comparisons'}`;
 
-  if (first === undefined) {
+  if (finding === undefined) {
     return (
-      <span className="shrink-0 whitespace-nowrap pt-0.5 text-xs tabular-nums text-content-subtle">
-        {label}
-      </span>
+      <div className="mt-2 text-xs font-semibold tabular-nums text-content-subtle">{label}</div>
     );
   }
 
   return (
     <button
       type="button"
-      onClick={() => onOpen(first)}
+      onClick={() => onOpen(finding)}
       className={[
-        'shrink-0 whitespace-nowrap rounded pt-0.5 text-xs tabular-nums',
-        'text-content-muted underline decoration-dotted underline-offset-4',
-        'transition-colors hover:text-content',
+        'mt-2 block rounded text-xs font-semibold tabular-nums text-ai',
+        'transition-colors hover:underline',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
       ].join(' ')}
     >
@@ -430,28 +533,11 @@ function Provenance({
   artifact: NonNullable<AccountResearch['artifact']>;
 }) {
   return (
-    <p className="border-t border-border pt-3 text-xs leading-5 text-content-subtle">
-      Written by {artifact.model} using {artifact.prompt_name}@{artifact.prompt_version}
-      {' · '}
+    <span className="text-xs text-content-subtle">
+      · {artifact.model} · {artifact.prompt_name}@{artifact.prompt_version} ·{' '}
       {formatDay(artifact.produced_at)}
-      {' · '}
-      the comparisons above were computed, not written
-    </p>
+    </span>
   );
-}
-
-/**
- * A finding's answer, in one line.
- *
- * **Joins the values the derivation produced; invents nothing.** A sentence
- * written here about what the numbers *mean* would be this component authoring
- * a conclusion, which is the model's job and the one thing a presentational
- * layer must never quietly take over.
- */
-function summarise(finding: ResearchFinding): string {
-  return Object.entries(finding.attributes)
-    .map(([name, value]) => `${humanise(name)}: ${value}`)
-    .join(' · ');
 }
 
 /** `provider_count` → `Provider count`. The attribute names are engineering's
