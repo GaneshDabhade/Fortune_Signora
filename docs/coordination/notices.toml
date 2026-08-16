@@ -29,7 +29,7 @@
 # reproduce. Withdrawn rather than replaced with a better-sounding guess.
 
 ["Lane A"]
-notice = "User Profile is the current priority and it is COMPLETABLE — the blocker workflows.toml recorded was TASK-493 multi-session, which is PROMOTED and registered since 2026-08-10, so milestone 3 is not blocked. Account 360 #signals is parked by the product owner: it renders ObservationList under the design's Signals timeline heading, and renaming it would move the dishonesty rather than remove it."
+notice = "User Profile is the current priority and it is completable: the multi-session blocker workflows.toml recorded was cleared on 2026-08-10 and the plugin is registered — check the backlog rather than that field. Account 360 #signals is parked: it renders ObservationList under the design's Signals timeline heading, and renaming it would move the dishonesty rather than remove it."
 
 ["Lane C"]
 notice = ""
