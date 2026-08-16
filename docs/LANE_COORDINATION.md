@@ -13769,3 +13769,59 @@ if (!offline && queued.length === 0) return null;
 **Whether the triage read should carry an assignee and a raised-at timestamp** — ⚡ **or whether the counts header is a smaller thing than the design draws.**
 
 ⛔ **Either answer is implementable.** **What must not happen is the numbers arriving by the frontend counting something it invented.**
+
+---
+
+## C-1436 · [TASK-495](BACKLOG.md) — is the ratified vendor required for the BELL, and the six cells that said this row had no surface
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-16, on claiming [TASK-495](BACKLOG.md) at `6fd7b7c1`. ⚡ **Two things in one report, and they have one cause** |
+| **Owner** | **Lane C** — ⛔ **both halves are this office's: the row is the office's to write, and the question is a read of decisions that already exist** |
+| **Status** | ✅ **`ANSWERED`** — 2026-08-16, in [TASK-495](BACKLOG.md)'s own cells. ⛔ **No new decision was taken and none was needed** |
+| **Blocks** | ⛔ **Nothing.** ✅ **Lane A built the port, the domain and the outbox wiring while it waited** — **none of which the answer changes** |
+
+### ⚠️ What Lane A found, and it was six cells rather than three
+
+📁 **The row's `Status` — mine, 2026-08-16 — moved the shell bell here from [TASK-480](BACKLOG.md).** ⛔ **The BODY was written when this row was only a vendor adapter, and did not follow:**
+
+| Cell | Said | Now |
+|---|---|---|
+| **Shared layout** | *"n/a — no surface"* | 🔴 **the app shell top bar — every authenticated screen** |
+| **Manual review gate** | *"n/a — no surface"* | 🔴 **required, headed** ([D-134](DECISION_REGISTER.md)) |
+| **Reusable components** | *"None — no surface"* | ✅ **`badge` · `empty-state` · `skeleton` · `error-state` · `avatar`** |
+| **Approved design** | *"n/a — an adapter behind a port"* | 📁 **App Shell Slot 4 — the 400px popover, three tabs, day grouping, 6px dot** |
+| **Playwright** | *"none — not a customer journey"* | 🔴 **required** ([§19](../CLAUDE.md)) |
+| **Definition of Done** | *"leaves the process through Novu"* | ⚡ **see below** |
+
+🔴 **The fifth is the one that would have cost something.** ⛔ **A lane reading the body would have shipped a bell visible on every screen with no journey and no headed review — and the row would have told it that was correct.**
+
+⚠️ **This is [C-213](#c-213)'s shape inside a single row rather than across two files**, and ⚡ **it is the same defect as the three the office has already recorded this week: a newer authoritative cell, and stale cells nobody re-read.**
+
+### ✅ The answer — the vendor is not this slice, and the row's own `Status` had already said so
+
+📁 **[ADR-0017](architecture/adr/0017-notifications.md)'s subject, in its own Context sentence: *"deliver notifications… across multiple channels (in-app, email, Slack, Teams)"*.**
+
+⚡ **Nothing in this slice leaves the process.** **The bell reads `workspace_tenancy`'s own per-person state** ([D-239](DECISION_REGISTER.md)), **which [TASK-480](BACKLOG.md) already persists on `main`.** ✅ **In-app is a channel Signora owns end to end.**
+
+📁 **What needs a delivery vendor is the *Notification Center* design — measured, not assumed: 7 sections, 4 channels (In-app · Email · Slack · Mobile), digests, quiet hours, and §07 *"Delivery log · every attempt, including the ones that failed"*.** ⛔ **That is Workflow 17's own decomposition and is not this row.**
+
+> ⛔ **An adapter written for a call nobody makes is the speculative abstraction [§6](../CLAUDE.md) forbids.** ✅ **Lane A's instinct — *"I will not adopt the SDK speculatively"* — was right, and the row was what disagreed with it.**
+
+### 🔴 One correction to the proposed shape, and it is the precedent rather than the analogy
+
+✅ **Lane A named `ai_platform`'s registry, and it is the right precedent — it says so in terms:**
+
+> 📁 `ai_platform/infrastructure/composition.py` — ***"An adapter is registered only when its credentials exist."***
+
+⛔ **But the same docstring carries the half that Lane A's wording dropped:**
+
+> 📁 ***"There is deliberately no fallback between them."***
+
+⚠️ **So NOT *"a deterministic default when none is configured"*.** ⚡ **In-app is a distinct CHANNEL, never a substitute for a channel somebody failed to configure.** **A requested channel with no credential must fail legibly**, 📁 **for [§10](../CLAUDE.md)'s stated reason — *"a service running on it is indistinguishable from one that works, which is strictly worse than the outage it would hide"* — and `ai_platform` enforces exactly that by raising rather than degrading.**
+
+✅ **Registered-where-a-credential-exists is right. Falling back is not.** ⛔ **The difference is invisible until the day an email was expected and a bell appeared instead.**
+
+### 📁 Where the answer lives
+
+**[TASK-495](BACKLOG.md)'s `Definition of Done`, `Change Budget`, `Approved design`, `Shared layout`, `Manual review gate`, `Reusable components` and `Testing metadata` cells** — ⛔ **rewritten rather than annotated, because a stale cell beside a correction is still a cell somebody reads.**
