@@ -3,7 +3,9 @@
 **Small by design. It points at authoritative sources and duplicates none of them.**
 ⛔ **Not a backlog. Not a queue. Not a decision register.**
 
-**Last written: 2026-08-14, after cycle 228.**
+**Last written: 2026-08-15, after cycle 234.**
+
+> 🔴 **Third time this header has gone stale, and the file's own opening warns about it twice.** ⚠️ **The date and the two cycle numbers below were transcribed; everything that survived was a pointer.** ⛔ **Any figure here that is not a command is a figure that will be wrong.**
 
 > 🔴 **This line read *"2026-08-12, cycle 218"* for ten cycles while the sections below described a repository that had moved on.** ⚠️ **Second time this file has gone stale in the way it warns about, and both times it was the header a reader trusts first.**
 
@@ -11,7 +13,7 @@
 
 | | |
 |---|---|
-| **`main`** | See `git rev-parse origin/main`. ⚠️ **Cycle 219 was the last promoted at this writing** |
+| **`main`** | See `git rev-parse origin/main`. ⛔ **No cycle number transcribed** — it was wrong within a day, twice |
 | **`integration`** | See `git rev-parse origin/integration`. ⚠️ **Not transcribed — a SHA in prose goes stale in one commit** |
 | **`lane-c-sync`** | See `git log origin/integration..origin/lane-c-sync --oneline` |
 | 🔴 **Coverage headroom** | ⛔ **NONE. `95.0` against a floor of `95`**, down from 4 basis points three cycles ago *(QE, cycle 219)*. **The next slice adding an uncovered line fails the gate** |
@@ -24,14 +26,14 @@
 
 ## Open product-owner decisions
 
-⛔ **Nine. Each has a prepared recommendation and needs one word.** Full analysis in [`LANE_COORDINATION.md`](../../LANE_COORDINATION.md).
+⛔ **Nine live. Each has a prepared recommendation and needs one word.** Full analysis in [`LANE_COORDINATION.md`](../../LANE_COORDINATION.md).
 
 | | Recommendation | Blocks |
 |---|---|---|
 | **C-1512** | 🔴 **[ADR-0413](../../architecture/adr/0413-customer-authored-notes-and-tasks.md) creates a bounded context and names no module.** ✅ **Verified independently: the ADR names no module anywhere, §7's exclusion list omits it, and nothing exists — no table, no migration, no `tenancy_policy.py` row, no route, 20 modules and none of them this.** ⚡ **Lane A recommends a new module, `notes_and_tasks`. This office concurs and adds one thing the package must answer: ADR-0411's TAGS are also customer-authored and went to `commercial_profile` (migration `0051`), so a reader will ask why notes do not** — 📁 **the answer is [ADR-0413](../../architecture/adr/0413-customer-authored-notes-and-tasks.md) §1's own: a tag is a label, a note is CONTENT, and only content makes Signora a system of record owing retention, export and audit** | ⛔ **Nothing** — **Lane A raised it before writing a line and moved to slice ⓸** |
 | **C-1511** | **Lane A's — the Companies `Segment` column and `Segments` panel are disjoint vocabularies.** ⚡ **This office flagged the observation and declined to reopen a `CLOSED` item on it; Lane A hit it while building and raised it, which is the right order** | Nothing |
 | **C-1435-class · [B-122](../../BUGS.md)** | ⚡ **Do `frontend-suite` and `eslint` join `REQUIRED_GATES`?** ✅ **The objection against it does NOT hold — `satisfied` is derived, so widening re-judges history rather than falsifying it, and `tsc`'s own addition is the worked precedent.** ⛔ **QE will not decide what certification MEANS** ([ADR-0032](../../architecture/adr/0032-release-certification.md)) | **Nothing** — QE runs `vitest` in the cheap gates already |
-| **QE's identifier block** | 🔴 **97 of 100 used and the last free one is spent. QE has ZERO and refuses to grant itself a range** — 📁 **Lane C's `1400`+ and Lane A's `C-1500`+ were both explicit product-owner instructions.** ⚠️ **Already cost: `B-200`/`B-201` mis-filed into Lane A's block, and a verified defect handed to Lane A because QE could not number it** | ⛔ **QE cannot file a finding** |
+| ~~**QE's identifier block**~~ | ✅ **RESOLVED and removed from this queue — verified 2026-08-15.** 📁 **[`CLAUDE.md`](../../../CLAUDE.md):1640 — *"QE gained `B-1000`–`B-1099` on the product owner's explicit ruling and instruction."*** ⚡ **And it is in use: `B-1000` through `B-1005` are filed.** ⛔ **This office listed it as needing a decision AFTER the decision was made** — the [C-1503](../../LANE_COORDINATION.md) failure again, in the queue this office puts in front of the product owner. ⚠️ **The ruling was in the constitution loaded at session start** | — |
 | ⚠️ **The `VERIFIED` gap** | 🟠 **Who verifies a defect in QE's OWN test infrastructure — `conftest.py`, the certification package, the guards — when [§20e](../../../CLAUDE.md) says the lane that fixed it may not?** ⚡ **QE wrote half of [B-270](../../BUGS.md)'s fix, stamped Lane C's half `VERIFIED`, and refused to stamp its own.** ⛔ **This office proposes NO answer: Lane C is the obvious candidate and fails on its face — it may not verify governance it authored, and the symmetry cuts the same way.** 📁 **Narrowed by QE: every other QE output has an independent check — the gates certify their slices, `--audit-main` checks their promotions. ⛔ It is specifically the `VERIFIED` stamp on a DEFECT ROW, which §20e assigns to QE by name and to nobody else** | ⛔ **Nothing** — B-270 is fixed on both halves |
 | **C-1433** | ⚡ **FIRST: is it already [ADR-0412](../../architecture/adr/0412-environment-and-secret-safe-logging.md) §6 applied?** ⛔ **This office drafted that clause and will not read it as deciding its own recommendation** | Nothing today |
 | **C-1510** | ⚡ **Lane A's third option — restore faithfully AND report which accounts returned to somebody who has left.** ⚠️ **Authored on `lane-a`, NOT on `integration`** — this office cannot move a row it cannot see, and has told Lane A to set the state itself | **Nothing** — the shipped path is a documented assumption |
@@ -49,7 +51,7 @@
 |---|---|
 | **Lane A** | ⚡ **Every module, since [D-230](../../DECISION_REGISTER.md). 51 rows assigned.** ⛔ **Do not transcribe a claimable count here — read it**: `python3 infra/coordination.py`. Source: [`queues/lane-a.toml`](../queues/lane-a.toml) |
 | **Lane B** | ⛔ **THERE IS NO LANE B — product owner, 2026-08-12.** **All implementation work is Lane A's.** `modules.toml` already reflects this: 19 modules Lane A, 2 Lane C, none Lane B. ⚡ **Lane C routes every implementation task to Lane A and proposes no second implementation lane** |
-| **QE** | ⛔ **Not transcribed** — read `git log --oneline -1 origin/main`. **Cycle 228 was the last promoted at this writing** |
+| **QE** | ⛔ **Not transcribed** — read `git log --oneline -1 origin/main`. ⚠️ **The cycle number that used to sit here was stale on every reading; the command is not** |
 | **Lane C** | ✅ **This restructure.** Next bounded objective below |
 
 ## Do not re-investigate
