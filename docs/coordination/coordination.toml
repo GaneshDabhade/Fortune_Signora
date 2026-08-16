@@ -10,15 +10,15 @@
 [meta]
 generator      = "infra/coordination.py"
 generated_from = "e0d6443"
-task_count     = 55
+task_count     = 56
 
 [lane.Lane_A]
 notice             = "TASK-495's body contradicted its own Status in SIX cells, not the three you found — the sixth is the Definition of Done. Repaired; C-1436 carries it. The vendor is not this slice: nothing in it leaves the process. One correction to your shape — ai_platform registers where a credential exists AND deliberately does not fall back, so in-app is a channel, never a substitute for one nobody configured."
 backlog            = ["TASK-421", "TASK-1416", "TASK-1424", "TASK-1478", "TASK-1482"]
-assigned_total     = 46
-claimable          = 5
+assigned_total     = 47
+claimable          = 6
 claimable_now      = 5
-awaiting_sync      = 0
+awaiting_sync      = 1
 in_flight          = 22
 actionable         = 7
 awaiting_qe_transition = 0
@@ -26,7 +26,7 @@ blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 19
 lane_utilization   = 4.4
-idle_prediction_days   = 0.7
+idle_prediction_days   = 0.9
 dependency_wait_days   = 4.3
 blocked_duration_days  = 0.7
 critical_path_max      = 2
@@ -385,6 +385,22 @@ estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
+
+[[task]]
+id            = "TASK-1484"
+title         = "The two top-bar specs the shell implements from a partial reading of the design"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-200"

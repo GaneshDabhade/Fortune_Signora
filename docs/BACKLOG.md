@@ -2844,6 +2844,49 @@
 | ⚠️ **Risk, named before it is met** | ⛔ **The design shows a workspace with SSO, SCIM, 312 seats and five roles. None of that exists.** ✅ **The row renders what the platform can answer and states the rest as absent** — **the class this lane has now refused six times** |
 | **Build-vs-Buy** | ✅ **n/a for the surface; SSO/SCIM are Better Auth, ratified** |
 
+### TASK-1484 · The two top-bar specs the shell implements from a partial reading of the design
+
+| | |
+|---|---|
+| **Type** | ⚡ **Design conformance.** ⛔ **No new capability, no new contract, no new scope** |
+| **Module** | **`product_surface`** — assignee joined from [`modules.toml`](coordination/modules.toml) |
+| **Epic** | **Workflow 13 · Application Shell** ([workflows.toml](coordination/workflows.toml)) |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-16.** ⚡ **Both halves are frontend-only, both have a live data source, and neither depends on anything unbuilt** |
+| 🔴 **Why this row exists** | ⛔ **Both surfaces LOOK finished and are built from a partial reading of the finalized design** — ⚡ **the hybrid class this office was asked to eliminate, not a missing feature** |
+| **Approved design** | 📁 [`Fortune Signora App Shell.dc.html`](design-snapshot/screens/) **§09** and **§07**. ⛔ **No other document, and nothing here is interpreted** |
+
+### ⓐ §09 — the palette ships four groups and the design names seven
+
+📁 **The design, verbatim:** ***"Group order is fixed — Ask Signora, Recents, Records, Reports, Actions, Navigate, Settings — with five per group and a keyboard-reachable 'show all'."***
+
+⛔ **[`shell-palette.tsx:26`](../frontend/components/shell/shell-palette.tsx) states the requirement as** ***"The design's groups are `Ask Signora` · `Recents` · `Actions` · `Navigate`"*** — ⚠️ **which is a quotation, and it is short by three.**
+
+🔴 **So the palette is not incomplete by omission; it is complete against a misquote.** ⚡ **That is why it reads as finished and why nothing has ever failed.**
+
+**What is missing:** **`Reports`** · **`Settings`** · **the `Records` heading** *(the server already publishes `Companies` and `Technologies`, which are Records' contents under another name)* · **`show all` per group** · **five-per-group cap.**
+
+✅ **Correct the docstring in the same change.** ⛔ **A comment that misstates the design is the defect that produced the code.**
+
+### ⓑ §07 — the status pill reports the browser, and the design asks about the product
+
+📁 **The design:** ***"System status is a persistent pill in the top bar rather than a banner — degradation is a fact about the product, not an interruption, and it expands into detail on click."*** **With `Partial degradation` · per-service rows · `Updated 2m ago` · `Status page`.**
+
+✅ **[`offline-status.tsx`](../frontend/components/ui/offline-status.tsx) is CORRECT and stays** — ⚡ **it cites §07 to justify its placement and the citation is right.** ⛔ **But it answers *is this browser online* and §07 asks *is Signora degraded*.** ⚠️ **Two different facts in one slot, and the shipped one is the narrower.**
+
+✅ **The source exists and is not new work**: 📁 [`apps/api/main.py:193`](../backend/apps/api/main.py) — **`GET /ready` publishes `status: "ready" | "degraded"` with per-dependency states** (`authentication`, and the others it already names).
+
+⛔ **Do NOT add a status-page URL, an incident feed, or a history.** ⚡ **Render what `/ready` returns and nothing else.**
+
+| | |
+|---|---|
+| **Change Budget** | 🟢 **`frontend/components/shell/shell-palette.tsx`** · 🟢 **`frontend/components/ui/offline-status.tsx`** *(or a sibling in the same slot)* · 🟢 **a `lib/query` hook for `/ready`**. ⛔ **No 🟠, no migration, no backend change, no contract change** |
+| **Definition of Done** | **A user presses ⌘K and sees the design's seven groups in the design's order** · **a degraded service is visible in the top bar without leaving the page, and expands on click** · **both in loading, empty and error states** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** none · **Routes** every authenticated route *(shell chrome)* · **APIs** `GET /ready` · **Unit** the palette's group order is asserted against the design's seven, by name and position · **Playwright** ✅ **the existing shell journey extended — ⛔ not a new spec** |
+| **Manual review gate** | ✅ **Headed** ([D-134](DECISION_REGISTER.md)) — **the palette's group rhythm and the pill's expanded detail** |
+| **Reusable components** | ✅ **`segmented-control` · `badge` · `tooltip` · `skeleton` · `error-state`** — ⛔ **nothing new in `components/ui`** |
+| ⛔ **What this row must NOT do** | **Invent a group the design does not name** · **invent a service the `/ready` payload does not report** · **add a status page, incident history or subscription** · **touch the filter strip** *([TASK-1432](#task-1432--the-filter-strip-behind-the-first-module-that-reads-scope) is correctly `SEQUENCED`)* · **build the context drawer** *(§14 has no consumer)* · **add a second rail level** *(a route-map question, not a shell one)* |
+| **Limitations, stated up front** | ⚠️ **`Records` may end up as a rename of the existing account-search groups rather than a new read.** ✅ **That is the correct outcome if so — ⛔ do not add a search backend to satisfy a heading** |
+
 ### TASK-1483 · Account 360's Opportunities section — the contract already works
 
 | | |

@@ -309,7 +309,7 @@ design = "Fortune Signora App Shell.dc.html"
 #   delivers the shell's Slot 4 bell — so the shell has pending work that this
 #   registry could not see. A row can serve two workflows; a registry that
 #   assumes it cannot will under-report one of them.
-tasks  = ["TASK-447", "TASK-480", "TASK-481", "TASK-482", "TASK-495", "TASK-1408", "TASK-1439", "TASK-1440", "TASK-1441", "TASK-1442", "TASK-1443", "TASK-1444", "TASK-1445", "TASK-1446", "TASK-1447", "TASK-1448", "TASK-1449", "TASK-1450", "TASK-1451", "TASK-1452", "TASK-1453", "TASK-1456", "TASK-1458", "TASK-1461", "TASK-1462", "TASK-1463", "TASK-1470", "TASK-1471"]
+tasks  = ["TASK-447", "TASK-480", "TASK-481", "TASK-482", "TASK-495", "TASK-1408", "TASK-1439", "TASK-1440", "TASK-1441", "TASK-1442", "TASK-1443", "TASK-1444", "TASK-1445", "TASK-1446", "TASK-1447", "TASK-1448", "TASK-1449", "TASK-1450", "TASK-1451", "TASK-1452", "TASK-1453", "TASK-1456", "TASK-1458", "TASK-1461", "TASK-1462", "TASK-1463", "TASK-1470", "TASK-1471", "TASK-1484"]
 owner  = "Lane A"
 # ⛔ 487 scores this shell at 0 of 29 distinctive phrases and EVERY screen
 # renders inside it. It is priority 5 under D-155 and that is the product
