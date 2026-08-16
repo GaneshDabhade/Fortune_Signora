@@ -200,3 +200,43 @@
 ⛔ **`fail_application` has no caller.** ✅ **Slice 6 is it**: the consuming domain performs the work, so it is what discovers the work could not be done and records why. ⚠️ **Until then a batch whose application genuinely fails cannot be told so** — 📁 the progress model supports it and nothing produces it.
 
 ⛔ **There is still no propose or approve endpoint.** ⚡ **The apply endpoint assumes an approved batch exists**, and slice 6's consumer is what creates one through a customer-facing path.
+
+---
+
+## TASK-1419 slice ⓐ — a batch that may never take effect, and a guard I removed for failing to be one
+
+**Workflow 26's design subtitle is the whole workflow**: 📁 *"Simulated before it runs, approved before it writes, reversible after it does."* ⚡ **The second and third clauses were already this module.** **The first was not, and it is lifecycle rather than semantics — which is why it belongs here.**
+
+### 🔴 A simulation is not a batch that happens to be unapproved
+
+⛔ **The tempting model is *propose it, look at it, and never approve it*.** ⚠️ **That is a promise, not a guarantee**: the batch is one ordinary call away from being effective for its whole life. 🔴 **Anything that approves batches in bulk — a retry, an operator script, a future bulk-approval screen — would apply it**, and the customer was shown a preview.
+
+✅ **So `Effect` is a property fixed at proposal.** ⛔ **There is no method that turns a `DRY_RUN` into a `LIVE` batch, and a test asserts that absence** — because a helpfully-added `promote()` would make every refusal a speed bump and would look like a feature.
+
+### 🔴 The guard that matters is `__post_init__`, not the methods
+
+⚠️ **A repository reconstructs a batch by CONSTRUCTING it, not by replaying transitions.** ⛔ **A refusal that lived only in the transition methods would be bypassed on every read** — which is how a forbidden state reaches a system that checks for it in all the obvious places.
+
+✅ **Every method returns a new batch through `replace`, so construction re-runs on every transition.** ⚡ **That is what makes the invariant hold on paths nobody enumerated.**
+
+### ⛔ And one guard was removed for being unable to fail
+
+🔴 **A dry-run refusal was written into `dispatched_on` and deleted after fire-testing it.** ⚡ **A dry run can never be `APPROVED`, and `dispatched_on` already refuses anything that is not approved — so the branch was unreachable.**
+
+📁 **[§2](../../CLAUDE.md): *a guard that cannot fail is not protection — it is documentation pretending to be code*.** ⚠️ **It would have been decorative logic in the one slice whose entire subject is guards**, and it survived until the fire test because removing it left every test green.
+
+> ✅ **The protection is real and comes from two places that ARE reachable: `approved_by` refuses, and `__post_init__` refuses.** **The test asserts the CHAIN — dispatch requires approval, approval is refused — rather than a message from a branch that cannot run.**
+
+### ⚠️ The first version of the tests could not tell the two guards apart
+
+🔴 **Both refusals said *"cannot be approved"*, so removing the method's call left every test GREEN.** ✅ **The two messages are now deliberately distinct** — **the method names the VERB, the constructor names the STATE** — **and each test pins the guard it is about.**
+
+⚡ **Both are needed and they answer different questions**: *"a dry run cannot be approved"* tells somebody what they did; *"constructed in a state only a live batch can reach"* tells a repository author what they built.
+
+### ✅ Additive by construction
+
+⚡ **`effect` defaults to `LIVE` and `ProposeBatch.dry_run` defaults to `False`.** ⛔ **Every existing caller — including [TASK-466](../BACKLOG.md)'s shipped Companies-bulk consumer — keeps proposing live batches without knowing the field exists.** **A test asserts the default, so the additive property is checked rather than assumed.**
+
+### ⚠️ What slice ⓐ does NOT do
+
+⛔ **It does not persist `effect`** — the column, the repository and the endpoint are slice ⓑ. ⛔ **It does not know what a simulation would DO**: 📁 *"nothing here knows what an action means"* is unchanged, and **the description of the would-be work belongs to the consuming domain exactly as the payload always has.** ⛔ **And it builds no surface** — 📁 [TASK-1416](../BACKLOG.md) is the simulation-results dependency and is still blocked on a report rendering one real figure.

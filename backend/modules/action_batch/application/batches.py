@@ -26,7 +26,7 @@ from uuid import UUID, uuid4
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.action_batch.application.ports import ActionBatchRepository
-from modules.action_batch.domain.batch import ActionBatch, ActionBatchError, Decision
+from modules.action_batch.domain.batch import ActionBatch, ActionBatchError, Decision, Effect
 from modules.action_batch.domain.events import (
     ActionBatchApplicationRequested,
     ActionBatchApplied,
@@ -59,6 +59,15 @@ class ProposeBatch:
     #: reversal is not offered for this batch — ⛔ a different answer from a
     #: window that has closed, and the customer is told them differently.
     reversible_for: timedelta | None = None
+    #: ⚡ **Propose it as a dry run** — [TASK-1419](../../../../docs/BACKLOG.md),
+    #: 📁 *"simulated before it runs."* ⛔ **A dry run can never be approved,
+    #: dispatched or applied**, and nothing turns one into a live batch.
+    #:
+    #: ⚠️ **Defaulted to `False` deliberately.** **Every existing caller keeps
+    #: proposing live batches without knowing this field exists**, which is what
+    #: makes the capability additive rather than a change to
+    #: [TASK-466](../../../../docs/BACKLOG.md)'s shipped consumer.
+    dry_run: bool = False
 
 
 class ActionBatches:
@@ -88,6 +97,7 @@ class ActionBatches:
             item_count=request.item_count,
             proposed=Decision(actor_id=request.proposed_by, at=moment),
             reversible_for=request.reversible_for,
+            effect=Effect.DRY_RUN if request.dry_run else Effect.LIVE,
         )
         await self._repository.add(batch, actor_id=request.proposed_by)
         logger.info(

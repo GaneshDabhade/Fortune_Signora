@@ -74,6 +74,44 @@ class ApprovalState(StrEnum):
     declining, and a customer reading a history needs to tell them apart."""
 
 
+class Effect(StrEnum):
+    """**Whether this batch may ever take effect** — [TASK-1419](../../../../docs/BACKLOG.md).
+
+    📁 **The design's subtitle is the whole workflow**: *"Simulated before it
+    runs, approved before it writes, reversible after it does."* ⚡ **The first
+    clause is the one this context did not have**, and it is lifecycle rather
+    than semantics — which is why it belongs here.
+
+    ## 🔴 A simulation is not a batch that happens to be unapproved
+
+    ⛔ **The tempting model is *propose it, look at it, and just never approve
+    it*.** ⚠️ **That is a promise, not a guarantee**: the batch is one call away
+    from being effective for its whole life, and the call is the ordinary one
+    every other batch makes. 🔴 **Anything that approved batches in a loop — a
+    bulk approval, a retry, an operator with a script — would apply it.**
+
+    ✅ **So it is a property of the batch, fixed at proposal and never
+    changeable**, and every transition that could make a batch effective
+    refuses it by name. ⛔ **There is no method that turns a `DRY_RUN` into a
+    `LIVE` one**, and `test_simulation_never_writes.py` asserts that over the
+    whole `Transition` alphabet rather than over the three it occurred to me to
+    try.
+
+    ⚠️ **What this context still does NOT know is what the action would DO.**
+    📁 *"Nothing here knows what an action means."* ✅ **A dry run records that
+    the consuming domain was asked to describe its work without performing it;
+    the description belongs to that domain, exactly as the payload always has.**
+    """
+
+    LIVE = "live"
+    """The ordinary batch. **Approval makes it effective.**"""
+
+    DRY_RUN = "dry_run"
+    """⛔ **May never be approved, dispatched or applied.** ⚡ **It exists to be
+    read** — and to be withdrawn, because a proposer changing their mind is a
+    decision about a question rather than about an effect."""
+
+
 class Transition(StrEnum):
     """What happened to a batch — the lifecycle alphabet, named once.
 
@@ -265,6 +303,9 @@ class ActionBatch:
     reversible_for: timedelta | None = None
     #: Who reversed it, and when.
     reversal: Decision | None = None
+    #: ⛔ **Fixed at proposal and never changed.** ⚡ **A `DRY_RUN` refuses
+    #: every transition that could make it effective** — see {@link Effect}.
+    effect: Effect = Effect.LIVE
 
     def __post_init__(self) -> None:
         if not self.name.strip():
@@ -278,11 +319,60 @@ class ActionBatch:
                 "approve. An empty batch is a proposal that was never assembled, and "
                 "recording one would put a decision in the history that changed nothing."
             )
+        # 🔴 **A dry run that has already taken effect is a contradiction the
+        # type must refuse**, not a state to check for later. ⚡ **Every method
+        # below returns a NEW batch through `replace`, so this runs on every
+        # transition rather than only at proposal** — which is what makes
+        # `_refuse_if_dry_run` unable to be bypassed by constructing directly.
+        if self.effect is Effect.DRY_RUN and (
+            self.state is ApprovalState.APPROVED
+            or self.applied_at is not None
+            or self.dispatched_at is not None
+        ):
+            raise ActionBatchError(
+                "this dry run was constructed in a state only a live batch can reach. "
+                "It exists to describe what would happen without any of it happening, "
+                "and a batch that could cross that line under any code path is a "
+                "simulation only by convention."
+            )
         if self.reversible_for is not None and self.reversible_for <= timedelta(0):
             raise ActionBatchError(
                 f"a reversible window of {self.reversible_for} is not a window. Use "
                 "`None` to say reversal was never offered — the two are different "
                 "answers and a customer is told them differently."
+            )
+
+    def _refuse_if_dry_run(self, verb: str) -> None:
+        """⛔ **The named refusal, so a reviewer can grep for one rule.**
+
+        ⚡ **Called by the three transitions that could make a batch
+        effective.** ⛔ **Not by `withdrawn_by`**: withdrawing a dry run is a
+        proposer changing their mind about a question, which is exactly what
+        withdrawal means and costs nothing.
+
+        ## ⚠️ Fire-tested, and the first version of these tests could not tell
+
+        🔴 **The `__post_init__` guard is the load-bearing one.** ⚡ **Every
+        method returns a new batch through `replace`, so construction re-runs
+        and catches the forbidden state anyway** — **deleting this method's call
+        does not let a dry run take effect.**
+
+        ⛔ **Which means the FIRST version of `test_simulation_never_takes_effect.py`
+        was wrong**: both messages contained *"cannot be approved"*, so removing
+        the approval refusal left every test GREEN. ✅ **The two messages are now
+        deliberately distinct — this one names the VERB, the constructor names
+        the STATE — and each test pins the guard it is about.**
+
+        ✅ **What this method genuinely provides is the message.** ⚡ *"A dry run
+        cannot be approved"* tells somebody what they did; *"constructed in a
+        state only a live batch can reach"* tells a repository author what they
+        built. **Both are needed and they answer different questions.**
+        """
+        if self.effect is Effect.DRY_RUN:
+            raise ActionBatchError(
+                f"a dry run cannot be {verb}. It was proposed to show what would "
+                "happen without any of it happening, and nothing turns one into a "
+                "live batch — propose a live batch instead."
             )
 
     @property
@@ -301,6 +391,7 @@ class ActionBatch:
         submission rather than a second approval, and recording it would put
         two approvals in a history that must be citable.
         """
+        self._refuse_if_dry_run("approved")
         return self._decide(ApprovalState.APPROVED, actor_id, at, verb="approved")
 
     def rejected_by(self, actor_id: UUID, *, at: datetime) -> ActionBatch:
@@ -323,6 +414,7 @@ class ActionBatch:
         on the authority of the approval already recorded — inventing a second
         actor here would attribute the write to whoever happened to flush it.
         """
+        self._refuse_if_dry_run("applied")
         if self.state is not ApprovalState.APPROVED:
             raise ActionBatchError(
                 f"an action batch that is {self.state.value} did not take effect. Only "
@@ -354,6 +446,15 @@ class ActionBatch:
         ⛔ **No `actor_id`**, for the same reason `applied_on` takes none: the
         authority is the approval already recorded.
         """
+        # ⛔ **No dry-run refusal here, and its ABSENCE is the finding.**
+        # 🔴 **One was written and removed after fire-testing it**: a dry run can
+        # never be `APPROVED`, so it can never reach the guard below — the
+        # branch could not fail, which makes it 📁 [§2](../../../../CLAUDE.md)'s
+        # *decorative logic* in the one slice whose subject is guards.
+        # ✅ **The protection is real and comes from two places that ARE
+        # reachable**: `approved_by` refuses, and `__post_init__` refuses a
+        # constructed batch. **`test_simulation_never_takes_effect.py` asserts
+        # the chain rather than the branch.**
         if self.state is not ApprovalState.APPROVED:
             raise ActionBatchError(
                 f"an action batch that is {self.state.value} cannot be dispatched for "
