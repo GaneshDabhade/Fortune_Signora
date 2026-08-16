@@ -443,17 +443,31 @@ export function without(filters: Filters, id: keyof Filters): Filters {
 export type SortKey = 'company' | 'acv' | 'renewal' | 'freshness';
 export type SortDirection = 'asc' | 'desc';
 
-export interface Sort {
+export interface SortTerm {
   readonly key: SortKey;
   readonly direction: SortDirection;
 }
 
-/** ⚡ **The list's own order, and the design's default is not available** —
- *  📁 the endpoint returns oldest-first and says so: *"a list ordered by
- *  anything the graph recomputes would reshuffle underneath somebody reading
- *  it."* ⛔ **`null` is that order**, and it is a real choice rather than an
- *  absence of one. */
-export const NO_SORT: Sort | null = null;
+/**
+ * 📁 **Up to two keys** — the design's own mechanic: *"Up to two keys, stated
+ * in words in the toolbar rather than as arrows to decode."*
+ *
+ * ⛔ **An ordered list, not a primary/secondary pair.** ⚡ **The order IS the
+ * precedence**, so *"then"* in the toolbar sentence is the array index and
+ * cannot disagree with it — 📁 a `secondary` field set while `primary` was
+ * empty would be a state the sentence could not read.
+ */
+export type Sort = readonly SortTerm[];
+
+/** ⚡ **Empty is the endpoint's own order** — 📁 oldest first, and it says why:
+ *  *"a list ordered by anything the graph recomputes would reshuffle underneath
+ *  somebody reading it."* ⛔ **A real choice rather than the absence of one.** */
+export const NO_SORT: Sort = [];
+
+/** 📁 **The design's own limit.** ⛔ **Not a constant invented here** — the
+ *  mechanic says *"up to two keys"*, and a third would be a precedence nobody
+ *  can read in a sentence. */
+export const MAX_SORT_KEYS = 2;
 
 export const SORTABLE: readonly { readonly key: SortKey; readonly label: string }[] = [
   { key: 'company', label: 'Company' },
@@ -482,22 +496,47 @@ function sortableValue(row: ListedAccount, key: SortKey): number | string | null
   }
 }
 
-export function applySort(
-  rows: readonly ListedAccount[],
-  sort: Sort | null,
-): readonly ListedAccount[] {
-  if (sort === null) return rows;
-  const factor = sort.direction === 'asc' ? 1 : -1;
+/** ⚡ **One term's verdict**, so the multi-key comparison below reads as
+ *  *"first that disagrees wins"* rather than as nested conditionals. */
+function compareTerm(left: ListedAccount, right: ListedAccount, term: SortTerm): number {
+  const a = sortableValue(left, term.key);
+  const b = sortableValue(right, term.key);
+  // ⛔ **Absence sinks, whichever way the arrow points** — and it sinks in
+  // EVERY term, so a row with no ACV does not jump on the tie-break either.
+  if (a === null && b === null) return 0;
+  if (a === null) return 1;
+  if (b === null) return -1;
+  if (a === b) return 0;
+  return (a < b ? -1 : 1) * (term.direction === 'asc' ? 1 : -1);
+}
+
+export function applySort(rows: readonly ListedAccount[], sort: Sort): readonly ListedAccount[] {
+  if (sort.length === 0) return rows;
   return [...rows].sort((left, right) => {
-    const a = sortableValue(left, sort.key);
-    const b = sortableValue(right, sort.key);
-    // **Absence sinks, whichever way the arrow points.**
-    if (a === null && b === null) return 0;
-    if (a === null) return 1;
-    if (b === null) return -1;
-    if (a === b) return 0;
-    return (a < b ? -1 : 1) * factor;
+    for (const term of sort) {
+      const verdict = compareTerm(left, right, term);
+      if (verdict !== 0) return verdict;
+    }
+    return 0;
   });
+}
+
+/**
+ * 📁 **The design's sentence** — *"Score ↑, then ACV ↓"*.
+ *
+ * ⚡ **The word *then* is the whole point of the mechanic**: *"stated in words
+ * in the toolbar rather than as arrows to decode."* ⛔ **A reader should not
+ * have to work out which of two arrows is the tie-break.**
+ */
+export function sortSentence(sort: Sort): string | null {
+  if (sort.length === 0) return null;
+  return sort
+    .map((term, index) => {
+      const label = SORTABLE.find((option) => option.key === term.key)?.label ?? term.key;
+      const arrow = term.direction === 'asc' ? '↑' : '↓';
+      return index === 0 ? `${label} ${arrow}` : `then ${label} ${arrow}`;
+    })
+    .join(', ');
 }
 
 /* ----------------------------------------------------------------- group */
@@ -624,3 +663,72 @@ function subtotal(rows: readonly ListedAccount[]): Money | null {
     currency: stated[0]!.currency,
   };
 }
+
+/* ------------------------------------------------- the URL, and back again */
+
+/**
+ * 📁 **The design's mechanic** — *"Sort survives grouping and is part of the
+ * saved view **and the URL**."*
+ *
+ * ⚡ **The URL is the source, not a copy of component state.** 📁 The reason is
+ * [`owner-scope.ts`](../state/owner-scope.ts)'s, unchanged: *"it survives a
+ * refresh, it survives browser back, and it can be opened in a second tab as a
+ * different view."* ⛔ **A `useState` loses all three.**
+ *
+ * ⚠️ **And a saved view is declared FROM this**, so an arrangement that lived
+ * only in component state could be saved as something the URL never showed.
+ */
+const SORT_PARAM = 'sort';
+const GROUP_PARAM = 'group';
+
+/** `company:asc,acv:desc` — ⚡ **readable in a pasted link**, which is what a
+ *  shared URL is for. */
+export function sortToParam(sort: Sort): string | null {
+  return sort.length === 0 ? null : sort.map((t) => `${t.key}:${t.direction}`).join(',');
+}
+
+/**
+ * ⛔ **An unreadable term is DROPPED, not refused.**
+ *
+ * ⚠️ **This is the opposite of the saved-view rule and deliberately so.** 📁 A
+ * saved view is a record somebody made and expects back, so a term this build
+ * cannot read is refused by name. **A URL is a hand-editable, forwardable,
+ * possibly-stale string** — and failing a page load because a link carried an
+ * unknown sort key would be an error where the honest answer is *show them the
+ * list*. 📁 `scopeFrom`'s own reasoning: *"a hand-edited or stale link should
+ * show a seller their accounts, not an error."*
+ */
+export function sortFromParam(raw: string | null | undefined): Sort {
+  if (!raw) return NO_SORT;
+  const terms: SortTerm[] = [];
+  for (const piece of raw.split(',')) {
+    const [key, direction] = piece.split(':');
+    if (!SORTABLE.some((option) => option.key === key)) continue;
+    if (direction !== 'asc' && direction !== 'desc') continue;
+    if (terms.some((term) => term.key === key)) continue;
+    terms.push({ key: key as SortKey, direction });
+  }
+  return terms.slice(0, MAX_SORT_KEYS);
+}
+
+export function groupFromParam(raw: string | null | undefined): GroupKey | null {
+  return GROUPABLE.some((option) => option.key === raw) ? (raw as GroupKey) : null;
+}
+
+/** ⚡ **A link that keeps the arrangement.** ⛔ **Defaults are left out** — 📁
+ *  `withScope`'s rule: *"a clean URL is the one a seller copies."* */
+export function withArrangement(
+  params: URLSearchParams,
+  sort: Sort,
+  group: GroupKey | null,
+): URLSearchParams {
+  const next = new URLSearchParams(params.toString());
+  const encoded = sortToParam(sort);
+  if (encoded === null) next.delete(SORT_PARAM);
+  else next.set(SORT_PARAM, encoded);
+  if (group === null) next.delete(GROUP_PARAM);
+  else next.set(GROUP_PARAM, group);
+  return next;
+}
+
+export const ARRANGEMENT_PARAMS = { sort: SORT_PARAM, group: GROUP_PARAM } as const;

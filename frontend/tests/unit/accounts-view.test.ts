@@ -20,7 +20,7 @@ const NARROWED: Filters = { ...NO_FILTERS, name: 'vantage', kind: 'company' };
 
 describe('🔴 a view this screen cannot read is refused, never partly applied', () => {
   it('✅ its own declaration reads back', () => {
-    expect(whyNotReadableHere(declare(NARROWED, 'renewal', { key: 'acv', direction: 'desc' }))).toBeNull();
+    expect(whyNotReadableHere(declare(NARROWED, 'renewal', [{ key: 'acv', direction: 'desc' }]))).toBeNull();
   });
 
   it("⛔ another screen's view is refused, and that is the commonest case", () => {
@@ -46,21 +46,21 @@ describe('🔴 a view this screen cannot read is refused, never partly applied',
     // 🔴 **Silently ignoring it is the worst outcome**: the customer gets a list
     // that is neither what they saved nor what they asked for.
     expect(
-      whyNotReadableHere({ ...declare(NO_FILTERS, null, null), group: 'renewal_quarter_fy' }),
+      whyNotReadableHere({ ...declare(NO_FILTERS, null, []), group: 'renewal_quarter_fy' }),
     ).toMatch(/no longer offers/);
   });
 
   it('⛔ a sort this build no longer offers is refused, not dropped', () => {
     expect(
       whyNotReadableHere({
-        ...declare(NO_FILTERS, null, null),
-        sort: { key: 'score', direction: 'asc' },
+        ...declare(NO_FILTERS, null, []),
+        sort: [{ key: 'score', direction: 'asc' }],
       }),
     ).toMatch(/no longer offers/);
     expect(
       whyNotReadableHere({
-        ...declare(NO_FILTERS, null, null),
-        sort: { key: 'acv', direction: 'sideways' },
+        ...declare(NO_FILTERS, null, []),
+        sort: [{ key: 'acv', direction: 'sideways' }],
       }),
     ).toMatch(/no longer offers/);
   });
@@ -81,12 +81,12 @@ describe('🔴 a view this screen cannot read is refused, never partly applied',
 
 describe('✅ applying a view restores what was saved', () => {
   it('carries the conditions, the grouping and the sort', () => {
-    const applied = apply(declare(NARROWED, 'stage', { key: 'renewal', direction: 'desc' }));
+    const applied = apply(declare(NARROWED, 'stage', [{ key: 'renewal', direction: 'desc' }]));
 
     expect(applied.filters.name).toBe('vantage');
     expect(applied.filters.kind).toBe('company');
     expect(applied.group).toBe('stage');
-    expect(applied.sort).toEqual({ key: 'renewal', direction: 'desc' });
+    expect(applied.sort).toEqual([{ key: 'renewal', direction: 'desc' }]);
   });
 
   it('⛔ carries no column choice or density', () => {
@@ -94,7 +94,7 @@ describe('✅ applying a view restores what was saved', () => {
     // list — **so a saved column choice would reach across a colleague's own
     // preference.** A view names a set of companies; a preference stays with
     // the person.
-    expect(Object.keys(declare(NO_FILTERS, null, null))).toEqual([
+    expect(Object.keys(declare(NO_FILTERS, null, []))).toEqual([
       'kind',
       'version',
       'filters',

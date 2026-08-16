@@ -7,8 +7,12 @@ import { describe, expect, it } from 'vitest';
 import {
   UNGROUPED,
   applySort,
+  groupFromParam,
   groupRows,
   renewalQuarter,
+  sortFromParam,
+  sortSentence,
+  withArrangement,
 } from '@/lib/accounts/table';
 import type { ListedAccount } from '@/lib/api/types';
 
@@ -42,12 +46,12 @@ describe('🔴 an unreported value sorts last, in both directions', () => {
   it('sinks whichever way the arrow points', () => {
     const rows = [row('A'), row('B', { open_acv: USD(10) }), row('C', { open_acv: USD(90) })];
 
-    expect(applySort(rows, { key: 'acv', direction: 'desc' }).map((r) => r.account.name)).toEqual([
+    expect(applySort(rows, [{ key: 'acv', direction: 'desc' }]).map((r) => r.account.name)).toEqual([
       'C',
       'B',
       'A',
     ]);
-    expect(applySort(rows, { key: 'acv', direction: 'asc' }).map((r) => r.account.name)).toEqual([
+    expect(applySort(rows, [{ key: 'acv', direction: 'asc' }]).map((r) => r.account.name)).toEqual([
       'B',
       'C',
       'A',
@@ -56,7 +60,7 @@ describe('🔴 an unreported value sorts last, in both directions', () => {
 
   it("⛔ no sort leaves the endpoint's own order untouched", () => {
     const rows = [row('C'), row('A'), row('B')];
-    expect(applySort(rows, null)).toBe(rows);
+    expect(applySort(rows, [])).toBe(rows);
   });
 });
 
@@ -124,5 +128,91 @@ describe('📁 the design’s grouped table', () => {
 
   it('⚠️ an unreadable renewal date is said, not silently bucketed', () => {
     expect(renewalQuarter('not-a-date')).toMatch(/unreadable/);
+  });
+});
+
+describe('📁 up to two keys, stated in words', () => {
+  /**
+   * 📁 **The design's mechanic** — *"Up to two keys, stated in words in the
+   * toolbar rather than as arrows to decode."*
+   */
+  it('✅ the second key breaks the first key’s ties, and only those', () => {
+    const rows = [
+      row('B', { open_acv: USD(10) }),
+      row('A', { open_acv: USD(10) }),
+      row('C', { open_acv: USD(90) }),
+    ];
+
+    const sorted = applySort(rows, [
+      { key: 'acv', direction: 'desc' },
+      { key: 'company', direction: 'asc' },
+    ]);
+
+    expect(sorted.map((r) => r.account.name)).toEqual(['C', 'A', 'B']);
+  });
+
+  it('⛔ absence sinks in EVERY term, not only the first', () => {
+    // ⚡ A row with no ACV must not jump on the tie-break either.
+    const rows = [row('A'), row('B', { open_acv: USD(10) })];
+
+    expect(
+      applySort(rows, [
+        { key: 'renewal', direction: 'asc' },
+        { key: 'acv', direction: 'desc' },
+      ]).map((r) => r.account.name),
+    ).toEqual(['B', 'A']);
+  });
+
+  it('📁 the sentence uses the design’s own word', () => {
+    expect(
+      sortSentence([
+        { key: 'company', direction: 'asc' },
+        { key: 'acv', direction: 'desc' },
+      ]),
+    ).toBe('Company ↑, then Open ACV ↓');
+    expect(sortSentence([])).toBeNull();
+  });
+});
+
+describe('🔴 the arrangement survives a refresh, because it is in the URL', () => {
+  it('✅ round-trips through the URL', () => {
+    const sort = [
+      { key: 'company', direction: 'asc' },
+      { key: 'acv', direction: 'desc' },
+    ] as const;
+
+    const params = withArrangement(new URLSearchParams(), sort, 'renewal');
+
+    expect(params.get('sort')).toBe('company:asc,acv:desc');
+    expect(sortFromParam(params.get('sort'))).toEqual(sort);
+    expect(groupFromParam(params.get('group'))).toBe('renewal');
+  });
+
+  it('⚡ a default is left out, because a clean URL is the one a seller copies', () => {
+    const params = withArrangement(new URLSearchParams('sort=acv:asc&group=stage'), [], null);
+
+    expect(params.get('sort')).toBeNull();
+    expect(params.get('group')).toBeNull();
+  });
+
+  it('⛔ an unreadable term is DROPPED, not refused — a URL is not a saved view', () => {
+    // ⚠️ **The opposite of the saved-view rule, deliberately.** 📁 A stale or
+    // hand-edited link should show a seller their accounts, not an error.
+    expect(sortFromParam('score:asc,company:asc')).toEqual([{ key: 'company', direction: 'asc' }]);
+    expect(sortFromParam('company:sideways')).toEqual([]);
+    expect(sortFromParam('company:asc,company:desc')).toEqual([
+      { key: 'company', direction: 'asc' },
+    ]);
+    expect(sortFromParam('company:asc,acv:asc,renewal:asc')).toHaveLength(2);
+    expect(groupFromParam('nonsense')).toBeNull();
+  });
+
+  it('⛔ other query parameters survive', () => {
+    // ⚡ The URL is shared with `owner`, and an arrangement change must not
+    // drop somebody else's scope.
+    const params = withArrangement(new URLSearchParams('owner=mine'), [], 'kind');
+
+    expect(params.get('owner')).toBe('mine');
+    expect(params.get('group')).toBe('kind');
   });
 });

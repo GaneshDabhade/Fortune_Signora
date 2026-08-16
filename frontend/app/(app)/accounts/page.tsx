@@ -40,6 +40,7 @@ import {
 } from '@/lib/query/hooks/account-segments';
 import { useWorkspaceMembers } from '@/lib/query/hooks/team';
 import { Building2 } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Fragment, useMemo, useState } from 'react';
 
 import { formatDay } from '@/components/intelligence/dates';
@@ -78,8 +79,13 @@ import {
   type Filters,
   applyFilters,
   applySort,
+  ARRANGEMENT_PARAMS,
+  NO_SORT,
   choicesFor,
+  groupFromParam,
   groupRows,
+  sortFromParam,
+  withArrangement,
   type GroupKey,
   type Sort,
   toCsv,
@@ -192,11 +198,33 @@ export default function CompaniesPage() {
   const [page, setPage] = useState(0);
   const [mode, setMode] = useState<ViewMode>('table');
   const [density, setDensity] = useState<Density>('comfortable');
-  /** ⚡ **`null` is the endpoint's own order** — oldest first, which is stable
-   *  because *"a list ordered by anything the graph recomputes would reshuffle
-   *  underneath somebody reading it."* */
-  const [sort, setSort] = useState<Sort | null>(null);
-  const [group, setGroup] = useState<GroupKey | null>(null);
+  /**
+   * 🔴 **The arrangement lives in the URL, not in component state.**
+   *
+   * 📁 **The design's mechanic**: *"Sort survives grouping and is part of the
+   * saved view **and the URL**."* ⚡ **And the reason is
+   * [`owner-scope.ts`](../../../lib/state/owner-scope.ts)'s**: it survives a
+   * refresh, it survives browser back, and it opens in a second tab as a
+   * different view. ⛔ **A `useState` loses all three.**
+   *
+   * ⚠️ **It also keeps *Save to view* honest** — a saved view is declared from
+   * this, so an arrangement held only in component state could be saved as
+   * something the URL never showed.
+   */
+  const params = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const sort = useMemo(() => sortFromParam(params.get(ARRANGEMENT_PARAMS.sort)), [params]);
+  const group = useMemo(() => groupFromParam(params.get(ARRANGEMENT_PARAMS.group)), [params]);
+  const arrange = (nextSort: Sort, nextGroup: GroupKey | null) => {
+    const query = withArrangement(params, nextSort, nextGroup).toString();
+    // ⛔ **`replace`, not `push`** — ⚡ reordering a list is not a place a
+    // customer expects the back button to stop, and `scroll: false` keeps the
+    // row they were reading under the cursor.
+    router.replace(query === '' ? pathname : `${pathname}?${query}`, { scroll: false });
+  };
+  const setSort = (next: Sort) => arrange(next, group);
+  const setGroup = (next: GroupKey | null) => arrange(sort, next);
   /** 📁 **The design's collapsible groups** — *"groups collapse, and a collapsed
    *  group still shows its worst status."* ⚡ **Collapsed rather than expanded
    *  is the stored set**, so changing the grouping opens everything rather than
@@ -457,8 +485,7 @@ export default function CompaniesPage() {
           setViewRefusal(null);
           if (id === null) {
             setFilters(NO_FILTERS);
-            setGroup(null);
-            setSort(null);
+            arrange(NO_SORT, null);
             return;
           }
           const view = savedViews.data?.items.find((candidate) => candidate.id === id);
@@ -470,8 +497,7 @@ export default function CompaniesPage() {
           }
           const applied = applyDeclaration(view.declaration as unknown as CompaniesDeclaration);
           setFilters(applied.filters);
-          setGroup(applied.group);
-          setSort(applied.sort);
+          arrange(applied.sort, applied.group);
           setPage(0);
         }}
         refusal={viewRefusal}

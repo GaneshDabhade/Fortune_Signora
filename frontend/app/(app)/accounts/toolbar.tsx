@@ -12,9 +12,11 @@ import {
   type GroupKey,
   NO_FILTERS,
   isFiltered,
+  MAX_SORT_KEYS,
   SORTABLE,
   type Sort,
   type SortKey,
+  type SortTerm,
 } from '@/lib/accounts/table';
 import { cn } from '@/lib/design/cn';
 
@@ -33,8 +35,8 @@ export interface ToolbarProps {
   readonly onDensity: (density: Density) => void;
   /** ⚡ **`null` is the endpoint's own order** — oldest first — 📁 and it is a
    *  real choice rather than the absence of one. */
-  readonly sort: Sort | null;
-  readonly onSort: (sort: Sort | null) => void;
+  readonly sort: Sort;
+  readonly onSort: (sort: Sort) => void;
   readonly group: GroupKey | null;
   readonly onGroup: (group: GroupKey | null) => void;
   readonly columns: readonly ColumnId[];
@@ -147,6 +149,115 @@ function Chip({
   );
 }
 
+/**
+ * 📁 **The design's sort chip**, and the one control on this row that carries a
+ * sentence rather than a value.
+ *
+ * ⛔ **The remove `×` clears ONE term, not the whole sort** — ⚡ the same
+ * grammar the filter chips use, where each `×` removes the condition it sits
+ * on and leaves the others standing.
+ */
+function SortChip({ sort, onSort }: { sort: Sort; onSort: (sort: Sort) => void }) {
+  const applied = sort.length > 0;
+  /** ⛔ **A key already used cannot be chosen again** — sorting by Company then
+   *  Company is a tie-break that can never fire. */
+  const remaining = (index: number) =>
+    SORTABLE.filter((option) => !sort.some((term, at) => at !== index && term.key === option.key));
+
+  const setTerm = (index: number, key: string | null) => {
+    if (key === null) return onSort(sort.filter((_, at) => at !== index));
+    const term: SortTerm = { key: key as SortKey, direction: sort[index]?.direction ?? 'asc' };
+    const next = [...sort];
+    next[index] = term;
+    onSort(next.slice(0, MAX_SORT_KEYS));
+  };
+  const flip = (index: number) =>
+    onSort(
+      sort.map((term, at) =>
+        at === index
+          ? { key: term.key, direction: term.direction === 'asc' ? 'desc' : 'asc' }
+          : term,
+      ),
+    );
+
+  return (
+    <span
+      className={cn(
+        'inline-flex h-control-sm items-center gap-1 rounded-md px-2.5 text-xs font-semibold',
+        applied ? 'bg-surface-sunken text-content' : 'border border-border text-content-muted',
+      )}
+    >
+      <span className={applied ? 'text-content-subtle' : undefined}>Sort</span>
+
+      {sort.map((term, index) => (
+        <span key={term.key} className="inline-flex items-center gap-1">
+          {/* 📁 **The design's own word.** ⛔ Not a second arrow to decode. */}
+          {index > 0 ? <span className="font-normal text-content-subtle">then</span> : null}
+          <select
+            aria-label={index === 0 ? 'Sort by' : 'Then sort by'}
+            value={term.key}
+            onChange={(event) => setTerm(index, event.target.value === '' ? null : event.target.value)}
+            className="cursor-pointer border-0 bg-transparent p-0 pr-1 text-xs font-semibold text-content outline-none"
+          >
+            <option value="">None</option>
+            {remaining(index).map((option) => (
+              <option key={option.key} value={option.key}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={() => flip(index)}
+            aria-label={`Sort ${
+              SORTABLE.find((option) => option.key === term.key)?.label ?? term.key
+            } ${term.direction === 'asc' ? 'descending' : 'ascending'}`}
+            className="rounded px-0.5 text-content hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
+          >
+            {term.direction === 'asc' ? '↑' : '↓'}
+          </button>
+        </span>
+      ))}
+
+      {/* ⚡ **The next key's chooser** — the first when nothing is sorted, the
+          tie-break when one is, and absent once the design's limit is met. */}
+      {sort.length < MAX_SORT_KEYS ? (
+        <select
+          aria-label={applied ? 'Then sort by' : 'Sort by'}
+          value=""
+          onChange={(event) =>
+            event.target.value === ''
+              ? undefined
+              : onSort([...sort, { key: event.target.value as SortKey, direction: 'asc' }])
+          }
+          className={cn(
+            'cursor-pointer border-0 bg-transparent p-0 pr-1 text-xs font-semibold outline-none',
+            applied ? 'text-content-subtle' : 'text-content-muted',
+          )}
+        >
+          <option value="">{applied ? 'then…' : 'None'}</option>
+          {remaining(-1).map((option) => (
+            <option key={option.key} value={option.key}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      ) : null}
+
+      {applied ? (
+        <button
+          type="button"
+          onClick={() => onSort([])}
+          aria-label="Remove the sort"
+          className="rounded text-content-subtle hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
+        >
+          ×
+        </button>
+      ) : null}
+    </span>
+  );
+}
+
 const PILL =
   'inline-flex h-control-sm items-center gap-1.5 rounded-md border border-border ' +
   'px-2.5 text-xs font-semibold text-content ' +
@@ -171,7 +282,7 @@ export function AccountsToolbar({
   loaded,
 }: ToolbarProps) {
   const chosen = new Set<ColumnId>(columns);
-  const sorted = sort === null ? undefined : SORTABLE.find((s) => s.key === sort.key);
+
   const grouped = group === null ? null : GROUPABLE.find((g) => g.key === group);
   const conditions = conditionsOf(filters);
 
@@ -334,27 +445,17 @@ export function AccountsToolbar({
           onChoose={(value) => onGroup(value === null ? null : (value as GroupKey))}
         />
 
-        {/* 📁 *"Sort: Score ↑, then ACV ↓"* — ⛔ **one key, because the
-            design's primary is Signora score and nothing publishes one.** ⚡ The
-            arrow is the direction and clicking the chip's value flips it. */}
-        <Chip
-          label="Sort"
-          value={sorted?.key ?? ''}
-          arrow={sort?.direction}
-          options={SORTABLE.map((option) => ({ value: option.key, label: option.label }))}
-          onChoose={(value) =>
-            onSort(value === null ? null : { key: value as SortKey, direction: 'asc' })
-          }
-          onFlip={
-            sort === null
-              ? undefined
-              : () =>
-                  onSort({
-                    key: sort.key,
-                    direction: sort.direction === 'asc' ? 'desc' : 'asc',
-                  })
-          }
-        />
+        {/* 📁 **The design's sort control** — *"Sort: Score ↑, then ACV ↓"*.
+
+            ⚡ **Up to two keys, and the sentence is the state.** 📁 The
+            mechanic is explicit that it is *"stated in words in the toolbar
+            rather than as arrows to decode"* — ⛔ **so the second key reads
+            *"then"* rather than being a second arrow a reader has to rank.**
+
+            ⚠️ **The second select appears only once a first key is chosen**,
+            because a tie-break with nothing to tie is a control that cannot
+            do anything ([B-255](../../../../docs/BUGS.md)). */}
+        <SortChip sort={sort} onSort={onSort} />
 
         {/* 📁 *"Density"* — ⚡ **the profile's own vocabulary**, because a person
             already sets this about themselves. ⛔ **A pill that toggles, not a

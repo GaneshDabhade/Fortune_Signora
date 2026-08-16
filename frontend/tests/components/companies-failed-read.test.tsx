@@ -30,6 +30,15 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
+// ⚡ **The Companies page reads its arrangement from the URL** — the design's
+// mechanic: *"sort is part of the saved view and the URL"* — **so the router
+// hooks are mocked here, the same way every other route's suite mocks them.**
+vi.mock('next/navigation', () => ({
+  useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  usePathname: () => '/accounts',
+}));
+
 vi.mock('@/lib/state/workspace-provider', () => ({
   useWorkspaceContext: () => ({
     activeWorkspace: { id: 'w1', name: 'Northwind', role: 'owner' },

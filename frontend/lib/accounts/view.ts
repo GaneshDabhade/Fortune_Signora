@@ -49,6 +49,7 @@ import {
   type Sort,
   type SortDirection,
   type SortKey,
+  type SortTerm,
   GROUPABLE,
   SORTABLE,
 } from './table';
@@ -75,14 +76,14 @@ export interface CompaniesDeclaration {
   readonly filters: Filters;
   /** `null` is *not grouped*, which is a real state rather than a missing one. */
   readonly group: GroupKey | null;
-  /** `null` is the endpoint's own order — oldest first. */
-  readonly sort: Sort | null;
+  /** ⚡ **Up to two terms**; empty is the endpoint's own order, oldest first. */
+  readonly sort: Sort;
 }
 
 export function declare(
   filters: Filters,
   group: GroupKey | null,
-  sort: Sort | null,
+  sort: Sort,
 ): CompaniesDeclaration {
   return { kind: 'companies', version: COMPANIES_DECLARATION_VERSION, filters, group, sort };
 }
@@ -114,13 +115,21 @@ export function whyNotReadableHere(declaration: unknown): string | null {
     return 'This view groups by something this screen no longer offers.';
   }
   if (candidate.sort !== null && candidate.sort !== undefined) {
-    const sort = candidate.sort;
-    if (
-      typeof sort !== 'object' ||
-      !SORTABLE.some((option) => option.key === sort.key) ||
-      (sort.direction !== 'asc' && sort.direction !== 'desc')
-    ) {
+    // ⚠️ **A view saved before sort took two keys carried ONE OBJECT.** ⛔ It is
+    // refused rather than guessed at: a single term read as an array would
+    // apply an arrangement the person never saved.
+    if (!Array.isArray(candidate.sort)) {
       return 'This view sorts by something this screen no longer offers.';
+    }
+    for (const term of candidate.sort as SortTerm[]) {
+      if (
+        typeof term !== 'object' ||
+        term === null ||
+        !SORTABLE.some((option) => option.key === term.key) ||
+        (term.direction !== 'asc' && term.direction !== 'desc')
+      ) {
+        return 'This view sorts by something this screen no longer offers.';
+      }
     }
   }
   return null;
@@ -137,19 +146,16 @@ export function whyNotReadableHere(declaration: unknown): string | null {
 export function apply(declaration: CompaniesDeclaration): {
   filters: Filters;
   group: GroupKey | null;
-  sort: Sort | null;
+  sort: Sort;
 } {
   return {
     // ⚡ **Spread over the defaults**, so a view saved before a condition
     // existed reads as *not narrowed by it* rather than as `undefined`.
     filters: { ...NO_FILTERS, ...declaration.filters },
     group: declaration.group ?? null,
-    sort:
-      declaration.sort == null
-        ? null
-        : {
-            key: declaration.sort.key as SortKey,
-            direction: declaration.sort.direction as SortDirection,
-          },
+    sort: (declaration.sort ?? []).map((term) => ({
+      key: term.key as SortKey,
+      direction: term.direction as SortDirection,
+    })),
   };
 }
