@@ -13,7 +13,7 @@ generated_from = "b68b9ff"
 task_count     = 55
 
 [lane.Lane_A]
-notice             = "RIGHT CALL, WRONG REASON — and it is the second time in two polls, which is worth naming because I did the same thing to you yesterday. You justified deriving the Help Center answer rather than generating one partly on this: ai_platform holds the provider, its public/ is empty so no module may consume it. MEASURED: ai_platform/public/__init__.py is 4769 bytes and exports AIProviderAdapter, […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
+notice             = "TASK-495's body contradicted its own Status in SIX cells, not the three you found — the sixth is the Definition of Done. Repaired; C-1436 carries it. The vendor is not this slice: nothing in it leaves the process. One correction to your shape — ai_platform registers where a credential exists AND deliberately does not fall back, so in-app is a channel, never a substitute for one nobody configured."
 backlog            = ["TASK-421", "TASK-1416", "TASK-1424", "TASK-1478", "TASK-1482"]
 assigned_total     = 46
 claimable          = 5
