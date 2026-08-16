@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import { openScoredAccount } from './fixtures/accounts';
+
 /**
  * **Account 360 · Research summary, walked as a customer walks it.**
  *
@@ -25,31 +27,11 @@ import { expect, test } from '@playwright/test';
  * state, collapsed included.**
  */
 
-/**
- * ⚠️ **Reaches the record through `/accounts`, not through `/`.**
- *
- * ⛔ **`account-360.spec.ts`'s own helper goes via `/` and it does not work
- * here** — `resolveComposition` returns `activation` while `primaryRole` is
- * `null` on every session, so the authenticated root serves the setup
- * checklist and carries no account links at all. ⚡ **That is a route question
- * with the product owner and is deliberately not worked around in the
- * product** — this journey simply navigates the way `account-360-states.spec.ts`
- * already does.
- */
-async function openAnAccount(page: import('@playwright/test').Page): Promise<string> {
-  await page.goto('/accounts');
-  await expect(page.getByRole('table')).toBeVisible();
-  await page.getByRole('table').getByRole('row').nth(1).getByRole('link').first().click();
-  await expect(page).toHaveURL(/\/accounts\/[0-9a-f-]{8,}/);
-  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-  return new URL(page.url()).pathname;
-}
-
 test('@journey the research brief carries the design’s own title and structure', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await openAnAccount(page);
+  await openScoredAccount(page);
 
   const main = page.getByRole('main');
 
@@ -75,7 +57,7 @@ test('@journey a folded research section still states its count, and stays folde
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
-  const href = await openAnAccount(page);
+  await openScoredAccount(page);
 
   const disclosure = page.getByRole('button', { name: /research summary/i });
   await expect(disclosure).toHaveAttribute('aria-expanded', 'true');
@@ -92,23 +74,39 @@ test('@journey a folded research section still states its count, and stays folde
   );
   await expect(summary.first()).toBeVisible();
 
-  // ⓐ **The persistence claim, on a second visit rather than in a mock.**
-  await page.goto(href);
-  await expect(
-    page.getByRole('button', { name: /research summary/i }),
-  ).toHaveAttribute('aria-expanded', 'false');
+  // ⓐ 🔴 **The design asks for persistence and this page cannot yet give it,
+  // so the journey asserts the BOUNDARY rather than the wish.**
+  //
+  // 📁 The design: *"State persists per user per account type."* ⛔ **The
+  // account TYPE is not published to this page** — `useAccounts` returns
+  // `AccountAttention` and `useAccountIdentities` returns `AccountIdentity`,
+  // and neither carries `kind` ([B-261](../../../docs/BUGS.md)). ⚡ **So
+  // `page.tsx` passes `kind={null}`, which the collapse law reads as *persist
+  // nothing* rather than *persist wrongly***: a preference filed under a
+  // guessed type is one a rep cannot get back.
+  //
+  // ✅ **This asserts the withholding is real**, not that persistence works.
+  // ⛔ **And it FAILS the day `kind` becomes available** — which is when this
+  // block should become the second-visit assertion it was first written as,
+  // rather than quietly continuing to pass against a capability that arrived.
+  const persisted = await page.evaluate(() =>
+    Object.keys(window.localStorage).filter((key) => key.includes(':a360:collapse:')),
+  );
+  expect(
+    persisted,
+    'the collapse law now has an account kind to key on — restore the second-visit assertion',
+  ).toEqual([]);
 
-  // ⚡ **Restore it**, so this journey leaves the account as it found it and a
-  // later spec is not reading state this one wrote.
-  await page.getByRole('button', { name: /research summary/i }).click();
-  await expect(
-    page.getByRole('button', { name: /research summary/i }),
-  ).toHaveAttribute('aria-expanded', 'true');
+  // ⚡ **Unfold it again in the same visit** — ⛔ nothing carries across a
+  // reload while the key cannot be built, so this is the whole round trip
+  // available today.
+  await disclosure.click();
+  await expect(disclosure).toHaveAttribute('aria-expanded', 'true');
 });
 
 test('@journey focus mode is in the URL, so the expanded view is shareable', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
-  const href = await openAnAccount(page);
+  const href = await openScoredAccount(page);
 
   const focus = page.getByRole('button', { name: /open research in focus mode/i });
   await expect(focus).toBeVisible();
@@ -132,7 +130,7 @@ test('@journey focus mode is in the URL, so the expanded view is shareable', asy
 
 test('@journey the research section is reachable by landmark, folded or not', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await openAnAccount(page);
+  await openScoredAccount(page);
 
   // ⓒ 📁 ***"Every section is a labelled region with a heading, reachable by
   // landmark navigation."*** ⚡ **A region is only labelled if the heading it

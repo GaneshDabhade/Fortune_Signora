@@ -17,6 +17,8 @@
  */
 import { expect, test } from '@playwright/test';
 
+import { openScoredAccount } from './fixtures/accounts';
+
 /**
  * ⚡ **Open an account that HAS something to have a state about.**
  *
@@ -31,48 +33,6 @@ import { expect, test } from '@playwright/test';
  * **fails loudly if none does** rather than skipping — ⛔ a silent skip is a
  * journey that reports green having asserted nothing.
  */
-async function openScoredAccount(page: import('@playwright/test').Page) {
-  await page.goto('/accounts');
-  // ⛔ **Wait for the table before counting it.** ⚠️ The first version counted
-  // rows immediately and got zero — **the loop then never ran and the helper
-  // threw its own "seed the Playground" message about a list that was merely
-  // still loading.** ⚡ A diagnostic that blames the data for a race is worse
-  // than no diagnostic.
-  await expect(page.getByRole('table')).toBeVisible();
-  const rows = page.getByRole('table').getByRole('row');
-  const count = await rows.count();
-
-  for (let row = 1; row < Math.min(count, 12); row += 1) {
-    await page.goto('/accounts');
-    await page.getByRole('table').getByRole('row').nth(row).getByRole('link').first().click();
-    await expect(page).toHaveURL(/\/accounts\/[0-9a-f-]{8,}/);
-
-    // 🔴 **Wait for the record page to ANSWER before judging it.** ⚠️ The
-    // previous line counted `#score` the instant the click resolved — **the
-    // same race this helper had already been fixed for one line above, left
-    // in place one line below.** ⛔ `count()` returns 0 while the read is in
-    // flight, **so every account looked unscored and the helper blamed the
-    // data**: it threw *"seed the Playground"* against a workspace holding
-    // eleven named, scored accounts.
-    //
-    // ✅ **The wait is for either answer** — the section, or the page's own
-    // *"Nothing has scored this account yet"* — **so an account that genuinely
-    // has no score moves the loop on rather than timing out.**
-    await Promise.race([
-      page.locator('#score').waitFor({ timeout: 15_000 }).catch(() => undefined),
-      page
-        .getByText('Nothing has scored this account yet')
-        .waitFor({ timeout: 15_000 })
-        .catch(() => undefined),
-    ]);
-
-    if (await page.locator('#score').count()) return;
-  }
-
-  throw new Error(
-    'No account in the first twelve rows renders its sections. Seed the Playground before running this journey.',
-  );
-}
 
 test.describe('Account 360 — a section changes state and stays honest', () => {
   /**
