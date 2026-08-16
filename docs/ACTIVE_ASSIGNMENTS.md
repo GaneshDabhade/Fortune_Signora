@@ -71,7 +71,15 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-16, `251f7183`
+## Current — as of 2026-08-16, `9879f715`
+
+> ⚡ **Cycle 236 Closeout. Twelve commits, THREE lanes, ONE gate run** — Lane A's `TASK-1401`, `B-273`, `TASK-1413 ⓐ` and `TASK-1419 ⓐ`, plus Lane C's planning corrections.
+>
+> ✅ **`machine_credentials` is a new bounded context on `main`**, ratified by ADR-0414 and recorded in `04-modules.md` — **QE checked that edit against §4 specifically and it stops exactly where the delegation stops: no `05-module-dependencies.md` change, so no new architectural claim.**
+>
+> ⚡ **A lane idle for want of a ruling was unblocked WITHOUT a gate run.** 📁 **`integration` is a REF, and `git push origin <sha>:refs/heads/integration` moves it without touching the working tree of the machine running the gates.** ⛔ **That is cycle 235's distinction used correctly rather than broken** — **a certification never has to be sacrificed to unblock a lane, and a lane never has to wait for one.**
+>
+> 🔴 **A governance contradiction hit three times in one day**: `CHANGES REQUESTED`, `IN VALIDATION` and `PROMOTED` are QE's words exclusively (§20e lifecycle table) and `BACKLOG.md` is a file **QE writes nothing in** (§20e shared-files table). ⛔ **Recorded for the product owner rather than resolved quietly, and raised independently by Lane A.**
 
 > ⚡ **Cycle 235 Closeout. [TASK-420](BACKLOG.md) promoted** — a second hosted AI vendor in production with nothing above the port changed.
 >

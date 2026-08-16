@@ -1,5 +1,23 @@
 # Session Handoff
 
+> ## Cycle 236 — promoted `9879f715`, 2026-08-16 · **the entry engine's first caller, and a new bounded context**
+>
+> **`main` = `9879f715` = the certified commit**, verified from `ls-remote`. **12 commits, three lanes, one gate run.** `pytest` **5124** · coverage **95.06%** · `mypy` strict over **920** files · **`frontend-suite` 3324 in 189 files** · `smoke` 24 stages in 217s · **DR passed** · **reversible on a clean database** · head **`0057`**. ✅ **Eight gates, first attempt.**
+>
+> ⚡ **[TASK-1401](BACKLOG.md): somebody finishing setup lands in their own workspace rather than a placeholder.** 📁 **QE verified the load-bearing claim from the file rather than the summary** — `integration:.../onboarding/exit.ts` line 49 read *"⛔ Not a product decision. It is today's behaviour, held in one place"* above `return '/'`. ✅ **And the journey assertion got STRONGER: `/$|\/business/` passes for a person routed nowhere; `/\/w\/[^/]+\/home$/` says they were routed into their own workspace.**
+>
+> ✅ **`machine_credentials` is a new bounded context** ([ADR-0414](architecture/adr/0414-machine-credentials-bounded-context.md)). ⚡ **QE checked the 🔴 `04-modules.md` edit against §4 specifically: the section cites the ADR for every boundary including the exclusions, and `05-module-dependencies.md` is UNTOUCHED** — **a module recorded in `04` describes a ratified context; a new dependency EDGE would be a fresh claim and outside the delegation.**
+>
+> 🔴 **Lane A shipped Decorative Logic into the one slice whose subject is guards, and the fire test caught it.** **A dry-run refusal in `dispatched_on` — removed it, every test stayed GREEN, because a dry run can never be `APPROVED` and the method already refuses anything unapproved.** ✅ **Deleted rather than kept**, and ⚡ **the completeness test deliberately does NOT demand a per-method message, because one would push the next person to re-add the branch just removed** — **a test that recreates the defect it was written after.**
+>
+> ⚡ ***Two guards with the same message are one guard as far as a test can tell*** — Lane A, after their test matched the CONSTRUCTOR's message and reported it as the METHOD's.
+>
+> ✅ **QE fire-tested the guarantee the slice rests on.** `__post_init__` holds: `replace()` re-runs construction; `deepcopy`/`pickle` rebuild a state that was already valid and cannot manufacture a forbidden one; `object.__new__` bypasses everything and **is available on every Python object ever written.** ⛔ **No `B-` row.** ⚠️ **But the test answered a narrower question than asked — the risk is the day a repository reconstructs through anything but the constructor, and slice ⓑ inherits it undischarged.**
+>
+> ⚡ **A lane idle for want of a ruling was unblocked WITHOUT a gate run**: `integration` is a ref, and a direct `git push origin <sha>:refs/heads/integration` moves it without touching the working tree of the machine running the gates. ⛔ **Cycle 235's distinction used correctly rather than broken.**
+>
+> 🔴 **A blocker was released on doc-comments.** **`TASK-1432`'s release said two files *"both read"* `lib/shell/scope.ts`; neither imports it — one is a markdown link, the other prose.** ⚡ **Lane A caught it and their own first `grep` made the identical mistake one command earlier.** ✅ ***Search what the compiler reads, not what a human wrote.***
+>
 > ## Cycle 235 — promoted `251f7183`, 2026-08-16 · **a second hosted vendor, and four attempts**
 >
 > **`main` = `251f7183` = the certified commit**, verified from `ls-remote` after the push. `pytest` **4950** · coverage **95.03%** · **458** Security Invariants · `mypy` strict over **911** files · **`frontend-suite` 3303 in 187 files** · `smoke` 24 stages in 147s · **DR passed** · **reversible base→head→base→head on a clean database** · head **`0057`**. ✅ **Eight gates.**
