@@ -114,7 +114,7 @@ export function ProfileShell({ name, email }: { name: string | null; email: stri
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-lg border border-border bg-surface shadow-sm',
+        'overflow-hidden rounded-lg border border-border-soft bg-surface shadow-sm',
         // 📁 ***"grid-template-columns:212px 1fr"***. ⚡ **One column below
         // `smalllaptop`**, which is this product's own band — ⛔ not a new
         // breakpoint, and not Tailwind's `sm:`, which generates no CSS here.
@@ -127,7 +127,7 @@ export function ProfileShell({ name, email }: { name: string | null; email: stri
           'bg-canvas px-3.5 py-5',
           // ⚡ **A right border on wide, a bottom border when stacked** — the
           // divider follows the axis rather than disappearing.
-          'border-b border-border smalllaptop:border-b-0 smalllaptop:border-r',
+          'border-b border-border-soft smalllaptop:border-b-0 smalllaptop:border-r',
         )}
       >
         <ul className="flex flex-col gap-0.5">
@@ -204,7 +204,7 @@ function SectionNotBuilt({ section }: { section: string }) {
       'What you have done in Signora, what is visible to others, and your data rights.',
   };
   return (
-    <div className="rounded-md border border-border bg-surface-sunken p-5">
+    <div className="rounded-md border border-border-soft bg-surface-sunken p-5">
       <p className="text-sm leading-6 text-content-muted">{WHAT[section]}</p>
       <p className="mt-2 text-xs leading-5 text-content-subtle">This section is not built yet.</p>
     </div>

@@ -38,7 +38,7 @@ import { Avatar } from '@/components/ui';
  */
 export function AvatarArea({ name, email }: { name: string | null; email: string }) {
   return (
-    <div className="flex flex-wrap items-start gap-5 border-b border-border pb-6">
+    <div className="flex flex-wrap items-start gap-5 border-b border-border-soft pb-6">
       <div className="flex flex-wrap items-center gap-4">
         {/* ⚡ **The shared `Avatar`, at the design's size and on the brand
             colour.** ⛔ **The component is not modified** — 📁 [§20c](../../../../CLAUDE.md):
