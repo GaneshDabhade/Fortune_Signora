@@ -90,6 +90,51 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-1008 · 🟠 The dashboard published a Security Invariant count from the cycle before last, four cycles after a footnote was added warning against exactly that
+
+| | |
+|---|---|
+| **Module** | **QE process** — Repository Closeout activity 5, [`PROJECT_STATUS.md`](../PROJECT_STATUS.md) |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — ⛔ **no gate is weakened and nothing unsafe ships.** ⚠️ **What it costs is the dashboard's one claim about itself**: *"every figure is read from the promoted commit, never carried forward"* |
+| **Status** | ✅ **`FIXED` — QE, 2026-08-16, cycle 237.** ⛔ **QE wrote the fix, so it stays `FIXED`** (§20e) |
+| **Found** | **2026-08-16**, cycle 237's Closeout, by declining to copy either the dashboard's figure or the certification log's and reading `certification/manifest.json` for all three runs instead |
+| **Commit found** | **`2e7f5da6`** |
+
+### 🔴 The measurement
+
+| cycle | commit | record says | dashboard published |
+|---|---|---|---|
+| 235 | `251f7183` | **458 invariants** | — |
+| 236 | `9879f715` | **632 invariants** | ⛔ **`458+`** |
+| 237 | `2e7f5da6` | **632 invariants** | ✅ **632** |
+
+⛔ **Cycle 236 published cycle 235's figure**, and the certification record it was closing out said `632` in the same file it was reading the commit hash from.
+
+### ⚠️ The `+` is the part worth naming
+
+**It read `458+`, not `458`.** ⚡ **A hedge makes a stale figure unfalsifiable rather than accurate** — `458+` is *true* of `632`, and of `6320`, and it answers nothing. ⛔ **A reader cannot tell a hedged measurement from a measured one, so the `+` converts a detectable error into an undetectable one.**
+
+📁 **Same shape as the week's dominant family**: the figure was correct for a question nobody asked — *"is it at least 458?"* — while the question was *"how many are there?"*
+
+### 🔴 It is a RECURRENCE, and that is the reason for the row
+
+**The footnote directly beneath the line says so, dated cycle 232:**
+
+> *"Every figure on this line was stale, and by a wide margin… The table above it had been re-measured each cycle; this line had not, and nothing connected the two."*
+
+⛔ **A correction was made, a warning was written, and the class recurred four cycles later in the same file.** ⚡ **So the 232 repair fixed the instance and not the mechanism** — **nothing derives these figures, and Closeout activity 5 is performed by a human reading a log and typing into a table.**
+
+### ✅ Fixed here, and three more found by the same method
+
+**Re-derived rather than re-read:** **DR invariants `443` → `632`** · **frontend `3254/184` → deleted, because the record now carries it** · **reversibility head `0054` → `0057`** · **smoke `217s` → `165s`**.
+
+⚠️ **And two figures were MISLABELLED rather than stale, which is a different defect:** *"60 ADRs"* counted `README.md`; *"148 numbered architecture documents"* counted two unnumbered files. ✅ **59 and 146.** ⛔ **Those numbers were never wrong — the words above them were**, and no re-measurement would have caught it because the count matched the command that produced it.
+
+### ⛔ What this row does NOT do
+
+**Propose deriving the dashboard.** 📁 **That is [B-1001](#b-1001)'s question — whether a copy earns its place — and the answer there was *delete it*, while the answer for a health line a human reads at a glance is probably *check it*, as [B-1003](#b-1003) settled for the allocation table.** ⚡ **`backend/tests/test_runbook_allocation_table.py` is the shape that would work here.** ⛔ **Not built in this cycle, because a check written during the Closeout it is auditing is a check nobody has fire-tested.**
+
 ### B-1007 · 🟠 QE based a Closeout on `integration` rather than the certified commit, and three planning commits reached `main` outside any snapshot
 
 | | |
@@ -97,7 +142,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | **QE process** — Repository Closeout, branch sequencing |
 | **Current assignee** | **QE** |
 | **Severity** | 🟠 — ⛔ **nothing executable reached `main`.** **All three are `docs/coordination/*.toml`, and they fail the Closeout test on the SUFFIX alone.** ⚠️ **But `--audit-main` refuses, and the guarantee it states is the repository's central release claim** |
-| **Status** | 🔵 **`OPEN`** — ⛔ **`main` is NOT being rewritten** |
+| **Status** | ✅ **`FIXED` — QE, 2026-08-16, cycle 237.** ⛔ **`main` was never rewritten.** ⚡ **The sequencing was corrected and the refusal discharged itself, exactly as this row predicted below** — **measured after promoting `2e7f5da6`: `1996 commit(s)` · `214 certified` · `1782 inside a certified snapshot` · **`0` outside one**.** 📁 **The three named commits became ancestors of a certified commit and were reclassified without anybody touching them.** ⛔ **Stays `FIXED` rather than `VERIFIED`: QE wrote it** (§20e) |
 | **Found** | **2026-08-16**, by `--audit-main` immediately after cycle 236's Closeout |
 | **Commit found** | **`c0c3a5b7`** |
 

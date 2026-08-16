@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `9879f715`, 2026-08-16.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `2e7f5da6`, 2026-08-16.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,16 +12,17 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `9879f715`, 2026-08-16.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `2e7f5da6`, 2026-08-16.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`9879f715`** — ⚡ **the certified commit itself**, `promoted == certified`, **verified from `ls-remote` after the push**. **Cycle 236** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN` on the product owner's standing override — not a resolution, severity untouched** |
-| **Release candidate** | ✅ **None.** `integration` is level with `main` at the certified commit; the cycle 229 certification record follows it, and a commit cannot contain its own certificate ([§20e](CLAUDE.md), the bounded exception) |
-| **Certification** | ✅ [`9879f7158046`](certification/reports/9879f7158046.md) · migration head **`0057`** · profile **`platform`** · ✅ **eight gates, first attempt** · **DR passed** · **reversible base→head→base→head on a clean database** |
-| **Cycle 236 gates** | ⚡ **EIGHT required, all recorded** — `pytest` **5124** · coverage **95.06%** · **458+** security invariants · `mypy` strict over **920** files · `import-linter` **37/37** · `tsc` clean · **`frontend-suite` 3324 in 189 files** · **`eslint` clean** · `smoke` **24 stages in 217s** · scenario **baseline@1, 190 assertions** |
+| **`main`** | **`2e7f5da6`** — ⚡ **the certified commit itself**, `promoted == certified`, **verified against the SHA the guard named, not against `integration`'s head**. **Cycle 237** — ⛔ **and `integration` had already moved to `e4e64885` when the promotion ran, which is exactly why the rule names a SHA** |
+| **Release candidate** | ⚡ **Yes, and it is already known.** `integration` = **`e4e64885`** — D-240's two `Planning-Sync` commits, fast-forwarded ahead of the pin **without touching the working tree of the machine running the gates**. **Lane A's `c61fe9a6` (TASK-480 slice ⓐ, migration `0058`) is cycle 238's input and is not yet rebased** |
+| **Certification** | ✅ [`2e7f5da65737`](certification/reports/2e7f5da65737.md) · migration head **`0057`** · profile **`platform`** · ✅ **eight gates, first attempt** · **DR passed, 632 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** |
+| **Cycle 237 gates** | ⚡ **EIGHT required, all recorded** — `pytest` **5124** · coverage **95.06%** · **632** security invariants · `mypy` strict over **920** files · `import-linter` **37/37** · `tsc` clean · **`frontend-suite` 3324 in 189 files** · **`eslint` clean** · `smoke` **24 stages in 165s** · scenario **baseline@1, 190 assertions** |
+| 🔴 **A figure this dashboard published was transcribed, not measured — [B-1008](docs/BUGS.md)** | ⛔ **Cycle 236 printed *"458+ security invariants"*. Its own record said **632**. `458` is cycle **235**'s figure.** ⚡ **Found by refusing to carry either number forward and reading `certification/manifest.json` for all three runs instead.** 📁 **The footnote at the bottom of this section warns against precisely this and was written at cycle 232 — the class recurred four cycles later, in the file that documents it** |
 | ⚠️ **What the Security Invariant COUNT measures, and it is narrower than its name** | 🔴 **It counts test ids, and only `IMMUTABLE_TENANT_TABLES` is parametrized** — three sites in `test_tenancy_policy.py`, lines 338, 363 and 391. ⛔ **`TENANT_OWNED_TABLES` is iterated INSIDE single tests**, so registering a tenant-owned table adds **assertions and no ids**. ⚡ **Cycle 231's `+3` was one table entering the immutable set, times three parametrized tests; its three tenant-owned registrations moved the figure by ZERO.** ✅ **Those registrations are still enforced — the checks fail if a registered table lacks its policies — they are simply not counted.** ⛔ **So a cycle can protect more and move this number not at all, and a lane citing it as evidence that its registration is not decorative is citing the one figure insensitive to that.** 📁 **Measured by Lane C, verified independently by QE** |
-| **Measured beyond the record** | ⚡ **QE ran the gates certification names but does not capture** — `eslint` **clean repository-wide** · **frontend suite 3254 across 184 files** · **Disaster Recovery passed** with **443** invariants against the restarted production stack · **migrations reversible to base and back at head `0054`**. ⛔ **[B-122](docs/BUGS.md): `frontend-suite` and `eslint` have run in **0 of 227** certification runs, and a red frontend suite reached `main` under a CERTIFIED stamp. `vitest` now runs in QE's cheap gates before every pin.** **A lane's figure is a claim; QE publishes a measurement** |
+| **Measured beyond the record** | ⚡ **QE ran the gates certification names but does not capture** — **Disaster Recovery passed** with **632** invariants against the restarted production stack · **migrations reversible to base and back at head `0057`**, on a disposable clean database. ⛔ **[B-122](docs/BUGS.md): `frontend-suite` and `eslint` have run in **0 of 227** certification runs, and a red frontend suite reached `main` under a CERTIFIED stamp. Both are now REQUIRED and both are recorded above.** **A lane's figure is a claim; QE publishes a measurement** — 🔴 **and this row is where that failed: it carried `443`, `3254/184` and head `0054` forward for three cycles ([B-1008](docs/BUGS.md))** |
 | ⚡ **Proven at runtime, not by reading** | **The `distDir` move ([B-219](docs/BUGS.md)) changed where the production image finds its static assets.** QE warned that copying to `.next/static` would produce **an image that starts and serves no CSS** — silent, and worse than a build failure. **Measured on the built image: `/_next/static/css/d8cb99ad71c03326.css`, `200`, 40 589 bytes.** ⛔ **The predicted failure mode is disproven on the one tree that could have had it** |
 | ⛔ **Promotion** | `promoted == certified` ✓ *(verified from `ls-remote` after the push, not from `rev-parse` before it)* · `--audit-main`: **1906 commits — 209 certified targets, 1697 inside a certified snapshot. None outside one** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN`, on the product owner's explicit override** — **not a resolution, and the severity was not touched** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
@@ -34,7 +35,9 @@
 
 > ⚠️ **`Load more` was replaced rather than kept, and that is the standard being applied rather than a preference.** 📁 **The two are different products**: one accumulates the page under somebody scanning it and makes *"which page am I on"* unanswerable. ✅ **`Previous`/`Next` over the existing keyset cursor, with a page number and NO denominator** — **keyset cannot know how many pages exist without reading them, and a total would be fabricated.**
 
-**Repository health:** **5124 backend tests** · ⚠️ **95.06% coverage** ✅ *(floor 95 — **6 basis points**)* · **3324 frontend tests** across **189 files** · **458+ Security Invariants** · mypy strict over **920 files** · **58 migrations**, `0000`–`0057` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **217s** · **disaster recovery passing** · **migrations reversible on a clean database** · **20 module directories** · **60 ADRs** · **148 numbered architecture documents**.
+**Repository health:** **5124 backend tests** · ⚠️ **95.06% coverage** ✅ *(floor 95 — **6 basis points**)* · **3324 frontend tests** across **189 files** · **632 Security Invariants** · mypy strict over **920 files** · **58 migrations**, `0000`–`0057` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **165s** · **disaster recovery passing** · **migrations reversible on a clean database** · **20 module directories** · **59 ADRs** · **146 numbered architecture documents**.
+
+> ⚠️ **Two figures on that line were mislabelled rather than stale, and the distinction matters because only one of them is a measurement error.** ⛔ **It read *"60 ADRs"* — `ls adr/*.md`, which counts `README.md`** — **and *"148 numbered architecture documents"*, which counted `ARCHITECTURE_VALIDATION_M1_2.md` and `provider-qualification.md`, neither of them numbered. ✅ **59 and 146 are what the words claim.** ⚡ **The number was right for a question nobody asked** — the same shape as everything else this week, and the reason to re-derive a figure rather than re-read it.
 
 > 🔴 **Every figure on this line was stale, and by a wide margin — it read 4419 tests, 95.03%, 403 invariants, 867 files and 49 migrations against a repository that has 4811, 95.12%, 446, 900 and 57.** ⚠️ **The table above it had been re-measured each cycle; this line had not, and nothing connected the two.** 📁 **Corrected 2026-08-15 at cycle 232 — the same defect class as [B-1001](docs/BUGS.md) one file over: a second copy of a fact, correct when written, wrong the first time the fact moved.**
 
@@ -108,6 +111,66 @@
 | **28 others** | various | mixed | — | See the register |
 
 **37 items · 5 closed.** ⚠️ **Four items have now waited five cycles or more, and every one of them needs the same person.** [C-024](docs/LANE_COORDINATION.md) is the sharpest: Timeline's backend was proven live this cycle by `runtime-composition`, so **ten lines of routing separate a working capability from a customer.**
+
+---
+
+## 1d · Release summary — 2026-08-16, cycle 237
+
+**Promoted `2e7f5da6` from `c0c3a5b7`.** Seven commits, two lanes. **First attempt, no aborts.**
+
+### ⛔ What a customer can do that they could not before — nothing, and the summary says so
+
+**No production code is in the certified tree.** The cycle carries Lane C's register reconciliation, `TASK-480`'s release, and QE's three defect rows. ⚡ **A release summary whose honest answer is *nothing* is worth writing rather than dressing up** — the alternative is a dashboard where every cycle sounds like progress.
+
+### 🔴 QE certified a cycle it believed was warranted by a defect
+
+`--next-cycle` classified `da7d3d7f` as executable. **It is four planning files** — `BACKLOG.md`, `DECISION_REGISTER.md`, `coordination.toml`, `queues/lane-a.toml`. The classification comes from `.toml` matching no `IMPACT_RULE` and falling through to `platform` ([B-1005](docs/BUGS.md)).
+
+**Run anyway, for two reasons that are not *the tool said so*:**
+
+| | |
+|---|---|
+| **Default broader when impact is uncertain** | The cost is one gate run. The cost of being wrong the other way is something executable going uncertified |
+| **It discharges [B-1007](docs/BUGS.md)** | `--audit-main` refused **3** commits before this cycle and refuses **0** after — 1996 commits, 214 certified, 1782 in-snapshot |
+
+⚡ **B-1007 predicted its own healing and was filed anyway**: *"a violation that heals silently is one nobody learns from."* **It healed. The row is why anyone can now say so.**
+
+### ✅ [D-240](docs/DECISION_REGISTER.md) ruled B-1005 path-based, on a counter-example QE found
+
+⛔ **The obvious fix is the unsafe one.** `docs/coordination/modules.toml` is read by `certification-guard.py:840` inside `--audit-claims` — **a file under `docs/` that is an operand of a gate.** Adding `.toml` to `CLOSEOUT_SUFFIXES` would make an ownership change Closeout-legal, so it could reach `main` outside a snapshot and silently alter what the claim audit accepts. 📁 **[B-014](docs/BUGS.md), one directory over.**
+
+### ⚡ A planning correction reached every lane *during* the certification
+
+```
+origin/integration  2e7f5da6 → e4e64885     working tree  2e7f5da6 (unmoved)
+```
+
+**`git push origin <sha>:refs/heads/integration` moves the ref and never the working tree.** The gates went on measuring the pin while lanes polled the correction; the pin stayed an ancestor, so `promoted == certified` held. 📁 **This is what makes [D-136](docs/DECISION_REGISTER.md)'s priority class satisfiable at all — [C-422](docs/LANE_COORDINATION.md) cost two days for want of it.**
+
+### 🔴 Three things the Closeout found by re-deriving instead of re-reading
+
+| | |
+|---|---|
+| **[B-1008](docs/BUGS.md)** | The dashboard published cycle **235**'s invariant count during cycle **236**'s Closeout — `458+` where the record said `632`. ⚠️ **The `+` is the worst part: a hedge makes a stale figure unfalsifiable rather than accurate.** A recurrence, four cycles after the footnote warning against it, in the same file |
+| **Two mislabelled figures** | *"60 ADRs"* counted `README.md`; *"148 numbered architecture documents"* counted two unnumbered files. ✅ **59 and 146.** ⛔ **No re-measurement would have caught these** — the counts matched the commands that produced them, and the words above them asked something else |
+| **Closeout activity 3, skipped twice** | [TASK-1473](docs/BACKLOG.md) and [TASK-1421](docs/BACKLOG.md) read `IN VALIDATION` and were on `main`. ⚡ **Their rows cited `45fd90c8` and `9a03ffd6` — SHAs on NO ref**, orphaned when Lane A rebased. **`git show` still works on both**, so reading the SHA cannot distinguish them from live commits; `merge-base --is-ancestor` can |
+
+### ⛔ Lane B's slice has been stranded nine days, and no instrument reported it
+
+`origin/lane-b-commercial-profile`: **1163 behind**, merge-base **2026-08-07**, **cannot fast-forward**, carrying `affiliation_reader.py` and **276 test lines** never offered to QE. 📁 **The board records what a lane claimed, not that its branch drifted out of reach.** ✅ **[D-240](docs/DECISION_REGISTER.md) ruled it — adopt only on a bounded relevance check, and *"do not spend time preserving historical work merely because it exists."***
+
+### ⚡ The week's dominant defect family reached six instances, two of them found by lanes
+
+**An instrument answering a checkable question adjacent to the one asked** — written, every time, by somebody who believed they were checking the real one.
+
+| The question | What the instrument answered |
+|---|---|
+| Does the repository satisfy the port? | Does a method with that **name** exist? *(Lane A, `hasattr`)* |
+| Did the claim satisfy step 5? | Did it exceed the **ceiling**? *(`--audit-claims`)* |
+| Is this commit documentation? | Does its **suffix** end `.md`/`.json`? *(B-1005, both directions in one poll)* |
+| Is this row's work promoted? | Does the **SHA resolve**? *(the orphaned board citations)* |
+| How many invariants are there? | Is it **at least** 458? *(B-1008's hedge)* |
+| Is `main` certified? | …**using the manifest in whichever tree you are standing in** *(B-1006)* |
 
 ---
 
