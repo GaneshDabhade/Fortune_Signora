@@ -7,9 +7,16 @@
 # oldest block, which the notice itself described as retired — and a rebase
 # briefing written to stop a cost that had already recurred three times was
 # never delivered once. Keep each notice under 400 characters and REPLACE it.
+#
+# ⛔ AND IT MAY NAME ONLY ROWS IN THAT LANE'S COMPUTED BACKLOG — B-221/B-427.
+# A notice naming a row the lane holds, or one not yet integrated, is WITHHELD
+# WHOLE and the author is not told. Measured 2026-08-16: the previous notice
+# named TASK-495, which Lane A was already building, so the guard suppressed
+# the entire message including the part that mattered. The guard is right; the
+# author has to check. Name only what the lane can claim, or name no row.
 
 ["Lane A"]
-notice = "TASK-495's body contradicted its own Status in SIX cells, not the three you found — the sixth is the Definition of Done. Repaired; C-1436 carries it. The vendor is not this slice: nothing in it leaves the process. One correction to your shape — ai_platform registers where a credential exists AND deliberately does not fall back, so in-app is a channel, never a substitute for one nobody configured."
+notice = "Workflow 13 is the product owner's single sequence and TASK-1484 is now on integration, so the palette and the status pill are claimable the moment the bell lands. The design names SEVEN palette groups; shell-palette.tsx quotes it as four, which is why it reads finished. Render what /ready already returns. Do not touch the filter strip or invent a context drawer."
 
 ["Lane C"]
 notice = ""
