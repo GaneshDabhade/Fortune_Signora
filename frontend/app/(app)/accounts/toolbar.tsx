@@ -4,6 +4,8 @@ import { Button, Select } from '@/components/ui';
 import {
   COLUMNS,
   type ColumnId,
+  conditionsOf,
+  without,
   type Density,
   type Filters,
   NO_FILTERS,
@@ -57,6 +59,7 @@ export function AccountsToolbar({
   loaded,
 }: ToolbarProps) {
   const chosen = new Set<ColumnId>(columns);
+  const conditions = conditionsOf(filters);
 
   return (
     <div
@@ -64,32 +67,57 @@ export function AccountsToolbar({
       className="mb-4 flex flex-col gap-3 border-b border-border-soft pb-4"
     >
       <div className="flex flex-wrap items-center gap-2">
-        {/* 📁 *"Density"* — ⚡ **the profile's own vocabulary**, because a person
-            already sets this about themselves. */}
-        <Select
-          label="Density"
-          labelHidden
-          value={density}
-          onChange={(event) => onDensity(event.target.value as Density)}
-          options={[
-            { value: 'comfortable', label: 'Comfortable' },
-            { value: 'compact', label: 'Compact' },
-          ]}
-        />
 
       </div>
 
-      {/* 📁 *"Filters · Add condition"* — ⛔ **only over fields the contract
-          publishes.** 📁 The design's *"Renewal within 90 days"* and *"Score
-          below 50"* are both [C-209](../../../../docs/LANE_COORDINATION.md)'s. */}
-      <div className="flex flex-wrap items-end gap-2" role="group" aria-label="Filters">
-        {/* 📁 **The design's own label**, in its own treatment — 11px, 600,
-            +0.05em, uppercase, `--ink-4`. ⚡ §04 reserves uppercase for column
-            heads and one eyebrow per page, **and this is the page's one.** */}
-        <span className="self-center text-2xs font-semibold uppercase tracking-[0.05em] text-content-subtle">
+      {/* 🔴 **The design's filter row** — 📁 *"FILTERS · chips · ＋ Add
+          condition · Smart filter"*.
+
+          ⚡ **A chip per ACTIVE condition, in the design's grammar**: field in
+          `--ink-4`, operator in `--ink-3`, value at 600, and a remove.
+          ⛔ **Never a chip per available field** — a row reading *"Any kind ·
+          Any source · Any time"* would state three conditions where none
+          exist.
+
+          ⛔ **Smart filter is absent.** 📁 The design's is *"Procurement never
+          engaged"* — a model-derived condition carrying the intelligence tint.
+          **Nothing derives one**, and a chip in that hue that ran an ordinary
+          predicate would borrow the one treatment §14 reserves: *"nothing
+          non-generated may borrow it."* */}
+      <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filters">
+        <span className="text-2xs font-semibold uppercase tracking-[0.05em] text-content-subtle">
           Filters
         </span>
-        <label className="flex flex-col gap-1 text-xs text-content-muted">
+
+        {conditions.map((condition) => (
+          <span
+            key={condition.id}
+            className="inline-flex h-control-sm items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs text-content"
+          >
+            <span className="text-content-subtle">{condition.field}</span>
+            <span className="text-content-muted">{condition.operator}</span>
+            <span className="font-semibold">{condition.value}</span>
+            <button
+              type="button"
+              onClick={() => onFilters(without(filters, condition.id))}
+              // ♿ **The name says which condition goes**, because five chips
+              // whose buttons all read "Remove" are five identical controls.
+              aria-label={`Remove the ${condition.field} condition`}
+              className="ml-0.5 rounded text-content-subtle hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
+            >
+              ×
+            </button>
+          </span>
+        ))}
+
+        {/* 📁 *"+ Add condition"* — dashed, `--line`, the design's own
+            treatment for an affordance that adds rather than states. */}
+        <details className="inline-block">
+          <summary className="inline-flex h-control-sm cursor-pointer items-center rounded-md border border-dashed border-border px-2.5 text-xs text-content-muted hover:text-content">
+            + Add condition
+          </summary>
+          <div className="mt-2 flex flex-wrap items-end gap-2 rounded-md border border-border-soft bg-surface p-3">
+            <label className="flex flex-col gap-1 text-xs text-content-muted">
           Name contains
           <input
             type="search"
@@ -146,6 +174,8 @@ export function AccountsToolbar({
             Clear filters
           </Button>
         ) : null}
+          </div>
+        </details>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -168,6 +198,20 @@ export function AccountsToolbar({
               ? `${shown} of ${loaded} loaded`
               : `${loaded} loaded`}
         </p>
+
+
+        {/* 📁 *"Density"* — ⚡ **the profile's own vocabulary**, because a person
+            already sets this about themselves. */}
+        <Select
+          label="Density"
+          labelHidden
+          value={density}
+          onChange={(event) => onDensity(event.target.value as Density)}
+          options={[
+            { value: 'comfortable', label: 'Comfortable' },
+            { value: 'compact', label: 'Compact' },
+          ]}
+        />
 
         <details className="text-xs">
           <summary className="cursor-pointer text-content-muted">

@@ -257,3 +257,73 @@ export function toCsv(
   );
   return [header, ...body].join('\n');
 }
+
+/**
+ * **One active condition, in the design's own grammar** — 📁 `Fortune Signora
+ * Companies.dc.html`.
+ *
+ * > **`Renewal · within · 90 days ×`** — ⚡ **three parts and a remove**, where
+ * > the field is `--ink-4`, the operator `--ink-3` and the value 600 weight.
+ *
+ * ⛔ **The design's own four conditions cannot be built** — *Renewal within 90
+ * days*, *Score below 50*, *Last touch older than 14 days* and *Procurement
+ * never engaged* are all [C-209](../../docs/LANE_COORDINATION.md)'s, with no
+ * field behind any of them.
+ *
+ * ✅ **The grammar is the design's and the conditions are this contract's.**
+ * ⚠️ **That distinction is the whole point**: the shape a seller reads is the
+ * design's, and every value in it is one the product can actually answer.
+ */
+export interface Condition {
+  readonly id: keyof Filters;
+  readonly field: string;
+  readonly operator: string;
+  readonly value: string;
+}
+
+/**
+ * **The active conditions, in the order the design reads them.**
+ *
+ * ⛔ **Only what is set.** 📁 The design draws a chip per *condition*, never a
+ * chip per available field — **a row reading *Any kind*, *Any source*, *Any time*
+ * would state three conditions where none exist.**
+ */
+export function conditionsOf(filters: Filters): readonly Condition[] {
+  const out: Condition[] = [];
+  if (filters.name !== '')
+    out.push({ id: 'name', field: 'Name', operator: 'contains', value: filters.name });
+  if (filters.kind !== null)
+    out.push({ id: 'kind', field: 'Kind', operator: 'is', value: filters.kind });
+  if (filters.source !== null)
+    out.push({ id: 'source', field: 'Source', operator: 'is', value: filters.source });
+  if (filters.staleAfterDays !== null)
+    out.push({
+      id: 'staleAfterDays',
+      field: 'Last observed',
+      operator: 'older than',
+      value: `${filters.staleAfterDays} days`,
+    });
+  // ⛔ **Its own condition, not a value of the one above.** ⚡ *Never observed*
+  // and *older than 30 days* are different questions, and a chip that folded
+  // them together could not be removed independently.
+  if (filters.neverObserved)
+    out.push({ id: 'neverObserved', field: 'Last observed', operator: 'is', value: 'Never' });
+  return out;
+}
+
+/** ⚡ **Clearing one condition leaves the others standing** — the `×` on a chip
+ *  removes that condition and nothing else. */
+export function without(filters: Filters, id: keyof Filters): Filters {
+  switch (id) {
+    case 'name':
+      return { ...filters, name: '' };
+    case 'kind':
+      return { ...filters, kind: null };
+    case 'source':
+      return { ...filters, source: null };
+    case 'staleAfterDays':
+      return { ...filters, staleAfterDays: null };
+    case 'neverObserved':
+      return { ...filters, neverObserved: false };
+  }
+}

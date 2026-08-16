@@ -61,6 +61,33 @@ export function withoutComments(source: string): string {
       continue;
     }
 
+    /**
+     * 🔴 **A regex literal is not division, and its contents are not code.**
+     *
+     * ⛔ **This scanner read `/[",\\n]/.test(v)` as a `/` followed by a
+     * string.** The `"` inside the character class opened a quote that never
+     * closed, so **everything after it in the file was treated as string
+     * content** — including every comment, which then went unstripped.
+     *
+     * ⚠️ **Latent for as long as that helper has existed.** 📁 It only became
+     * visible when a `/**` was added later in the same file, and the corpus
+     * guard caught it — **which is the guard working.**
+     *
+     * ⚡ **Narrow deliberately: only `/[` starts a skip**, which is a character
+     * class and can never be division. ⛔ **A general regex-vs-division lexer
+     * is a JavaScript parser**, and this helper does not need one — the wider
+     * guess is the one that would silently swallow real code.
+     */
+    if (c === '/' && next === '[') {
+      i += 2;
+      while (i < source.length && source[i] !== '/') {
+        if (source[i] === '\\') i += 1;
+        i += 1;
+      }
+      i += 1;
+      continue;
+    }
+
     if (c === '/' && next === '/') {
       while (i < source.length && source[i] !== '\n') i += 1;
       continue;
