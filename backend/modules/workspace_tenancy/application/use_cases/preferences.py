@@ -24,6 +24,8 @@ from modules.workspace_tenancy.domain.preferences import (
     AnswerStyle,
     Density,
     PersonPreferences,
+    ScreenReaderVerbosity,
+    TextSize,
     Theme,
     TimeFormat,
 )
@@ -61,6 +63,19 @@ class ChangePreferencesInput:
     always_show_citations: Maybe[bool] = UNSET
     answer_style: Maybe[AnswerStyle] = UNSET
     confidence_floor: Maybe[int] = UNSET
+    # ── The design's Profile, Language & region and Accessibility panels ──
+    job_title: Maybe[str | None] = UNSET
+    department: Maybe[str | None] = UNSET
+    mobile: Maybe[str | None] = UNSET
+    date_format: Maybe[str | None] = UNSET
+    number_format: Maybe[str | None] = UNSET
+    week_starts_on: Maybe[str | None] = UNSET
+    reduce_motion: Maybe[bool] = UNSET
+    increase_contrast: Maybe[bool] = UNSET
+    always_show_focus_ring: Maybe[bool] = UNSET
+    underline_links: Maybe[bool] = UNSET
+    text_size: Maybe[TextSize] = UNSET
+    screen_reader_verbosity: Maybe[ScreenReaderVerbosity] = UNSET
 
 
 class GetPreferencesUseCase:
@@ -117,6 +132,22 @@ class ChangePreferencesUseCase:
             ),
             answer_style=pick(input_.answer_style, current.answer_style),
             confidence_floor=pick(input_.confidence_floor, current.confidence_floor),
+            job_title=pick(input_.job_title, current.job_title),
+            department=pick(input_.department, current.department),
+            mobile=pick(input_.mobile, current.mobile),
+            date_format=pick(input_.date_format, current.date_format),
+            number_format=pick(input_.number_format, current.number_format),
+            week_starts_on=pick(input_.week_starts_on, current.week_starts_on),
+            reduce_motion=pick(input_.reduce_motion, current.reduce_motion),
+            increase_contrast=pick(input_.increase_contrast, current.increase_contrast),
+            always_show_focus_ring=pick(
+                input_.always_show_focus_ring, current.always_show_focus_ring
+            ),
+            underline_links=pick(input_.underline_links, current.underline_links),
+            text_size=pick(input_.text_size, current.text_size),
+            screen_reader_verbosity=pick(
+                input_.screen_reader_verbosity, current.screen_reader_verbosity
+            ),
         )
         await self._preferences.save(updated)
         return updated

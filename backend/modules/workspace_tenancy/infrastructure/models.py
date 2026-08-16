@@ -326,6 +326,28 @@ class PersonPreferencesModel(Base, TimestampMixin, AuditMixin):
     answer_style: Mapped[str] = mapped_column(String(16), nullable=False, default="direct")
     confidence_floor: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
 
+    # ── The design's Profile, Language & region and Accessibility panels ──
+    # 📁 Migration `0060`. ⚡ **Columns on a table that is already
+    # person-scoped**, so `0044`'s tenancy policy covers them unchanged.
+    job_title: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    department: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    mobile: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    #: ⛔ **Text, not an enum** — the design shows one value each and lists no
+    #: options; `language` and `timezone` above are stored the same way.
+    date_format: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    number_format: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    week_starts_on: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    #: 🔴 **The override.** The system's own setting stays with the browser —
+    #: `prefers-reduced-motion` already drives the shell.
+    reduce_motion: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    increase_contrast: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    always_show_focus_ring: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    underline_links: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    text_size: Mapped[str] = mapped_column(String(8), nullable=False, default="100")
+    screen_reader_verbosity: Mapped[str] = mapped_column(
+        String(16), nullable=False, default="detailed"
+    )
+
     # 🔴 **[TASK-1422] — when this person last entered THIS workspace.**
     # ⛔ **A timestamp per workspace, never a pointer to one**: the answer is
     # derived over live memberships, so a row for a workspace somebody has left

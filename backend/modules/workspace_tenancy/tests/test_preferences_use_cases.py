@@ -21,6 +21,8 @@ from modules.workspace_tenancy.application.use_cases.preferences import (
     SkipInviteUseCase,
 )
 from modules.workspace_tenancy.domain.preferences import (
+    ScreenReaderVerbosity,
+    TextSize,
     Density,
     PersonPreferences,
     Theme,
@@ -67,6 +69,62 @@ class TestAPartialChange:
         assert after.theme is Theme.DARK
         assert after.pronouns == "she/her"
         assert after.timezone == "Europe/Copenhagen"
+
+    async def test_the_twelve_profile_locale_and_accessibility_fields_all_survive(
+        self,
+    ) -> None:
+        """🔴 **[B-264](../../../../docs/BUGS.md)'s shape, asserted for the
+        fields migration `0060` added.**
+
+        ⚠️ **The defect was a use case that REBUILT `PersonPreferences` from
+        named fields**, so every field added after it was written was silently
+        dropped — *"every profile edit reset `last_entered_at`"*.
+
+        ⛔ **A test asserting each new field's default would have passed against
+        that defect.** ✅ **Setting all twelve, then changing something else
+        entirely, is what catches it** — and it is the shape that keeps catching
+        it for the thirteenth.
+        """
+        repo = FakePersonPreferencesRepository()
+        change = ChangePreferencesUseCase(preferences=repo)
+        ws, person = uuid4(), uuid4()
+
+        await change.execute(
+            ChangePreferencesInput(
+                workspace_id=ws,
+                person_id=person,
+                job_title="Head of Revenue Operations",
+                department="Revenue",
+                mobile="+45 20 00 00 00",
+                date_format="31 Dec 2026",
+                number_format="1.234,56",
+                week_starts_on="Monday",
+                reduce_motion=True,
+                increase_contrast=True,
+                always_show_focus_ring=True,
+                underline_links=False,
+                text_size=TextSize.ONE_TWENTY_FIVE,
+                screen_reader_verbosity=ScreenReaderVerbosity.CONCISE,
+            )
+        )
+
+        after = await change.execute(
+            ChangePreferencesInput(workspace_id=ws, person_id=person, theme=Theme.DARK)
+        )
+
+        assert after.theme is Theme.DARK
+        assert after.job_title == "Head of Revenue Operations"
+        assert after.department == "Revenue"
+        assert after.mobile == "+45 20 00 00 00"
+        assert after.date_format == "31 Dec 2026"
+        assert after.number_format == "1.234,56"
+        assert after.week_starts_on == "Monday"
+        assert after.reduce_motion is True
+        assert after.increase_contrast is True
+        assert after.always_show_focus_ring is True
+        assert after.underline_links is False
+        assert after.text_size is TextSize.ONE_TWENTY_FIVE
+        assert after.screen_reader_verbosity is ScreenReaderVerbosity.CONCISE
 
     async def test_clearing_a_field_is_possible_and_is_not_the_same_as_omitting_it(
         self,

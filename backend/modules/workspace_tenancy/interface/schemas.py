@@ -50,6 +50,8 @@ from modules.workspace_tenancy.domain.preferences import (
     AnswerStyle,
     Density,
     PersonPreferences,
+    ScreenReaderVerbosity,
+    TextSize,
     Theme,
     TimeFormat,
 )
@@ -461,6 +463,18 @@ class PreferencesResponse(BaseModel):
     always_show_citations: bool
     answer_style: AnswerStyle
     confidence_floor: int
+    job_title: str | None
+    department: str | None
+    mobile: str | None
+    date_format: str | None
+    number_format: str | None
+    week_starts_on: str | None
+    reduce_motion: bool
+    increase_contrast: bool
+    always_show_focus_ring: bool
+    underline_links: bool
+    text_size: TextSize
+    screen_reader_verbosity: ScreenReaderVerbosity
 
     #: 🔴 **[TASK-1424] — whether this person has closed the first-run overlay.**
     #: ⛔ **The FACT, not the moment.** The timestamp is stored, and a client
@@ -489,6 +503,18 @@ class PreferencesResponse(BaseModel):
             always_show_citations=prefs.always_show_citations,
             answer_style=prefs.answer_style,
             confidence_floor=prefs.confidence_floor,
+            job_title=prefs.job_title,
+            department=prefs.department,
+            mobile=prefs.mobile,
+            date_format=prefs.date_format,
+            number_format=prefs.number_format,
+            week_starts_on=prefs.week_starts_on,
+            reduce_motion=prefs.reduce_motion,
+            increase_contrast=prefs.increase_contrast,
+            always_show_focus_ring=prefs.always_show_focus_ring,
+            underline_links=prefs.underline_links,
+            text_size=prefs.text_size,
+            screen_reader_verbosity=prefs.screen_reader_verbosity,
             first_run_dismissed=prefs.first_run_dismissed_at is not None,
             invite_hidden=prefs.invite_is_hidden(now),
         )
@@ -526,6 +552,25 @@ class ChangePreferencesRequest(BaseModel):
     confidence_floor: int | None = Field(
         default=None, ge=MIN_CONFIDENCE_FLOOR, le=MAX_CONFIDENCE_FLOOR
     )
+    #: 📁 **The design's Profile panel** — *Job title*, *Department*,
+    #: *Mobile number*. ⚡ **Bounded like every other free-text field here.**
+    job_title: str | None = Field(default=None, max_length=120)
+    department: str | None = Field(default=None, max_length=120)
+    mobile: str | None = Field(default=None, max_length=120)
+    #: 📁 **Language & region.** ⛔ **No enum**: the design shows one value each
+    #: and lists no options, so constraining them here would decide which
+    #: formats Signora supports — a product question, not a schema one.
+    date_format: str | None = Field(default=None, max_length=120)
+    number_format: str | None = Field(default=None, max_length=120)
+    week_starts_on: str | None = Field(default=None, max_length=120)
+    #: 📁 **Accessibility.** ⚡ `reduce_motion` is the OVERRIDE — the device's
+    #: own `prefers-reduced-motion` already drives the shell and is not stored.
+    reduce_motion: bool | None = None
+    increase_contrast: bool | None = None
+    always_show_focus_ring: bool | None = None
+    underline_links: bool | None = None
+    text_size: TextSize | None = None
+    screen_reader_verbosity: ScreenReaderVerbosity | None = None
 
 
 # ── Capability roles (TASK-1479 ⓸, ADR-0410) ────────────────────────────────

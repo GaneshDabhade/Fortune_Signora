@@ -107,6 +107,26 @@ class TimeFormat(StrEnum):
     TWELVE_HOUR = "12h"
 
 
+class TextSize(StrEnum):
+    """📁 The design's segmented control: *100% · 112% · 125%*.
+
+    ⚡ **Stored without the percent sign** — the symbol is how it is rendered,
+    not what it is, and a value carrying its own formatting is one a second
+    surface has to strip.
+    """
+
+    HUNDRED = "100"
+    ONE_TWELVE = "112"
+    ONE_TWENTY_FIVE = "125"
+
+
+class ScreenReaderVerbosity(StrEnum):
+    """📁 The design's segmented control: *Concise · Detailed*."""
+
+    CONCISE = "concise"
+    DETAILED = "detailed"
+
+
 @dataclass(frozen=True, slots=True)
 class PersonPreferences:
     """One person's choices, inside one workspace.
@@ -195,6 +215,43 @@ class PersonPreferences:
     #: workspace AI floor exists**, so the personal floor is stored and the
     #: comparison is not asserted ([C-249](../../../../docs/LANE_COORDINATION.md)).
     confidence_floor: int = MIN_CONFIDENCE_FLOOR
+
+    # ── Profile ───────────────────────────────────────────────────────────
+    #: 📁 The design's *Job title*, *Department* and *Mobile number*.
+    #: ⚠️ **`None` means not chosen, never a default dressed as an answer** —
+    #: the surface renders what the person entered or nothing at all.
+    job_title: str | None = None
+    department: str | None = None
+    mobile: str | None = None
+
+    # ── Language & region ─────────────────────────────────────────────────
+    #: ⛔ **Text rather than an enum, and deliberately.** ⚡ The design shows
+    #: ONE value for each — *"31 Dec 2026"*, *"1.234,56"*, *"Monday"* — and
+    #: never lists the options. **Inventing a `DateFormat` enum from a single
+    #: sample would decide which formats Signora supports**, which is a product
+    #: question this file is not entitled to answer. 📁 `language` and
+    #: `timezone` above are stored the same way for the same reason.
+    date_format: str | None = None
+    number_format: str | None = None
+    week_starts_on: str | None = None
+
+    # ── Accessibility ─────────────────────────────────────────────────────
+    #: 🔴 **The OVERRIDE, not the system's setting.** 📁 The design shows
+    #: *"On — from system"*, and the system half already works without a
+    #: column: `globals.css` carries `@media (prefers-reduced-motion: reduce)`
+    #: and the shell uses `motion-reduce:` throughout. ⛔ **Defaulting this true
+    #: would force reduced motion on everybody who never opened the screen**,
+    #: and storing what the device already reports is the hidden input
+    #: [§2](../../../../CLAUDE.md) forbids.
+    reduce_motion: bool = False
+    increase_contrast: bool = False
+    always_show_focus_ring: bool = False
+    #: ⚡ **On by default, because the design shows it on.** ⛔ Links that
+    #: stopped being underlined for somebody who never opened this screen would
+    #: be a regression delivered by a migration.
+    underline_links: bool = True
+    text_size: TextSize = TextSize.HUNDRED
+    screen_reader_verbosity: ScreenReaderVerbosity = ScreenReaderVerbosity.DETAILED
 
     def entered(self, at: datetime) -> PersonPreferences:
         """Record that this person is in this workspace, now.

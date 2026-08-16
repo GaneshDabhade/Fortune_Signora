@@ -8,11 +8,14 @@ not be indistinguishable from one they picked.
 
 from __future__ import annotations
 
+from dataclasses import replace
 from uuid import uuid4
 
 from modules.workspace_tenancy.domain.preferences import (
     Density,
     PersonPreferences,
+    ScreenReaderVerbosity,
+    TextSize,
     Theme,
     TimeFormat,
 )
@@ -105,3 +108,47 @@ class TestTheAggregateDoesNotKnowWhatAThemeLooksLike:
 
         with pytest.raises(ValueError):
             Theme("solarized")
+
+
+class TestTheProfileLocaleAndAccessibilityFieldsRoundTrip:
+    """📁 **The finalized User Profile design's remaining three panels** —
+    migration `0060`.
+
+    ⚠️ **The preservation guarantee is asserted through the USE CASE**, in
+    `test_preferences_use_cases.py` — 📁 [B-264](../../../../docs/BUGS.md)'s
+    defect lived there, and a test that called `replace` directly would assert
+    that `dataclasses.replace` preserves fields, **which is a guard that cannot
+    fail** ([§2](../../../../CLAUDE.md)).
+    """
+
+    def test_a_person_who_has_never_opened_the_screen_has_every_default(self) -> None:
+        """⚡ **The absence of a row is not the absence of an answer.**
+
+        ⛔ **`underline_links` defaults ON and `reduce_motion` defaults OFF**, and
+        neither is arbitrary: 📁 the design shows links underlined, and
+        **defaulting reduced motion true would force it on everybody who never
+        opened the screen** — the device's own `prefers-reduced-motion` already
+        drives the shell, so this column is the override rather than the answer.
+        """
+        fresh = PersonPreferences(workspace_id=uuid4(), person_id=uuid4())
+
+        assert fresh.underline_links is True
+        assert fresh.reduce_motion is False
+        assert fresh.increase_contrast is False
+        assert fresh.always_show_focus_ring is False
+        assert fresh.text_size is TextSize.HUNDRED
+        assert fresh.screen_reader_verbosity is ScreenReaderVerbosity.DETAILED
+        # ⛔ **`None` means not chosen** — never a default dressed as an answer.
+        assert fresh.job_title is None
+        assert fresh.date_format is None
+
+    def test_the_enumerated_controls_carry_exactly_the_designs_options(self) -> None:
+        """⛔ **Where the design enumerates, the type enumerates.**
+
+        ⚠️ **And where it does not, there is deliberately no enum**: `date_format`,
+        `number_format` and `week_starts_on` are text, because the design shows
+        one value each and lists no options — **inventing a `DateFormat` would
+        decide which formats Signora supports.**
+        """
+        assert [size.value for size in TextSize] == ["100", "112", "125"]
+        assert [v.value for v in ScreenReaderVerbosity] == ["concise", "detailed"]
