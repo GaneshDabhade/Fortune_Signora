@@ -1117,10 +1117,25 @@ def _notice(lane: str, reachable: frozenset[str] | set[str] = frozenset()) -> st
     text = text.replace('"', "'")
     if len(text) <= _NOTICE_MAX:
         return text
+    # ⛔ **The marker must say HOW MUCH was dropped, not only that something was
+    # — B-437.** 🔴 Lane A's notice reached 5,022 characters across three
+    # appended blocks and **92% of it was discarded**, silently. ⚠️ **The half
+    # that survives is the OLDEST**, because appending puts new text past the
+    # cut — so a briefing written to stop a recurring cost had never once been
+    # delivered, and the marker said only *"TRUNCATED at 400 chars"*, which
+    # reads like a tidy ellipsis rather than a deletion.
+    #
+    # ⚡ **The generator was right and the authoring was wrong**: this field is
+    # ONE current line, replaced (`_NOTICE_MAX`'s own docstring says so).
+    # ✅ **So the fix is a number the author cannot miss**, not a larger limit —
+    # raising the cap would make the projection the message log D-144 forbids.
     cut = text[:_NOTICE_MAX].rsplit(" ", 1)[0]
-    return (f"{cut} […TRUNCATED at {_NOTICE_MAX} chars. The full reasoning is in "
-            f"docs/coordination/notices.toml, and the DETAIL belongs in the backlog "
-            f"rows themselves (D-204 §6) — read those.]")
+    dropped = len(text) - len(cut)
+    return (f"{cut} […TRUNCATED — {dropped} of {len(text)} characters "
+            f"({round(100 * dropped / len(text))}%) WERE DISCARDED, and they are the "
+            f"NEWEST: this field is one current line, REPLACED, never appended to. "
+            f"The full reasoning is in docs/coordination/notices.toml, and the DETAIL "
+            f"belongs in the backlog rows themselves (D-204 §6) — read those.]")
 
 
 #: What the last `render` computed per lane, for the WRITE PATH to apply.

@@ -586,6 +586,64 @@ registry = tomllib.loads(_git("show", f"{commit}:docs/coordination/modules.toml"
 ### ✅ The fix, and why it is not a checker
 
 **The board is reconciled and the stamp corrected.** ⛔ **No new check is added.** A checker for *"did Closeout run all eleven activities?"* would be a fourth place recording what the eleven are, and **the copy is never wrong when written; it is wrong the first time the list grows.** ⚡ **What actually failed already had an instrument — `state-check` printed the finding.** **The repair is that QE reads findings, not exit codes**, and the evidence for whether it holds is the next cycle's board stamp rather than a green tick.
+### B-437 · 🟠 The one channel this office has to the lanes discards 92% of every notice, and keeps the oldest half
+
+| | |
+|---|---|
+| **Module** | **Platform Foundation** — [`infra/coordination.py`](../infra/coordination.py) `_notice`, and this office's authoring practice ([D-022](DECISION_REGISTER.md)) |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟠 — ⛔ **it silently deleted a briefing written to stop a cost that had already recurred three times, and nothing reported the deletion** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-16.** ⚠️ **Two halves and only one was code** |
+| **Found** | ⚡ **A routine poll.** **The published `origin/coordination` ref was 172 commits and two days stale, and republishing it put the notice in front of me** |
+
+**Steps to reproduce.**
+
+```
+$ python3 -c "import tomllib; n=tomllib.load(open('docs/coordination/notices.toml','rb'))['Lane A']['notice']; print(len(n))"
+5022
+```
+
+📁 **`_NOTICE_MAX = 400`, and the cut is `text[:400]`.**
+
+**Expected.** ⚡ **That a lane reads the notice this office most recently wrote.**
+
+**Actual.** 🔴 **A lane reads the FIRST 400 characters — 8% of it — and appending a new block puts the new text past the cut.** ⛔ **So the newest notice is the one that never arrives.**
+
+### 🔴 What was actually lost, which is the reason this is 🟠 and not 🟢
+
+**Three blocks, separated by `||`. Only the first was ever delivered — and the notice itself describes that first block as retired.**
+
+| Block | Delivered? | What it said |
+|---|---|---|
+| ⓐ **The Help Center reasoning** | ✅ **Yes** — ⛔ **and it is the one already marked superseded** | A correction this office had itself corrected |
+| ⓑ **`REBASE BEFORE YOUR NEXT PUSH`** | ⛔ **NEVER** | 📁 ***"third cycle it has cost QE time rather than you"*** — **with the measurement, the conflict, and the one command** |
+| ⓒ **B-424 retired** | ⛔ **NEVER** | Its own closing line: *"this office believed it had routed something it had not"* |
+
+> ⚠️ **ⓑ is the sharp one.** **A briefing written because a cost had recurred three times was never delivered once — and the cost recurred again on 2026-08-16, when Lane A's branch needed a rebase before QE could take it.**
+>
+> ⛔ **The notice that would have prevented it had been sitting in the file, published, for days.**
+
+### ✅ The fix, and the generator was NOT the wrong half
+
+📁 **`_NOTICE_MAX`'s own docstring already says what this field is: *"One line, deliberately. A notice that grows into a message log becomes…"*** ⚡ **The generator was right and the authoring was wrong.**
+
+⛔ **So the cap is NOT raised** — raising it would build exactly the message log [D-144](DECISION_REGISTER.md) forbids, and the projection is a pointer rather than a document.
+
+✅ **What changed is that the deletion now announces its own size**, because *"TRUNCATED at 400 chars"* reads like a tidy ellipsis and **4,622 discarded characters are not an ellipsis**:
+
+```
+[…TRUNCATED — 4622 of 5022 characters (92%) WERE DISCARDED, and they are the
+NEWEST: this field is one current line, REPLACED, never appended to. …]
+```
+
+✅ **And `notices.toml` now carries the rule at the top of the file, where the author is standing when they make the mistake.** **Lane A's notice is rewritten at 399 characters and survives whole.**
+
+### ⚡ The general shape, and it is one this repository keeps finding
+
+> **A limit that silently keeps the WRONG end is worse than one that refuses.** ⛔ **Both drop data; only one of them looks like it worked.**
+
+📁 **The same class as [B-270](#b-270)'s `make -n`, which answered a smaller question than the one asked, and as QE's `--since` patch-id scan at [B-1009](#b-1009), which narrowed the set without saying so.** ⚡ **In all three the tool succeeded, returned a plausible answer, and said nothing about what it had left out.**
+
 ### B-436 · 🟠 The lease reclaims itself on a dead pid, which does automatically what QE correctly refused to do by hand
 
 | | |
