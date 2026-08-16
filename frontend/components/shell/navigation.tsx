@@ -8,7 +8,6 @@ import {
   Home,
   // 📁 The design's `navIcon('key')` for `Shortcuts`.
   KeyRound,
-  LineChart,
   Lock,
   Radio,
   Settings as SettingsIcon,
@@ -191,7 +190,6 @@ const DESTINATIONS: readonly RailItem[] = [
   // reads as having no entrance at all. ⛔ **The check would have been right to
   // fail: it cannot verify what it cannot see.**
   { id: 'home', label: 'Home', href: '/w/[workspace]/home', icon: Home, depth: 1 },
-  { id: 'attention', label: 'Attention', href: '/', icon: LineChart, depth: 1 },
   { id: 'business', label: 'Your business', href: '/business', icon: Briefcase, depth: 1 },
   // 📁 *"Counts are neutral; a dot means unread and only Signals uses it."*
   // ⛔ **No count is passed** — nothing publishes one, and a rail that invents

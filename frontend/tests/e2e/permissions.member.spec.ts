@@ -67,7 +67,12 @@ test.describe('a member of the organization', () => {
     await rail.getByLabel(/Settings — restricted/).first().click();
     await expect(page.getByText(/available to an owner/i)).toBeVisible();
 
-    await expect(rail.getByRole('link', { name: 'Attention' })).toBeVisible();
+    // ⚠️ **Was `Attention`** — [TASK-1482](../../../docs/BACKLOG.md) removed
+    // that entry on [D-240](../../../docs/DECISION_REGISTER.md). ⛔ **The
+    // property is unchanged and is the point of the assertion**: a member who
+    // was just refused Settings still sees the destinations they DO hold, so
+    // the rail is not reduced to what they cannot reach.
+    await expect(rail.getByRole('link', { name: 'Your business' })).toBeVisible();
   });
 
   test('@regression typing the settings address does not open it', async ({ page }) => {

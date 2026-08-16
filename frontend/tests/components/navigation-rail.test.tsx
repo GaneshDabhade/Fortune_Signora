@@ -17,9 +17,13 @@ import { workspaceHome } from '@/lib/entry';
  * would have kept that true.**
  */
 
-// ⚡ The rail reads the current route to mark the active destination. `/` is
-// Attention's, so the active-state assertion below has something to assert.
-vi.mock('next/navigation', () => ({ usePathname: () => '/' }));
+// ⚡ The rail reads the current route to mark the active destination.
+// ⚠️ **Was `/`, which was Attention's** — [TASK-1482](../../../docs/BACKLOG.md)
+// removed that entry on [D-240](../../../docs/DECISION_REGISTER.md), so the
+// active-state assertions would have had no subject. **`/business` is now the
+// route this file marks active**, and it is a destination the same ruling
+// leaves in place.
+vi.mock('next/navigation', () => ({ usePathname: () => '/business' }));
 
 /**
  * ⚡ **The rail reads the active workspace since
@@ -72,18 +76,35 @@ describe('🔴 the rail obeys its own law', () => {
 });
 
 describe('📁 D-225 §4 — currently reachable navigation is not removed', () => {
-  it('🔴 / and /business survive the rebuild, though the design names neither', () => {
+  it('🔴 /business survives the rebuild, though the design names it nowhere', () => {
     /**
      * ⛔ ***"Do not remove currently valid, reachable navigation that is
      * required for an existing user role."*** ⚡ **This lane argued it in
      * [C-269](../../../docs/LANE_COORDINATION.md) and
      * [D-225](../../../docs/DECISION_REGISTER.md) ruled it**, so the
      * assertion is against a ruling rather than a preference.
+     *
+     * ## ⚠️ `Attention` was asserted here and is not any more
+     *
+     * 🔴 **Removed by [TASK-1482](../../../docs/BACKLOG.md) on
+     * [D-240](../../../docs/DECISION_REGISTER.md)**, and **the ruling is what
+     * makes this edit legitimate rather than a test weakened to pass**
+     * ([§11](../../../CLAUDE.md)):
+     *
+     * > ✅ ***"Home supersedes the legacy Attention surface. Do not wait for the
+     * > old 717-line worklist to be rebuilt before removing the legacy
+     * > `Attention` rail entry."***
+     *
+     * ⚡ **D-225 §4's condition was an unresolved DESIGN question — whether a
+     * replacement existed — and D-240 answers it.** ⛔ **The rule itself is
+     * untouched, which is why `/business` is still asserted here**: nothing has
+     * superseded *Your business*, so removing it would still be the defect D-225
+     * names.
      */
     render(<Navigation role="owner" roleKnown />);
     const rail = screen.getByRole('navigation', { name: 'Primary' });
 
-    expect(within(rail).getByRole('link', { name: 'Attention' })).toHaveAttribute('href', '/');
+    expect(within(rail).queryByRole('link', { name: 'Attention' })).toBeNull();
     expect(within(rail).getByRole('link', { name: 'Your business' })).toHaveAttribute(
       'href',
       '/business',
@@ -148,7 +169,7 @@ describe('🔴 Home, and the segment it is resolved from', () => {
     render(<Navigation role="owner" roleKnown />);
     expect(screen.queryByRole('link', { name: 'Home' })).toBeNull();
     // The rest of the rail is unaffected.
-    expect(screen.getByRole('link', { name: 'Attention' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Your business' })).toBeInTheDocument();
     activeWorkspace = { id: 'w1', name: 'Northwind' };
   });
 
@@ -204,7 +225,7 @@ describe('📁 restricted destinations stay visible', () => {
     render(<Navigation role={null} roleKnown />);
     const rail = screen.getByRole('navigation', { name: 'Primary' });
     expect(within(rail).queryByRole('link', { name: 'Settings' })).toBeNull();
-    expect(within(rail).getByRole('link', { name: 'Attention' })).toBeInTheDocument();
+    expect(within(rail).getByRole('link', { name: 'Your business' })).toBeInTheDocument();
   });
 });
 
@@ -240,10 +261,10 @@ describe('📁 the design\'s structure', () => {
     render(<Navigation role="owner" roleKnown collapsed />);
     const rail = screen.getByRole('navigation', { name: 'Primary' });
 
-    const attention = within(rail).getByRole('link', { name: 'Attention' });
+    const attention = within(rail).getByRole('link', { name: 'Your business' });
     expect(attention).toBeInTheDocument();
     // The visible text is gone…
-    expect(within(rail).queryByText('Attention')).toBeNull();
+    expect(within(rail).queryByText('Your business')).toBeNull();
 
     /**
      * ⚡ **…and the tooltip is now a COMPONENT rather than a `title`** —
@@ -257,14 +278,14 @@ describe('📁 the design\'s structure', () => {
      */
     expect(attention).not.toHaveAttribute('title');
     await userEvent.hover(attention);
-    expect(await screen.findByRole('tooltip')).toHaveTextContent('Attention');
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Your business');
   });
 
   it('✅ the active destination is marked for assistive technology', () => {
     // 📁 *"Active: brand tint, 600 label, brand icon."* ⛔ Colour alone never
     // carries it — `aria-current` is what a screen reader reads.
     render(<Navigation role="owner" roleKnown />);
-    expect(screen.getByRole('link', { name: 'Attention' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Your business' })).toHaveAttribute(
       'aria-current',
       'page',
     );

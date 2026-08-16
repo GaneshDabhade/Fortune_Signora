@@ -43,14 +43,19 @@ test.describe('reaching the product without a mouse', () => {
   });
 
   test('@a11y the current page is announced, not only coloured', async ({ page }) => {
-    await page.goto('/');
+    // ⚠️ **Was `/`, whose rail entry [TASK-1482](../../../docs/BACKLOG.md)
+    // removed on [D-240](../../../docs/DECISION_REGISTER.md).** ⛔ **A route with
+    // no rail entry has nothing to mark current**, so the assertion would have
+    // had no subject. ✅ **`/business` still has one and the PROPERTY is
+    // unchanged**: exactly one destination is marked, and it says which.
+    await page.goto('/business');
     const current = page
       .getByRole('navigation', { name: 'Primary' })
       .locator('[aria-current="page"]');
 
     // Colour alone tells a screen-reader user nothing about where they are.
     await expect(current).toHaveCount(1);
-    await expect(current).toContainText('Attention');
+    await expect(current).toContainText('Your business');
   });
 
   test('@a11y an account can be opened with the keyboard alone', async ({

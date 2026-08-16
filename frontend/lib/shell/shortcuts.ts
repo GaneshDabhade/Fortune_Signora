@@ -209,8 +209,11 @@ export const SHORTCUT_GROUPS: readonly ShortcutGroup[] = [
       // single destination would leave three published chords still dead.
       //
       // 🔴 **② Two of the four name a destination that does not exist.**
-      // 📁 `components/shell/navigation.tsx` publishes Home · Attention ·
-      // Your business · Signals · Reports · Settings · Docs & support —
+      // 📁 `components/shell/navigation.tsx` publishes Home · Your business ·
+      // Signals · Reports · Settings · Docs & support — ⚠️ **`Attention` was
+      // removed by [TASK-1482](../../../docs/BACKLOG.md) on
+      // [D-240](../../../docs/DECISION_REGISTER.md); this line ENUMERATES the
+      // rail, and a stale enumeration is the B-252 class waiting to happen** —
       // ⛔ **there is no `/forecast` route and no `/pipeline` route at all.**
       // ⚠️ **So `G F` and `G P` are not a missing binding, they are a missing
       // screen**, and binding them would be a shortcut to a `404`.

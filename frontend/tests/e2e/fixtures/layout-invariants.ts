@@ -415,7 +415,16 @@ export async function expectNoCrushedText(page: Page): Promise<void> {
  * breaks here breaks everywhere.
  */
 export const ROUTES: { path: string; name: string }[] = [
-  { path: '/', name: 'Attention' },
+  // ⚠️ **`/` still renders and still bears the shell** — [TASK-1482](../../../docs/BACKLOG.md)
+  // removed its RAIL ENTRY on [D-240](../../../docs/DECISION_REGISTER.md), not
+  // the route. ⛔ **It is dropped from this list because the list is what a
+  // customer can REACH from the shell**, and nothing links here any more.
+  // ⚡ **Whether `/` is retired is a separate question the ruling did not
+  // answer**, and this file does not decide it by omission.
+  //
+  // ⛔ **Removed rather than replaced with `/business`, which was already
+  // below** — a duplicate here would have run every responsive invariant
+  // twice against one route and reported it as wider coverage.
   { path: '/signals', name: 'Signals' },
   { path: '/reports', name: 'Reports' },
   { path: '/settings/team', name: 'Team' },

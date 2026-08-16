@@ -97,7 +97,7 @@ describe('📁 account search is ONE GROUP inside it, not the owner of the short
 
     expect(screen.getByText('Vantage Logistics')).toBeInTheDocument();
     // 📁 The design's `Navigate` group — the shell's own destinations.
-    expect(screen.getByText('Attention')).toBeInTheDocument();
+    expect(screen.getByText('Your business')).toBeInTheDocument();
   });
 
   it('🔴 a group Signora did NOT search is skipped, not rendered empty', async () => {
@@ -160,7 +160,7 @@ describe('🔴 the palette is not a second answer to what this person can reach'
     expect(screen.queryByText('Settings')).toBeNull();
     // ⚡ **Vacuity guard is the NEXT test** — an owner IS offered it, so this
     // absence is the guard working rather than the group being empty.
-    expect(screen.getByText('Attention')).toBeInTheDocument();
+    expect(screen.getByText('Your business')).toBeInTheDocument();
   });
 
   it('✅ and an owner is', async () => {
@@ -174,8 +174,13 @@ describe('✅ selecting navigates', () => {
   it('a destination goes to its route', async () => {
     palette();
     await userEvent.keyboard('{Meta>}k{/Meta}');
-    await userEvent.click(screen.getByText('Attention'));
-    expect(push).toHaveBeenCalledWith('/');
+    // ⚠️ **Was `Attention` → `/`** — [TASK-1482](../../../docs/BACKLOG.md)
+    // removed that rail entry on [D-240](../../../docs/DECISION_REGISTER.md),
+    // and **the palette offers what the rail offers**, so the destination it
+    // navigates to had to move with it. ⛔ **The property under test is
+    // unchanged: selecting a destination goes to that destination's route.**
+    await userEvent.click(screen.getByText('Your business'));
+    expect(push).toHaveBeenCalledWith('/business');
   });
 
   it('an account goes to its record', async () => {
