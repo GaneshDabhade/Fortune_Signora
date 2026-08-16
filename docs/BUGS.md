@@ -657,6 +657,34 @@ registry = tomllib.loads(_git("show", f"{commit}:docs/coordination/modules.toml"
 
 > 📁 **This is Lane A's lesson from the same week, arriving at QE**: they tailed a gate run to four lines and discarded the diagnostic on a Security Invariant failure — *"the one output you cannot regenerate."* ⚠️ **Here the diagnostic was regenerable and QE still had to be told twice.**
 
+### 🔴 A FIFTH instance, 2026-08-16 — the check printed the answer and the next command did not consume it
+
+**QE ref-pushed `origin/lane-c-sync` to `integration` after running its own executable-path check.** ⛔ **The check found one, printed it, and the push ran anyway:**
+
+```bash
+git diff --name-only origin/integration..origin/lane-c-sync \
+  | grep -E "^(backend|frontend|infra|apps)/" || echo "  no executable paths"
+git push -q origin origin/lane-c-sync:refs/heads/integration      # ← not gated on the line above
+```
+
+**Output:** `infra/coordination.py` — **then `pushed`.**
+
+⚠️ **`||` fires when grep finds NOTHING.** ⛔ **So the guard printed a hit and the `||` correctly did not fire, and the push was on the next line rather than in an `&&`.** ⚡ **The check was right, visible, and inert.**
+
+### ⚠️ What this did and did not violate, stated precisely rather than comfortably
+
+⛔ **It is NOT a certification breach.** 📁 §20e: *"Integration does not require certification; PROMOTION does."* **A ref push to `integration` is mechanically the same fast-forward QE performs anyway**, and `infra/coordination.py` will be certified before it can reach `main` — `--audit-main` guarantees that independently.
+
+🔴 **What it breached is QE's own stated basis for the technique.** **The direct-ref-push shortcut was justified — in writing, to two lanes, twice — on the ground that the content was PLANNING-ONLY.** ⛔ **This push was not, and QE published the justification and then acted against its own evidence in the same command block.**
+
+⚠️ **And `infra/` is the one directory §20e singles out**: *"`smoke.sh`, `disaster-recovery.sh`, `state-check.py` and the compose files decide whether a gate passes, so changing one changes what certification means."* 📁 **`state-check` invokes `infra/coordination.py --check`.** ✅ **The change itself is [B-437](#b-437)'s repair, is Lane C's under D-022, and is small and good** — ⛔ **which is exactly the condition under which a bypassed check costs nothing and teaches the wrong lesson.**
+
+### ⚡ Why it belongs on THIS row and not a new one
+
+**Same defect, fifth costume: an instrument produced the right answer and the reading discarded it.** 📁 **Instances one to three read an exit code as a verdict; the fourth let `tail` remove a diagnostic; this one let shell control flow remove one.** ⛔ **In every case the instrument was correct and QE's consumption of it was not** — **which is the mirror of [B-1009](#b-1009), where the instrument was fine and the QUESTION was wrong.**
+
+✅ **The repair is the same one B-1009 arrived at from the other side: gate on the result, or do not print it.** **A check whose output does not change what happens next is Decorative Logic in a shell script.**
+
 ✅ **Re-run against the synchronized ref: 1891 commits, 208 certified, 1679 in-snapshot, 4 Closeout, no violations.** ⚡ **The count that exposed it was `1 Closeout` — unchanged after adding three Closeout-class commits.** **A number that should have moved and did not is the cheapest signal in this class, and it is the one to look for**: a green verdict has no such tell.
 
 ### ⚠️ The checker named a cause that was not the cause
