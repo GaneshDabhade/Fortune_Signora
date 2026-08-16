@@ -161,6 +161,26 @@ a1e3841a  TASK-1482 — the legacy Attention rail entry
 
 ⚡ **The honest statement is that the tool answers a question about a ref using evidence from a tree, and the caller has to know which.** ✅ **A diagnostic naming both — *"audited `main` at X using the manifest in the working tree at Y"* — would have turned a two-minute alarm into a one-line read**, and that is the minimum. **Whether the predicate itself should change is a gate-meaning question and [B-131](#b-131)'s route.**
 
+### 🔴 THREE entry points, and only one of them says so
+
+⚡ **Found across three sessions in one day, on the same operand:**
+
+| entry point | reads from | says so? |
+|---|---|---|
+| **`--next-cycle`** | this clone's `integration` | ⛔ **no** |
+| **`--audit-claims`** | this clone's `integration` | ✅ **yes — prints the note as its FIRST line** |
+| **`--audit-main`** | this clone's `main` | ⚠️ **prints `_scope_note()`, which a `tail` hides** |
+
+📁 **Lane C could not verify QE's refusal because their local `main` is 575 commits behind `origin/main`** — ⛔ **and reported *"I could not verify"* rather than *"it passes here"*, which is the only honest reading available from a stale clone.**
+
+⚡ **Their observation is the sharpest thing in this row:**
+
+> ## **The one that prints the note is the one that did not mislead anybody.**
+
+⛔ **`--audit-claims` said *"note — 3 commit(s) on `origin/integration` are not in this clone's `integration`"* as its first line, and QE read past it once and caught it the second time.** ✅ **`--next-cycle` says nothing at all.** ⚠️ **`--audit-main` says it, and puts it where a `tail -6` removes it — which is how QE published a verdict about a `main` three commits stale earlier the same day.**
+
+📁 **So the minimum fix is not one diagnostic — it is the SAME diagnostic in all three, positioned where truncation cannot remove it.** ⚡ **A note that only survives an untruncated read is a note that works for careful readers and nobody else.**
+
 ### ⚡ It is one ruling with [B-1005](#b-1005), not two
 
 **Two of the three commits this refusal named are `docs/coordination/*.toml` failing `CLOSEOUT_SUFFIXES`** — ⛔ **so they cannot be absorbed as Closeouts either.** ✅ **Raised by Lane C, who owns the other half:**
