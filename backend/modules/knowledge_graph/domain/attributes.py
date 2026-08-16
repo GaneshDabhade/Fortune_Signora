@@ -46,6 +46,7 @@ rule with its name on it.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
@@ -171,9 +172,30 @@ def _comparable(value: object) -> object:
     two answers, and deciding they mean one thing is a reviewed synonym catalog
     rather than code — the same limitation `commercial_profile.evaluation`
     carries, named in the same words, for the same reason.
+
+    ## 🔴 A structured value has to become hashable before it can be compared
+
+    ⛔ **This returned the value unchanged, so the set comprehension in
+    `resolve_value` raised `TypeError: unhashable type: 'dict'` for EVERY
+    dict-valued attribute** — `TECHNOLOGY_DETECTED` · `TECHNOLOGY_REMOVED` ·
+    `FUNDING_ROUND` · `ACQUISITION` · `ROLE_CHANGE` · `PERSON_IDENTITY` ·
+    `INTENT_TOPIC_SURGE`, **and the three [ADR-0409](../../../../docs/architecture/adr/0409-commercial-account-facts.md)
+    added.**
+
+    ⚠️ **Latent since this file was written.** Its only callers resolved
+    `INDUSTRY`, `COUNTRY` and `EMPLOYEE_COUNT` — a `str`, a `str` and an
+    `int` — **so nothing had ever handed it an object.** 📁 The first
+    structured caller found it by crashing, which is the better of the two
+    ways it could have been found.
+
+    ⚡ **Sorted keys, so two providers reporting the same object with their
+    keys in a different order is agreement rather than a dispute** — the same
+    canonical form `ClaimSet.agrees` already uses one layer up.
     """
     if isinstance(value, str):
         return " ".join(value.split()).casefold()
+    if isinstance(value, (dict, list)):
+        return json.dumps(value, sort_keys=True, default=str)
     return value
 
 

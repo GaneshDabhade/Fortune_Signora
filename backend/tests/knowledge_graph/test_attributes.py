@@ -139,3 +139,60 @@ class TestTheContractExposesNoSubject:
             "providers",
             "observed_at",
         }
+
+
+class TestAStructuredValueCanBeResolvedAtAll:
+    """🔴 **The defect: `resolve_value` raised on every dict-valued attribute.**
+
+    ⛔ **`_comparable` returned a structured value unchanged**, so the set
+    comprehension that decides agreement raised `TypeError: unhashable type:
+    'dict'`. ⚠️ **Latent since the file was written** — its only callers
+    resolved `INDUSTRY`, `COUNTRY` and `EMPLOYEE_COUNT`, which are two strings
+    and an integer, **so nothing had ever handed it an object.**
+
+    ⚡ **Found by the first structured caller, which crashed.** 📁 Seven
+    attributes in the canonical vocabulary carry an object today —
+    `TECHNOLOGY_DETECTED` · `TECHNOLOGY_REMOVED` · `FUNDING_ROUND` ·
+    `ACQUISITION` · `ROLE_CHANGE` · `PERSON_IDENTITY` ·
+    `INTENT_TOPIC_SURGE` — **plus the three ADR-0409 added.**
+    """
+
+    def test_it_resolves_an_object_valued_claim_rather_than_raising(self) -> None:
+        found = resolve_value((_claim("hubspot", {"amount": 1_240_000, "currency": "USD"}),))
+
+        assert found.value == {"amount": 1_240_000, "currency": "USD"}
+        assert found.agreement is ValueAgreement.SINGLE_SOURCE
+
+    def test_key_order_is_agreement_and_not_a_dispute(self) -> None:
+        """⚡ **Two providers reporting the same object with their keys in a
+        different order agree.** ⛔ **Comparing the raw dicts by identity would
+        report a dispute over a JSON serialisation detail** — and a seller
+        would see *"sources disagree"* about two identical figures.
+        """
+        found = resolve_value(
+            (
+                _claim("hubspot", {"amount": 1_240_000, "currency": "USD"}, EARLY),
+                _claim("salesforce", {"currency": "USD", "amount": 1_240_000}, LATE),
+            )
+        )
+
+        assert found.agreement is ValueAgreement.AGREED
+        assert found.providers == ("hubspot", "salesforce")
+
+    def test_two_different_objects_are_still_a_dispute(self) -> None:
+        """⛔ **The fix must not make everything agree.** ⚡ **A canonical form
+        that collapsed distinct values would hide exactly the disagreement
+        `ValueAgreement` exists to surface** — 📁 [§2](../../../CLAUDE.md), a
+        guard that cannot fail is not protection.
+        """
+        found = resolve_value(
+            (
+                _claim("hubspot", {"amount": 800_000, "currency": "USD"}, EARLY),
+                _claim("salesforce", {"amount": 1_240_000, "currency": "USD"}, LATE),
+            )
+        )
+
+        assert found.agreement is ValueAgreement.DISPUTED
+        # **The newest wins**, and only the providers that agree with it are named.
+        assert found.value == {"amount": 1_240_000, "currency": "USD"}
+        assert found.providers == ("salesforce",)

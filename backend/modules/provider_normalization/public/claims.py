@@ -150,15 +150,7 @@ class ClaimView:
         """
         if self.attribute is not ClaimAttribute.OPEN_ACV:
             return None
-        if not isinstance(self.value, dict):
-            return None
-        amount, currency = self.value.get("amount"), self.value.get("currency")
-        # `bool` is an `int` in Python, and `True` is not an amount.
-        if not isinstance(amount, int) or isinstance(amount, bool):
-            return None
-        if not isinstance(currency, str):
-            return None
-        return MoneyValue(amount=amount, currency=currency)
+        return money_from(self.value)
 
     def as_day(self) -> date | None:
         """The day a date-valued attribute names, or None.
@@ -170,6 +162,10 @@ class ClaimView:
         if self.attribute is not ClaimAttribute.RENEWAL_DATE:
             return None
         return _as_date(self.value)
+
+    # ⚡ **`day_from` is `_as_date` under its published name** — ⛔ **not a
+    # second implementation**, which is why this method delegates to the same
+    # function the module-level decoder does.
 
     def as_stage(self) -> CommercialStageValue | None:
         """The commercial position, **and the tenant's own word for it**, or None.
@@ -186,21 +182,7 @@ class ClaimView:
         """
         if self.attribute is not ClaimAttribute.COMMERCIAL_STAGE:
             return None
-        if not isinstance(self.value, dict):
-            return None
-        label = self.value.get("label")
-        # Blank is refused here rather than left to the constructor: a stored
-        # claim is untrusted input, and a read surface must not raise on one.
-        if not isinstance(label, str) or not label.strip():
-            return None
-        raw = self.value.get("position")
-        position = None
-        if isinstance(raw, str):
-            try:
-                position = CommercialStage(raw)
-            except ValueError:
-                position = None
-        return CommercialStageValue(position=position, label=label)
+        return stage_from(self.value)
 
 
 class ClaimReader(Protocol):
@@ -274,3 +256,78 @@ class ClaimReader(Protocol):
         know is wrong).
         """
         ...
+
+
+# ---------------------------------------------------------------- decoders
+#
+# ⚡ **The stored JSON shape decoded once, published for the one caller that
+# cannot go through a `ClaimView`.**
+#
+# 🔴 **Why these exist beside the accessors above rather than instead of them.**
+# `knowledge_graph` resolves a commercial attribute through its own
+# `resolve_value`, which returns **the winning claim's raw value** and
+# deliberately not the claim — *"a provider identity crossing this boundary
+# would let a consumer resolve them itself."* ⛔ **So that caller has a value
+# and no `ClaimView` to ask.**
+#
+# ⚠️ **The alternative was for it to reach into the dict itself**, which is the
+# coupling this file's opening refuses: *"reaching into the raw shape would
+# couple every downstream module to this module's storage."*
+#
+# ⛔ **The accessors above DELEGATE to these.** ⚡ **One implementation each** —
+# 📁 [§2](../../../../CLAUDE.md): behaviour exists exactly once, and a copy is
+# always the one that stops being fixed.
+
+
+def money_from(raw: object) -> MoneyValue | None:
+    """A stored money value, or None when it is not one.
+
+    ⛔ **Both halves or nothing.** 📁 [ADR-0409](../../../../docs/architecture/adr/0409-commercial-account-facts.md)
+    §3: *"a figure without its currency is not a fact"* — so a stored object
+    missing either yields None rather than a half-built value a caller would
+    render as a bare number.
+    """
+    if not isinstance(raw, dict):
+        return None
+    amount, currency = raw.get("amount"), raw.get("currency")
+    # ⚠️ **`bool` is an `int` in Python, and `True` is not an amount.**
+    if not isinstance(amount, int) or isinstance(amount, bool):
+        return None
+    if not isinstance(currency, str):
+        return None
+    return MoneyValue(amount=amount, currency=currency)
+
+
+def day_from(raw: object) -> date | None:
+    """A stored ISO day, or None when it is unparseable.
+
+    ⚡ **The module's own decoding**, which returns None rather than raising —
+    *"the claim itself is still evidence."*
+    """
+    return _as_date(raw)
+
+
+def stage_from(raw: object) -> CommercialStageValue | None:
+    """A stored commercial stage, **with the tenant's word intact**, or None.
+
+    ⚠️ **An unrecognised position decodes to `position=None` with the label
+    kept** — 📁 the *unmapped* state the CRM Integrations design shows, counts
+    and acts on. ⛔ **Coercing an unknown tenant stage into the nearest
+    canonical one is the invention [ADR-0409](../../../../docs/architecture/adr/0409-commercial-account-facts.md)
+    exists to prevent.**
+    """
+    if not isinstance(raw, dict):
+        return None
+    label = raw.get("label")
+    # ⛔ **Blank is refused here rather than left to the constructor**: a stored
+    # claim is untrusted input, and a read surface must not raise on one.
+    if not isinstance(label, str) or not label.strip():
+        return None
+    position: CommercialStage | None = None
+    named = raw.get("position")
+    if isinstance(named, str):
+        try:
+            position = CommercialStage(named)
+        except ValueError:
+            position = None
+    return CommercialStageValue(position=position, label=label)

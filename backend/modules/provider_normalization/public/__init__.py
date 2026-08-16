@@ -30,6 +30,9 @@ from modules.provider_normalization.public.claims import (
     NameMatch,
     SubjectRef,
     TechnologyRef,
+    day_from,
+    money_from,
+    stage_from,
 )
 
 __all__ = [
@@ -52,4 +55,7 @@ __all__ = [
     "TechnologyRef",
     "TechnologyValue",
     "TrendDirection",
+    "day_from",
+    "money_from",
+    "stage_from",
 ]

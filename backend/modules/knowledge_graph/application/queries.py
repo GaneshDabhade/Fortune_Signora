@@ -36,6 +36,7 @@ from modules.knowledge_graph.domain.naming import (
     select_name,
 )
 from signora_platform.pagination import CursorPosition
+from modules.knowledge_graph.domain.attributes import resolve_value
 from modules.provider_normalization.public import (
     ClaimAttribute,
     ClaimReader,
@@ -43,6 +44,9 @@ from modules.provider_normalization.public import (
     CommercialStageValue,
     MoneyValue,
     SubjectRef,
+    day_from,
+    money_from,
+    stage_from,
 )
 
 
@@ -276,20 +280,26 @@ class AccountCommercial:
     stated** — not a convenience method."* ⛔ **`claim_set` is still the
     evidence read and is untouched.**
 
-    > **The rule: the most recently observed claim wins, per attribute,
-    > independently.**
+    > **The rule is [`resolve_value`](../domain/attributes.py)'s, applied to
+    > each attribute independently** — *"the most recently observed claim
+    > wins; ties break on provider name."*
+
+    🔴 **Inherited, never restated.** 📁 That file warns that **a consumer
+    projecting a `ClaimSet` into one value has become a second resolver** —
+    *"free to disagree with it"* — ⚠️ **and the first version of this type did
+    exactly that**, breaking ties on the claim id rather than the provider
+    name. **One account, two possible answers, depending on which surface
+    asked.**
 
     ⚡ **Independently, because the three are separate facts.** A CRM that
     updates a stage without touching the renewal date must not blank the
     renewal date, which is what resolving them as one record would do.
 
-    ⚠️ **Newest-wins is defensible HERE and would not be for a firmographic
-    attribute.** 📁 [ADR-0401](../../../../docs/architecture/adr/0401-a-customers-crm-is-not-a-provider.md):
+    ⛔ **No agreement field, unlike `ResolvedAttribute`.** 📁 [ADR-0401](../../../../docs/architecture/adr/0401-a-customers-crm-is-not-a-provider.md):
     **a commercial fact is the customer's own system of record describing
-    their own relationship**, not two vendors disagreeing about the world —
-    so *"the latest thing their operator entered"* is the answer, and
-    `NameAgreement`'s dispute machinery would be answering a question nobody
-    is asking. ⛔ **No agreement field, deliberately.**
+    their own relationship**, not two vendors disagreeing about the world — so
+    a *disputed* ACV is not the ordinary case the way a disputed industry is,
+    and a column for it would be a control nobody could act on.
 
     ## ⛔ Absence is absence
 
@@ -565,30 +575,36 @@ class GraphQueries:
             if binding.entity_id is not None
         }
 
-        winners: dict[tuple[UUID, ClaimAttribute], ClaimView] = {}
+        grouped: dict[tuple[UUID, ClaimAttribute], list[ClaimView]] = {}
         for attribute in COMMERCIAL_ATTRIBUTES:
             for claim in await self._claims.for_subjects(subjects, attribute=attribute):
                 entity_id = owner.get((claim.provider, claim.subject_external_id))
                 if entity_id is None or entity_id not in requested:
                     continue
-                key = (entity_id, attribute)
-                held = winners.get(key)
-                # The claim id breaks a tie, so two claims observed in the same
-                # instant resolve the same way on every run and every machine.
-                if held is None or (claim.observed_at, str(claim.id)) > (
-                    held.observed_at,
-                    str(held.id),
-                ):
-                    winners[key] = claim
+                grouped.setdefault((entity_id, attribute), []).append(claim)
 
-        def won(entity_id: UUID, attribute: ClaimAttribute) -> ClaimView | None:
-            return winners.get((entity_id, attribute))
+        def won(entity_id: UUID, attribute: ClaimAttribute) -> object | None:
+            """The winning value, **by this module's own resolution rule.**
+
+            🔴 **`resolve_value` and not a rule written here.** 📁
+            [`attributes.py`](../domain/attributes.py) states it once — *"the
+            most recently observed claim wins, and the providers that agreed
+            with it are named"* — and warns in the same file that **a consumer
+            projecting a `ClaimSet` into one value has become a second
+            resolver**, free to disagree with the first.
+
+            ⚠️ **The first version of this method WAS that second resolver.**
+            It broke ties on the claim id where `resolve_value` breaks them on
+            the provider name, so one account could have answered two ways
+            depending on which surface asked.
+            """
+            return resolve_value(tuple(grouped.get((entity_id, attribute), ()))).value
 
         return {
             entity_id: AccountCommercial(
-                open_acv=_money(won(entity_id, ClaimAttribute.OPEN_ACV)),
-                renewal_date=_day(won(entity_id, ClaimAttribute.RENEWAL_DATE)),
-                stage=_stage(won(entity_id, ClaimAttribute.COMMERCIAL_STAGE)),
+                open_acv=money_from(won(entity_id, ClaimAttribute.OPEN_ACV)),
+                renewal_date=day_from(won(entity_id, ClaimAttribute.RENEWAL_DATE)),
+                stage=stage_from(won(entity_id, ClaimAttribute.COMMERCIAL_STAGE)),
             )
             for entity_id in requested
         }
@@ -794,25 +810,6 @@ class GraphQueries:
         """Every decision that bound an identity to this entity, oldest
         first — the full explanation of how it came to be what it is."""
         return await self._repository.decisions_for_entity(workspace_id, entity_id)
-
-
-#: The three decoders, each `None`-tolerant so the projection above reads as
-#: three lines rather than three `if` blocks.
-#:
-#: ⛔ **The decoding itself is NOT here.** `ClaimView` owns it, because the
-#: stored JSON shape is Provider Normalization's and *"reaching into the raw
-#: shape would couple every downstream module to this module's storage"* —
-#: these only carry the absence through.
-def _money(claim: ClaimView | None) -> MoneyValue | None:
-    return claim.as_money() if claim else None
-
-
-def _day(claim: ClaimView | None) -> date | None:
-    return claim.as_day() if claim else None
-
-
-def _stage(claim: ClaimView | None) -> CommercialStageValue | None:
-    return claim.as_stage() if claim else None
 
 
 def _identity(

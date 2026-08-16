@@ -347,16 +347,20 @@ export default function CompaniesPage() {
         description={
           <>
             Every account you can see, in one surface.{' '}
-            {/* ⚡ **The absent columns are named to the reader.** ⛔ A screen
-                that silently draws four of nine columns reads as a broken
-                table; one that says what it does not have yet reads as an
-                honest one. 📁 **Score, owner, value, renewal, segment and tags
-                are [C-209](../../../../docs/LANE_COORDINATION.md) and
-                [C-1425](../../../../docs/LANE_COORDINATION.md)**, not
-                omissions. */}
+            {/* 🔴 **This sentence read *"Score, owner, value and renewal are
+                not on this list yet"* and three of the four have since landed**
+                — owner and segment on ADR-0411, Open ACV and Renewal on
+                **ADR-0409, ratified 2026-08-12.** ⛔ **A screen describing its
+                own absences has to keep the list true**, or it is the
+                confidently wrong statement [§2](../../../../CLAUDE.md) is
+                written against.
+
+                ⚡ **Signora score is the one that is genuinely nowhere**, and
+                naming only it is what makes the sentence worth reading. */}
             <span className="text-content-muted">
-              Score, owner, value and renewal are not on this list yet — open an account to see
-              what Signora holds.
+              A Signora score is not on this list yet. Value, renewal and stage arrive from a
+              connected system — until one is connected they read as not reported, never as
+              zero.
             </span>
           </>
         }

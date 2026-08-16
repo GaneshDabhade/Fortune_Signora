@@ -45,6 +45,16 @@ export interface ToolbarProps {
   readonly loaded: number;
 }
 
+/** 📁 **The design's toolbar control** — *"height:30px; padding:0 11px;
+ *  border-radius:8px; border:1px solid var(--line); font-size:12px;
+ *  font-weight:600"*. ⚡ **Declared once** so Columns and Density are the same
+ *  control at the same size, which is what the design's row actually shows. */
+const PILL =
+  'inline-flex h-control-sm items-center gap-1.5 rounded-md border border-border ' +
+  'px-2.5 text-xs font-semibold text-content ' +
+  'hover:bg-surface-sunken focus-visible:outline focus-visible:outline-2 ' +
+  'focus-visible:outline-offset-2 focus-visible:outline-accent';
+
 export function AccountsToolbar({
   density,
   onDensity,
@@ -176,9 +186,7 @@ export function AccountsToolbar({
         ) : null}
           </div>
         </details>
-      </div>
 
-      <div className="flex flex-wrap items-center gap-3">
         {/* 🔴 **The sentence that keeps the filters honest**, and it now
             states the design's own figure.
  
@@ -191,33 +199,47 @@ export function AccountsToolbar({
             and the loaded figure is never printed in its place: **inventing
             the number a seller trusts most is the quietest lie on the
             screen.** */}
-        <p className="text-2xs text-content-subtle" data-testid="companies-count">
+        <p className="ml-auto text-2xs text-content-subtle" data-testid="companies-count">
           {total !== null
             ? `${shown.toLocaleString()} of ${total.toLocaleString()}`
             : isFiltered(filters)
               ? `${shown} of ${loaded} loaded`
               : `${loaded} loaded`}
         </p>
+      </div>
+
+      {/* 📁 **The design's second toolbar row** — *"Group · Sort · Columns ·
+          Density"* on the left, *"Summarise this view"* on the right, each a
+          30px pill. ⚡ **Columns and Density are the two this contract can
+          answer**; ⛔ **Group and Sort are absent rather than dead** — the
+          design groups by renewal quarter and sorts by score, and neither the
+          endpoint nor this page can order the book (only the page in hand).
+          📁 [B-255](../../../../docs/BUGS.md): a control that silently does
+          nothing is worse than one that is absent. */}
+      <div className="flex flex-wrap items-center gap-2">
 
 
         {/* 📁 *"Density"* — ⚡ **the profile's own vocabulary**, because a person
-            already sets this about themselves. */}
-        <Select
-          label="Density"
-          labelHidden
-          value={density}
-          onChange={(event) => onDensity(event.target.value as Density)}
-          options={[
-            { value: 'comfortable', label: 'Comfortable' },
-            { value: 'compact', label: 'Compact' },
-          ]}
-        />
+            already sets this about themselves. ⛔ **A pill that toggles, not a
+            native select**: the design draws one control of a size, and a
+            dropdown over two values is a menu built for a switch. */}
+        <button
+          type="button"
+          aria-pressed={density === 'compact'}
+          onClick={() => onDensity(density === 'compact' ? 'comfortable' : 'compact')}
+          className={PILL}
+        >
+          Density · {density === 'compact' ? 'Compact' : 'Comfortable'}
+        </button>
 
-        <details className="text-xs">
-          <summary className="cursor-pointer text-content-muted">
+        <details className="text-xs [&_summary::-webkit-details-marker]:hidden">
+          {/* ⛔ **`list-none` because the design's control is a pill, not a
+              disclosure triangle** — the ▶ is the browser's, and it made a
+              designed button read as an outline item. */}
+          <summary className={`${PILL} list-none cursor-pointer`}>
             Columns · {chosen.size} of {COLUMNS.length}
           </summary>
-          <div className="mt-2 flex flex-col gap-1 rounded border border-border-soft bg-surface p-2">
+          <div className="mt-2 flex flex-col gap-1 rounded-md border border-border-soft bg-surface p-2 shadow-sm">
             {COLUMNS.map((column) => (
               <label key={column.id} className="flex items-center gap-2 text-content">
                 <input

@@ -28,6 +28,11 @@ test.describe('Companies — views, filters, density and paging', () => {
     await expect(page.getByRole('table')).toHaveCount(0);
 
     const firstName = (await cards.getByRole('listitem').first().innerText()).split('\n')[0] ?? '';
+    // 📁 **A condition is ADDED, not typed into a permanent box** — the design's
+    // filter row is chips behind *"＋ Add condition"* and draws no standing
+    // search field. ⛔ **The journey follows the designed interaction rather
+    // than asserting a control the design does not have.**
+    await page.getByText('+ Add condition').click();
     await page.getByLabel('Name contains').fill(firstName.slice(0, 4));
 
     await expect(cards.getByRole('listitem')).toHaveCount(

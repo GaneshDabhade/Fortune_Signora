@@ -2048,6 +2048,28 @@ logger.info("connecting to postgres://signora_app:S3cr3tPassw0rd@db:5432/signora
 
 **The fix is one fixture, and it is not the size that matters.** ⛔ **A new session-scoped autouse guard changes what a failing gate means for every lane and for QE**, and it would have travelled inside an unrelated slice. 📁 **[§20e](../CLAUDE.md): finding a defect outside the slice is an obligation to report it, not a licence to fix it.** ⚡ **And this one is worth QE seeing before it is closed** — QE runs the full suite every cycle and is the reader the guard would be written for.
 
+### B-265 · Resolving any structured attribute raised `TypeError: unhashable type: 'dict'`
+
+| | |
+|---|---|
+| **Module** | **`knowledge_graph`** — ⚡ **assignee joined from [`modules.toml`](coordination/modules.toml)**: Lane A |
+| **Severity** | 🟠 **Wrong behaviour a customer would hit** — the read raises rather than answering |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-16, with a regression test.** Awaiting QE verification |
+| **Found** | `cd45f8fb`, by the first caller that resolved a structured attribute |
+| **Steps** | Call `resolve_value` with any claim whose `value` is an object — a technology, a funding round, an acquisition, a role change, an intent surge, or one of ADR-0409's three commercial values |
+| **Expected** | The most recent claim wins and the agreeing providers are named, exactly as for `INDUSTRY` |
+| **Actual** | `TypeError: unhashable type: 'dict'` from the set comprehension that decides agreement |
+
+**`_comparable` folded case for a `str` and returned everything else unchanged**, so `{_comparable(claim.value) for …}` tried to hash a dict.
+
+#### ⚠️ Why it had never fired
+
+**Its only callers resolved `INDUSTRY`, `COUNTRY` and `EMPLOYEE_COUNT`** — two strings and an integer — **so nothing had ever handed it an object.** ⚡ **Seven attributes in the canonical vocabulary carry one today** — `TECHNOLOGY_DETECTED` · `TECHNOLOGY_REMOVED` · `FUNDING_ROUND` · `ACQUISITION` · `ROLE_CHANGE` · `PERSON_IDENTITY` · `INTENT_TOPIC_SURGE` — **plus the three [ADR-0409](architecture/adr/0409-commercial-account-facts.md) added.** ⛔ **Every one of them would have raised.**
+
+#### ✅ The fix, and what it is careful not to do
+
+**A structured value becomes canonical JSON with sorted keys**, so two providers reporting the same object with their keys in a different order **agree** rather than disputing a serialisation detail. ⛔ **And a test asserts that two genuinely different objects are still `DISPUTED`** — a canonical form that collapsed distinct values would hide the exact disagreement `ValueAgreement` exists to surface ([§2](../CLAUDE.md): a guard that cannot fail is not protection).
+
 ### B-264 · Changing any preference silently forgot which workspace you were last in
 
 | | |
