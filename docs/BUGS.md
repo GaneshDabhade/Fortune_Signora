@@ -626,11 +626,23 @@ registry = tomllib.loads(_git("show", f"{commit}:docs/coordination/modules.toml"
 
 **The table is replaced by a pointer to the one authoritative location.** ⛔ **No synchronisation, no checker** — **the guard against a copy drifting is not having the copy** (§2). ⚡ **The same act removes the defect and the mechanism that produced it**, which is the only repair of this class that does not leave a fourth thing to maintain.
 
-### B-1000 · 🟡 QE skipped a mandatory Closeout activity and reported the cycle clean, because it read `state-check`'s exit code as a verdict
+### B-1000 · 🟡 A correct diagnostic is produced and the reading discards it — SEVEN instances, TWO lanes, and the row was scoped to one of them
+
+> 🔴 **RESCOPED 2026-08-16.** **This row was filed as *"QE skipped a mandatory Closeout activity… because it read `state-check`'s exit code as a verdict"*, and its `Module` said **QE process**.** ⛔ **It now holds seven instances and the seventh is Lane C's.** ⚡ **A repository-wide class filed against one lane is invisible to the other lanes committing it** — **which is this row's own defect, applied to this row.**
+>
+> **The class, stated once:** ✅ **an instrument produced the correct answer and the consumer discarded it.** ⛔ **Never the instrument being wrong.** 📁 **Its mirror is [B-1009](#b-1009), where the instrument was fine and the QUESTION was wrong.**
+>
+> | # | who | the discard |
+> |---|---|---|
+> | ① ② ③ | QE | an **exit code** read as a verdict |
+> | ④ | QE | **`tail`** removed the diagnostic |
+> | ⑤ | QE | **`\|\|`** printed a finding the push was not gated on |
+> | ⑥ | QE | **`\|\|`** ran a second command nobody authorised |
+> | ⑦ | **Lane C** | **`>/dev/null 2>&1`** on the one command that reports a silent failure |
 
 | | |
 |---|---|
-| **Module** | **QE process** — Repository Closeout activity 3, [`docs/ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) |
+| **Module** | ⚠️ **Repository-wide practice, not a lane's** — originally *"QE process"*, and see the rescope above |
 | **Current assignee** | **QE** |
 | **Severity** | 🟡 — ⛔ **nothing uncertified reached `main`**; `--audit-main` is clean across 208 certified, 1679 ancestors and 1 Closeout. ⚠️ **The board asserted a state one cycle stale**, which is the §2 class: a record every lane reads, trusted precisely because nothing else contradicts it |
 | **Status** | ✅ **`FIXED` — QE, 2026-08-15.** **`VERIFIED` is QE's to set and QE fixed it, so it stays `FIXED`** — ⛔ **QE never verifies its own work** (§20e) |
@@ -709,6 +721,32 @@ git merge --ff-only origin/lane-qe || git rebase -q origin/lane-qe   # ← the d
 📁 **Two cycles earlier QE argued to Product Office, in writing, that a planning batch which blocks nobody must not force a lane to rebase.** ⚡ **QE then did precisely that to a lane, with its own branch, and the branch in question was four bug-register rows.** ⛔ **The rule was applied to somebody else's convenience and not to QE's own.**
 
 ✅ **The operational cost was small and was stated to the lane immediately** — their work was already inside the running certification, so they reset rather than re-run. ⛔ **The cost that matters is that QE spent a lane's trust to save itself one cycle of waiting.**
+
+### 🔴 A SEVENTH instance, and it is Lane C's — which is what rescoped this row
+
+**Lane C reported a notice `WITHHELD` whole and said *"nothing told me."*** ⛔ **False, and they found it themselves by fire-testing rather than reading:**
+
+```python
+# infra/coordination.py:1577
+for _lane, _spec in sorted(_notice_health(rows).items()):
+    print(f"coordination: NOTICE WITHHELD for {_lane} — {_spec}")
+```
+
+**A bare `print()` — stdout.** ⛔ **And their own command, repeatedly:** `python3 infra/coordination.py >/dev/null 2>&1`.
+
+⚡ **B-427's fix had been working the entire time, and its diagnostic was routed to `/dev/null` by the office that wrote it.** ✅ **Verified independently by QE: no `file=sys.stderr`, so `>/dev/null` alone silences it.**
+
+> ⛔ **Their formulation, and it is sharper than the row's own:** ***"the one command whose stderr I silenced is the one command that reports a silent failure."***
+
+### ⚠️ QE defended them against this and was wrong on the facts
+
+**QE argued the recurrence *"reads as carelessness and I do not think it was"*, on the ground that B-427 predicted no such suppression.** ⛔ **Lane C declined half of that and produced the line number.** ✅ **The defence was generous and unfounded, and is recorded as wrong rather than quietly dropped** — 📁 **a peer inheriting an incorrect exoneration is the same failure as a peer inheriting an incorrect finding.**
+
+### ⛔ And one claim in the original report does NOT reproduce, withdrawn by its author
+
+**Lane C told QE and Lane A the suppression was caused by naming `TASK-495`.** ⛔ **Re-run against today's tree it produces no withheld line at all.** ✅ **They withdrew the mechanism rather than substituting a better guess** — ⚡ ***"something moved underneath it, which is this week's fourth instance of that shape and I will not add a fifth by inventing which."***
+
+📁 **The authoring rule they wrote stands and is an improvement; the diagnosis attached to it does not, and is corrected in the file rather than left to be believed.**
 
 ✅ **Re-run against the synchronized ref: 1891 commits, 208 certified, 1679 in-snapshot, 4 Closeout, no violations.** ⚡ **The count that exposed it was `1 Closeout` — unchanged after adding three Closeout-class commits.** **A number that should have moved and did not is the cheapest signal in this class, and it is the one to look for**: a green verdict has no such tell.
 
