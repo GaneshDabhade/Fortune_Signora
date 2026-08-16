@@ -3,11 +3,7 @@ import { headers } from 'next/headers';
 
 import { auth } from '@/lib/auth/server';
 
-import { AccessibilityPanel } from './accessibility-panel';
-import { AiPanel } from './ai-panel';
-import { AppearancePanel } from './appearance-panel';
-import { LocalePanel } from './locale-panel';
-import { ProfilePanel } from './profile-panel';
+import { ProfileShell } from './profile-shell';
 
 /**
  * **`/profile`** — [TASK-470](../../../../docs/BACKLOG.md), Workflow 9,
@@ -33,43 +29,27 @@ export default async function ProfilePage() {
   const user = session?.user;
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-6">
       <h1 className="text-xl font-semibold tracking-tight text-content">Your profile</h1>
-      <ProfilePanel name={user?.name ?? null} email={user?.email ?? ''} />
-      <LocalePanel />
-      <AppearancePanel />
-      {/* 📁 **The design's `04 · Accessibility`.** ⚡ **In the design's own
-          order** — it sits directly after Appearance, before AI preferences. */}
-      <AccessibilityPanel />
-      <AiPanel />
 
-      {/* ⛔ **Keyboard shortcuts is deliberately NOT here.**
+      {/* 🔴 **The design's `ProfileShell` — a rail and one section beside it.**
 
-          📁 The design gives User Profile a *Keyboard shortcuts* section, and
-          **`SHORTCUT_GROUPS` is already rendered by the shell's Shortcuts
-          overlay** ([`shortcuts-reference.tsx`](../../../components/shell/shortcuts-reference.tsx)).
-          ⚡ **The registry is the single source and the overlay is its
-          canonical surface** — a second reference here would be two lists of
-          one truth, disagreeing the first time a chord changes.
+          ⛔ **This replaces a single scrolling column of every panel.** ⚡ **That
+          was not a smaller version of this design, it was a different
+          information architecture**: the design's sections are destinations
+          behind a 212px rail, and stacking them scrolled every one of them past
+          a reader who wanted one.
 
-          ⚠️ **The design's section is a REFERENCE, not a customiser**: its
-          items carry a label and keys and nothing editable, so there is no
-          behaviour here that the overlay does not already provide. */}
+          ⚠️ **The stack is gone rather than wrapped.** */}
+      <ProfileShell name={user?.name ?? null} email={user?.email ?? ''} />
 
       {/**
        * 🔴 **The Security Center's entrance** —
        * [TASK-1414](../../../../docs/BACKLOG.md).
        *
-       * ⛔ **`make reachability` reports *No entrance at all* for a route no
-       * screen links to**, and it is the gate [C-229](../../../../docs/LANE_COORDINATION.md)
-       * failed on. ✅ **So the door ships with the room.**
-       *
-       * ⚡ **Here rather than in the account menu**: 📁 the design fixes that
-       * menu at six items and *Security* is not one of them, and
-       * [`account-menu.tsx`](../../../components/shell/account-menu.tsx)
-       * already renders three of the six as absent rather than inventing
-       * destinations. **This page is the one that is already about your own
-       * account.**
+       * ⚡ **Kept outside the shell deliberately**: it is a route rather than a
+       * section of this screen, and `make reachability` reports *No entrance at
+       * all* for a route no screen links to.
        */}
       <Link
         className="rounded-lg border border-border bg-surface p-5 hover:bg-surface-sunken focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"

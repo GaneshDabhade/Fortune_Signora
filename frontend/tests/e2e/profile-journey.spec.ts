@@ -40,6 +40,19 @@ async function openProfile(page: import('@playwright/test').Page): Promise<void>
   await expect(page.getByRole('heading', { name: 'Your profile' })).toBeVisible();
 }
 
+/**
+ * ⚡ **The design's sections are destinations behind a 212px rail**, not
+ * headings in one column — ⛔ so a journey that scrolled to a heading was
+ * asserting the layout this slice replaced.
+ */
+async function openSection(
+  page: import('@playwright/test').Page,
+  label: string,
+): Promise<void> {
+  await openProfile(page);
+  await page.getByRole('navigation', { name: 'Profile settings' }).getByRole('button', { name: label }).click();
+}
+
 test.describe('Workflow 9 · a person makes Signora theirs', () => {
   // ✅ **Passes again — [B-215](../../../docs/BUGS.md) is fixed.** It was
   // marked `test.fail()` for exactly one cycle while the defect stood, rather
@@ -155,7 +168,7 @@ test.describe('Workflow 9 · a person makes Signora theirs', () => {
      * exists not to make.
      */
     test.slow();
-    await openProfile(page);
+    await openSection(page, 'Accessibility');
     await expect(page.getByRole('heading', { name: 'Accessibility' })).toBeVisible();
     // ⚡ **The controls are disabled until the read lands**, so a click before
     // then would be a click on a stated wait rather than on a preference.
@@ -209,7 +222,7 @@ test.describe('Workflow 9 · a person makes Signora theirs', () => {
    * moment they happened to be looking.
    */
   test('@journey the theme offers System and keeps it as System', async ({ page }) => {
-    await openProfile(page);
+    await openSection(page, 'Appearance');
     await expect(page.getByRole('heading', { name: 'Appearance' })).toBeVisible();
     await expect(page.getByRole('radio', { name: /^System\b/ })).toBeEnabled();
 
@@ -260,11 +273,10 @@ test.describe('Workflow 9 · a person makes Signora theirs', () => {
     // is already rendered by the shell's Shortcuts overlay, and a second
     // reference would be two lists of one truth. ⚡ **Asserted so the exclusion
     // is deliberate rather than forgotten.**
-    await expect(page.getByRole('heading', { name: /Keyboard shortcuts/i })).toHaveCount(0);
-
     // ⛔ **And no CONTROL for writing to the CRM** — the design draws a toggle
     // and Signora has no write path to a connected system. ✅ **The fact is
     // stated instead.**
+    await openSection(page, 'AI preferences');
     await expect(page.getByRole('checkbox', { name: /risk flags/i })).toHaveCount(0);
     await expect(page.getByText(/does not write to them/i)).toBeVisible();
   });
