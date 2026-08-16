@@ -1,5 +1,21 @@
 # Session Handoff
 
+> ## Cycle 238 — promoted `18036f09`, 2026-08-16 · **per-person notification state reaches `main`, unreachable and saying so**
+>
+> **`main` = `18036f09` = the certified commit.** ⚡ **Verified against the SHA the guard named, NOT against `integration`** — which had moved to `9023b187` before the promotion, for the second cycle running. `pytest` **5143** · coverage **95.05%** · **651 Security Invariants** · `mypy` strict over **924** files · `import-linter` **37/37** · **`frontend-suite` 3324 in 189 files** · `eslint` clean · `smoke` 24 stages in **219s** · **DR passed with 651 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** · head **`0058`**. ✅ **Eight gates, first attempt.**
+>
+> 🔴 **The slice's whole guarantee is the PERSON predicate, and QE verified it in PostgreSQL rather than in the migration.** ⛔ **Two colleagues in one workspace are legitimately the same tenant — workspace isolation cannot separate them.** ✅ **From `pg_policies` on a freshly migrated database: `SELECT`, `INSERT` and `DELETE` all carry `workspace_id` AND `user_id`; `relrowsecurity` and `relforcerowsecurity` both `t`; no `UPDATE` policy, and the table is in BOTH `TENANT_OWNED_TABLES` and `IMMUTABLE_TENANT_TABLES`.**
+>
+> ⚡ **QE asked the lane *before* the branch was offered whether the colleague case was in its 13, and the answer was NO.** ✅ **The lane added it rather than defending the suite** — three assertions, of which ② reads as the second person **with no `user_id` predicate in the SQL**, so it tests the policy rather than the repository's `where` clause. ⛔ **Run as the owner all three pass against a table with no policies at all, and the lane fire-tested that.**
+>
+> ⚠️ **Coverage fell 95.06% → 95.05% against a floor of 95.0 — five basis points.** ⛔ **Not a finding**: the slice added 359 test lines and 19 invariants *and* domain, repository and contract code. ⚡ **Recorded so the slice that crosses the floor is not a surprise.**
+>
+> ⛔ **`make certify`'s preflight REFUSED on port 3100 — a container QE left running after cycle 237's DR.** ✅ **The guard refused rather than reclaiming the port.** ⚠️ **`make up` and `make dr` without `make down` is the gap, and a lane needing those ports would have hit QE's leftover rather than their own.**
+>
+> ⚡ **Both lanes' branches were fast-forwardable and only one could stay that way.** **QE took the feature branch over D-136's stated ordering**, because the alternative forced a five-commit executable rebase on a lane that had rebased fifteen minutes earlier at QE's request. ✅ **Raised with Product Office rather than left to be inferred; their reading is better — D-136's priority exists so no lane works from stale planning, so where none can be, it protects nothing.** ⛔ **With the guard: *the test is on the BATCH, never on the class* — *"planning is usually not urgent"* would recreate [C-422](LANE_COORDINATION.md).**
+>
+> ⚡ **The rebase changed the measurement**: `5140 + 3` before, **`5143 passed, 1 skipped`** after. **Right by luck, then right by measurement** — the lane's own words, and the clearest case this session for step 4.
+
 > ## Cycle 237 — promoted `2e7f5da6`, 2026-08-16 · **a cycle whose warrant QE believes is a defect, run anyway, and it discharged the release claim**
 >
 > **`main` = `2e7f5da6` = the certified commit.** ⚡ **Verified against the SHA the guard named, NOT against `integration`** — **which had already moved to `e4e64885` before the promotion ran.** `pytest` **5124** · coverage **95.06%** · **632 Security Invariants** · `mypy` strict over **920** files · `import-linter` **37/37** · **`frontend-suite` 3324 in 189 files** · `eslint` clean · `smoke` 24 stages in **165s** · **DR passed with 632 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** · head **`0057`**. ✅ **Eight gates, first attempt.**

@@ -71,7 +71,17 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-16, `2e7f5da6`
+## Current — as of 2026-08-16, `18036f09`
+
+> ⚡ **Cycle 238 Closeout. Eight commits, TWO lanes, ONE gate run** — Lane A's `TASK-480` slice ⓐ and Lane C's planning. ✅ **The first executable product code in three cycles.**
+>
+> ⛔ **[TASK-480](BACKLOG.md) stays on this board and is NOT removed**: slice ⓐ is on `main`, **slice ⓑ — the endpoint and the shell — is still Lane A's.** ⚡ **A promoted SLICE is not a promoted TASK**, and activity 3 removes claims, not commits.
+>
+> 🔴 **QE verified the slice's guarantee in PostgreSQL rather than in the migration.** **Two colleagues in one workspace are the same tenant, so only the person predicate separates them** — all three policies carry `workspace_id` AND `user_id`, RLS enabled and forced, no `UPDATE`, registered in both `TENANT_OWNED_TABLES` and `IMMUTABLE_TENANT_TABLES`.
+>
+> ⚠️ **Coverage 95.06% → 95.05% against a floor of 95.0.** ⛔ **Not a finding — recorded so the slice that crosses it is not a surprise.**
+>
+> ⛔ **The preflight refused on a container QE left running after cycle 237's DR.** ✅ **The guard refused rather than reclaiming the port**, and the leftover was QE's.
 
 > ⚡ **Cycle 237 Closeout. Seven commits, TWO lanes, ONE gate run** — Lane C's register reconciliation and `TASK-480`'s release, plus QE's [B-1005](BUGS.md), [B-1006](BUGS.md) and [B-1007](BUGS.md) rows. ⛔ **No production code in the certified tree, and the cycle says so rather than implying otherwise.**
 >

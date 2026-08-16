@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `2e7f5da6`, 2026-08-16.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `18036f09`, 2026-08-16.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,17 +12,19 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `2e7f5da6`, 2026-08-16.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `18036f09`, 2026-08-16.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`2e7f5da6`** — ⚡ **the certified commit itself**, `promoted == certified`, **verified against the SHA the guard named, not against `integration`'s head**. **Cycle 237** — ⛔ **and `integration` had already moved to `e4e64885` when the promotion ran, which is exactly why the rule names a SHA** |
-| **Release candidate** | ⚡ **Yes, and it is already known.** `integration` = **`e4e64885`** — D-240's two `Planning-Sync` commits, fast-forwarded ahead of the pin **without touching the working tree of the machine running the gates**. **Lane A's `c61fe9a6` (TASK-480 slice ⓐ, migration `0058`) is cycle 238's input and is not yet rebased** |
-| **Certification** | ✅ [`2e7f5da65737`](certification/reports/2e7f5da65737.md) · migration head **`0057`** · profile **`platform`** · ✅ **eight gates, first attempt** · **DR passed, 632 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** |
-| **Cycle 237 gates** | ⚡ **EIGHT required, all recorded** — `pytest` **5124** · coverage **95.06%** · **632** security invariants · `mypy` strict over **920** files · `import-linter` **37/37** · `tsc` clean · **`frontend-suite` 3324 in 189 files** · **`eslint` clean** · `smoke` **24 stages in 165s** · scenario **baseline@1, 190 assertions** |
+| **`main`** | **`18036f09`** — ⚡ **the certified commit itself**, `promoted == certified`, **verified against the SHA the guard named, not against `integration`'s head**. **Cycle 238** — ⛔ **and `integration` had already moved to `9023b187` when the promotion ran, for the second cycle running** |
+| **Release candidate** | `integration` = **`9023b187`** — Lane C's three planning commits, rebased onto the pin and ref-pushed **while the gates were running**, so no lane waited and no gate was disturbed |
+| **Certification** | ✅ [`18036f09c9df`](certification/reports/18036f09c9df.md) · migration head **`0058`** · ✅ **eight gates, first attempt** · **DR passed, 651 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** |
+| **Cycle 238 gates** | ⚡ **EIGHT required, all recorded** — `pytest` **5143** · coverage **95.05%** · **651** security invariants · `mypy` strict over **924** files · `import-linter` **37/37** · `tsc` clean · **`frontend-suite` 3324 in 189 files** · **`eslint` clean** · `smoke` **24 stages in 219s** · scenario **baseline@1, 190 assertions** |
+| ⚠️ **Coverage margin narrowed and it is stated rather than rounded away** | **95.06% → 95.05%**, against a floor of **95.0**. ⛔ **Five basis points.** ⚡ **The slice added 359 lines of test and 19 invariants and coverage still fell**, because it also added domain, repository and contract code — **which is normal and is not a finding.** ⚠️ **What would be a finding is the next slice that takes it below the floor, and this row exists so that is not a surprise** |
+| ✅ **QE verified the guarantee in the database, not in the migration** | 🔴 **The whole slice rests on the PERSON predicate — two colleagues are legitimately the same tenant, so workspace isolation proves nothing here.** ✅ **Read from `pg_policies` on a freshly migrated database**: all three policies (`SELECT`, `INSERT`, `DELETE`) carry **`workspace_id` AND `user_id`**, and `relrowsecurity`/`relforcerowsecurity` are both `t`. ⛔ **No `UPDATE` policy, correctly** — the table is registered in **both** `TENANT_OWNED_TABLES` and `IMMUTABLE_TENANT_TABLES`, and requiring one would weaken immutability to satisfy a test |
 | 🔴 **A figure this dashboard published was transcribed, not measured — [B-1008](docs/BUGS.md)** | ⛔ **Cycle 236 printed *"458+ security invariants"*. Its own record said **632**. `458` is cycle **235**'s figure.** ⚡ **Found by refusing to carry either number forward and reading `certification/manifest.json` for all three runs instead.** 📁 **The footnote at the bottom of this section warns against precisely this and was written at cycle 232 — the class recurred four cycles later, in the file that documents it** |
 | ⚠️ **What the Security Invariant COUNT measures, and it is narrower than its name** | 🔴 **It counts test ids, and only `IMMUTABLE_TENANT_TABLES` is parametrized** — three sites in `test_tenancy_policy.py`, lines 338, 363 and 391. ⛔ **`TENANT_OWNED_TABLES` is iterated INSIDE single tests**, so registering a tenant-owned table adds **assertions and no ids**. ⚡ **Cycle 231's `+3` was one table entering the immutable set, times three parametrized tests; its three tenant-owned registrations moved the figure by ZERO.** ✅ **Those registrations are still enforced — the checks fail if a registered table lacks its policies — they are simply not counted.** ⛔ **So a cycle can protect more and move this number not at all, and a lane citing it as evidence that its registration is not decorative is citing the one figure insensitive to that.** 📁 **Measured by Lane C, verified independently by QE** |
-| **Measured beyond the record** | ⚡ **QE ran the gates certification names but does not capture** — **Disaster Recovery passed** with **632** invariants against the restarted production stack · **migrations reversible to base and back at head `0057`**, on a disposable clean database. ⛔ **[B-122](docs/BUGS.md): `frontend-suite` and `eslint` have run in **0 of 227** certification runs, and a red frontend suite reached `main` under a CERTIFIED stamp. Both are now REQUIRED and both are recorded above.** **A lane's figure is a claim; QE publishes a measurement** — 🔴 **and this row is where that failed: it carried `443`, `3254/184` and head `0054` forward for three cycles ([B-1008](docs/BUGS.md))** |
+| **Measured beyond the record** | ⚡ **QE ran the gates certification names but does not capture** — **Disaster Recovery passed** with **651** invariants against the restarted production stack · **migrations reversible to base and back at head `0058`**, on a disposable clean database. ⛔ **[B-122](docs/BUGS.md): `frontend-suite` and `eslint` have run in **0 of 227** certification runs, and a red frontend suite reached `main` under a CERTIFIED stamp. Both are now REQUIRED and both are recorded above.** **A lane's figure is a claim; QE publishes a measurement** — 🔴 **and this row is where that failed: it carried `443`, `3254/184` and head `0054` forward for three cycles ([B-1008](docs/BUGS.md))** |
 | ⚡ **Proven at runtime, not by reading** | **The `distDir` move ([B-219](docs/BUGS.md)) changed where the production image finds its static assets.** QE warned that copying to `.next/static` would produce **an image that starts and serves no CSS** — silent, and worse than a build failure. **Measured on the built image: `/_next/static/css/d8cb99ad71c03326.css`, `200`, 40 589 bytes.** ⛔ **The predicted failure mode is disproven on the one tree that could have had it** |
 | ⛔ **Promotion** | `promoted == certified` ✓ *(verified from `ls-remote` after the push, not from `rev-parse` before it)* · `--audit-main`: **1906 commits — 209 certified targets, 1697 inside a certified snapshot. None outside one** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN`, on the product owner's explicit override** — **not a resolution, and the severity was not touched** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
@@ -35,7 +37,7 @@
 
 > ⚠️ **`Load more` was replaced rather than kept, and that is the standard being applied rather than a preference.** 📁 **The two are different products**: one accumulates the page under somebody scanning it and makes *"which page am I on"* unanswerable. ✅ **`Previous`/`Next` over the existing keyset cursor, with a page number and NO denominator** — **keyset cannot know how many pages exist without reading them, and a total would be fabricated.**
 
-**Repository health:** **5124 backend tests** · ⚠️ **95.06% coverage** ✅ *(floor 95 — **6 basis points**)* · **3324 frontend tests** across **189 files** · **632 Security Invariants** · mypy strict over **920 files** · **58 migrations**, `0000`–`0057` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **165s** · **disaster recovery passing** · **migrations reversible on a clean database** · **20 module directories** · **59 ADRs** · **146 numbered architecture documents**.
+**Repository health:** **5143 backend tests** · ⚠️ **95.05% coverage** ✅ *(floor 95 — **5 basis points**)* · **3324 frontend tests** across **189 files** · **651 Security Invariants** · mypy strict over **924 files** · **59 migrations**, `0000`–`0058` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **219s** · **disaster recovery passing** · **migrations reversible on a clean database** · **20 module directories** · **59 ADRs** · **146 numbered architecture documents**.
 
 > ⚠️ **Two figures on that line were mislabelled rather than stale, and the distinction matters because only one of them is a measurement error.** ⛔ **It read *"60 ADRs"* — `ls adr/*.md`, which counts `README.md`** — **and *"148 numbered architecture documents"*, which counted `ARCHITECTURE_VALIDATION_M1_2.md` and `provider-qualification.md`, neither of them numbered. ✅ **59 and 146 are what the words claim.** ⚡ **The number was right for a question nobody asked** — the same shape as everything else this week, and the reason to re-derive a figure rather than re-read it.
 
@@ -111,6 +113,60 @@
 | **28 others** | various | mixed | — | See the register |
 
 **37 items · 5 closed.** ⚠️ **Four items have now waited five cycles or more, and every one of them needs the same person.** [C-024](docs/LANE_COORDINATION.md) is the sharpest: Timeline's backend was proven live this cycle by `runtime-composition`, so **ten lines of routing separate a working capability from a customer.**
+
+---
+
+## 1d · Release summary — 2026-08-16, cycle 238
+
+**Promoted `18036f09` from `8ef4ea43`.** Eight commits, two lanes. **First attempt, no aborts.**
+
+### ✅ What a customer can do that they could not before — nothing yet, and that is the slice being honest
+
+**The persistence for per-person notification state is on `main` and is unreachable.** No endpoint, no surface. ⛔ **Lane A named it that way rather than reporting a capability** — *"still UNREACHABLE: no endpoint, no surface. Slice ⓑ is the shell."*
+
+⚡ **This is §2's demoability rule doing its job rather than being violated by it**: the rule asks for the smaller slice that can be demonstrated, and where the honest answer is *not yet*, **saying so beats a demonstration that needs a paragraph of architecture.**
+
+### 🔴 The guarantee the slice rests on, verified in PostgreSQL rather than in the migration
+
+**Two colleagues in one workspace are legitimately the same tenant, so tenant isolation cannot separate them.** Only the person predicate can. **Read from `pg_policies` on a freshly migrated database:**
+
+| | |
+|---|---|
+| `notification_read_select` · `_insert` · `_delete` | **`workspace_id` AND `user_id`, all three** |
+| `relrowsecurity` · `relforcerowsecurity` | **`t` · `t`** |
+| `UPDATE` policy | ⛔ **Absent, correctly** — registered in **both** `TENANT_OWNED_TABLES` and `IMMUTABLE_TENANT_TABLES`, and requiring one would weaken immutability to satisfy a test |
+
+### ⚡ QE asked before validation, and the answer was *no*
+
+QE's question to the lane, before the branch was offered: **was the two-people-in-one-workspace case in your 13?** ✅ **The lane answered *no* rather than defending the suite**, and added it.
+
+**Three assertions where one would have looked sufficient:**
+
+| | |
+|---|---|
+| ① | Bob still sees it unread after Alice reads it — **the case tenant isolation cannot catch** |
+| ② | **Read as Bob with NO `user_id` predicate in the SQL** — so it tests the POLICY, not the repository's `where` clause |
+| ③ | Alice can see her own row — **because a policy denying everything satisfies ② while the feature is broken** |
+
+⛔ **Run as the owner, all three pass against a table with no policies whatsoever.** ✅ **The lane fire-tested its own test against the connection that would have made it worthless.**
+
+### ⚠️ The rebase changed the measurement, which is the point of step 4
+
+**Pre-rebase the lane had `5140 + 3`. Post-rebase the certified run measured `5143 passed, 1 skipped`.** ⚡ **The arithmetic would have been right by luck; the measurement is right by measurement.** 📁 **The lane's own words, and the first time this session the two have differed in a way anybody can point at.**
+
+### ⛔ The preflight refused, and the leftover was QE's
+
+`make certify` stopped on port 3100, held by `signora-prod-frontend-1` — **cycle 237's DR ran `make up` and `make dr` and QE never ran `make down`.** ✅ **The guard refused rather than reclaiming the port**, which is the behaviour worth having. ⚠️ **Had a lane needed those ports they would have hit QE's stale container rather than their own** — the same operand shape as the rest of the week: **the port was real; the owner was not who anybody would assume.**
+
+### ⚡ Both lanes integrated without either paying twice
+
+```
+integration  18036f09 → 9023b187      working tree  18036f09 (unmoved)
+```
+
+**Both branches were fast-forwardable and only one could stay that way.** ⛔ **D-136 ranks planning ahead of feature work in the integration order** — **QE took the feature branch, because taking the other would have forced a five-commit executable rebase on a lane that had rebased fifteen minutes earlier at QE's own request.**
+
+✅ **Raised with Product Office rather than left to be inferred from a moved ref**, and their reading is the better one: **D-136's priority exists so no lane works from stale planning, so where no lane can be, it has nothing to protect.** ⚠️ **With the guard that matters — *the test is on the BATCH, never on the class.*** ⛔ ***"Planning is usually not urgent"* would recreate C-422 exactly.**
 
 ---
 
