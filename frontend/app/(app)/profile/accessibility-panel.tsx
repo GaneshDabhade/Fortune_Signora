@@ -54,7 +54,23 @@ export function AccessibilityPanel() {
   const workspaceId = activeWorkspace?.id ?? null;
   const [prefs, setPrefs] = useState<Preferences | null>(null);
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  /**
+   * 🔴 **`unavailable` is a member rather than a silent return** —
+   * 📁 [B-255](../../../../docs/BUGS.md), which this lane fixed in
+   * `ProfilePanel` and which `AppearancePanel` still carries.
+   *
+   * ⛔ **The first version of this file returned early when there was no
+   * organization**, so somebody clicked a toggle, watched it not move, and got
+   * neither a change nor a reason. ⚡ **The headed journey caught it** — the
+   * click reported *"did not change its state"* and the screen said nothing.
+   *
+   * ✅ **A preference is a person's own, so the panel is right to render**; the
+   * honest thing is to say the write cannot be made rather than to remove the
+   * way to make it.
+   */
+  const [status, setStatus] = useState<
+    'idle' | 'saving' | 'saved' | 'error' | 'unavailable'
+  >('idle');
 
   useEffect(() => {
     if (workspaceId === null) return;
@@ -76,7 +92,10 @@ export function AccessibilityPanel() {
   }, [workspaceId]);
 
   const change = async (changes: Partial<Preferences>) => {
-    if (workspaceId === null) return;
+    if (workspaceId === null) {
+      setStatus('unavailable');
+      return;
+    }
     // ⚡ **Optimistic**, and the server's answer replaces it below — so a
     // refusal corrects the screen rather than leaving it lying.
     setPrefs((current) => (current === null ? current : { ...current, ...changes }));
@@ -120,6 +139,7 @@ export function AccessibilityPanel() {
              reduce. */
           description="Removes every transform and drops transitions to short opacity fades. Your device’s own setting is already respected — turn this on to reduce motion everywhere, whatever the device says."
           checked={prefs?.reduce_motion ?? false}
+          disabled={prefs === null}
           onChange={(value) => change({ reduce_motion: value })}
         />
 
@@ -127,6 +147,7 @@ export function AccessibilityPanel() {
           label="Increase contrast"
           description="Raises borders, darkens secondary text, and removes tinted backgrounds behind text."
           checked={prefs?.increase_contrast ?? false}
+          disabled={prefs === null}
           onChange={(value) => change({ increase_contrast: value })}
         />
 
@@ -137,6 +158,7 @@ export function AccessibilityPanel() {
              changes rather than implying focus is otherwise invisible. */
           description="Keeps the focus outline visible after a mouse click, not only when moving by keyboard."
           checked={prefs?.always_show_focus_ring ?? false}
+          disabled={prefs === null}
           onChange={(value) => change({ always_show_focus_ring: value })}
         />
 
@@ -144,6 +166,7 @@ export function AccessibilityPanel() {
           label="Underline links"
           description="Underlines links in body text rather than relying on colour alone."
           checked={prefs?.underline_links ?? true}
+          disabled={prefs === null}
           onChange={(value) => change({ underline_links: value })}
         />
 
@@ -192,6 +215,11 @@ export function AccessibilityPanel() {
           That did not save. Check your connection and try again.
         </p>
       ) : null}
+      {status === 'unavailable' ? (
+        <p role="alert" className="text-sm text-danger">
+          These settings belong to an organization, and you are not in one yet.
+        </p>
+      ) : null}
     </section>
   );
 }
@@ -207,11 +235,28 @@ function Toggle({
   label,
   description,
   checked,
+  disabled,
   onChange,
 }: {
   label: string;
   description: string;
   checked: boolean;
+  /**
+   * 🔴 **Disabled only while the read is in flight**, and it is the honest
+   * answer rather than a convenience.
+   *
+   * ⛔ **The first version left the controls live before `prefs` resolved**, so
+   * a click did nothing at all: the optimistic update bails when there is no
+   * current value to spread over. ⚡ **The headed journey reported *"clicking
+   * the checkbox did not change its state"*** — **an interactive control that
+   * does nothing, which is [B-255](../../../../docs/BUGS.md)'s shape and this
+   * lane's own rule**: *a control that silently does nothing is worse than one
+   * that is absent.*
+   *
+   * ✅ **The loading line above says why**, so this is a stated wait rather
+   * than a dead control.
+   */
+  disabled: boolean;
   onChange: (value: boolean) => void;
 }) {
   return (
@@ -220,8 +265,9 @@ function Toggle({
         <input
           type="checkbox"
           checked={checked}
+          disabled={disabled}
           onChange={(event) => onChange(event.target.checked)}
-          className="mt-0.5 h-4 w-4 shrink-0 rounded border-border text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          className="mt-0.5 h-4 w-4 shrink-0 rounded border-border text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60"
         />
         <span className="flex flex-col gap-0.5">
           <span className="text-sm font-medium text-content">{label}</span>

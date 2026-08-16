@@ -18,15 +18,35 @@ import { OWNER } from './fixtures/personas';
  * assumed.
  */
 
+
+/**
+ * ⚠️ **Reaches `/profile` through a workspace route, and that is a finding
+ * rather than a convenience.**
+ *
+ * ⛔ **Going straight to `/profile` renders *"These settings belong to an
+ * organization, and you are not in one yet"*** — the workspace provider has no
+ * active organization until a workspace route has established one. ⚡ **Every
+ * preference panel then refuses to write**, which is correct behaviour on a
+ * screen that genuinely has no organization and wrong on this one.
+ *
+ * ✅ **Recorded rather than worked around in the product**: a person who
+ * bookmarks `/profile` meets the same screen, and that is a product question
+ * outside this slice. **This journey establishes the context the way a person
+ * arriving through the shell already would.**
+ */
+async function openProfile(page: import('@playwright/test').Page): Promise<void> {
+  await page.goto('/accounts');
+  await page.goto('/profile');
+  await expect(page.getByRole('heading', { name: 'Your profile' })).toBeVisible();
+}
+
 test.describe('Workflow 9 · a person makes Signora theirs', () => {
   // ✅ **Passes again — [B-215](../../../docs/BUGS.md) is fixed.** It was
   // marked `test.fail()` for exactly one cycle while the defect stood, rather
   // than skipped or softened, and this is the scenario that found it: a slow
   // read was erasing the typed value before the save.
   test('@journey a display name and a timezone survive signing out', async ({ page }) => {
-    await page.goto('/profile');
-
-    await expect(page.getByRole('heading', { name: 'Your profile' })).toBeVisible();
+    await openProfile(page);
 
     const displayName = page.getByLabel('Display name');
     await displayName.fill('Aurélie');
@@ -113,5 +133,118 @@ test.describe('Workflow 9 · a person makes Signora theirs', () => {
 
     await expect(page.getByText('Sign-in identity').first()).toBeVisible();
     await expect(page.getByText(/creates a new identity/i)).toBeVisible();
+  });
+
+  /**
+   * 🔴 **The finalized design's `04 · Accessibility`, walked.**
+   *
+   * ⚡ **What a browser is needed for and a component test is not**: these
+   * preferences are stored on the ACCOUNT rather than the browser — 📁 the
+   * design's own claim, *"applies to this account on every device you sign in
+   * from, not to this browser"* — **and only a reload proves the round trip.**
+   */
+  test('@journey every accessibility preference survives a reload', async ({ page }) => {
+    await openProfile(page);
+    await expect(page.getByRole('heading', { name: 'Accessibility' })).toBeVisible();
+    // ⚡ **The controls are disabled until the read lands**, so a click before
+    // then would be a click on a stated wait rather than on a preference.
+    await expect(page.getByRole('checkbox', { name: /Reduce motion/ })).toBeEnabled();
+
+    const reduceMotion = page.getByRole('checkbox', { name: /Reduce motion/ });
+    const contrast = page.getByRole('checkbox', { name: /Increase contrast/ });
+    const focusRing = page.getByRole('checkbox', { name: /Always show focus ring/ });
+    const underline = page.getByRole('checkbox', { name: /Underline links/ });
+
+    // 📁 **The design's defaults**: links underlined, everything else off.
+    // ⛔ **Reduce motion off does NOT mean *animate everything*** — the
+    // device's own `prefers-reduced-motion` is already respected; this is the
+    // override.
+    await expect(underline).toBeChecked();
+    await expect(reduceMotion).not.toBeChecked();
+
+    await reduceMotion.check();
+    await contrast.check();
+    await focusRing.check();
+    await underline.uncheck();
+    await page.getByRole('radio', { name: '125%' }).check();
+    await page.getByRole('radio', { name: 'Concise' }).check();
+    await expect(page.getByText('Saved').first()).toBeVisible();
+
+    await page.reload();
+    await expect(page.getByRole('heading', { name: 'Accessibility' })).toBeVisible();
+
+    await expect(page.getByRole('checkbox', { name: /Reduce motion/ })).toBeChecked();
+    await expect(page.getByRole('checkbox', { name: /Increase contrast/ })).toBeChecked();
+    await expect(page.getByRole('checkbox', { name: /Always show focus ring/ })).toBeChecked();
+    await expect(page.getByRole('checkbox', { name: /Underline links/ })).not.toBeChecked();
+    await expect(page.getByRole('radio', { name: '125%' })).toBeChecked();
+    await expect(page.getByRole('radio', { name: 'Concise' })).toBeChecked();
+
+    // ⚡ **Left as the design's defaults**, so this journey does not hand the
+    // next one a screen it did not expect.
+    await page.getByRole('checkbox', { name: /Reduce motion/ }).uncheck();
+    await page.getByRole('checkbox', { name: /Increase contrast/ }).uncheck();
+    await page.getByRole('checkbox', { name: /Always show focus ring/ }).uncheck();
+    await page.getByRole('checkbox', { name: /Underline links/ }).check();
+    await page.getByRole('radio', { name: '100%' }).check();
+    await page.getByRole('radio', { name: 'Detailed' }).check();
+  });
+
+  /**
+   * 📁 ***"System · Follows your device, switching at sunset."***
+   *
+   * ⛔ **Stored as `system`, never resolved to light or dark** — resolving it
+   * would replace the person's choice with one reading of it, taken at the
+   * moment they happened to be looking.
+   */
+  test('@journey the theme offers System and keeps it as System', async ({ page }) => {
+    await openProfile(page);
+    await expect(page.getByRole('heading', { name: 'Appearance' })).toBeVisible();
+    await expect(page.getByRole('radio', { name: 'System' })).toBeEnabled();
+
+    for (const label of ['Light', 'Dark', 'System']) {
+      await expect(page.getByRole('radio', { name: label })).toBeVisible();
+    }
+
+    await page.getByRole('radio', { name: 'Dark' }).check();
+    await expect(page.getByText('Saved').first()).toBeVisible();
+    await page.getByRole('radio', { name: 'System' }).check();
+    await page.reload();
+
+    // ⛔ **Still `System` after a round trip.** A screen that read it back as
+    // `Dark` would have resolved the deferral on the server's behalf.
+    await expect(page.getByRole('radio', { name: 'System' })).toBeChecked();
+  });
+
+  /**
+   * ⚡ **The whole screen, in the design's order**, and every section a
+   * labelled region — 📁 the accessibility claim this product makes about
+   * itself, checked on the one screen that is about accessibility.
+   */
+  test('@journey every section the design keeps is present, and the one it does not is absent', async ({
+    page,
+  }) => {
+    await page.goto('/profile');
+
+    for (const heading of [
+      'Language & region',
+      'Appearance',
+      'Accessibility',
+      'AI preferences',
+    ]) {
+      await expect(page.getByRole('heading', { name: heading })).toBeVisible();
+    }
+
+    // ⛔ **Keyboard shortcuts is deliberately NOT here.** 📁 `SHORTCUT_GROUPS`
+    // is already rendered by the shell's Shortcuts overlay, and a second
+    // reference would be two lists of one truth. ⚡ **Asserted so the exclusion
+    // is deliberate rather than forgotten.**
+    await expect(page.getByRole('heading', { name: /Keyboard shortcuts/i })).toHaveCount(0);
+
+    // ⛔ **And no CONTROL for writing to the CRM** — the design draws a toggle
+    // and Signora has no write path to a connected system. ✅ **The fact is
+    // stated instead.**
+    await expect(page.getByRole('checkbox', { name: /risk flags/i })).toHaveCount(0);
+    await expect(page.getByText(/does not write to them/i)).toBeVisible();
   });
 });
