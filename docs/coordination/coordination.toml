@@ -9,7 +9,7 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "2c0d6e2"
+generated_from = "1f8edb8"
 task_count     = 54
 
 [lane.Lane_A]
@@ -19,12 +19,12 @@ assigned_total     = 49
 claimable          = 6
 claimable_now      = 6
 awaiting_sync      = 0
-in_flight          = 21
-actionable         = 7
-awaiting_qe_transition = 21
+in_flight          = 20
+actionable         = 6
+awaiting_qe_transition = 20
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 22
+blocked            = 23
 lane_utilization   = 0.0
 idle_prediction_days   = 0.9
 dependency_wait_days   = 4.1
@@ -40,11 +40,11 @@ claimable_now      = 0
 awaiting_sync      = 0
 in_flight          = 1
 actionable         = 0
-awaiting_qe_transition = 0
+awaiting_qe_transition = 1
 blocked_on_integration = 0
 supply_state       = "in_flight_only"
 blocked            = 1
-lane_utilization   = 0.2
+lane_utilization   = 0.0
 idle_prediction_days   = 0.0
 dependency_wait_days   = 3.0
 blocked_duration_days  = 3.0
@@ -389,18 +389,18 @@ on_integration = true
 [[task]]
 id            = "TASK-1482"
 title         = "Remove the legacy `Attention` navigation entry"
-state         = "IN FLIGHT"
-declared      = "CLAIMED"
+state         = "BLOCKED"
+declared      = "BLOCKED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
+estimated_ready = "— Lane C, 2026-08-15, on a possible conflict between two product-owner"
+waiting_for    = "— Lane C, 2026-08-15, on a possible conflict between two product-owner rulings. ⛔ Lane A stopped rather than pushed through, which is correct.** 🔴 **["
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-200"
