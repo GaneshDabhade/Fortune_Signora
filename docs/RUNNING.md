@@ -394,6 +394,8 @@ Set `SIGNORA_API_URL` and `BETTER_AUTH_URL` to that lane's ports in its `fronten
 
 ## When something does not work
 
+> 🔴 **Three of the rows below share one rule, and it is worth reading before the table**: ⚡ ***realign before trusting a red.*** ⛔ **A stamped database, a stale workspace pointer and an exhausted swap file each produce a failure that looks like a defect in the code and is not.** 📁 **All three were found by lanes on 2026-08-16, all three cost time, and in the second case the product was working correctly the whole time.**
+
 | What you see | What it is |
 |---|---|
 | Sign-in fails with a database error about `auth.user` | Better Auth's tables were never created. `cd frontend && npm run auth:migrate` — `make demo` does it for you |
@@ -402,6 +404,9 @@ Set `SIGNORA_API_URL` and `BETTER_AUTH_URL` to that lane's ports in its `fronten
 | The Playground is suddenly empty | `make test` truncates every table in the same database. Re-run `make demo-seed` |
 | `/api/health` says `sign_in_methods: degraded` | Password sign-in is switched off and no OAuth credentials are set, so nobody can sign in |
 | Migrations fail with a permissions error | They are running as `signora_app`. Schema changes execute only under the **owner** identity — pass `SIGNORA_DATABASE_URL` explicitly, as step 2 does |
+| `ResolutionError: No such revision or branch '0060'` — or any revision the tree does not contain | 🔴 **Your DATABASE is stamped above your TREE.** Checking out a branch that adds a migration, running anything, then switching away leaves the stamp behind. ⛔ **It reads as a broken migration runner and it is a stamped database.** ✅ `alembic downgrade <the head your tree has>`, then re-run. ⚠️ **Found twice in one day by Lane C**, and it will reach anybody who touches a branch whose migration head differs from `integration`'s |
+| A journey fails with *"table not found"* on a screen that looks fine | 🔴 **The screen is probably CORRECT and the assertion is wrong.** ⛔ **Repeated E2E runs leave the signed-in user's active workspace pointing at an `E2E Org …` that has no accounts** — and **zero rows renders the designed empty state, which is not a table.** ✅ Re-seed the Playground. 📁 **Found by Lane A after four Companies journeys failed against a working product** |
+| A suite produces no output for many minutes | ⚠️ **Check memory before concluding it is slow.** ⛔ **A run producing NO bytes is indistinguishable from one producing them slowly**, and thrashing looks exactly like a long suite. 📁 **Lane A waited twenty minutes on a Playwright run that finished in 46 seconds once `next dev` was restarted.** ✅ `free -h` — if swap is exhausted, the suite is not the problem |
 
 ---
 

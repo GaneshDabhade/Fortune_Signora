@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `d5c84340`, 2026-08-16.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `1aaf9678`, 2026-08-16.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `d5c84340`, 2026-08-16.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `1aaf9678`, 2026-08-16.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`d5c84340`** — ⚡ **the certified commit itself**, `promoted == certified`, **verified against the SHA the guard named, not against `integration`'s head**. **Cycle 238** — ⛔ **and `integration` had already moved to `9023b187` when the promotion ran, for the second cycle running** |
+| **`main`** | **`1aaf9678`** — ⚡ **the certified commit itself**, `promoted == certified`, **verified against the SHA the guard named, not against `integration`'s head**. **Cycle 238** — ⛔ **and `integration` had already moved to `9023b187` when the promotion ran, for the second cycle running** |
 | **Release candidate** | `integration` = **`9023b187`** — Lane C's three planning commits, rebased onto the pin and ref-pushed **while the gates were running**, so no lane waited and no gate was disturbed |
-| **Certification** | ✅ [`d5c843400beb`](certification/reports/d5c843400beb.md) · migration head **`0059`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** |
-| **Cycle 241 gates** | ⚡ **EIGHT required, all recorded** — `pytest` **5225** · coverage **95.05%** · **668** security invariants · `mypy` strict over **935** files · `import-linter` **37/37** · `tsc` clean · **`frontend-suite` 3330 in 189 files** · **`eslint` clean** · `smoke` **24 stages in 206s** · scenario **baseline@1, 198 assertions** |
+| **Certification** | ✅ [`1aaf967811b1`](certification/reports/1aaf967811b1.md) · migration head **`0059`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** |
+| **Cycle 242 gates** | ⚡ **EIGHT required, all recorded** — `pytest` **5225** · coverage **95.04%** · **668** security invariants · `mypy` strict over **935** files · `import-linter` **37/37** · `tsc` clean · **`frontend-suite` 3330 in 189 files** · **`eslint` clean** · `smoke` **24 stages in 290s** · scenario **baseline@1, 198 assertions** |
 | ✅ **The coverage fall broke at cycle 240, and the trend row is kept rather than deleted** | **95.06 → 95.05 → 95.04 → 95.05.** ⛔ **The three-cycle monotonic fall did NOT continue.** ⚡ **Reported as a trajectory while it was falling and reported as broken now it is not** — 📁 **a trend row that is quietly removed the moment it stops being alarming teaches a reader that trends are only mentioned when they are bad.** ⚠️ **Five basis points, and still the figure worth watching**: the rise came from a slice that was 19 tests against a small guard, not from anything structural |
 | ⚠️ **`make coverage-debt` cannot answer the question this trend raises** | 📁 **Reported by Lane A**: its reader skips because `coverage json` exits 2 — **the READER failing rather than the run.** ⛔ **So the one instrument that would name WHICH files are pulling the figure down is unavailable exactly as the margin narrows.** ✅ **The certification figure is unaffected and is measured independently** |
 | ✅ **QE verified the guarantee in the database, not in the migration** | 🔴 **The whole slice rests on the PERSON predicate — two colleagues are legitimately the same tenant, so workspace isolation proves nothing here.** ✅ **Read from `pg_policies` on a freshly migrated database**: all three policies (`SELECT`, `INSERT`, `DELETE`) carry **`workspace_id` AND `user_id`**, and `relrowsecurity`/`relforcerowsecurity` are both `t`. ⛔ **No `UPDATE` policy, correctly** — the table is registered in **both** `TENANT_OWNED_TABLES` and `IMMUTABLE_TENANT_TABLES`, and requiring one would weaken immutability to satisfy a test |
@@ -38,7 +38,7 @@
 
 > ⚠️ **`Load more` was replaced rather than kept, and that is the standard being applied rather than a preference.** 📁 **The two are different products**: one accumulates the page under somebody scanning it and makes *"which page am I on"* unanswerable. ✅ **`Previous`/`Next` over the existing keyset cursor, with a page number and NO denominator** — **keyset cannot know how many pages exist without reading them, and a total would be fabricated.**
 
-**Repository health:** **5225 backend tests** · ✅ **95.05% coverage** *(floor 95 — **5 basis points**, held for a second cycle)* · **3330 frontend tests** across **189 files** · **668 Security Invariants** · mypy strict over **935 files** · **60 migrations**, `0000`–`0059` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **206s** · **disaster recovery passing** · **migrations reversible on a clean database** · **20 module directories** · **59 ADRs** · **146 numbered architecture documents**.
+**Repository health:** **5225 backend tests** · ⚠️ **95.04% coverage** *(floor 95 — **4 basis points**)* · **3330 frontend tests** across **189 files** · **668 Security Invariants** · mypy strict over **935 files** · **60 migrations**, `0000`–`0059` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **290s** · **disaster recovery passing** · **migrations reversible on a clean database** · **20 module directories** · **59 ADRs** · **146 numbered architecture documents**.
 
 > ⚠️ **Two figures on that line were mislabelled rather than stale, and the distinction matters because only one of them is a measurement error.** ⛔ **It read *"60 ADRs"* — `ls adr/*.md`, which counts `README.md`** — **and *"148 numbered architecture documents"*, which counted `ARCHITECTURE_VALIDATION_M1_2.md` and `provider-qualification.md`, neither of them numbered. ✅ **59 and 146 are what the words claim.** ⚡ **The number was right for a question nobody asked** — the same shape as everything else this week, and the reason to re-derive a figure rather than re-read it.
 

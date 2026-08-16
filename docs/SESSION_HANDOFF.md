@@ -1,5 +1,21 @@
 # Session Handoff
 
+> ## Cycle 242 — promoted `1aaf9678`, 2026-08-16 · **a cycle deferred to protect a lane's session, and the deferral found their stall**
+>
+> **`main` = `1aaf9678` = the certified commit.** `pytest` **5225** · coverage **95.04%** · **668 Security Invariants** · `mypy` **935** files · `import-linter` **37/37** · **`frontend-suite` 3330 in 189 files** · `eslint` clean · `smoke` 24 stages in **290s** · **DR passed** · **reversible on a clean database** · head **`0059`**. ✅ **Eight gates, first attempt.**
+>
+> ✅ **[B-436](BUGS.md)'s `None`/`[]` split made behavioural** — the Decorative Logic QE found and the lane repaired rather than deleted.
+>
+> 🔴 **QE ABORTED its own certification rather than compete for memory with a lane's session.** **199 MB free, swap 4.0/4.0 GB, and a `next-server` at 5.94 GB belonging to an active lane.** ⛔ **The OOM killer would have taken QE's pytest or their session, and buying a green run with somebody else's work is not a trade** — **including indirectly.** ✅ **Nothing was lost: a gate re-runs for free, a session does not.**
+>
+> ⚡ **The deferral found a defect neither lane was looking for.** 📁 **The lane restarted, recovered 6.8 GB, and discovered a Playwright run that had sat at ZERO BYTES for twenty minutes was thrashing, not slow — the same specs then finished in 46 seconds.** ⛔ ***A run producing no bytes is indistinguishable from one producing them slowly.***
+>
+> ✅ **A protocol came out of it rather than a sacrifice**: **whoever notices the pressure first says so, and neither side guesses.** **The lane offered the symmetry unprompted.**
+>
+> 🔴 **A TENTH instrument failure, and it nearly produced a false abort.** **QE's waiter watched the wrong PID** — `ps … | grep "[m]ake certify" | head -1` captured the nohup wrapper, not `make certify`. ⛔ **When the wrapper exited, the log held only the preflight and QE was one step from reporting *certification aborted*.** ⚡ **It had not aborted; it was 85 seconds into pytest.** 📁 **What caught it was instruction 6 — read the error before reporting a verdict — and there was NO error to read. The absence is what exposed the wrong operand.**
+>
+> ✅ **Three environment hazards recorded in [`RUNNING.md`](RUNNING.md) under one rule — *realign before trusting a red***: a **stamped database above the tree** · a **stale E2E workspace pointer**, where four journeys failed against a screen that was correct · and **exhausted swap**, where a suite that looks slow is not the problem.
+
 > ## Cycle 241 — promoted `d5c84340`, 2026-08-16 · **the lease stops treating a dead pid as proof the machine is free**
 >
 > **`main` = `d5c84340` = the certified commit.** `pytest` **5225** · coverage **95.05%** · **668 Security Invariants** · `mypy` **935** files · `import-linter` **37/37** · **`frontend-suite` 3330 in 189 files** · `eslint` clean · `smoke` 24 stages in **206s** · scenario **198 assertions** · **DR passed with 668** · **reversible on a clean database** · head **`0059`**. ✅ **Eight gates, first attempt.**

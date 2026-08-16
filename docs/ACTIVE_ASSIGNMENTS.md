@@ -71,7 +71,17 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-16, `d5c84340`
+## Current — as of 2026-08-16, `1aaf9678`
+
+> ⚡ **Cycle 242 Closeout. One commit, one lane** — [B-436](BUGS.md)'s `None`/`[]` split made behavioural.
+>
+> 🔴 **QE aborted its first attempt rather than compete for the last 199 MB with a lane's dev server.** ✅ **The lane restarted, recovered 6.8 GB, and found a Playwright run that had been thrashing for twenty minutes.**
+>
+> ⛔ **The [C-108](LANE_COORDINATION.md) hold is now structural rather than ordered**: TASK-1481 lives on `lane-c-webhook`, so `lane-c-sync` is takeable by construction.
+>
+> ✅ **Three environment hazards recorded in [`RUNNING.md`](RUNNING.md)** under one rule — *realign before trusting a red*.
+
+### Cycle 241 — `d5c84340`
 
 > ⚡ **Cycle 241 Closeout. Seven commits, TWO lanes, ONE gate run** — [B-436](BUGS.md)'s lease repair plus QE's C-108 and B-1000 rows.
 >
