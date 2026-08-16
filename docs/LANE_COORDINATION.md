@@ -517,6 +517,83 @@ databaseUrl: required(
 
 ---
 
+## C-1525 · TASK-202 was released on a premise a later measurement overturned — every remaining action is forbidden
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-16, claiming [TASK-202](BACKLOG.md) and auditing before building |
+| **Owner** | 🔴 **Product owner** — ⛔ **an architectural blocker by [§20e](../CLAUDE.md)'s test: *a dependency on a decision nobody has made is architectural however small the code would be*** |
+| **Type** | 🔴 **A live ruling whose premise a later measurement contradicts** |
+| **Blocks** | ⛔ **[TASK-202](BACKLOG.md) whole.** ⚠️ **Not partly** — the row's own words |
+| **Status** | **`OPEN`** |
+
+### ⚡ ① The problem
+
+📁 **The row is `READY` on the product owner's ruling at [C-334](#c-334), 2026-08-06:**
+
+> ✅ ***"TASK-202 is `READY` today and stays `READY` — the credential gates its PROMPT RELEASE, never its start."***
+
+⛔ **That premise was true when it was made and a measurement six days later overturned it.** 📁 **[B-260](BUGS.md), recorded on [TASK-013](BACKLOG.md), 2026-08-12:**
+
+> 🔴 ***`reasoning@2` … evaluated under protocol 2 on `granite3.3:2b`, twice, independently: 2 of 2 grounding failures, coverage `0.000`, release REFUSED.*** ⚡ ***The model COMPLETED — no timeout — so this is not [C-222](#c-222)'s wall-clock blocker.***
+>
+> ⛔ ***"The credential is no longer one blocker among several — it is the LAST UNTRIED VARIABLE."***
+>
+> ⛔ ***"What it forbids: authoring `@3` against this model until something passes — [TASK-013](BACKLOG.md) in writing, [404 §7](architecture/404-epic-g-copilot.md) as this epic's named process risk."***
+
+🔴 **So the start the ruling protected no longer contains any permitted action**, and that is a different fact from the one the ruling was given.
+
+### ⛔ ② The row's stated first slice is forbidden by the row itself
+
+📁 **First slice: *"Author a `reasoning` dataset and evaluate `reasoning@1` under protocol 2."***
+
+⛔ **Two cells above it, the same row forbids exactly that**: *"authoring one now would put a second copy of an evidence set the module shares on purpose — reasoning and narration operate over the identical closed evidence set and a second copy would be a second thing to keep in step"* ([§2](../CLAUDE.md)).
+
+✅ **And the shipped code already settled it.** 📁 `modules/ai_reasoning_engine/evaluation/__main__.py`:
+
+```python
+PROMPT = "reasoning"
+DATASET = "explanation_narration"
+```
+
+⚡ **The reasoning harness EXISTS, already runs under `make eval-reasoning`, and deliberately shares the narration dataset** — **with the reason written above the constant.** ⛔ **So the first slice is not unbuilt; it is refused, by this module, in writing.**
+
+### ⚡ ③ The alternatives, and why each fails
+
+| | |
+|---|---|
+| **Author the `reasoning` dataset anyway** | ⛔ **A second copy of a shared closed evidence set** — [§2](../CLAUDE.md), *truth has exactly one authoritative representation*. **The module refuses it by name** |
+| **Author `reasoning@3`** | ⛔ **Forbidden in writing** by [TASK-013](BACKLOG.md) and [404 §7](architecture/404-epic-g-copilot.md) **until something passes** |
+| **Raise `InferencePolicy.timeout_seconds` above 60.0** | ⛔ **The change [TASK-013](BACKLOG.md) forbids in writing.** ⚠️ **And [B-260](BUGS.md) makes it moot: `@2` COMPLETED and still failed, so the wall clock is not what is wrong** |
+| **Change the pinned evaluation model** | ⛔ **Not a lane's** — 📁 [ADR-0028](architecture/adr/0028-model-runtime-by-environment.md) and [§10](../CLAUDE.md): *"the pinned evaluation model is part of the benchmark… changing the model is an architectural decision that belongs to the product owner, never to a coding session working around slow hardware"* |
+| **Build phases 2–4 instead** | ⛔ **Phase 2 needs a hosted-model evaluation ([C-410](#c-410)) · phase 3 needs `require_model` to accept `reasoning@1`, which needs a passing evaluation · phase 4 needs Epic C.** 📁 **The row: *"the epic is blocked whole, not partly."*** |
+
+### ✅ ④ The recommendation — and it is input, never authority
+
+**Configure a hosted provider credential for EVALUATION only**, and re-run `make eval-reasoning` against a frontier model.
+
+⚡ **Everything needed already exists and nothing new is built**: 📁 [ADR-0028](architecture/adr/0028-model-runtime-by-environment.md) already makes evaluation's provider **configurable** — *"mock · Ollama · Anthropic · OpenAI · Azure OpenAI · Bedrock · Vertex AI"* — ✅ **and [TASK-420](BACKLOG.md) shipped the OpenAI adapter on 2026-08-15, so a second hosted vendor is registered and waiting for a key.**
+
+⛔ **This changes no production behaviour.** 📁 **Development stays on the deterministic mock** ([§10](../CLAUDE.md)), and **provider remains operational metadata, never an input to a decision.**
+
+### ⚠️ ⑤ The trade-offs
+
+| | |
+|---|---|
+| ✅ **For** | **It is the LAST UNTRIED VARIABLE, named as such by the measurement.** ⛔ **Every other variable has been tried and recorded**: two prompt versions, two independent runs, and a completion rather than a timeout |
+| ⚠️ **Against** | **A real spend, and a hosted call leaves the machine.** ⛔ **Evaluation data is the recorded golden set rather than a customer's**, so [§10](../CLAUDE.md)'s workspace-scoping rule is not engaged — **stated rather than assumed** |
+| ⛔ **The risk of NOT doing it** | 📁 **Epic G is *assigned whole* and blocked whole.** ⚡ **It has been blocked since 2026-08-06 on a question one credential answers**, and the row has been claimed by two lanes without either being able to start |
+
+### 🔴 ⑥ The implementation impact
+
+⛔ **None until it is ruled.** ✅ **After a credential exists: one command** — `make eval-reasoning --model <hosted>` — **and the answer is a recorded evaluation rather than a code change.**
+
+⚠️ **If it PASSES**: `reasoning@1` releases, `require_model` accepts it, and phase 3 unblocks. ⚠️ **If it FAILS**: 📁 **that is the finding [TASK-013](BACKLOG.md) is waiting for** — *"authoring `@3` … until something passes"* — **and authoring `@3` becomes permitted for the first time.**
+
+> ✅ **Either outcome discharges the epic's blocker. Neither is available without the credential, and that is the whole of this item.**
+
+---
+
 ## C-1524 · The platform's principal type is human-only, and the row that needs it is claimed
 
 | | |
