@@ -9,11 +9,24 @@
 # never delivered once. Keep each notice under 400 characters and REPLACE it.
 #
 # ⛔ AND IT MAY NAME ONLY ROWS IN THAT LANE'S COMPUTED BACKLOG — B-221/B-427.
-# A notice naming a row the lane holds, or one not yet integrated, is WITHHELD
-# WHOLE and the author is not told. Measured 2026-08-16: the previous notice
-# named TASK-495, which Lane A was already building, so the guard suppressed
-# the entire message including the part that mattered. The guard is right; the
-# author has to check. Name only what the lane can claim, or name no row.
+# A notice naming a row the lane cannot reach is WITHHELD WHOLE, and the part
+# that mattered goes with it. Name only what the lane can claim, or name no row.
+#
+# ⚠️ AND READ THE GENERATOR'S OUTPUT. It is NOT silent: coordination.py:1577
+# prints "coordination: NOTICE WITHHELD for <lane>" on every write path, which
+# is what B-427's fix put there. Fire-tested 2026-08-16 by pointing a notice at
+# a nonexistent row — the line appears immediately.
+#
+# On 2026-08-16 a withheld notice for Lane A reached nobody anyway, because
+# this office had been running `coordination.py >/dev/null 2>&1` — silencing
+# the one command that reports a silent failure. That is B-1000's class, not
+# B-427's, and it is the half worth remembering: the guard worked, the report
+# worked, and the output was discarded.
+#
+# ⛔ The CAUSE of that withholding is deliberately not recorded. Re-running the
+# same notice against a later tree produces no withheld line, so the mechanism
+# first asserted — that it named a row the lane already held — does not
+# reproduce. Withdrawn rather than replaced with a better-sounding guess.
 
 ["Lane A"]
 notice = "Workflow 13 is the product owner's single sequence and TASK-1484 is now on integration, so the palette and the status pill are claimable the moment the bell lands. The design names SEVEN palette groups; shell-palette.tsx quotes it as four, which is why it reads finished. Render what /ready already returns. Do not touch the filter strip or invent a context drawer."
