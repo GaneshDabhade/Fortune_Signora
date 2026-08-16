@@ -347,6 +347,17 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # Tenant-owned because a probe names one workspace's connection, and
         # its `detail` describes that customer's system.
         "connection_probe",
+        # 🔴 **Tenant-owned, and its three neighbours in the same package are
+        # NOT.** ⛔ `outbox_event`, `processed_event` and `dead_letter_event` are
+        # platform infrastructure — `signora_app` may INSERT and cannot read.
+        # ⚡ **The design decides this one, not the neighbourhood**: the
+        # *API keys & webhooks* table has a `State` column and a `Last used`
+        # column on a screen a customer opens, and a row the app role cannot
+        # read is a column that renders nothing.
+        # ✅ A dead letter is the PLATFORM's account of its own behaviour; a
+        # webhook delivery is the CUSTOMER's record of something they configured
+        # and are owed. Both classifications are right for their subject.
+        "webhook_delivery",
     }
 )
 
