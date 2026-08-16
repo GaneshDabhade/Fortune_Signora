@@ -30,6 +30,10 @@ from modules.workspace_tenancy.domain.entities import (
     WorkspaceRole,
 )
 from modules.workspace_tenancy.domain.invitation import Invitation, InvitationState
+from modules.workspace_tenancy.domain.notification_state import (
+    CAP as NOTIFICATION_CAP,
+)
+from modules.workspace_tenancy.domain.notification_state import UnreadCount
 from modules.workspace_tenancy.domain.onboarding import (
     MAX_GOALS,
     MAX_TEAM_SIZE,
@@ -50,6 +54,7 @@ from modules.workspace_tenancy.domain.preferences import (
     TimeFormat,
 )
 from modules.workspace_tenancy.domain.saved_view import SavedView
+from signora_platform.pagination import MAX_PAGE_LIMIT
 
 
 class CreateWorkspaceRequest(BaseModel):
@@ -643,3 +648,52 @@ class RoleChangePreviewResponse(BaseModel):
             current=EffectivePermissionsResponse.from_domain(view.current, user_id=user_id),
             proposed=EffectivePermissionsResponse.from_domain(view.proposed, user_id=user_id),
         )
+
+
+class UnreadBadgeResponse(BaseModel):
+    """The shell's notification badge — **[TASK-480](../../../../docs/BACKLOG.md)**.
+
+    ⚡ **Two fields rather than one number**, because the shell renders `9+`.
+    ⛔ **Returning a bare `int` would push *is this capped* to the caller**, and
+    the first one to compare against `9` itself has written the cap down twice
+    ([§2](../../../../CLAUDE.md), *behaviour exists exactly once*).
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    unread: int = Field(
+        description="How many of the notifications you asked about this person has "
+        "not read. Never above `cap`."
+    )
+    capped: bool = Field(
+        description="True when the real number is at least `cap`, so the badge reads "
+        "`9+` rather than a figure. Read this rather than comparing `unread` to `cap`."
+    )
+    cap: int = Field(
+        description="The ceiling the count stops at. Published so a client never "
+        "hard-codes it — the query is bounded by this, so counting past it is not "
+        "something the server declined to do, it is something it never did."
+    )
+
+    @classmethod
+    def from_domain(cls, badge: UnreadCount) -> UnreadBadgeResponse:
+        return cls(unread=badge.value, capped=badge.capped, cap=NOTIFICATION_CAP)
+
+
+class MarkNotificationsReadRequest(BaseModel):
+    """**Which notifications this person has read.**
+
+    ⛔ **No `user_id` field, and its absence is the guarantee.** ⚡ **The person
+    is the caller's own verified id** — 📁 the same rule `PreferencesResponse`
+    records: *"there is no parameter that could ask for another's."*
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    notification_ids: list[UUID] = Field(
+        min_length=1,
+        max_length=MAX_PAGE_LIMIT,
+        description="The notifications now read. Bounded by a page, because the "
+        "realistic use is 'mark what I am looking at' and a larger request is "
+        "either a mistake or a scrape.",
+    )

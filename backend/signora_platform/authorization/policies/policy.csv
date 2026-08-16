@@ -55,6 +55,10 @@ p, owner, *, onboarding, read
 p, member, *, onboarding, read
 p, owner, *, onboarding, update
 p, member, *, onboarding, update
+p, member, *, notification, read
+p, owner, *, notification, read
+p, member, *, notification, update
+p, owner, *, notification, update
 p, owner, *, preferences, read
 p, member, *, preferences, read
 p, owner, *, preferences, update

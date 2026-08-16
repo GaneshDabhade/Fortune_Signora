@@ -59,6 +59,9 @@ from modules.workspace_tenancy.infrastructure.composition import (
     build_query_service,
     build_use_cases,
 )
+from modules.workspace_tenancy.infrastructure.repositories import (
+    SqlAlchemyNotificationReadRepository,
+)
 from modules.workspace_tenancy.interface.schemas import (
     AddMemberRequest,
     AdvanceOnboardingRequest,
@@ -78,6 +81,7 @@ from modules.workspace_tenancy.interface.schemas import (
     HistoryEntryResponse,
     InvitationResponse,
     InviteMemberRequest,
+    MarkNotificationsReadRequest,
     MembershipResponse,
     OnboardingRunResponse,
     PreferencesResponse,
@@ -88,6 +92,7 @@ from modules.workspace_tenancy.interface.schemas import (
     SavedViewResponse,
     SaveViewRequest,
     TransferOwnershipRequest,
+    UnreadBadgeResponse,
     WorkspaceResponse,
 )
 from signora_platform.api import (
@@ -1235,3 +1240,65 @@ async def preview_capability_role_change(
     if view is None:
         raise NotAWorkspaceMemberError(user_id)
     return RoleChangePreviewResponse.from_domain(view, user_id=user_id)
+
+
+@router.post(
+    "/workspaces/{workspace_id}/notifications/unread",
+    response_model=UnreadBadgeResponse,
+    summary="How many of these this person has not read",
+)
+async def unread_notifications(
+    context: CurrentWorkspace, body: MarkNotificationsReadRequest
+) -> UnreadBadgeResponse:
+    """**Own read state only, and there is no parameter that could ask for
+    another's** — 📁 the rule `GET /preferences` records, applied to a fact
+    that is more sensitive because it is behavioural.
+
+    ⚡ **`POST` for a read, deliberately.** ⛔ **The caller supplies a list of
+    notification ids and a list does not fit in a query string** — 📁 the same
+    reason `account-identities` takes ids, except that one fits and this one is
+    bounded by a page. **Nothing is created; the verb is carrying the question.**
+
+    ⚠️ **The caller supplies the candidates because this module does not know
+    what a notification is** — 📁 ADR-0017 owns delivery. ✅ **So the honest
+    question is *which of THESE has this person not read***, and a signature
+    promising a count over a set it cannot see would be answering for
+    something it has never been told about.
+    """
+    context.authorize(Resource.NOTIFICATION, Action.READ)
+    badge = await SqlAlchemyNotificationReadRepository(context.session).unread(
+        context.workspace_id, context.principal.user_id, body.notification_ids
+    )
+    return UnreadBadgeResponse.from_domain(badge)
+
+
+@router.post(
+    "/workspaces/{workspace_id}/notifications/read",
+    response_model=UnreadBadgeResponse,
+    summary="This person has read these",
+)
+async def mark_notifications_read(
+    context: CurrentWorkspace, body: MarkNotificationsReadRequest
+) -> UnreadBadgeResponse:
+    """**Mark as read, and answer with the badge that results.**
+
+    ⚡ **Returning the new count rather than `204`** — ⛔ **otherwise every
+    caller marks read and then asks, which is two round trips for one act and a
+    window in which the badge is stale.**
+
+    ✅ **Idempotent.** **Marking twice is something a customer does by
+    double-clicking**, and the first read time survives ([§2](../../../../CLAUDE.md)).
+
+    ⛔ **There is no un-read route**, and the absence is deliberate: the table
+    has no `UPDATE` grant, and 📁 the design does not ask for one. ⚠️ **If it
+    ever does, it is a `DELETE` rather than an edit.**
+    """
+    context.authorize(Resource.NOTIFICATION, Action.UPDATE)
+    repository = SqlAlchemyNotificationReadRepository(context.session)
+    await repository.mark_read(
+        context.workspace_id, context.principal.user_id, body.notification_ids
+    )
+    badge = await repository.unread(
+        context.workspace_id, context.principal.user_id, body.notification_ids
+    )
+    return UnreadBadgeResponse.from_domain(badge)

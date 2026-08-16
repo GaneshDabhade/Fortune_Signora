@@ -124,6 +124,22 @@ class Resource(StrEnum):
     #: own verified id is the only one that enters, so a grant cannot be
     #: widened into reading a colleague's preferences by editing `policy.csv`.
     PREFERENCES = "preferences"
+    #: ⚡ **[TASK-480](../../../docs/BACKLOG.md), on [D-239](../../../docs/DECISION_REGISTER.md).**
+    #: 📁 [§20a](../../../CLAUDE.md) at [C-224](../../../docs/LANE_COORDINATION.md):
+    #: **a declarative registration, never a grant.**
+    #:
+    #: ⚡ **Its own resource rather than `PREFERENCES`, and for the reason that
+    #: member states about itself**: a preference is a current answer a person
+    #: may change, and **a read is a record of something that happened.** ⛔ **One
+    #: resource could not express both** — `preferences, update` is a sentence
+    #: about notification state that must never be true, because the table has
+    #: no `UPDATE` grant.
+    #:
+    #: ⛔ **The scoping to self is the endpoint's and the RLS policy's**, exactly
+    #: as `PREFERENCES` records: **the caller's own verified id is the only one
+    #: that enters**, so a grant cannot be widened into reading a colleague's
+    #: read state by editing `policy.csv`.
+    NOTIFICATION = "notification"
     #: ⚡ **[TASK-465](../../../docs/BACKLOG.md), slice 5.** 📁 [§20a](../../../CLAUDE.md)
     #: ruled at [C-224](../../../docs/LANE_COORDINATION.md) that adding a member
     #: here is a **declarative registration and never an authorization grant** —
