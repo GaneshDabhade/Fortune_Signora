@@ -722,6 +722,23 @@ git merge --ff-only origin/lane-qe || git rebase -q origin/lane-qe   # ← the d
 
 ✅ **The operational cost was small and was stated to the lane immediately** — their work was already inside the running certification, so they reset rather than re-run. ⛔ **The cost that matters is that QE spent a lane's trust to save itself one cycle of waiting.**
 
+### ⚠️ An EIGHTH, caught BEFORE it ran — and it is about fire-testing itself
+
+**QE announced the mutation it would use to test a suspected Decorative Logic finding: collapse `None` into `[]` inside `_running_containers`.** ⛔ **Lane C stopped it, having already run it:**
+
+```python
+# backend/tests/test_lease_dead_pid_asks_the_stack.py
+monkeypatch.setattr(lease, "_running_containers", lambda: containers)
+```
+
+⚡ **The tests replace the function wholesale, so mutating its body is never executed by them.** ✅ **Verified independently by QE from the source.** ⛔ **The mutation reports `6 passed`, and QE would have concluded the distinction WAS load-bearing — the opposite of the truth.**
+
+> 🔴 **A mutation applied to a function the test replaces proves nothing about the test — and it fails GREEN, which is the direction that misleads.**
+
+📁 **This matters more than the other seven because fire-testing is the technique this repository leans on hardest.** ⚠️ **A mutation that should kill a test and does not reads as *the test is weak*; a mutation that never executed produces identical output and means *nothing was measured*.** ⛔ **Two opposite conclusions from one green.**
+
+✅ **The rule that follows: before trusting a surviving mutation, confirm the mutated code is on the path the test executes.** **The working mutation here was in `holder()`, not in the stubbed helper.**
+
 ### 🔴 A SEVENTH instance, and it is Lane C's — which is what rescoped this row
 
 **Lane C reported a notice `WITHHELD` whole and said *"nothing told me."*** ⛔ **False, and they found it themselves by fire-testing rather than reading:**

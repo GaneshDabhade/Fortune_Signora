@@ -71,7 +71,17 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-16, `6619c162`
+## Current — as of 2026-08-16, `d5c84340`
+
+> ⚡ **Cycle 241 Closeout. Seven commits, TWO lanes, ONE gate run** — [B-436](BUGS.md)'s lease repair plus QE's C-108 and B-1000 rows.
+>
+> ⛔ **The [C-108](LANE_COORDINATION.md) hold reshaped, not lifted**: three TASK-1481 commits stay held; B-436 and a coordination republish were freed by the lane reordering its branch.
+>
+> 🔴 **[B-1000](BUGS.md) gained an eighth instance, caught BEFORE it ran** — a mutation aimed at a function the tests stub away. **It fails green.**
+>
+> ⚠️ **Certified under memory pressure; a lane's dev server was left running.**
+
+### Cycle 240 — `6619c162`
 
 > ⚡ **Cycle 240 Closeout. Five commits, TWO lanes, ONE gate run** — Lane A's Account 360 Research summary (headed journey passing) and QE's [B-1005](BUGS.md) guard repair.
 >

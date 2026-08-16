@@ -1,5 +1,17 @@
 # Session Handoff
 
+> ## Cycle 241 — promoted `d5c84340`, 2026-08-16 · **the lease stops treating a dead pid as proof the machine is free**
+>
+> **`main` = `d5c84340` = the certified commit.** `pytest` **5225** · coverage **95.05%** · **668 Security Invariants** · `mypy` **935** files · `import-linter` **37/37** · **`frontend-suite` 3330 in 189 files** · `eslint` clean · `smoke` 24 stages in **206s** · scenario **198 assertions** · **DR passed with 668** · **reversible on a clean database** · head **`0059`**. ✅ **Eight gates, first attempt.**
+>
+> ⛔ **The [C-108](LANE_COORDINATION.md) hold was RESHAPED, not lifted.** **Three TASK-1481 commits touching `signora_platform/` stay held — but they sat at the BOTTOM of the lane's branch, so the hold was also catching [B-436](BUGS.md) and a coordination republish.** 📁 **Product owner: *"don't let it unnecessarily block unrelated implementation."*** ✅ **The lane reordered and named a boundary SHA; QE verified it rather than accepting it.**
+>
+> 🔴 **A Decorative Logic finding, and an instrument finding worth more.** **`test_none_and_empty_are_not_collapsed` asserted against SOURCE, and the distinction it guarded had no behaviour — `[]` and `None` both reclaimed.** ⚡ **The lane fixed it behaviourally: `[]` reclaims silently, `None` reclaims AND states the bound.**
+>
+> ⛔ **QE announced a mutation that would have been blind: collapsing `None` into `[]` inside `_running_containers`, which those tests `monkeypatch.setattr` away.** ⚡ **It reports `6 passed` and would have "confirmed" the split was load-bearing.** 🔴 ***A mutation applied to a function the test replaces proves nothing — and it fails GREEN, which is the direction that misleads.*** 📁 **Recorded as [B-1000](BUGS.md)'s eighth instance, and the only one caught before it ran.**
+>
+> ⚠️ **Certified under a memory-pressure warning and nothing was killed to speed it up** — a 2.1 GB dev server on port 3300 belonged to an active lane. **19 minutes against 8–13 for the previous four.**
+
 > ## Cycle 240 — promoted `6619c162`, 2026-08-16 · **Account 360's Research summary, and the guard repair that stops false cycle warrants**
 >
 > **`main` = `6619c162` = the certified commit.** `pytest` **5218** · coverage **95.05%** · **668 Security Invariants** · `mypy` strict over **934** files · `import-linter` **37/37** · **`frontend-suite` 3330 in 189 files** · `eslint` clean · `smoke` 24 stages in **250s** · scenario **198 assertions** · **DR passed with 668** · **reversible base→head→base→head on a clean database** · head **`0059`**. ✅ **Eight gates, first attempt.**
