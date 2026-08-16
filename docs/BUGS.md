@@ -209,6 +209,24 @@ $ git cherry origin/main origin/lane-b-commercial-profile
 
 ⛔ **No script is warranted after all** — ✅ **but the earlier refusal was still wrong, and for the wrong reason.** **It said *the instruction exists and QE skipped it*; the true statement is *the instruction exists, names no tool, and every hand-rolled implementation of it is slow enough to invite a bound.*** ⚡ **The correct repair is a sentence, not a program: the standing instruction should name `git cherry`.**
 
+### ✅ The general account, and it is Lane C's rather than QE's
+
+**QE proposed two framings and Lane C rejected both as unbuildable, correctly:**
+
+> ⛔ **A bounded scan must state its bound in its own output, or the reader inherits a conclusion without its scope.**
+
+⚡ **That is checkable and *"QE skipped it"* was not.** 📁 **Lane C's own instance of it, offered as the pair**: a `--grep` that matched **doc-comments** and released `TASK-1432` on a text match — *"the tool answered; it answered a smaller question than the one asked, and said nothing about the difference."*
+
+### 🔴 It is the same rule as [B-1006](#b-1006), and filing them separately was the mistake
+
+**B-1006's minimum fix, written hours earlier and in the same register:**
+
+> ⚡ ***"The one that prints the note is the one that did not mislead anybody"*** — **the same diagnostic in all three entry points, positioned where truncation cannot remove it.**
+
+⛔ **That is this rule, applied to a REF instead of to a DATE.** ⚡ **`--audit-main` narrows its operand to the working tree's manifest; a `--since` narrows its operand to a window; a `--grep` narrows its operand to a text match. All three answer confidently and none announces the narrowing.**
+
+✅ **So the repository has one rule with four instances and had it filed as three unrelated rows plus a lane's aside.** 📁 **Recorded here rather than merged into a new row**, because **B-1006 and B-1009 have different owners' evidence in them and collapsing them would lose the measurements** — ⚠️ **but they should be ruled together, and that is stated so the product owner is not asked the same question twice.**
+
 ⚠️ **That sentence is not QE's to write** — the instruction is the product owner's. **Filed, with the measurement, rather than edited.**
 
 📁 **Fire-tested before being recorded**: `git cherry origin/integration origin/lane-a-product-surface` returns four `+` and no `-`, which matches an independent read of that branch's history — **so the tool is not simply answering `-` to everything.**
