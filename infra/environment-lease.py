@@ -242,6 +242,36 @@ def holder() -> dict[str, Any] | None:
         return current
 
     running = _running_containers()
+    if running is None:
+        # 🔴 **[B-436](../docs/BUGS.md), corrected 2026-08-16 on QE's challenge.**
+        #
+        # ⛔ **This used to fall through to the silent reclaim below**, and the
+        # docstring beside it claimed `None` and `[]` "must not be collapsed"
+        # while the code collapsed them: `if running:` is falsy for both. **QE
+        # proposed the mutation and it killed exactly one test — the one
+        # asserting how the code was WRITTEN.** ⚡ Every behavioural test passed
+        # with the distinction removed, which is §2's definition of Decorative
+        # Logic, and the source-assertion test made it look load-bearing.
+        #
+        # ✅ **So the distinction is made behavioural instead of deleted**,
+        # because the sentence it was reaching for is true: *the absence of
+        # evidence is not evidence*. **Reclaiming is still right** — blocking
+        # every workstation without docker would be the "never reclaim" trap —
+        # ⛔ **but reclaiming SILENTLY asserts "free" on no evidence.**
+        #
+        # 📁 **[B-437](../docs/BUGS.md)'s rule, applied to this answer: a
+        # bounded conclusion must state its bound.**
+        print(
+            "\n  NOTE — reclaiming a stale lease WITHOUT checking the stack."
+            "\n  The recorded process is gone and docker could not be asked, so"
+            "\n  this proves the RECORD is stale and nothing about the machine."
+            "\n  If a run is live in another clone, check before starting:"
+            "\n"
+            "\n    docker ps    ss -ltn    pgrep -af signora\n",
+            file=sys.stderr,
+        )
+        _lease_path().unlink(missing_ok=True)
+        return None
     if running:
         # 🔴 **The record is stale AND the stack is busy** — precisely QE's
         # near-miss. ⛔ Reclaiming here hands a live stack to a second run.

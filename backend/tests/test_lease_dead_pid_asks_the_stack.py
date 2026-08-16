@@ -91,37 +91,55 @@ class TestADeadPidDoesNotProveTheMachineIsFree:
         assert lease.holder() is None
         assert not a_lease.exists()
 
-    def test_no_evidence_falls_back_to_the_previous_behaviour(
-        self, a_lease: Path, monkeypatch: pytest.MonkeyPatch
+    def test_no_evidence_reclaims_BUT_says_it_could_not_check(
+        self, a_lease: Path, monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
     ) -> None:
-        """⚡ **Strictly better, never worse.**
+        """🔴 **Corrected 2026-08-16 on QE's challenge, and the correction is the point.**
 
-        Where docker cannot be asked, this does exactly what it did before —
-        which is what makes the change safe on a workstation without docker
-        rather than a new way to block one.
+        ⛔ **This test used to assert only that `None` reclaimed** — identical to
+        the `[]` case above. **So `it is free` and `I could not tell` produced
+        the same behaviour, and the docstring claiming they "must not be
+        collapsed" was describing something the code did not do.**
+
+        ⚡ **QE proposed the mutation; it killed one test, and that test asserted
+        how the code was WRITTEN.** 📁 **§2's Decorative Logic exactly** — *"whose
+        removal does not change the property it claims to protect"* — **and the
+        source-assertion test made it look load-bearing to the next reader.**
+
+        ✅ **Reclaiming is still correct**: blocking every workstation without
+        docker is the "never reclaim" trap B-436 names. ⛔ **Reclaiming SILENTLY
+        is what was wrong** — it asserts *free* on no evidence.
+
+        📁 **[B-437](../../docs/BUGS.md)'s rule, applied: a bounded conclusion
+        must state its bound.**
         """
         _stack(monkeypatch, None)
 
         assert lease.holder() is None
         assert not a_lease.exists()
 
-    def test_none_and_empty_are_not_collapsed(self) -> None:
-        """🔴 **The distinction the whole fix rests on.**
+        warned = capsys.readouterr().err
+        assert "WITHOUT checking the stack" in warned
+        assert "nothing about the machine" in warned
 
-        ``[]`` is *docker answered, nothing is running*. ``None`` is *nobody
-        answered*. ⛔ A helper returning ``[]`` for both would turn *I could not
-        tell* into *it is free*, which is the defect this exists to remove — and
-        every test above would still pass.
+    def test_an_answered_idle_stack_reclaims_SILENTLY(
+        self, a_lease: Path, monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        """✅ **The other half, and it is what makes the distinction real.**
+
+        ⛔ **Warning here too would be noise on the ordinary path** — a crashed
+        run on an idle machine is the case the original reclaim was written for,
+        and it is not something an operator needs to check.
+
+        ⚡ **Collapsing `None` into `[]` now fails THIS test**, behaviourally,
+        which is what the deleted source-assertion test was standing in for.
         """
-        source = (
-            Path(__file__).resolve().parents[2] / "infra" / "environment-lease.py"
-        ).read_text()
-        body = source.split("def _running_containers")[1].split("\ndef ")[0]
+        _stack(monkeypatch, [])
 
-        assert body.count("return None") >= 3, (
-            "each unanswerable path must return None, never an empty list"
-        )
-        assert "return [name for name" in body
+        assert lease.holder() is None
+        assert capsys.readouterr().err == ""
 
 
 class TestALivePidIsUnchanged:
