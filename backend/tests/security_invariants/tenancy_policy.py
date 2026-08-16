@@ -90,6 +90,19 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # read. ⚡ **A read is recorded; an unread is the ABSENCE of a row**,
         # so the badge count is derived and never stored.
         "notification_read",
+        # Notifications (TASK-495, ADR-0017), migration 0059. **The THIRD table
+        # of this class, and the first that is asymmetric.** ⚡ **SELECT carries
+        # `workspace_id AND recipient_id`; INSERT carries only the workspace.**
+        # ⛔ **Not a weakening** — a notification is written FOR somebody else,
+        # so a recipient predicate on the write would permit notifying nobody
+        # but yourself, which is every case. 🔴 **The guarantee this table holds
+        # is entirely a READ property**: one person's notifications are not
+        # another's to see, asserted in
+        # `test_notification_isolates_colleagues.py`. ⛔ **No UPDATE and no
+        # DELETE grant**: a notification records that something happened (§2),
+        # and *dismissing* one is a read in `notification_read` rather than a
+        # deletion here.
+        "notification",
         # Onboarding (TASK-469, Workflow 8), migration 0043. **Every answer
         # column is nullable and the table is still tenant-owned** — a
         # skippable step is a nullable column, not an exempt table, and the
@@ -456,6 +469,14 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         # than an edit** — the row stops existing, which is the same shape as
         # *an unread is the absence of a row*.
         "notification_read",
+        # Notifications (TASK-495, ADR-0017), migration 0059. **A notification
+        # says something happened**, and the record of it is not edited
+        # afterwards: correcting the summary of a nudge somebody already read
+        # would change what they were told after they were told it. ⛔ **And no
+        # DELETE either** — *dismissing* a notification is a READ, recorded next
+        # door in `notification_read`, which is why that table and this one are
+        # separate in the first place.
+        "notification",
         # Both Action Batch tables, and neither argues an exception. An
         # approval that can be edited is an approval nobody can cite, and
         # nothing here has `affiliation`'s shape — every row is a fact about a

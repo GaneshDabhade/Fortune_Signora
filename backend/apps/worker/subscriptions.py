@@ -70,6 +70,12 @@ from modules.ai_research_engine.interface.handlers import (
     CONSUMER_NAME as RESEARCH_CONSUMER,
 )
 from modules.ai_research_engine.interface.handlers import run_requested_research
+from modules.workspace_tenancy.domain.notification import NOTIFICATION_REQUESTED
+from modules.workspace_tenancy.infrastructure.composition import build_notifier
+from modules.workspace_tenancy.interface.handlers import (
+    CONSUMER_NAME as NOTIFICATION_CONSUMER,
+)
+from modules.workspace_tenancy.interface.handlers import deliver_requested_notification
 from modules.business_event_engine.infrastructure.composition import (
     build_queries as build_business_event_queries,
 )
@@ -374,6 +380,23 @@ async def _run_requested_research(envelope: EventEnvelope) -> None:
     )
 
 
+async def _deliver_requested_notification(envelope: EventEnvelope) -> None:
+    """Deliver what a producer asked to be delivered — [TASK-495](../../../docs/BACKLOG.md).
+
+    ⚡ **The registry is built per session** because the in-app channel writes
+    through a session-bound repository — 📁 the same shape every other handler
+    here takes, and the reason `build_notifier` is a factory rather than a
+    module-level singleton.
+    """
+    current = runtime()
+
+    await deliver_requested_notification(
+        envelope,
+        session_factory=current.session_factory,
+        notify=build_notifier,
+    )
+
+
 async def _project_to_timeline(envelope: EventEnvelope) -> None:
     """Timeline's projection, bound to a session at call time.
 
@@ -493,6 +516,30 @@ def register() -> None:
         # agentic, multi-step and measured in minutes; sharing a pool with fast
         # internal work would let one run starve everything behind it.
         pool=AI_RESEARCH.name,
+    )
+
+    # **Somebody is told that something happened** — [TASK-495](../../../docs/BACKLOG.md),
+    # on [ADR-0017](../../../docs/architecture/adr/0017-notifications.md).
+    #
+    # 🔴 **This is what makes the trigger interface asynchronous, and that is
+    # the architectural point rather than a performance one.** 📁
+    # [05](../../../docs/architecture/05-module-dependencies.md) approves only
+    # READ-ONLY synchronous edges into `workspace_tenancy`, so a producer
+    # calling a notify port directly would be a synchronous write into another
+    # module — ⛔ **an architecture change no lane may make.** ✅ **Publishing
+    # conforms to that module's published language, which 05 already ratifies.**
+    #
+    # ⛔ **`default`, and named rather than assumed.** ⚡ **Delivering in-app is
+    # one INSERT** — no model call, no provider, no vendor — **and inventing a
+    # `notification` pool for one fast consumer is capacity nobody has measured
+    # a need for** (§14). ⚠️ **When a channel that leaves the process arrives,
+    # that is the moment to ask again**: an email adapter waiting on a vendor
+    # has a latency profile this one does not.
+    registry.subscribe(
+        consumer_name=NOTIFICATION_CONSUMER,
+        event_type=NOTIFICATION_REQUESTED,
+        handler=_deliver_requested_notification,
+        pool=DEFAULT.name,
     )
 
     # **The Action Batch applies what somebody accepted** —

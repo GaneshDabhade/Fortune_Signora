@@ -67,7 +67,7 @@ export function AccountOwner({ assignment, members }: AccountOwnerProps) {
     //
     // ⛔ **The platform has no NAME to give**: Better Auth owns user identity
     // and runs in the Next.js tier, so the Python API has none
-    // ([C-024](../../../docs/LANE_COORDINATION.md), ADR-0026). **An email is
+    // ([C-203](../../../docs/LANE_COORDINATION.md), ADR-0026). **An email is
     // what a person recognises here, and it is what Team Management shows.**
     return <span>{member.member_email ?? 'Somebody here'}</span>;
   }

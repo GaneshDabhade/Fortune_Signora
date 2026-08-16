@@ -54,6 +54,7 @@ from modules.workspace_tenancy.domain.preferences import (
     TimeFormat,
 )
 from modules.workspace_tenancy.domain.saved_view import SavedView
+from modules.workspace_tenancy.domain.notification import Notification
 from signora_platform.pagination import MAX_PAGE_LIMIT
 
 
@@ -697,3 +698,92 @@ class MarkNotificationsReadRequest(BaseModel):
         "realistic use is 'mark what I am looking at' and a larger request is "
         "either a mistake or a scrape.",
     )
+
+
+class NotificationResponse(BaseModel):
+    """One item in the panel — **[TASK-495](../../../../docs/BACKLOG.md)**.
+
+    ## 🔴 No actor name, and that is [C-203](../../../../docs/LANE_COORDINATION.md)
+
+    ⛔ **`actor_person_id` is an identity and there is no `actor_name` beside
+    it.** 📁 **C-203 is `DEFERRED` with a concrete trigger** — *"Nothing in the product can
+    render a person's name"* — **and its impact line names notifications.** ⚡
+    **Better Auth is the sole Authentication Authority and the Python tier only
+    verifies** ([ADR-0026](../../../../docs/architecture/adr/0026-jwt-boundary-architecture.md)),
+    **so this tier has no name to return.**
+
+    ⚠️ **A field here would have answered C-203 by accident, for Timeline,
+    comments, audit history, AI attribution and mentions at the same time** — 📁
+    37 says exactly that about the Team page, and this is the same shortcut one
+    surface along.
+
+    ✅ **`actor_agent_name` IS returned**, because an agent has no Better Auth
+    identity to resolve: the platform authored the name.
+
+    ## ⛔ And no subject title
+
+    ⚡ **Identity only** — 📁 *events carry identity; ports carry payload*. **A
+    cached account name would render one that changed last week**, and the
+    surface already holds the account.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    id: UUID
+    category: str = Field(
+        description="Which tab this belongs to: `needs_you` or `mention`. There is "
+        "deliberately no `all` — `All` is the absence of a filter, never a third kind."
+    )
+    actor_kind: str = Field(
+        description="`person` or `agent`. Carries the design's intelligence hue as a "
+        "fact rather than a styling hint, so a generated nudge never reads as a "
+        "colleague's request."
+    )
+    actor_person_id: UUID | None = Field(
+        description="Who acted, when a person did. An identity, never a name — see C-203."
+    )
+    actor_agent_name: str | None = Field(
+        description="What acted, when an agent did. A capability's name — never a model "
+        "or a vendor."
+    )
+    subject_kind: str
+    subject_id: UUID
+    summary: str = Field(description="What happened, in the customer's vocabulary.")
+    expectation: str = Field(
+        description="What is expected of the reader. Not a button label — the design "
+        "asks every item to say what it wants."
+    )
+    occurred_at: datetime = Field(
+        description="When it happened. Always timezone-aware: the panel groups by day, "
+        "and a naive moment is the one item that could land under the wrong one."
+    )
+
+    @classmethod
+    def from_domain(cls, notification: Notification) -> "NotificationResponse":
+        return cls(
+            id=notification.id,
+            category=notification.category.value,
+            actor_kind=notification.actor.kind.value,
+            actor_person_id=notification.actor.person_id,
+            actor_agent_name=notification.actor.agent_name,
+            subject_kind=notification.subject.kind,
+            subject_id=notification.subject.id,
+            summary=notification.summary,
+            expectation=notification.expectation,
+            occurred_at=notification.occurred_at,
+        )
+
+
+class NotificationFeedResponse(BaseModel):
+    """The panel's page — **newest first, bounded.**
+
+    ⚡ **A plain list rather than a cursor page**, deliberately: 📁 the design is
+    *"a 400px popover, not a page"*, and 19's cursor pagination exists for
+    collections a customer scrolls. ⛔ **A popover that paginated would be the
+    *Notification Center* screen**, which is Workflow 17's own decomposition and
+    explicitly not this row's.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    notifications: list[NotificationResponse]

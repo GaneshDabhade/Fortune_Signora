@@ -14,7 +14,7 @@ import { SystemState } from '@/components/ui/system-state';
  *
  * **It is reachable more easily than it looks.** `/settings/team` is a URL an
  * optimistic customer will try — the product has no Team page yet
- * ([C-024](../../docs/LANE_COORDINATION.md)) — and below `768px` there is no
+ * ([C-203](../../docs/LANE_COORDINATION.md)) — and below `768px` there is no
  * navigation to recover with at all ([B-019](../../docs/BUGS.md)).
  *
  * ### It says what is true, and nothing more

@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
@@ -429,3 +429,53 @@ class NotificationReadRow(Base):
     read_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
+
+
+class NotificationRow(Base):
+    """Something happened and one person should be told — **[TASK-495](../../../../docs/BACKLOG.md)**.
+
+    ⚡ **What `NotificationReadRow` above is a read OF.** ⛔ **It could not name
+    this table when it was written**, and its `notification_id` still carries no
+    foreign key: 📁 the two arrived in different slices, and a constraint added
+    now would make a read fail because a notification was retained away rather
+    than because anything was wrong.
+
+    🔴 **Exactly one recipient**, and the read policy narrows by it — 📁
+    migration `0059`, 492 §0. ⛔ **INSERT is workspace-scoped and SELECT is
+    not**: a notification is written FOR somebody else, and the guarantee lives
+    on the read side.
+    """
+
+    __tablename__ = "notification"
+
+    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    workspace_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("workspace.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    #: ⚡ **One person.** ⛔ **No array and no null** — telling five people is
+    #: five rows, each independently readable and countable.
+    recipient_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+    category: Mapped[str] = mapped_column(String(32), nullable=False)
+    #: 📁 **The design's intelligence hue, as a domain fact** — *"a generated
+    #: nudge never reads as a colleague's request."*
+    actor_kind: Mapped[str] = mapped_column(String(16), nullable=False)
+    #: ⛔ **No `actor_display_name`** — 📁 **[C-203](../../../../docs/LANE_COORDINATION.md),
+    #: `OPEN` and architectural**: nothing in the product can render a person's
+    #: name, and a column here would have answered that by accident.
+    actor_person_id: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True), nullable=True)
+    #: ⚡ **An agent's name is the platform's own** — no identity to resolve.
+    actor_agent_name: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    #: ⛔ **Identity only, no cached title** — a notification holding an
+    #: account's name would show one that changed last week.
+    subject_kind: Mapped[str] = mapped_column(String(64), nullable=False)
+    subject_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+    summary: Mapped[str] = mapped_column(Text, nullable=False)
+    #: 🔴 **What is expected of the reader** — the fourth thing the Definition
+    #: of Done asks for, and the one such a table usually omits.
+    expectation: Mapped[str] = mapped_column(Text, nullable=False)
+    #: ⚠️ **The application owns this one**, unlike `read_at` above. ⚡ **A
+    #: notification's moment is when the thing HAPPENED**, which the caller
+    #: knows and `now()` does not — 📁 the relay may deliver a minute later.
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

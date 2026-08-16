@@ -31,7 +31,7 @@ import type { WorkspaceRole } from '@/lib/state/permissions';
  * runs in the Next.js tier, so the Python API has no name to give
  * ([ADR-0026](../../../docs/architecture/adr/0026-jwt-boundary-architecture.md)).
  * Rendering a readable team list therefore needs a decision this hook
- * deliberately does not make; see [C-024](../../../docs/LANE_COORDINATION.md).
+ * deliberately does not make; see [C-203](../../../docs/LANE_COORDINATION.md).
  */
 export function useWorkspaceMembers(workspaceId: string | null) {
   return useQuery({

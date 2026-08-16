@@ -61,6 +61,7 @@ from modules.workspace_tenancy.infrastructure.composition import (
 )
 from modules.workspace_tenancy.infrastructure.repositories import (
     SqlAlchemyNotificationReadRepository,
+    SqlAlchemyNotificationRepository,
 )
 from modules.workspace_tenancy.interface.schemas import (
     AddMemberRequest,
@@ -82,6 +83,8 @@ from modules.workspace_tenancy.interface.schemas import (
     InvitationResponse,
     InviteMemberRequest,
     MarkNotificationsReadRequest,
+    NotificationFeedResponse,
+    NotificationResponse,
     MembershipResponse,
     OnboardingRunResponse,
     PreferencesResponse,
@@ -1240,6 +1243,45 @@ async def preview_capability_role_change(
     if view is None:
         raise NotAWorkspaceMemberError(user_id)
     return RoleChangePreviewResponse.from_domain(view, user_id=user_id)
+
+
+#: 📁 **The design is *"a 400px popover, not a page"***, and this is what fits
+#: in one. ⛔ **Not a page size a caller may raise** — ⚡ **a popover that could
+#: be asked for a thousand items is the *Notification Center* screen**, which is
+#: Workflow 17's decomposition and explicitly not this row's.
+NOTIFICATION_PANEL_LIMIT = 50
+
+
+@router.get(
+    "/workspaces/{workspace_id}/notifications",
+    response_model=NotificationFeedResponse,
+    summary="What this person has been told",
+)
+async def list_notifications(context: CurrentWorkspace) -> NotificationFeedResponse:
+    """**This person's notifications, newest first.**
+
+    🔴 **Own notifications only, and there is no parameter that could ask for
+    another's** — 📁 the same rule `GET /preferences` records. ⚡ **The recipient
+    is the caller's verified id**, the RLS policy narrows by it, and the query
+    filters by it again ([§8](../../../../CLAUDE.md), defence in depth).
+
+    ⛔ **No `limit` query parameter.** ⚡ **The panel's size is a design fact
+    rather than a caller's choice** — 📁 *"a 400px popover, not a page"* — and an
+    adjustable one would be the paginated Notification Center arriving through a
+    query string.
+
+    ⚠️ **Newest first, because the panel groups by DAY.** ⛔ **A page assembled
+    from the oldest rows would group correctly and show the wrong days.**
+    """
+    context.authorize(Resource.NOTIFICATION, Action.READ)
+    notifications = await SqlAlchemyNotificationRepository(context.session).feed(
+        context.workspace_id,
+        context.principal.user_id,
+        limit=NOTIFICATION_PANEL_LIMIT,
+    )
+    return NotificationFeedResponse(
+        notifications=[NotificationResponse.from_domain(n) for n in notifications]
+    )
 
 
 @router.post(

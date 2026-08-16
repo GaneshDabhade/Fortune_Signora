@@ -143,3 +143,67 @@
 📁 **§5 of this document already says the person predicate does not survive a background worker.** ⚡ **`notification_read` inherits that unchanged**: **every read of it happens inside a request that has set `app.user_id`**, and **a worker computing unread counts would see none of them.**
 
 ⛔ **Not a limitation this row hit** — the badge is rendered in a request — ⚠️ **but the first row that wants a digest email will, and it should find this sentence rather than the surprise.**
+
+## 9 · The third table of this class — `notification`, 2026-08-16
+
+📁 **[TASK-495](../BACKLOG.md)**, migration `0059`, on
+[ADR-0017](adr/0017-notifications.md) and [D-239](../DECISION_REGISTER.md).
+
+⚡ **`notification_read` (§8) records what a person has read.** ⛔ **It could not
+name what they had read** — nothing published one. ✅ **This is the other half.**
+
+### 🔴 The first table of this class whose policies are ASYMMETRIC
+
+⚠️ **`person_preferences` (`0044`) and `notification_read` (`0058`) both carry
+`workspace_id AND user_id` on every policy**, because in both cases **a person
+acts on their own row.**
+
+⛔ **A notification does not work that way.** ⚡ **It is written FOR somebody
+else** — a mention is one colleague addressing another, and the research agent
+addresses whoever asked. **An INSERT policy requiring
+`recipient_id = current_setting('app.user_id')` would make it impossible to
+notify anybody but yourself**, which is every case a notification exists for.
+
+| Verb | Predicate | Why |
+|---|---|---|
+| `SELECT` | `workspace_id AND recipient_id` | 🔴 **The guarantee.** One person's notifications are not another's |
+| `INSERT` | `workspace_id` | ⚡ **A colleague may write one.** A recipient predicate here permits notifying nobody but yourself |
+| `DELETE` | `workspace_id` | ✅ **Retention, never *dismiss*.** A recipient predicate would leave a departing colleague's rows erasable by nobody |
+| `UPDATE` | — | ⛔ **No grant and no policy.** §2 — correcting the summary of a nudge somebody already read changes what they were told after they were told it |
+
+> 🔴 **So the narrowing 492 §0 describes lands entirely on the READ side here,
+> and that is the finding this table contributes to the pattern.** ⚡ **The
+> class is not *"every policy gains the person predicate"*; it is *"the person
+> predicate goes wherever the person's privacy is at stake"*** — **and for a
+> table written by one person and read by another, that is `SELECT` alone.**
+
+### ⚠️ It first shipped with no `DELETE`, and the Security Invariant refused it
+
+📁 **`test_tenancy_policy.py`, on every immutable tenant table**: *"Erasability
+is a property of the TENANCY model, not of what a row means: a workspace that
+cannot be deleted is a retention problem on every table it owns, immutable or
+not."*
+
+⛔ **The reasoning that withheld the grant conflated two questions.** ⚡
+***Dismissing* a notification is a read** — recorded in `notification_read`,
+which is why the two tables are separate — **and that is a product decision.**
+✅ **Erasing a workspace is a tenancy obligation, and it is not negotiable per
+table.**
+
+> ⚡ **The general form, worth carrying to the fourth table of this class:
+> immutability is a claim about `UPDATE`. It is never a claim about `DELETE`.**
+
+### ⛔ And still no display name
+
+📁 **[C-203](../LANE_COORDINATION.md) is `DEFERRED` with a concrete trigger** —
+📁 [D-116](../DECISION_REGISTER.md), *M-E, when a provider supplies a person
+identifier* ([TASK-429](../BACKLOG.md)) — **and its impact line names
+notifications.** ⚡ **Deferred-with-a-trigger is precisely the state you build
+AROUND rather than through**: ⛔ a field added here would resolve it silently
+and the trigger would never fire. ⚡ **`actor_person_id` carries identity; there is deliberately
+no `actor_name` column**, because one here would have answered C-203 by
+accident for Timeline, comments, audit history, AI attribution and mentions at
+the same time.
+
+✅ **`actor_agent_name` is carried**, because an agent has no Better Auth
+identity to resolve: the platform authored the name.

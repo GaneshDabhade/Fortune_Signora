@@ -60,8 +60,10 @@ from modules.workspace_tenancy.application.use_cases.saved_views import (
     RetireSavedViewUseCase,
     ReviseSavedViewUseCase,
 )
+from modules.workspace_tenancy.application.notify import Notify
 from modules.workspace_tenancy.application.use_cases.transfer_ownership import TransferOwnership
 from modules.workspace_tenancy.domain.entities import WorkspaceRole
+from modules.workspace_tenancy.domain.notification import NotificationChannelRegistry
 from modules.workspace_tenancy.infrastructure.adapters import (
     OutboxEventPublisherAdapter,
     SessionTenantContext,
@@ -70,10 +72,12 @@ from modules.workspace_tenancy.infrastructure.capability_repository import (
     SqlCapabilityRepository,
 )
 from modules.workspace_tenancy.infrastructure.delivery import ConsoleInvitationDelivery
+from modules.workspace_tenancy.infrastructure.in_app_channel import InAppNotificationChannel
 from modules.workspace_tenancy.infrastructure.query_service import WorkspaceQueryService
 from modules.workspace_tenancy.infrastructure.repositories import (
     SqlAlchemyInvitationRepository,
     SqlAlchemyMembershipRepository,
+    SqlAlchemyNotificationRepository,
     SqlAlchemyOnboardingRunRepository,
     SqlAlchemyPersonPreferencesRepository,
     SqlAlchemyRoleChangeLog,
@@ -287,3 +291,41 @@ def build_capability_use_cases(session: AsyncSession) -> CapabilityUseCases:
         ),
         held_roles=HeldCapabilityRoles(capabilities=capabilities),
     )
+
+
+def build_notification_channels(session: AsyncSession) -> NotificationChannelRegistry:
+    """**Which channels this deployment can actually reach.**
+
+    📁 **[TASK-495](../../../docs/BACKLOG.md)**, shaped after
+    `ai_platform/infrastructure/composition.py`'s `build_provider_registry` —
+    ✅ *"An adapter is registered only when its credentials exist"* — 🔴 **and
+    the half that is easy to lose: *"There is deliberately no fallback between
+    them."***
+
+    ⛔ **`Channel` names four members and this registers ONE.** ⚡ **The other
+    three are not missing features; they are what makes the refusal
+    expressible** — a request for `EMAIL` fails legibly here rather than
+    arriving in-app and reporting that it reached an inbox.
+
+    ⚠️ **In-app needs no credential and is registered unconditionally**, which
+    is the one channel of which that is true: it writes a row in Signora's own
+    database, so *"is it configured"* has no separate answer. 📁 **Novu is
+    [ADR-0017](../../../docs/architecture/adr/0017-notifications.md)'s and
+    arrives behind `bought_infra_adapters/` when a channel it carries is
+    actually requested** — ⛔ **an adapter written for a call nobody makes is
+    the speculative abstraction §6 forbids.**
+    """
+    registry = NotificationChannelRegistry()
+    registry.register(InAppNotificationChannel(SqlAlchemyNotificationRepository(session)))
+    return registry
+
+
+def build_notifier(session: AsyncSession) -> Notify:
+    """**The one trigger every module calls.**
+
+    ⚡ **Returned as the concrete use case rather than as `Notifier`** so
+    `mypy` resolves the structural conformance at every call site that annotates
+    the port — 📁 the same reason `test_notification_read_is_per_person.py`
+    returns its repository AS the protocol instead of asking `hasattr`.
+    """
+    return Notify(channels=build_notification_channels(session))

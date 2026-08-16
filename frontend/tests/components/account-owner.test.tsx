@@ -53,7 +53,7 @@ describe('⚡ the id becomes a person here, and nowhere else', () => {
   it('shows the address, because the platform has no name to give', () => {
     /**
      * ⛔ **Better Auth owns user identity and runs in the Next.js tier, so the
-     * Python API has no name** — 📁 [C-024](../../../docs/LANE_COORDINATION.md),
+     * Python API has no name** — 📁 [C-203](../../../docs/LANE_COORDINATION.md),
      * ADR-0026. ⚡ **`member_email` is what a person recognises, and it is
      * what Team Management already shows.**
      */

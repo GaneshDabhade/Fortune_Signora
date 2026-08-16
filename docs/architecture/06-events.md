@@ -73,6 +73,7 @@ Events are listed in pipeline order. Payload fields below are illustrative and i
 | `opportunity.stage_changed` | Opportunity Engine | AI Reasoning Engine, Timeline, Revenue Intelligence Platform | `opportunity_id`, `entity_id`, `previous_stage`, `new_stage`, `owner_id`, `actor_id`, `reason`, `sequence` |
 | `ai_research.requested` | AI Research Engine | AI Research Engine (its own worker — see the M12.4 section below) | `request_id`, `entity_id`, `opportunity_id`, `requested_by`, `payload_version` |
 | `ai_research.completed` | AI Research Engine | AI Reasoning Engine (optional/non-blocking, see [05-module-dependencies.md](05-module-dependencies.md)) | `research_id`, `opportunity_id`, `subject_kind`, `subject_id`, `synthesis_id`, `prompt_name`, `prompt_version`, `prompt_fingerprint`, `model`, `vendor`, `evidence_digest`, `finding_count`, `statement_count`, `inference_id`, `payload_version` — see the M10 section below |
+| `notification.requested` | ⚡ **Any module with something worth telling a customer** — AI Research Engine today | Workspace & Tenancy (its `notification_requested` consumer) | `recipient_id`, `category`, `actor_kind`, `actor_person_id`, `actor_agent_name`, `subject_kind`, `subject_id`, `summary`, `expectation`, `channels`, `payload_version` — see the TASK-495 section below |
 | `ai_reasoning.completed` | AI Reasoning Engine | Recommendation Engine, Revenue Intelligence Platform | `reasoning_id`, `opportunity_id`, `model_provenance`, `result_ref` |
 | `recommendation.created` | Recommendation Engine | Timeline, Revenue Intelligence Platform | `recommendation_id`, `opportunity_id`, `action`, `priority` |
 | `recommendation.status_changed` | Recommendation Engine | Timeline, Revenue Intelligence Platform, Signal Engine (feedback loop) | `recommendation_id`, `previous_status`, `new_status` |
@@ -490,3 +491,86 @@ second model call.**
 
 Widening `EventHandler` is a `signora_platform/` change and belongs to the
 platform's owner (§20a). **Raised, not fixed.**
+
+
+## TASK-495 — `notification.requested`
+
+**Ratified by [ADR-0017](adr/0017-notifications.md), scoped by [D-239](../DECISION_REGISTER.md).**
+
+| Event | v | Payload | Meaning |
+|---|---|---|---|
+| `notification.requested` | 1 | `recipient_id`, `category`, `actor_kind`, `actor_person_id`, `actor_agent_name`, `subject_kind`, `subject_id`, `summary`, `expectation`, `channels`, `payload_version` | One person should be told that one thing happened |
+
+### The one event in the catalog whose producer is *any module*
+
+Every other event here is owned by the module that publishes it. This one is
+owned by the module that **consumes** it: `workspace_tenancy` publishes the
+contract, and any module with something worth telling a customer conforms to it.
+
+That is deliberate, and it is what makes the trigger interface ADR-0017 requires
+— *"one shared internal trigger interface, never per-channel bespoke code"* —
+reachable without a new architectural edge.
+
+**[05-module-dependencies.md](05-module-dependencies.md) approves exactly one
+kind of synchronous edge into Workspace & Tenancy, and every instance of it is
+read-only**: *"Any module → Workspace & Tenancy: resolve/validate workspace
+context (read-only)."* A producer calling a `notify()` port directly would be a
+synchronous **write** into another module's data — not on that list, and
+extending the list is an architectural decision rather than an implementation
+detail.
+
+Publishing instead lands on the edge 05 already ratifies: **Workspace & Tenancy
+→ all, Conformist — *"Every module conforms; none influences it."***
+
+### Delivery is asynchronous, and the alternative was worse
+
+The producer's outbox row commits in the same transaction as the thing it
+announces, so a run that failed to record its own outcome never tells a customer
+it succeeded. The relay delivers, the dispatcher claims `event_id`, and the
+consumer resolves channels and writes.
+
+**No business module reads `outbox_event`** (`CLAUDE.md` §8): a producer
+publishes through the `EventPublisher` port it already holds, and the consumer
+receives an `EventEnvelope`.
+
+### A channel with no adapter fails; it never degrades
+
+`channels` is a required, non-empty, comma-separated set. The consumer resolves
+**every** named channel before delivering **any** of them, and an unregistered
+channel raises — so the event dead-letters rather than delivering a subset.
+
+All-or-none is what makes redelivery safe. A partial delivery followed by a
+retry is how *"a customer sees that something happened, once"* becomes twice.
+
+The registry is `ai_platform`'s pattern applied one module along: *"An adapter is
+registered only when its credentials exist… There is deliberately no fallback
+between them."* In-app is the only channel registered today, and it is a
+**channel**, never a substitute for one that failed to configure.
+
+### No display name for a person, and that is C-203
+
+`actor_person_id` carries identity; there is deliberately no `actor_name`.
+[C-203](../LANE_COORDINATION.md) is `DEFERRED` with a concrete trigger —
+[D-116](../DECISION_REGISTER.md), *M-E, when a provider supplies a person
+identifier* — and its impact line names notifications directly. It was renumbered
+from `C-024` by QE on 2026-08-02; `C-024` is a different, closed finding about
+mounting Timeline. A field here would have answered it by accident, for Timeline,
+comments, audit history, AI attribution and mentions at the same time.
+
+`actor_agent_name` **is** carried, because an agent has no Better Auth identity
+to resolve: the platform authored the name. It names a **capability** —
+*"Research"* — never a model and never a vendor (`CLAUDE.md` §10).
+
+### The workspace comes from the envelope
+
+`to_payload()` deliberately emits no `workspace_id`. Every event is
+workspace-scoped and the envelope is the only trustworthy statement of which
+workspace; a payload that could name its own tenant would be a cross-workspace
+write one typo away. Asserted in
+`tests/security_invariants/test_notification_handler_scopes_to_the_envelope.py`.
+
+### `channels` is serialized sorted
+
+A `frozenset` has no order, and an event whose bytes vary with the process hash
+seed is not replayable — `CLAUDE.md` §2, *hidden inputs are architecture
+defects*.

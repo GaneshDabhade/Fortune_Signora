@@ -15,6 +15,14 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from modules.workspace_tenancy.domain.entities import Membership, Workspace, WorkspaceRole
 from modules.workspace_tenancy.domain.invitation import Invitation
+from modules.workspace_tenancy.domain.notification import (
+    Actor,
+    ActorKind,
+    Category,
+    Notification,
+    NotificationError,
+    Subject,
+)
 from modules.workspace_tenancy.domain.notification_state import (
     CAP,
     UnreadCount,
@@ -43,6 +51,7 @@ from modules.workspace_tenancy.infrastructure.models import (
     MembershipModel,
     MembershipRoleChangeModel,
     NotificationReadRow,
+    NotificationRow,
     OnboardingRunModel,
     PersonPreferencesModel,
     SavedViewModel,
@@ -794,3 +803,103 @@ class SqlAlchemyNotificationReadRepository(SqlAlchemyRepository):
                 if total > CAP:
                     break
         return unread_count(total=total)
+
+
+class SqlAlchemyNotificationRepository(SqlAlchemyRepository):
+    """Notifications, written for one person and readable only by them —
+    **[TASK-495](../../../../docs/BACKLOG.md)**.
+
+    ⚡ **The asymmetry is the design and it comes from migration `0059`**:
+    ⛔ **INSERT is workspace-scoped** — a notification is written FOR somebody
+    else, so a recipient predicate on the write would permit notifying nobody
+    but yourself — ✅ **and SELECT carries both predicates**, in the policy and
+    again here.
+
+    🔴 **`recipient_id` is filtered in every read even though the policy already
+    does it.** 📁 [§8](../../../../CLAUDE.md), *defense-in-depth* — **the person
+    predicate earns the same treatment the tenant one does**, and 📁 492 §0 says
+    it in terms: *one predicate is added … in the policy AND in the query*.
+    """
+
+    async def record(self, notification: Notification) -> None:
+        """Persist one notification.
+
+        ⛔ **No upsert and no conflict clause.** ⚡ **The id is minted by the
+        caller for this one delivery**, so a second row would mean a second
+        delivery — 📁 which is the duplicate `Notify` resolves every channel
+        up-front to prevent, and it should surface rather than be absorbed.
+        """
+        self._session.add(
+            NotificationRow(
+                id=notification.id,
+                workspace_id=notification.workspace_id,
+                recipient_id=notification.recipient_id,
+                category=notification.category.value,
+                actor_kind=notification.actor.kind.value,
+                actor_person_id=notification.actor.person_id,
+                actor_agent_name=notification.actor.agent_name,
+                subject_kind=notification.subject.kind,
+                subject_id=notification.subject.id,
+                summary=notification.summary,
+                expectation=notification.expectation,
+                occurred_at=notification.occurred_at,
+            )
+        )
+        await self._session.flush()
+
+    async def feed(
+        self, workspace_id: UUID, person_id: UUID, *, limit: int
+    ) -> list[Notification]:
+        """This person's notifications, newest first, bounded.
+
+        ⚠️ **`limit` is required and has no default.** ⛔ **A caller that forgot
+        it would read every notification a person has ever received** — on
+        exactly the person most likely to have thousands, somebody returning
+        from leave. 📁 The same argument `UnreadCount`'s cap makes, one layer
+        down.
+
+        ⚡ **Newest first, because the panel groups by DAY** — a page assembled
+        from the oldest rows would group correctly and show the wrong days.
+        """
+        if limit <= 0:
+            raise NotificationError(
+                f"a feed limit of {limit} asks for no notifications and returns "
+                "an empty panel, which a customer cannot tell from having none."
+            )
+        statement = (
+            select(NotificationRow)
+            .where(
+                NotificationRow.workspace_id == workspace_id,
+                # Defence in depth beside the RLS policy, which carries the
+                # same two predicates (11-tenancy.md, 492 §0).
+                NotificationRow.recipient_id == person_id,
+            )
+            .order_by(NotificationRow.occurred_at.desc(), NotificationRow.id.desc())
+            .limit(limit)
+        )
+        rows = (await self._session.execute(statement)).scalars().all()
+        return [_to_notification(row) for row in rows]
+
+
+def _to_notification(row: NotificationRow) -> Notification:
+    """**Mapped explicitly**, because the ORM row is not the domain model.
+
+    ⚡ **The domain's guards re-run here**, which is what makes them hold for
+    data that came back out of the database rather than only for data going in:
+    a row written before a guard existed fails on READ rather than rendering.
+    """
+    return Notification(
+        id=row.id,
+        workspace_id=row.workspace_id,
+        recipient_id=row.recipient_id,
+        category=Category(row.category),
+        actor=Actor(
+            kind=ActorKind(row.actor_kind),
+            person_id=row.actor_person_id,
+            agent_name=row.actor_agent_name,
+        ),
+        subject=Subject(kind=row.subject_kind, id=row.subject_id),
+        summary=row.summary,
+        expectation=row.expectation,
+        occurred_at=row.occurred_at,
+    )

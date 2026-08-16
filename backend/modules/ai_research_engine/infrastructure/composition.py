@@ -126,6 +126,10 @@ def build_finish_research_run(
     accept an HTTP request."""
     return FinishResearchRun(
         requests=SqlResearchRequestRepository(session),
+        # ⚡ **The same session the research uses**, so the notification request
+        # commits with the settled state it announces — 📁 [§9](../../../../CLAUDE.md).
+        session=session,
+        publisher=publisher,
         research=build_research(
             session,
             infer=infer,

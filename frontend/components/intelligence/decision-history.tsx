@@ -39,7 +39,7 @@ const EMPTY: ReadonlyMap<string, string> = new Map();
  * tier and the Python tier verifies tokens without learning who anybody is
  * (ADR-0026), so *"somebody here"* is the truthful form — the same wording the
  * workflow line has used since **D23**. A raw identifier would be the same
- * absence dressed as information. When [C-024](../../../docs/LANE_COORDINATION.md)
+ * absence dressed as information. When [C-203](../../../docs/LANE_COORDINATION.md)
  * settles how the product resolves a name, this reads it and nothing else
  * changes.
  */
@@ -54,7 +54,7 @@ export function DecisionHistory({
   /** Everybody who can be named, so the trail says who rather than *somebody*.
    *
    * **The comment above predicted this and was wrong about the mechanism**: it
-   * expected [C-024](../../../docs/LANE_COORDINATION.md) to settle how a name
+   * expected [C-203](../../../docs/LANE_COORDINATION.md) to settle how a name
    * is resolved, and TM-01 settled it first by giving a membership an address.
    * Empty still reads exactly as it did before. */
   people?: ReadonlyMap<string, string>;
@@ -162,7 +162,7 @@ function movement(
  * suggests, humans commit, and the record already knows which this was.
  *
  * **It names people now**, which the doc comment above expected to arrive with
- * C-024 and which TM-01 delivered instead. *Somebody here* survives as the
+ * C-203 and which TM-01 delivered instead. *Somebody here* survives as the
  * fallback for a membership that never had an address, and for somebody who
  * has since left — a name the roster no longer holds is a fact about today,
  * and the record is about then.
