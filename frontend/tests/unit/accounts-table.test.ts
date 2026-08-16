@@ -34,6 +34,11 @@ const NOW = new Date('2026-08-12T12:00:00.000Z');
 function account(over: Partial<ListedAccount['account']> = {}, kind = 'company'): ListedAccount {
   return {
     kind: kind as ListedAccount['kind'],
+    // ⛔ **All three null, deliberately.** ⚡ **This is the state the product
+    // is actually in** — the read path exists and no customer system is
+    // connected — **and a builder that invented an ACV would make the
+    // never-fabricate rule untestable.**
+    commercial: { open_acv: null, renewal_date: null, stage: null },
     account: {
       account_id: 'a1',
       name: 'Vantage Logistics',
@@ -75,7 +80,11 @@ describe('🔴 a column exists only where a field does', () => {
   it('⛔ and exactly three columns are joined rather than read', () => {
     const joined = COLUMNS.filter((column) => column.read === undefined).map((c) => c.id);
 
-    expect(joined).toEqual(['owner', 'segment', 'tags']);
+    // ⚡ **In the design's column order**, which moved when Open ACV and
+    // Renewal landed between Segment and Owner. ⛔ **The claim is unchanged**:
+    // these three are a different bounded context's facts, joined by the screen
+    // from their own endpoints rather than read off the account row (§5).
+    expect(joined).toEqual(['segment', 'owner', 'tags']);
   });
 
   /**

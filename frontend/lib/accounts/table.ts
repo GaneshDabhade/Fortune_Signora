@@ -6,38 +6,48 @@
  *
  * 📁 **The design draws nine**: Company · Segment · Open ACV · Signora score ·
  * Renewal · Owner · Tags. ⛔ **Five of those had no source when this file was
- * written.** ⚡ **Two now do**: **Tags** shipped as
- * [TASK-466](../../../docs/BACKLOG.md) and **Owner** as
- * [TASK-1479](../../../docs/BACKLOG.md) slice ⓶, both on
- * [ADR-0411](../../../docs/architecture/adr/0411-customer-organized-account-metadata.md)
- * — **the ruling C-1425 was waiting for.** ⚠️ **Segment is still absent and is
- * NOT the same concept as this module's ICP-segment**, which is why it has not
- * followed them. **Open ACV and
- * Renewal are refused in writing** by
- * [`crm.py`](../../../backend/modules/provider_normalization/infrastructure/mappers/crm.py):
- * *"contract value, renewal date… have no canonical attribute, and
- * `ClaimAttribute` says an RFC extends it."* 📁 **[C-209](../../../docs/LANE_COORDINATION.md)
- * is that decision and this file does not pre-empt it.**
+ * written. Four do now**, each released by a ruling rather than by this file
+ * deciding it could:
+ *
+ * | Column | Released by |
+ * |---|---|
+ * | **Tags** | [TASK-466](../../../docs/BACKLOG.md) · [ADR-0411](../../../docs/architecture/adr/0411-customer-organized-account-metadata.md) |
+ * | **Owner** | [TASK-1479](../../../docs/BACKLOG.md) slice ⓶ · ADR-0411 |
+ * | **Segment** | TASK-1479 slice ⓶b · ADR-0411 |
+ * | **Open ACV · Renewal** | ⚡ **[ADR-0409](../../../docs/architecture/adr/0409-commercial-account-facts.md), ratified 2026-08-12** |
+ *
+ * > ⚠️ **This header said Open ACV and Renewal were *"refused in writing"* by
+ * > [`crm.py`](../../../backend/modules/provider_normalization/infrastructure/mappers/crm.py).**
+ * > 🔴 **That was true when it was written and stopped being true on
+ * > 2026-08-12.** 📁 ADR-0409 §4: *"`crm.py`'s refusal is **discharged** by
+ * > this ADR, not overridden"* — **and a claim about the present is corrected
+ * > rather than left standing** ([§2](../../../CLAUDE.md)).
+ *
+ * ⛔ **Signora score is the one that is still nowhere**, and it has no column.
  *
  * ⚡ **So a column is defined only where a field exists**, and the type makes
  * the alternative unwriteable: `read` takes a `ListedAccount` and there is
  * nowhere to return a value from.
  *
- * > ⛔ **A column of `—` is worse than an absent column**: it says Signora
- * > looked and found nothing, when the truth is that nothing was ever asked.
+ * > ⛔ **A column of `—` is worse than an absent column** ***when nothing was
+ * > ever asked.*** ✅ **Where the read path exists, `—` is the honest answer**:
+ * > it says Signora asked and no source has answered — see `NOTHING_SAID`.
  */
 import { formatDay } from '@/components/intelligence/dates';
-import type { ListedAccount } from '@/lib/api/types';
+import type { AccountCommercial, ListedAccount, Money } from '@/lib/api/types';
 
 export type ColumnId =
   | 'company'
+  | 'segment'
+  | 'acv'
+  | 'renewal'
+  | 'owner'
+  | 'tags'
+  | 'stage'
   | 'kind'
   | 'sources'
   | 'agreement'
-  | 'freshness'
-  | 'owner'
-  | 'segment'
-  | 'tags';
+  | 'freshness';
 
 export interface ColumnSpec {
   readonly id: ColumnId;
@@ -65,6 +75,11 @@ export interface ColumnSpec {
    * `—`-versus-absent distinction this file's header refuses.
    */
   readonly read?: (row: ListedAccount) => string;
+  /** 📁 **The design right-aligns Open ACV and Renewal and sets
+   *  `font-variant-numeric:tabular-nums`.** ⚡ **A property of the column, not
+   *  of the cell** — declared once so a figure cannot align one way in the
+   *  header and another in the body. */
+  readonly numeric?: true;
 }
 
 /** ⚡ **Freshness in days, or `null` when no source has ever reported.** 📁 The
@@ -77,8 +92,98 @@ export function daysSinceObserved(row: ListedAccount, now: Date): number | null 
   return Math.floor((now.getTime() - then.getTime()) / 86_400_000);
 }
 
+/**
+ * 📁 **The design prints a figure, never a raw number** — *"$1,240,000"*,
+ * `font-variant-numeric:tabular-nums`.
+ *
+ * ⛔ **The currency is the source's and is never converted.** 📁 [ADR-0409](../../../docs/architecture/adr/0409-commercial-account-facts.md)
+ * §5 — *"a rate is applied at a moment… a converted figure stored on a claim
+ * is correct briefly and wrong permanently."* ⚡ **So the browser's own
+ * formatter is given the claim's currency and left to place the symbol**,
+ * which is also how a European tenant's `EUR` renders correctly without this
+ * file knowing a single symbol.
+ */
+export function formatMoney(money: Money): string {
+  return new Intl.NumberFormat(undefined, {
+    style: 'currency',
+    currency: money.currency,
+    maximumFractionDigits: 0,
+  }).format(money.amount);
+}
+
+/**
+ * ⚡ **What a cell shows when nothing has been said.**
+ *
+ * 🔴 **This is the one string on the screen that is easiest to get wrong.**
+ * ⛔ **Not `0`, not `$0`, not *"None"*** — 📁 ADR-0409 §5: *"absence is never
+ * inferred, defaulted or zero-filled"*, and a zero ACV is a figure a seller
+ * would act on.
+ *
+ * ⚠️ **An em dash is honest HERE and was not before this read existed.** 📁
+ * This file's own header refuses `—` *"when the truth is that nothing was ever
+ * asked"* — ✅ **the read path now asks**, so the cell means *Signora asked and
+ * no source has answered*, which is exactly what a dash says.
+ */
+export const NOTHING_SAID = '—';
+
+/** ⚠️ **`is_mapped` is a state the product SHOWS.** 📁 The CRM Integrations
+ *  design — *"214 opportunities now sit in stages Signora treats as
+ *  unmapped"* — ⛔ so an unmapped stage renders the customer's own word rather
+ *  than being hidden or guessed at. */
+export function stageLabel(commercial: AccountCommercial): string {
+  return commercial.stage === null ? NOTHING_SAID : commercial.stage.label;
+}
+
 export const COLUMNS: readonly ColumnSpec[] = [
   { id: 'company', label: 'Company', pinned: true, read: (r) => r.account.name ?? '' },
+  // ⚡ **Segment gained a source on 2026-08-15** — TASK-1479 slice ⓶b. ⛔ **No
+  // `read`, for the reason Tags and Owner have none**: a saved grouping is
+  // `commercial_profile`'s and an account is `knowledge_graph`'s, so the screen
+  // joins them from a second endpoint rather than reading a field the account
+  // row does not carry (§5).
+  { id: 'segment', label: 'Segment' },
+  /**
+   * ⚡ **Released by [ADR-0409](../../../docs/architecture/adr/0409-commercial-account-facts.md)**,
+   * ratified 2026-08-12 — **the ruling this file's header recorded as pending
+   * under its old number.** ⛔ **The refusal it quotes from `crm.py` is
+   * discharged by that ADR rather than overridden**, and the mapper's comment
+   * now cites it.
+   *
+   * ⚠️ **The column exists because the FIELD exists**, which is this file's
+   * law. **Whether a value arrives depends on a customer connecting a
+   * system** — 📁 [409](../../../docs/architecture/409-inbound-source-port-contract.md)
+   * steps 3–5, `provider_platform`'s and held on
+   * [C-300](../../../docs/LANE_COORDINATION.md). ⛔ **Nothing here fabricates
+   * one in the meantime.**
+   */
+  {
+    id: 'acv',
+    label: 'Open ACV',
+    numeric: true,
+    read: (r) => (r.commercial.open_acv === null ? '' : formatMoney(r.commercial.open_acv)),
+  },
+  {
+    id: 'renewal',
+    label: 'Renewal',
+    numeric: true,
+    read: (r) =>
+      r.commercial.renewal_date === null ? '' : formatDay(r.commercial.renewal_date),
+  },
+  // ⚡ **Owner gained a source on 2026-08-14** — TASK-1479 slice ⓶. ⛔ **Like
+  // Tags, it has no `read`**: a different bounded context's fact, joined by the
+  // screen from its own endpoint (§5).
+  { id: 'owner', label: 'Owner' },
+  { id: 'tags', label: 'Tags' },
+  /**
+   * ⛔ **Available, and not one of the design's drawn columns.** 📁 The design's
+   * table draws Company · Segment · Open ACV · Signora score · Renewal · Owner
+   * · Tags, and shows stage in the expanded row and the context drawer instead.
+   *
+   * ✅ **It is offered in `Columns · 9 of 42` because the contract publishes
+   * it** — ⚠️ **which is the opposite of inventing a column: the field is real,
+   * and the design's own control is a set larger than the default.**
+   */
+  { id: 'stage', label: 'Stage', read: (r) => r.commercial.stage?.label ?? '' },
   { id: 'kind', label: 'Kind', read: (r) => r.kind },
   { id: 'sources', label: 'Sources', read: (r) => String(r.account.source_count) },
   { id: 'agreement', label: 'Name agreement', read: (r) => r.account.agreement },
@@ -104,28 +209,18 @@ export const COLUMNS: readonly ColumnSpec[] = [
     read: (r) =>
       r.account.last_observed_at === null ? 'Never' : formatDay(r.account.last_observed_at),
   },
-  // ⚡ **Released by [C-1425](../../../docs/LANE_COORDINATION.md)**, which the
-  // header above records as one of the five columns with no source. **It has
-  // one now** — [ADR-0411](../../../docs/architecture/adr/0411-customer-organized-account-metadata.md).
-  // ⚡ **Owner gained a source on 2026-08-14** — TASK-1479 slice ⓶ built it,
-  // and the header note above recorded it as one of the five columns that had
-  // none. ⛔ **Like Tags, it has no `read`**: it is a different bounded
-  // context's fact, joined by the screen from its own endpoint rather than
-  // carried on the account row (§5).
-  { id: 'owner', label: 'Owner' },
-  // ⚡ **Segment gained a source on 2026-08-15** — TASK-1479 slice ⓶b, and the
-  // third of the five source-less columns the header above records to get one.
-  // ⛔ **No `read`, for the reason Tags and Owner have none**: a saved grouping
-  // is `commercial_profile`'s and an account is `knowledge_graph`'s, so the
-  // screen joins them from a second endpoint rather than reading a field the
-  // account row does not carry (§5).
-  { id: 'segment', label: 'Segment' },
-  { id: 'tags', label: 'Tags' },
 ];
 
 /** 📁 The design's `Columns · 9 of 42` control. ⛔ **The pinned column is always
  *  in the set**, so a stored choice cannot produce an unidentifiable row. */
-export const DEFAULT_COLUMNS: readonly ColumnId[] = ['company', 'kind', 'sources', 'freshness'];
+export const DEFAULT_COLUMNS: readonly ColumnId[] = [
+  'company',
+  'segment',
+  'acv',
+  'renewal',
+  'owner',
+  'tags',
+];
 
 export function visibleColumns(chosen: readonly ColumnId[]): readonly ColumnSpec[] {
   const wanted = new Set<ColumnId>(chosen);

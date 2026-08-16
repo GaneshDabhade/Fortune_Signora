@@ -12,7 +12,13 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from modules.knowledge_graph.application.queries import AccountIdentity, ClaimSet, GraphQueries
+from modules.knowledge_graph.application.queries import (
+    COMMERCIAL_ATTRIBUTES,
+    AccountCommercial,
+    AccountIdentity,
+    ClaimSet,
+    GraphQueries,
+)
 from modules.knowledge_graph.application.relationships import (
     DeriveRelationships,
     DeriveRelationshipsInput,
@@ -31,8 +37,13 @@ from modules.knowledge_graph.domain.identity import (
     IdentityState,
 )
 from modules.knowledge_graph.public import MatchStrength
-from modules.provider_normalization.public import ClaimAttribute, ClaimView
+from modules.provider_normalization.public import (
+    ClaimAttribute,
+    ClaimView,
+    CommercialStage,
+)
 from tests.knowledge_graph.fakes import (
+    CountingClaimReader,
     FakeClaimReader,
     FakeGraphRepository,
     RecordingPublisher,
@@ -943,3 +954,267 @@ class TestTheHeaderCanStateHowBigTheBookIs:
         queries = GraphQueries(repository=FakeGraphRepository(), claims=FakeClaimReader())
 
         assert await queries.count_accounts(WORKSPACE) == 0
+
+
+class TestWhatAnAccountIsWorthAndWhereItStands:
+    """📁 **[ADR-0409](../../architecture/adr/0409-commercial-account-facts.md)**,
+    ratified 2026-08-12 — *"Signora owns commercial account facts: Open ACV,
+    Renewal, and commercial/opportunity stage."*
+
+    ⚡ **The design's Companies table draws all three as columns**, so the read
+    is a page-wide batch and every assertion below is about the projection's
+    stated rule rather than about a convenience.
+
+    ⛔ **These tests do not fabricate a source.** They record claims the way a
+    connected CRM would, and the ones asserting absence record nothing at all —
+    which is the state the product is in today, and the state the columns must
+    render honestly.
+    """
+
+    @staticmethod
+    def _account() -> tuple[FakeGraphRepository, Entity]:
+        repository = FakeGraphRepository()
+        entity = Entity.create(workspace_id=WORKSPACE, kind=EntityKind.COMPANY, now=NOW)
+        repository.entities[entity.id] = entity
+        repository.bindings.append(
+            bound_binding(entity, provider="hubspot", external_id="acme-corp")
+        )
+        return repository, entity
+
+    @staticmethod
+    async def _read(
+        repository: FakeGraphRepository, entity: Entity, claims: list[ClaimView]
+    ) -> AccountCommercial:
+        queries = GraphQueries(repository=repository, claims=FakeClaimReader(claims))
+        return (await queries.commercial(WORKSPACE, (entity.id,)))[entity.id]
+
+    async def test_an_account_no_source_has_spoken_about_comes_back_empty(self) -> None:
+        """🔴 **The state the product is actually in, and the one that must not
+        lie.**
+
+        ⛔ **Not absent from the mapping, and not an exception.** A caller asked
+        about this account and the honest answer is *nobody has said* — 📁
+        [P-A](../../DOMAIN_DISCOVERY_REGISTER.md): a failed or empty read must
+        never be indistinguishable from a value.
+
+        ⚠️ **A zero ACV would be worse than a crash**, because a seller would
+        act on it.
+        """
+        repository, entity = self._account()
+
+        commercial = await self._read(repository, entity, [])
+
+        assert commercial.open_acv is None
+        assert commercial.renewal_date is None
+        assert commercial.stage is None
+        assert commercial.is_known is False
+
+    async def test_it_carries_the_currency_with_the_figure(self) -> None:
+        """📁 ADR-0409 §3: *"a figure without its currency is not a fact."*"""
+        repository, entity = self._account()
+
+        commercial = await self._read(
+            repository,
+            entity,
+            [
+                claim(
+                    provider="hubspot",
+                    attribute=ClaimAttribute.OPEN_ACV,
+                    value={"amount": 1_240_000, "currency": "USD"},
+                )
+            ],
+        )
+
+        assert commercial.open_acv is not None
+        assert commercial.open_acv.amount == 1_240_000
+        assert commercial.open_acv.currency == "USD"
+        assert commercial.is_known is True
+
+    async def test_an_amount_with_no_currency_is_no_fact_at_all(self) -> None:
+        """⛔ **Not a bare number rendered without its unit.** ⚡ **A stored
+        claim is untrusted input**, and the honest reading of half a money value
+        is that the fact is missing — not that the amount is dollars.
+        """
+        repository, entity = self._account()
+
+        commercial = await self._read(
+            repository,
+            entity,
+            [claim(provider="hubspot", attribute=ClaimAttribute.OPEN_ACV, value={"amount": 1_240_000})],
+        )
+
+        assert commercial.open_acv is None
+
+    async def test_the_newest_claim_wins_for_each_attribute(self) -> None:
+        """📁 **The projection's stated rule.**
+
+        ⚠️ **Defensible here and nowhere else**: 📁 [ADR-0401](../../architecture/adr/0401-a-customers-crm-is-not-a-provider.md)
+        — a commercial fact is **the customer's own system describing their own
+        relationship**, so *"the latest thing their operator entered"* is the
+        answer rather than a dispute between two vendors.
+        """
+        repository, entity = self._account()
+
+        commercial = await self._read(
+            repository,
+            entity,
+            [
+                claim(
+                    provider="hubspot",
+                    attribute=ClaimAttribute.OPEN_ACV,
+                    value={"amount": 800_000, "currency": "USD"},
+                    observed_at=datetime(2026, 1, 5, tzinfo=UTC),
+                ),
+                claim(
+                    provider="hubspot",
+                    attribute=ClaimAttribute.OPEN_ACV,
+                    value={"amount": 1_240_000, "currency": "USD"},
+                    observed_at=datetime(2026, 6, 5, tzinfo=UTC),
+                ),
+            ],
+        )
+
+        assert commercial.open_acv is not None
+        assert commercial.open_acv.amount == 1_240_000
+
+    async def test_a_newer_stage_does_not_blank_an_older_renewal(self) -> None:
+        """🔴 **The defect this exists to catch, and it is the reason the three
+        resolve independently.**
+
+        ⛔ **Resolving them as one record** — newest claim wins, whole object —
+        **would blank the renewal date the moment a CRM touched the stage.**
+        ⚡ **They are three facts that happen to share a subject**, and a rep
+        who updates a stage has not withdrawn the renewal.
+        """
+        repository, entity = self._account()
+
+        commercial = await self._read(
+            repository,
+            entity,
+            [
+                claim(
+                    provider="hubspot",
+                    attribute=ClaimAttribute.RENEWAL_DATE,
+                    value="2026-10-12",
+                    observed_at=datetime(2026, 1, 5, tzinfo=UTC),
+                ),
+                claim(
+                    provider="hubspot",
+                    attribute=ClaimAttribute.COMMERCIAL_STAGE,
+                    value={"position": "negotiating", "label": "Negotiation"},
+                    observed_at=datetime(2026, 6, 5, tzinfo=UTC),
+                ),
+            ],
+        )
+
+        assert commercial.renewal_date == date(2026, 10, 12)
+        assert commercial.stage is not None
+        assert commercial.stage.position is CommercialStage.NEGOTIATING
+
+    async def test_a_stage_the_tenant_invented_stays_unmapped_rather_than_guessed(
+        self,
+    ) -> None:
+        """📁 **The CRM Integrations design's own case** — *"Salesforce added
+        'Legal review' and 'Procurement' to StageName last week. 214
+        opportunities now sit in stages Signora treats as unmapped."*
+
+        ⛔ **Unmapped is a state the product SHOWS**, not an error and not a gap
+        to fill. ⚡ **The label survives; the canonical position does not exist**
+        — and coercing *"Legal review"* into `NEGOTIATING` is precisely the
+        invention ADR-0409 was written to prevent.
+        """
+        repository, entity = self._account()
+
+        commercial = await self._read(
+            repository,
+            entity,
+            [
+                claim(
+                    provider="hubspot",
+                    attribute=ClaimAttribute.COMMERCIAL_STAGE,
+                    value={"position": "legal_review", "label": "Legal review"},
+                )
+            ],
+        )
+
+        assert commercial.stage is not None
+        assert commercial.stage.position is None
+        assert commercial.stage.label == "Legal review"
+        assert commercial.stage.is_mapped is False
+
+    async def test_it_reads_only_this_workspace_s_accounts(self) -> None:
+        """🔴 **A commercial figure is the one fact on this screen a competitor
+        would pay for**, so the tenant predicate is asserted rather than assumed.
+        """
+        repository, entity = self._account()
+        somebody_else = Entity.create(
+            workspace_id=uuid4(), kind=EntityKind.COMPANY, now=NOW
+        )
+        repository.entities[somebody_else.id] = somebody_else
+        queries = GraphQueries(
+            repository=repository,
+            claims=FakeClaimReader(
+                [
+                    claim(
+                        provider="hubspot",
+                        attribute=ClaimAttribute.OPEN_ACV,
+                        value={"amount": 1_240_000, "currency": "USD"},
+                    )
+                ]
+            ),
+        )
+
+        found = await queries.commercial(WORKSPACE, (entity.id, somebody_else.id))
+
+        assert found[entity.id].open_acv is not None
+        assert found[somebody_else.id].open_acv is None
+
+    async def test_a_page_of_accounts_costs_three_reads_not_three_per_row(self) -> None:
+        """⛔ **The N+1 [§14](../../../CLAUDE.md) calls a defect at write time.**
+
+        ⚡ **Counted rather than reasoned about**: the design draws three
+        commercial columns over a page of rows, so an implementation that asks
+        per row is invisible until a customer with a full book opens the screen.
+        """
+        repository = FakeGraphRepository()
+        entities = []
+        for index in range(10):
+            entity = Entity.create(
+                workspace_id=WORKSPACE, kind=EntityKind.COMPANY, now=NOW
+            )
+            repository.entities[entity.id] = entity
+            repository.bindings.append(
+                bound_binding(entity, provider="hubspot", external_id=f"acme-{index}")
+            )
+            entities.append(entity)
+        reader = CountingClaimReader()
+        queries = GraphQueries(repository=repository, claims=reader)
+
+        await queries.commercial(WORKSPACE, tuple(e.id for e in entities))
+
+        assert reader.calls == len(COMMERCIAL_ATTRIBUTES) == 3
+
+    async def test_the_list_carries_the_commercial_columns(self) -> None:
+        """⚡ **The read reaches the surface through the browse page**, which is
+        what the design's table renders — so the wiring is asserted rather than
+        left to the endpoint.
+        """
+        repository, entity = self._account()
+        queries = GraphQueries(
+            repository=repository,
+            claims=FakeClaimReader(
+                [
+                    claim(
+                        provider="hubspot",
+                        attribute=ClaimAttribute.OPEN_ACV,
+                        value={"amount": 1_240_000, "currency": "USD"},
+                    )
+                ]
+            ),
+        )
+
+        page = await queries.list_accounts(WORKSPACE)
+
+        assert len(page.items) == 1
+        assert page.items[0].commercial.open_acv is not None
+        assert page.items[0].commercial.open_acv.amount == 1_240_000

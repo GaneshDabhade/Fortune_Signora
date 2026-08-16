@@ -10,18 +10,20 @@ because that is what the customer came to look at. A seller has never asked to
 see an entity.
 """
 
-from datetime import datetime
+from datetime import date, datetime
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from modules.knowledge_graph.application.queries import (
+    AccountCommercial,
     AccountIdentity,
     ListedAccount,
     AccountMatch,
     AccountMatchGroup,
     SearchCoverage,
 )
+from modules.provider_normalization.public import CommercialStage
 from modules.knowledge_graph.domain.identity import EntityKind
 from modules.knowledge_graph.domain.naming import NameAgreement
 
@@ -171,6 +173,87 @@ class SearchGroupResponse(BaseModel):
             results=[SearchResultResponse.from_domain(m) for m in group.matches],
         )
 
+class MoneyResponse(BaseModel):
+    """A figure and the currency it is in — **never one without the other**."""
+
+    model_config = ConfigDict(frozen=True)
+
+    amount: int = Field(
+        description="In the source system's own minor units, uninterpreted. Signora "
+        "carries what the customer's system said and does not decide whether 1200 is "
+        "twelve dollars or twelve hundred."
+    )
+    currency: str = Field(
+        description="ISO code, as the source stated it. Never converted: a rate is "
+        "applied at a moment, so a converted figure is correct briefly and wrong "
+        "permanently."
+    )
+
+
+class CommercialStageResponse(BaseModel):
+    """Where this relationship stands, **in Signora's word and the customer's**."""
+
+    model_config = ConfigDict(frozen=True)
+
+    position: CommercialStage | None = Field(
+        description="The canonical pipeline position, or null when the customer's own "
+        "stage maps to nothing Signora knows. Null means *mapped to nothing* — not "
+        "unknown, not missing — and a screen shows it as unmapped rather than hiding "
+        "the row. Reasoning reads this; it never reads the label."
+    )
+    label: str = Field(
+        description="What the customer's own system calls this stage. Provenance, for "
+        "display. Never branch on it."
+    )
+
+
+class AccountCommercialResponse(BaseModel):
+    """What this account is worth, and where it stands.
+
+    **Every field is nullable and null means nothing has been said.** Signora
+    does not infer, default or zero-fill a commercial fact: an account with no
+    connected system of record comes back with three nulls, and a surface
+    renders that as absence rather than as zero.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    open_acv: MoneyResponse | None = Field(
+        default=None,
+        description="Open annual contract value, or null when no source has stated one. "
+        "Never a bare number — the currency travels with it or the fact does not.",
+    )
+    renewal_date: date | None = Field(
+        default=None, description="When this account renews, or null when unstated."
+    )
+    stage: CommercialStageResponse | None = Field(
+        default=None,
+        description="The commercial position, or null when unstated. Present but "
+        "unmapped is a different state, carried on the object itself.",
+    )
+
+    @classmethod
+    def from_domain(cls, commercial: AccountCommercial) -> "AccountCommercialResponse":
+        return cls(
+            open_acv=(
+                MoneyResponse(
+                    amount=commercial.open_acv.amount,
+                    currency=commercial.open_acv.currency,
+                )
+                if commercial.open_acv
+                else None
+            ),
+            renewal_date=commercial.renewal_date,
+            stage=(
+                CommercialStageResponse(
+                    position=commercial.stage.position, label=commercial.stage.label
+                )
+                if commercial.stage
+                else None
+            ),
+        )
+
+
 class ListedAccountResponse(BaseModel):
     """One account on the list: **who it is, and what kind of thing.**
 
@@ -190,12 +273,24 @@ class ListedAccountResponse(BaseModel):
         description="What kind of thing this is. Read it rather than assuming: the list "
         "answers for companies today and the graph knows more kinds than it can search."
     )
+    commercial: AccountCommercialResponse = Field(
+        description="What this account is worth and where it stands. Always present as "
+        "an object; its fields are null until a source states them, which is how a "
+        "caller tells *nothing said* from *not asked*."
+    )
 
     @classmethod
     def from_domain(cls, listed: ListedAccount) -> "ListedAccountResponse":
         return cls(
-            account=AccountIdentityResponse.from_domain(listed.account), kind=listed.kind
+            account=AccountIdentityResponse.from_domain(listed.account),
+            kind=listed.kind,
+            commercial=AccountCommercialResponse.from_domain(listed.commercial),
         )
 
 
-__all__ = ["AccountIdentityResponse", "SearchGroupResponse", "SearchResultResponse"]
+__all__ = [
+    "AccountCommercialResponse",
+    "AccountIdentityResponse",
+    "SearchGroupResponse",
+    "SearchResultResponse",
+]

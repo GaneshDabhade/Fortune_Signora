@@ -45,6 +45,11 @@ function listed(id: string, name: string | null): ListedAccount {
       last_observed_at: null,
     },
     kind: 'company',
+    // ⛔ **All three null, deliberately.** ⚡ **This is the state the product
+    // is actually in** — the read path exists and no customer system is
+    // connected — **and a builder that invented an ACV would make the
+    // never-fabricate rule untestable.**
+    commercial: { open_acv: null, renewal_date: null, stage: null },
   };
 }
 
@@ -126,7 +131,14 @@ describe('✅ the list renders what the contract publishes', () => {
     // toolbar a `Kind` filter, so `person` is now legitimately on the page twice:
     // once as a row's value and once as a filter option. ⛔ **The claim is about
     // the ROW**, and a page-wide query would pass on the option alone.
+    // ⚠️ **`Kind` is no longer a default column** — the default set is the
+    // design's — so the column is turned on before the row's value is read.
+    // ⛔ **The claim is unchanged**: the row states its own kind rather than
+    // the screen assuming every row is a company.
     const table = await screen.findByRole('table');
+    await userEvent.click(await screen.findByText(/^Columns · /));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Kind' }));
+
     await waitFor(() => expect(within(table).getByText('person')).toBeInTheDocument());
   });
 
@@ -151,9 +163,16 @@ describe('✅ the list renders what the contract publishes', () => {
 
     await waitFor(() => expect(screen.getByText('Databricks')).toBeInTheDocument());
     // 🔴 **[§20c](../../../CLAUDE.md): never introduce mock business data.**
-    // ⛔ **A column of `—` is worse than no column** — it says Signora looked
-    // and found nothing, when nothing was ever asked.
-    for (const absent of ['Score', 'Owner', 'Stage', 'Value']) {
+    //
+    // ⚠️ **This list was `['Score', 'Owner', 'Stage', 'Value']` and three of
+    // the four have since gained a source** — 📁 Owner on ADR-0411, Open ACV
+    // and Renewal on **[ADR-0409](../../../docs/architecture/adr/0409-commercial-account-facts.md)**,
+    // ratified 2026-08-12. ⛔ **A guard asserting they are absent would now be
+    // asserting a lie**, so it is corrected rather than deleted (§2).
+    //
+    // ⚡ **`Signora score` is the one the design draws that nothing publishes**,
+    // and it is still the whole subject of this test.
+    for (const absent of ['Score', 'Signora score', 'Value', 'Trend']) {
       expect(screen.queryByRole('columnheader', { name: absent })).not.toBeInTheDocument();
     }
   });

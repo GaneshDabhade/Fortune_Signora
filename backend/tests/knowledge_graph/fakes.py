@@ -337,3 +337,23 @@ def bound_binding(
         created_at=entity.created_at,
         domain=domain,
     )
+
+
+class CountingClaimReader(FakeClaimReader):
+    """A reader that records **how many times it was asked**.
+
+    ⚡ **The only way to assert the shape of a batch read.** A fake that merely
+    returns the right answer cannot tell one grouped query from fifty
+    individual ones, and the difference is invisible until a customer with a
+    full book of business opens the page ([§14](../../../CLAUDE.md)).
+    """
+
+    def __init__(self, claims: Sequence[ClaimView] = ()) -> None:
+        super().__init__(claims)
+        self.calls = 0
+
+    async def for_subjects(
+        self, subjects: Sequence[SubjectRef], *, attribute: ClaimAttribute | None = None
+    ) -> tuple[ClaimView, ...]:
+        self.calls += 1
+        return await super().for_subjects(subjects, attribute=attribute)

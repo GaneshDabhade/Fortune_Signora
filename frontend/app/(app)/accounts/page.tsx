@@ -11,6 +11,7 @@ import {
   UnsegmentedAccount,
   membershipFor,
 } from '@/components/accounts/account-segments';
+import { NothingSaid, StageBadge } from '@/components/accounts/account-commercial';
 import { AccountTags, tagsFor } from '@/components/accounts/account-tags';
 import { AddTagControl } from '@/components/accounts/add-tag-control';
 import { BulkBar } from '@/components/accounts/bulk-bar';
@@ -41,6 +42,7 @@ import { useWorkspaceMembers } from '@/lib/query/hooks/team';
 import { Building2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
+import { formatDay } from '@/components/intelligence/dates';
 import { EntityName } from '@/components/intelligence/entity-name';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
@@ -62,6 +64,7 @@ import { AccountsToolbar } from './toolbar';
 import { ViewTabs } from './view-tabs';
 import {
   DEFAULT_COLUMNS,
+  formatMoney,
   NO_FILTERS,
   ROW_PADDING,
   type ColumnId,
@@ -481,7 +484,15 @@ export default function CompaniesPage() {
                     />
                   </TH>
                   {shownColumns.map((column) => (
-                    <TH key={column.id} scope="col">
+                    <TH
+                      key={column.id}
+                      scope="col"
+                      /* 📁 **The design right-aligns the figures** — Open ACV
+                         and Renewal — **and the header follows the body.** ⛔ A
+                         heading that aligned differently from its column reads
+                         as a different column. */
+                      className={column.numeric ? 'text-right' : undefined}
+                    >
                       {column.label}
                     </TH>
                   ))}
@@ -501,7 +512,16 @@ export default function CompaniesPage() {
                       />
                     </TD>
                     {shownColumns.map((column) => (
-                      <TD key={column.id} className={ROW_PADDING[density]}>
+                      <TD
+                        key={column.id}
+                        className={cn(
+                          ROW_PADDING[density],
+                          // 📁 `font-variant-numeric:tabular-nums` — the design
+                          // sets it on every figure so a column of numbers has
+                          // one edge rather than a ragged one.
+                          column.numeric && 'text-right tabular-nums',
+                        )}
+                      >
                         {column.id === 'company' ? (
                           /* ✅ **Reused, not rebuilt** — `EntityName` carries the
                              name, the agreement state and the *no source has
@@ -562,6 +582,35 @@ export default function CompaniesPage() {
                               )}
                               segments={segments.data?.segments ?? []}
                             />
+                          )
+                        ) : column.id === 'acv' ? (
+                          /* ⛔ **Never a bare number, and never a zero.** ⚡ The
+                             currency travels with the figure or the fact does
+                             not exist (ADR-0409 §3) — and an unstated ACV is a
+                             dash, because `$0` is something a seller would act
+                             on. */
+                          row.commercial.open_acv === null ? (
+                            <NothingSaid />
+                          ) : (
+                            formatMoney(row.commercial.open_acv)
+                          )
+                        ) : column.id === 'renewal' ? (
+                          row.commercial.renewal_date === null ? (
+                            <NothingSaid />
+                          ) : (
+                            formatDay(row.commercial.renewal_date)
+                          )
+                        ) : column.id === 'stage' ? (
+                          /* ⚠️ **The customer's own word, always** — 📁
+                             ADR-0409 §5: *"the tenant's stage label is
+                             provenance and is never reasoned over."* ⚡ **A
+                             stage Signora has not mapped still shows**, which
+                             is the state the CRM Integrations design counts
+                             rather than hides. */
+                          row.commercial.stage === null ? (
+                            <NothingSaid />
+                          ) : (
+                            <StageBadge stage={row.commercial.stage} />
                           )
                         ) : column.id === 'tags' ? (
                           /* ⛔ **Joined, never read from the row.** A tag is

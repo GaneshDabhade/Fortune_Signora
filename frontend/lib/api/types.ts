@@ -218,15 +218,73 @@ export type EntityKind = 'company' | 'person' | 'product' | 'technology';
  * result has to explain why it is in the list. A browse row is in the list
  * because it exists**, and those three would be null on every one of them.
  *
- * ⚠️ **Two fields, and that is the whole contract.** **Score, owner, trend,
- * stage and every other column the design draws are NOT published by this
- * read** — 📁 [§20c](../../../CLAUDE.md): *"screens without a shipped module
- * behind them ship a designed empty state"*, ⛔ **and inventing them here would
- * be the mock business data that rule forbids.**
+ * ⚠️ **Three fields, and that is the whole contract.** **Score, owner, trend
+ * and every other column the design draws are NOT published by this read** —
+ * 📁 [§20c](../../../CLAUDE.md): *"screens without a shipped module behind them
+ * ship a designed empty state"*, ⛔ **and inventing them here would be the mock
+ * business data that rule forbids.**
+ *
+ * ⚡ **`commercial` was the third, added 2026-08-16** — 📁 [ADR-0409](../../../docs/architecture/adr/0409-commercial-account-facts.md),
+ * ratified: *Signora owns Open ACV, Renewal and commercial stage.* **The read
+ * path is built; its fields are `null` until a customer's system supplies
+ * them.**
  */
 export interface ListedAccount {
   account: AccountIdentity;
   kind: EntityKind;
+  commercial: AccountCommercial;
+}
+
+/**
+ * **What an account is worth, and where it stands.**
+ *
+ * 📁 [ADR-0409](../../../docs/architecture/adr/0409-commercial-account-facts.md)
+ * §5: *"a claim is only produced where the provider supplies the fact.
+ * **Absence is never inferred, defaulted or zero-filled.**"*
+ *
+ * 🔴 **So every field is nullable and `null` means nobody has said.** ⛔ **A
+ * `0` ACV would be a figure a seller would act on**, and rendering absence as
+ * zero is the fabrication this contract exists to make impossible.
+ *
+ * ⚠️ **The object is always present even when all three are `null`** — that is
+ * how a caller tells *nothing said* from *not asked*, the same distinction
+ * `SearchCoverage` draws one read away.
+ */
+export interface AccountCommercial {
+  open_acv: Money | null;
+  renewal_date: string | null;
+  stage: CommercialStage | null;
+}
+
+/** ⛔ **Never a bare number** — 📁 ADR-0409 §3: *"a figure without its currency
+ * is not a fact."* ⚠️ **`amount` is in the source system's own minor units,
+ * uninterpreted**, and Signora never converts: a rate is applied at a moment,
+ * so a converted figure is correct briefly and wrong permanently. */
+export interface Money {
+  amount: number;
+  currency: string;
+}
+
+/**
+ * Where a relationship stands — **in Signora's word and the customer's**.
+ *
+ * ⚠️ **`position` is `null` when the customer's own stage maps to nothing
+ * canonical.** 📁 The CRM Integrations design shows exactly this: *"214
+ * opportunities now sit in stages Signora treats as unmapped."* ⛔ **Not
+ * unknown, not missing — mapped to nothing, and the screen says so.**
+ *
+ * ⛔ **Never branch on `label`.** It is the customer's word, carried for
+ * display, and they rename it the following week.
+ */
+export interface CommercialStage {
+  position:
+    | 'qualifying'
+    | 'evaluating'
+    | 'negotiating'
+    | 'closed_won'
+    | 'closed_lost'
+    | null;
+  label: string;
 }
 
 export interface AccountIdentity {

@@ -26,6 +26,11 @@ import type { ListedAccount } from '@/lib/api/types';
 function listed(id: string, name: string, over: Partial<ListedAccount['account']> = {}, kind = 'company'): ListedAccount {
   return {
     kind: kind as ListedAccount['kind'],
+    // ⛔ **All three null, deliberately.** ⚡ **This is the state the product
+    // is actually in** — the read path exists and no customer system is
+    // connected — **and a builder that invented an ACV would make the
+    // never-fabricate rule untestable.**
+    commercial: { open_acv: null, renewal_date: null, stage: null },
     account: {
       account_id: id,
       name,
@@ -120,13 +125,19 @@ describe('⚡ columns are configurable and Company is not', () => {
   it('✅ turning a column off removes its header', async () => {
     renderPage();
     const table = await screen.findByRole('table');
-    expect(within(table).getByRole('columnheader', { name: 'Kind' })).toBeInTheDocument();
+    // ⚠️ **`Segment`, not `Kind`.** ⛔ **The default set is the design's now**
+    // — Company · Segment · Open ACV · Renewal · Owner · Tags — **and `Kind`
+    // is available rather than shown**, so a test that turned it off was
+    // turning off a column that was not on.
+    expect(within(table).getByRole('columnheader', { name: 'Segment' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByText(/^Columns · /));
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Kind' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Segment' }));
 
     await waitFor(() =>
-      expect(within(table).queryByRole('columnheader', { name: 'Kind' })).not.toBeInTheDocument(),
+      expect(
+        within(table).queryByRole('columnheader', { name: 'Segment' }),
+      ).not.toBeInTheDocument(),
     );
   });
 

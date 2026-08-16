@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from enum import StrEnum
 from typing import Any
 from uuid import UUID
@@ -40,6 +40,8 @@ from modules.provider_normalization.public import (
     ClaimAttribute,
     ClaimReader,
     ClaimView,
+    CommercialStageValue,
+    MoneyValue,
     SubjectRef,
 )
 
@@ -259,6 +261,76 @@ SEARCH_COVERAGE: dict[EntityKind, "SearchCoverage"] = {
 
 
 @dataclass(frozen=True, slots=True)
+class AccountCommercial:
+    """**What this account is worth to us, and where it stands.**
+
+    📁 [ADR-0409](../../../../docs/architecture/adr/0409-commercial-account-facts.md),
+    ratified 2026-08-12 — *"Signora owns commercial account facts: Open ACV,
+    Renewal, and commercial/opportunity stage."* ⚡ **Three attributes, and
+    this type adds none.**
+
+    ## 🔴 This is a projection, and its rule is stated
+
+    📁 The module's own refusal stands: *"if a downstream module demonstrates
+    it needs a resolved value, that is a projection to design **with its rule
+    stated** — not a convenience method."* ⛔ **`claim_set` is still the
+    evidence read and is untouched.**
+
+    > **The rule: the most recently observed claim wins, per attribute,
+    > independently.**
+
+    ⚡ **Independently, because the three are separate facts.** A CRM that
+    updates a stage without touching the renewal date must not blank the
+    renewal date, which is what resolving them as one record would do.
+
+    ⚠️ **Newest-wins is defensible HERE and would not be for a firmographic
+    attribute.** 📁 [ADR-0401](../../../../docs/architecture/adr/0401-a-customers-crm-is-not-a-provider.md):
+    **a commercial fact is the customer's own system of record describing
+    their own relationship**, not two vendors disagreeing about the world —
+    so *"the latest thing their operator entered"* is the answer, and
+    `NameAgreement`'s dispute machinery would be answering a question nobody
+    is asking. ⛔ **No agreement field, deliberately.**
+
+    ## ⛔ Absence is absence
+
+    📁 ADR-0409 §5: *"a claim is only produced where the provider supplies the
+    fact. Absence is never inferred, defaulted or zero-filled."* **`None`
+    means no source has said**, and a zero ACV would be a figure a seller
+    would act on.
+    """
+
+    #: ⛔ **Never a bare number** — the currency travels or the fact does not.
+    open_acv: MoneyValue | None
+    renewal_date: date | None
+    #: ⚠️ **May carry a label with no canonical position** — the *unmapped*
+    #: state, which the design shows rather than hides.
+    stage: CommercialStageValue | None
+
+    @property
+    def is_known(self) -> bool:
+        """Whether any source has said anything commercial about this account.
+
+        ⚡ **The one predicate a surface needs to tell *"nothing connected"*
+        from *"connected and empty"*** — and it lives here rather than in
+        three `is None` checks repeated per column.
+        """
+        return not (
+            self.open_acv is None and self.renewal_date is None and self.stage is None
+        )
+
+
+#: The attributes `AccountCommercial` is built from, in the order it reads them.
+#:
+#: ⚡ **Declared once so the reads and the type cannot drift.** A fourth
+#: commercial attribute would need an RFC (ADR-0409 §1) and lands here.
+COMMERCIAL_ATTRIBUTES: tuple[ClaimAttribute, ...] = (
+    ClaimAttribute.OPEN_ACV,
+    ClaimAttribute.RENEWAL_DATE,
+    ClaimAttribute.COMMERCIAL_STAGE,
+)
+
+
+@dataclass(frozen=True, slots=True)
 class ListedAccount:
     """One account on a browse page: **who it is, and what kind of thing.**
 
@@ -272,6 +344,13 @@ class ListedAccount:
 
     account: AccountIdentity
     kind: EntityKind
+    #: **What this account is worth and where it stands.** ⚡ **Always present
+    #: as a value, never as an absent field** — a row whose commercial facts
+    #: are all `None` is a row nothing has been said about, and the surface
+    #: renders that as absence. ⛔ **Making the whole object optional would
+    #: collapse *"nothing said"* into *"not asked"***, which is the same
+    #: conflation `SearchCoverage` exists to prevent one read away.
+    commercial: AccountCommercial
     #: When the account first entered the graph. **Carried because the page is
     #: ordered by it** — a cursor derived from anything the row does not hold
     #: would walk a different sequence from the one the page came back in, and
@@ -451,6 +530,69 @@ class GraphQueries:
             for entity_id, found in grouped.items()
         }
 
+    async def commercial(
+        self, workspace_id: UUID, entity_ids: tuple[UUID, ...]
+    ) -> dict[UUID, AccountCommercial]:
+        """What these accounts are worth and where they stand, in **one pass
+        per attribute** over bindings and claims.
+
+        📁 **The rule is `AccountCommercial`'s** — newest claim wins, per
+        attribute, independently.
+
+        ⚡ **Three narrow reads rather than one wide one**, which is the same
+        trade `identities()` already makes for `latest_observed_at`: dropping
+        the attribute filter would pull every claim about every account on the
+        page — every technology, every funding round — to keep three values
+        each.
+
+        ⛔ **Not a loop over rows.** A page of fifty accounts costs three
+        queries, not a hundred and fifty (§14).
+
+        **Every requested id comes back**, carrying an all-`None`
+        `AccountCommercial` when nothing has been said — 📁 the same contract
+        as `AccountMatchGroup`: *the absence of results and the absence of the
+        group represent different business meanings.*
+        """
+        if not entity_ids:
+            return {}
+
+        requested = set(entity_ids)
+        bindings = await self._repository.bindings_for_entities(workspace_id, entity_ids)
+        subjects = _subjects(bindings)
+        owner = {
+            (binding.provider, binding.provider_external_id): binding.entity_id
+            for binding in bindings
+            if binding.entity_id is not None
+        }
+
+        winners: dict[tuple[UUID, ClaimAttribute], ClaimView] = {}
+        for attribute in COMMERCIAL_ATTRIBUTES:
+            for claim in await self._claims.for_subjects(subjects, attribute=attribute):
+                entity_id = owner.get((claim.provider, claim.subject_external_id))
+                if entity_id is None or entity_id not in requested:
+                    continue
+                key = (entity_id, attribute)
+                held = winners.get(key)
+                # The claim id breaks a tie, so two claims observed in the same
+                # instant resolve the same way on every run and every machine.
+                if held is None or (claim.observed_at, str(claim.id)) > (
+                    held.observed_at,
+                    str(held.id),
+                ):
+                    winners[key] = claim
+
+        def won(entity_id: UUID, attribute: ClaimAttribute) -> ClaimView | None:
+            return winners.get((entity_id, attribute))
+
+        return {
+            entity_id: AccountCommercial(
+                open_acv=_money(won(entity_id, ClaimAttribute.OPEN_ACV)),
+                renewal_date=_day(won(entity_id, ClaimAttribute.RENEWAL_DATE)),
+                stage=_stage(won(entity_id, ClaimAttribute.COMMERCIAL_STAGE)),
+            )
+            for entity_id in requested
+        }
+
     async def count_accounts(self, workspace_id: UUID) -> int:
         """How many accounts this workspace holds.
 
@@ -489,14 +631,18 @@ class GraphQueries:
             workspace_id, after=after, limit=limit + 1
         )
         entities = page[:limit]
-        identities = await self.identities(
-            workspace_id, tuple(entity.id for entity in entities)
-        )
+        ids = tuple(entity.id for entity in entities)
+        identities = await self.identities(workspace_id, ids)
+        # **Read for the page, not for the row.** The design's table draws Open
+        # ACV, Renewal and Stage as columns, so the alternative is a request
+        # per row — the N+1 §14 calls a defect at write time.
+        commercial = await self.commercial(workspace_id, ids)
         return AccountPage(
             items=tuple(
                 ListedAccount(
                     account=identities[entity.id],
                     kind=entity.kind,
+                    commercial=commercial[entity.id],
                     created_at=entity.created_at,
                 )
                 for entity in entities
@@ -648,6 +794,25 @@ class GraphQueries:
         """Every decision that bound an identity to this entity, oldest
         first — the full explanation of how it came to be what it is."""
         return await self._repository.decisions_for_entity(workspace_id, entity_id)
+
+
+#: The three decoders, each `None`-tolerant so the projection above reads as
+#: three lines rather than three `if` blocks.
+#:
+#: ⛔ **The decoding itself is NOT here.** `ClaimView` owns it, because the
+#: stored JSON shape is Provider Normalization's and *"reaching into the raw
+#: shape would couple every downstream module to this module's storage"* —
+#: these only carry the absence through.
+def _money(claim: ClaimView | None) -> MoneyValue | None:
+    return claim.as_money() if claim else None
+
+
+def _day(claim: ClaimView | None) -> date | None:
+    return claim.as_day() if claim else None
+
+
+def _stage(claim: ClaimView | None) -> CommercialStageValue | None:
+    return claim.as_stage() if claim else None
 
 
 def _identity(

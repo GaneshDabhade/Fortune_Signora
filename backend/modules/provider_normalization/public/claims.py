@@ -19,7 +19,12 @@ from datetime import date, datetime
 from typing import Any, Protocol
 from uuid import UUID
 
-from modules.provider_normalization.domain.vocabulary import ClaimAttribute
+from modules.provider_normalization.domain.vocabulary import (
+    ClaimAttribute,
+    CommercialStage,
+    CommercialStageValue,
+    MoneyValue,
+)
 
 
 def _as_date(raw: object) -> date | None:
@@ -129,6 +134,73 @@ class ClaimView:
             first_seen=_as_date(self.value.get("first_seen")),
             last_seen=_as_date(self.value.get("last_seen")),
         )
+
+    def as_money(self) -> MoneyValue | None:
+        """The figure a money-valued attribute carries, or None.
+
+        **`OPEN_ACV` today**, and the accessor is named for the shape rather
+        than for the attribute so the next money-valued member needs no second
+        method — the same reason `as_text` is not `as_country`.
+
+        **Both halves or nothing.** `MoneyValue` requires an amount *and* a
+        currency ([ADR-0409](../../../../docs/architecture/adr/0409-commercial-account-facts.md)
+        §3: *"a figure without its currency is not a fact"*), so a stored
+        object missing either yields None rather than a half-built value a
+        caller would render as a bare number.
+        """
+        if self.attribute is not ClaimAttribute.OPEN_ACV:
+            return None
+        if not isinstance(self.value, dict):
+            return None
+        amount, currency = self.value.get("amount"), self.value.get("currency")
+        # `bool` is an `int` in Python, and `True` is not an amount.
+        if not isinstance(amount, int) or isinstance(amount, bool):
+            return None
+        if not isinstance(currency, str):
+            return None
+        return MoneyValue(amount=amount, currency=currency)
+
+    def as_day(self) -> date | None:
+        """The day a date-valued attribute names, or None.
+
+        Reuses the module's own ISO decoding, which returns None on a
+        malformed string rather than raising — *"the claim itself is still
+        evidence"*.
+        """
+        if self.attribute is not ClaimAttribute.RENEWAL_DATE:
+            return None
+        return _as_date(self.value)
+
+    def as_stage(self) -> CommercialStageValue | None:
+        """The commercial position, **and the tenant's own word for it**, or None.
+
+        ⚠️ **`position` may legitimately be absent while `label` is present.**
+        That is the *unmapped* state the CRM Integrations design shows,
+        counts and acts on — *"214 opportunities now sit in stages Signora
+        treats as unmapped"* — so an unrecognised position decodes to
+        `position=None` **with the label intact**, never to None overall.
+        ⛔ **Coercing an unknown tenant stage into the nearest canonical one
+        is the invention ADR-0409 exists to prevent.**
+
+        **The label is required**, because it is the half a screen shows.
+        """
+        if self.attribute is not ClaimAttribute.COMMERCIAL_STAGE:
+            return None
+        if not isinstance(self.value, dict):
+            return None
+        label = self.value.get("label")
+        # Blank is refused here rather than left to the constructor: a stored
+        # claim is untrusted input, and a read surface must not raise on one.
+        if not isinstance(label, str) or not label.strip():
+            return None
+        raw = self.value.get("position")
+        position = None
+        if isinstance(raw, str):
+            try:
+                position = CommercialStage(raw)
+            except ValueError:
+                position = None
+        return CommercialStageValue(position=position, label=label)
 
 
 class ClaimReader(Protocol):
