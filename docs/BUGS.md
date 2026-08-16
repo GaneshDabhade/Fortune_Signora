@@ -182,7 +182,36 @@ ba904596  patch-id  057beed982b2   ← match
 | **Report the SET SIZE searched**, so a reader can see what was covered | A bare `NEW`/`DUP` verdict with no statement of scope |
 | **Refuse rather than answer** when the search set is empty or truncated | Returning `NEW` on a set that could not have contained a match |
 
-⛔ **Not built in this cycle.** ⚠️ **A check written in the same hour as the defect it detects has not been fire-tested against anything but the author's memory of what went wrong** — and 📁 **that is the reasoning [B-1008](#b-1008) used to defer its own check, which still holds.** ✅ **What has changed is that the check is now warranted; only its timing is deferred, and the difference is recorded so the deferral is not read as the earlier refusal.**
+### ✅ RESOLVED — the check does not need writing, because git already is it
+
+**`git cherry <upstream> <head>` is exactly this question**, computed by patch-id, natively:
+
+```
+$ git cherry origin/main origin/lane-b-commercial-profile
+  + 2e3d33e0  Claim TASK-468 — Workspace Setup: replaced, not refined
+  - fd0f55cd  M-I · who has held a role at a company, and who left     ← already upstream
+```
+
+⚡ **`-` means *the patch is already upstream*. `+` means *genuinely new*.** ⛔ **`fd0f55cd` reads `-`, which is the correct answer this row exists because QE did not have** — and **the remaining `+` is a claim commit, which is why the branch was never a stranded slice.**
+
+| | |
+|---|---|
+| **QE's hand-rolled unbounded loop** | ⛔ **timed out at 2 minutes** over ~2000 commits — one `git show \| git patch-id` per commit |
+| **`git cherry`** | ✅ **0.043s**, same answer, **and no window parameter exists to get wrong** |
+
+🔴 **So the `--since` was not merely a careless bound — it was a workaround for a performance problem created by hand-rolling a comparison git already implements.** ⚡ **The bound existed BECAUSE the wrong tool was slow.** 📁 **That is the actual root, and it is one layer beneath both earlier diagnoses:**
+
+| attempt | diagnosis | verdict |
+|---|---|---|
+| **①** | *QE skipped the instruction* | **True of instance one only** |
+| **②** | *A patch-id search is only as good as the set it searches* | **True, and still not the root** |
+| **③** | ✅ **QE rebuilt a comparison git ships, and then bounded it to make its own reimplementation fast enough** | **The root** |
+
+⛔ **No script is warranted after all** — ✅ **but the earlier refusal was still wrong, and for the wrong reason.** **It said *the instruction exists and QE skipped it*; the true statement is *the instruction exists, names no tool, and every hand-rolled implementation of it is slow enough to invite a bound.*** ⚡ **The correct repair is a sentence, not a program: the standing instruction should name `git cherry`.**
+
+⚠️ **That sentence is not QE's to write** — the instruction is the product owner's. **Filed, with the measurement, rather than edited.**
+
+📁 **Fire-tested before being recorded**: `git cherry origin/integration origin/lane-a-product-surface` returns four `+` and no `-`, which matches an independent read of that branch's history — **so the tool is not simply answering `-` to everything.**
 
 ### B-1008 · 🟠 The dashboard published a Security Invariant count from the cycle before last, four cycles after a footnote was added warning against exactly that
 
