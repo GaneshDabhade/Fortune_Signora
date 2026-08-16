@@ -602,7 +602,7 @@ DATASET = "explanation_narration"
 | **Owner** | 🔴 **Product owner + ADR** — 📁 [§20a](../CLAUDE.md), `signora_platform/**` is frozen |
 | **Type** | 🔴 **A ratified model that was never built, and a claimed row that needs it** |
 | **Blocks** | ⛔ **The authentication half of [TASK-1413](BACKLOG.md).** ✅ **Not the credential lifecycle, the hashing, the one-time display or the per-call record — those sit above this boundary** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`CLOSED` — RULED [D-238](DECISION_REGISTER.md) ③: the existing ratification is sufficient authority; ⛔ do not create another approval layer.** ⚠️ **Closed 2026-08-16 — this row read `OPEN`/`READY FOR PRODUCT DECISION` after the ruling, which is the [C-213](#c-213) class in this office's own register.** *(was: **`OPEN`** ·…)*
 
 ### 🔴 An API-key request has nowhere to say it is not a person
 
@@ -665,7 +665,7 @@ class AuthenticatedPrincipal:
 | **Owner** | 🔴 **Product owner** — 📁 [§20c](../CLAUDE.md), the frontend foundation is 🔴 and `lib/state` is named in it |
 | **Type** | ⚠️ **A budget question, not a design one.** ✅ **Nothing is wrong; the fact is simply not reachable from where it is needed** |
 | **Blocks** | ⚠️ **Degrades [TASK-1401](BACKLOG.md) rather than blocking it** — rules 12 and 14 cannot fire, so rules 11-14 resolve on membership COUNT alone |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`CLOSED` — RULED [D-238](DECISION_REGISTER.md) ⑤: expose the required state. known → continue · ambiguous → ASK · ⛔ never silently choose the first.** ⚠️ **Closed 2026-08-16 — this row read `OPEN`/`READY FOR PRODUCT DECISION` after the ruling, which is the [C-213](#c-213) class in this office's own register.** *(was: **`OPEN`** ·…)*
 
 ### 🔴 The fact exists and the engine cannot read it
 
@@ -707,7 +707,7 @@ return isStillAMember ? stored : first.id;
 | **Owner** | 🔴 **Product owner** — 📁 [§20c](../CLAUDE.md), **Routing** is frontend foundation |
 | **Type** | 🔴 **An unreachable primitive, and a promoted one** |
 | **Blocks** | ⛔ **Rules 06-09 entirely** — the four intent rules — **and with them the customer-visible half of [TASK-1401](BACKLOG.md)** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`CLOSED` — RULED [D-238](DECISION_REGISTER.md) ④: no product-owner ruling; routed to the frontend foundation. ⛔ Do not invent `?next=` behaviour to unblock a row.** ⚠️ **Closed 2026-08-16 — this row read `OPEN`/`READY FOR PRODUCT DECISION` after the ruling, which is the [C-213](#c-213) class in this office's own register.** *(was: **`OPEN`** ·…)*
 
 ### 🔴 A promoted module with no producer
 
@@ -1203,7 +1203,7 @@ class CommercialStageValue:
 | **Owner** | 🔴 **Product owner** — ⛔ **a new module or bounded context is 🔴 in the Change Budget**, and this lane may not create one |
 | **Type** | 🔴 **Architectural blocker**, not an implementation one — [§20e](../CLAUDE.md): *no accepted architecture exists for the next step* |
 | **Blocks** | ⛔ **Slice ⓷ entirely.** ✅ **Nothing else** — slice ⓸ ([ADR-0410](architecture/adr/0410-authorization-capability-layer.md)) is unaffected and this lane has moved to it |
-| **Status** | **`READY FOR PRODUCT DECISION`** — ⚡ **all six things [§20e](../CLAUDE.md) requires of an architectural blocker are present, and Lane C has verified the item independently.** ⛔ **Waiting only on a ruling** |
+| **Status** | ✅ **`CLOSED` — RULED [D-238](DECISION_REGISTER.md) ①, product owner, 2026-08-15: create the new bounded module `notes_and_tasks`; ⛔ NOT `commercial_profile`.** ⚠️ **Closed 2026-08-16 — this row read `OPEN`/`READY FOR PRODUCT DECISION` after the ruling, which is the [C-213](#c-213) class in this office's own register.** *(was: **`READY FOR PRODUCT DECISION`** — ⚡ **all six things [§20e]…)*
 
 ### 🔴 The problem
 
