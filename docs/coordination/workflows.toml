@@ -294,7 +294,22 @@ design = "Fortune Signora App Shell.dc.html"
 # ⚡ D-226 §5 — was five rows; SEVENTEEN name this workflow in BACKLOG.md.
 #   Measured by parsing the rows, not by recall. TASK-1457 is excluded: it
 #   is WITHDRAWN as a duplicate of TASK-440.
-tasks  = ["TASK-447", "TASK-480", "TASK-481", "TASK-482", "TASK-1408", "TASK-1439", "TASK-1440", "TASK-1441", "TASK-1442", "TASK-1443", "TASK-1444", "TASK-1445", "TASK-1446", "TASK-1447", "TASK-1448", "TASK-1449", "TASK-1450", "TASK-1451", "TASK-1452", "TASK-1453", "TASK-1456"]
+# 🔴 2026-08-16 — SIX MORE, and they were missing for four days (B-431). Found
+#   by answering "how many Application Shell rows are pending?" from the
+#   registry and then re-deriving the set from BACKLOG.md rather than trusting
+#   the answer. TASK-1458, 1461, 1462, 1463, 1470, 1471 all name
+#   `Fortune Signora App Shell.dc.html` as their DESIGN AUTHORITY and were in
+#   no workflow at all. Every one is PROMOTED, so the omission cost nothing —
+#   ⛔ which is exactly why nothing reported it.
+#   ⚠️ TASK-466/469/470/471 are deliberately NOT added: they say they RENDER
+#   inside the shell, which is a dependency, not membership. The predicate is
+#   "whose design authority is the App Shell", never "what mentions it".
+# 🔴 And TASK-495 is added here as well as to workflow 17. It is the
+#   Notification Center's vendor row AND, since 2026-08-16, the row that
+#   delivers the shell's Slot 4 bell — so the shell has pending work that this
+#   registry could not see. A row can serve two workflows; a registry that
+#   assumes it cannot will under-report one of them.
+tasks  = ["TASK-447", "TASK-480", "TASK-481", "TASK-482", "TASK-495", "TASK-1408", "TASK-1439", "TASK-1440", "TASK-1441", "TASK-1442", "TASK-1443", "TASK-1444", "TASK-1445", "TASK-1446", "TASK-1447", "TASK-1448", "TASK-1449", "TASK-1450", "TASK-1451", "TASK-1452", "TASK-1453", "TASK-1456", "TASK-1458", "TASK-1461", "TASK-1462", "TASK-1463", "TASK-1470", "TASK-1471"]
 owner  = "Lane A"
 # ⛔ 487 scores this shell at 0 of 29 distinctive phrases and EVERY screen
 # renders inside it. It is priority 5 under D-155 and that is the product
@@ -325,7 +340,15 @@ owner  = "Lane A"
 name   = "Notification Center"
 state  = "planned"
 design = "Fortune Signora Notification Center.dc.html"
-tasks  = ["TASK-480"]
+# 🔴 2026-08-16 — TASK-495 was in NO workflow, and it is this one's vendor row.
+#   ⚡ It also carries the shell's Slot 4 bell since the decomposition that day,
+#   so it is listed under workflow 13 as well. ⛔ The design measured rather
+#   than assumed: SEVEN sections, four channels (In-app · Email · Slack ·
+#   Mobile), digests, alert rules, quiet hours, and a delivery log of every
+#   attempt including the failures. TASK-495 delivers the IN-APP channel and
+#   the port; the other three channels are what this workflow still needs
+#   decomposing for, and C-1436 records why the vendor is not TASK-495's.
+tasks  = ["TASK-480", "TASK-495"]
 owner  = "Lane A"
 unblocked = "⚡ D-172 §2, 2026-08-08 — decomposition proceeds on the Design System. Only genuinely undefined notification CONTENT and prioritisation become a recommendation package; incomplete visual detail no longer blocks."
 
