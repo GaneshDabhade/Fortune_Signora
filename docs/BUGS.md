@@ -90,6 +90,41 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-1007 · 🟠 QE based a Closeout on `integration` rather than the certified commit, and three planning commits reached `main` outside any snapshot
+
+| | |
+|---|---|
+| **Module** | **QE process** — Repository Closeout, branch sequencing |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — ⛔ **nothing executable reached `main`.** **All three are `docs/coordination/*.toml`, and they fail the Closeout test on the SUFFIX alone.** ⚠️ **But `--audit-main` refuses, and the guarantee it states is the repository's central release claim** |
+| **Status** | 🔵 **`OPEN`** — ⛔ **`main` is NOT being rewritten** |
+| **Found** | **2026-08-16**, by `--audit-main` immediately after cycle 236's Closeout |
+| **Commit found** | **`c0c3a5b7`** |
+
+### 🔴 What I did
+
+**I rebased `lane-qe` onto `origin/integration` — which had moved past the pinned snapshot — and then fast-forwarded `main` to `lane-qe`.** ⛔ **So `main` gained everything on `integration`, not just the Closeout.**
+
+✅ **The correct sequence is to base the Closeout on the CERTIFIED commit**, so the only thing `main` gains after a promotion is the Closeout itself.
+
+**Nine commits reached `main` beyond `9879f715`. Six are Closeout-legal. Three are not, and every one fails ONLY on `docs/coordination/*.toml`:**
+
+```
+a1e3841a  TASK-1482 — the legacy Attention rail entry
+9a699382  I released a blocked row on a text match
+9b159ea2  D-238 — eight rulings
+```
+
+⚡ **That is [B-1005](#b-1005) realised on `main` rather than in a cycle decision** — **the classifier does not know `.toml`, so a documentation-only planning commit cannot be absorbed as a Closeout.**
+
+### ⚠️ It self-heals, and that is a reason to record it rather than to relax
+
+📁 **All three are ancestors of `origin/integration`, so the NEXT certified commit makes them ancestors of a certified tip on `main` and the audit reclassifies them as in-snapshot.** ⛔ **The refusal will disappear without anybody fixing anything**, which is exactly why it needs a row: **a violation that heals silently is one nobody learns from.**
+
+### ⛔ What I am not doing
+
+**Rewriting `main`.** 📁 **Every commit on it is a record other sessions have read, and falsifying history to make an audit green is the failure `CLAUDE.md` §2 names in its own words** — *"a record of what was true then must not be rewritten to match now."* ⚡ **The audit is right that these three arrived outside a snapshot. The honest repair is the sequencing, not the history.**
+
 ### B-1006 · 🟠 `--audit-main` audits a REF using the manifest from whatever tree you are standing in, and refuses when they disagree
 
 | | |
