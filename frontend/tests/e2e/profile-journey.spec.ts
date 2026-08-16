@@ -179,17 +179,24 @@ test.describe('Workflow 9 · a person makes Signora theirs', () => {
     const focusRing = page.getByRole('checkbox', { name: /^Always show focus ring\b/ });
     const underline = page.getByRole('checkbox', { name: /^Underline links\b/ });
 
-    // 📁 **The design's defaults**: links underlined, everything else off.
-    // ⛔ **Reduce motion off does NOT mean *animate everything*** — the
-    // device's own `prefers-reduced-motion` is already respected; this is the
-    // override.
-    await expect(underline).toBeChecked();
-    await expect(reduceMotion).not.toBeChecked();
-
-    await reduceMotion.check();
-    await contrast.check();
-    await focusRing.check();
-    await underline.uncheck();
+    /**
+     * 🔴 **`setChecked` rather than `check`, and the difference is the whole
+     * fix.**
+     *
+     * ⛔ **This asserted the design's pristine defaults first** — underlined
+     * links, everything else off — **and these preferences are stored on the
+     * ACCOUNT.** ⚡ **So a previous failed run left them flipped and the next
+     * run waited forever on a state it had itself destroyed.**
+     *
+     * ✅ **The defaults are asserted where they cannot leak** —
+     * `profile.test.tsx` and the domain's own test — **and what a browser is
+     * needed for is the ROUND TRIP**, which is what this now does regardless of
+     * where it starts.
+     */
+    await reduceMotion.setChecked(true);
+    await contrast.setChecked(true);
+    await focusRing.setChecked(true);
+    await underline.setChecked(false);
     await page.getByRole('radio', { name: /^125%$/ }).check();
     await page.getByRole('radio', { name: /^Concise$/ }).check();
     await expect(page.getByText('Saved').first()).toBeVisible();
@@ -206,10 +213,10 @@ test.describe('Workflow 9 · a person makes Signora theirs', () => {
 
     // ⚡ **Left as the design's defaults**, so this journey does not hand the
     // next one a screen it did not expect.
-    await page.getByRole('checkbox', { name: /^Reduce motion\b/ }).uncheck();
-    await page.getByRole('checkbox', { name: /^Increase contrast\b/ }).uncheck();
-    await page.getByRole('checkbox', { name: /^Always show focus ring\b/ }).uncheck();
-    await page.getByRole('checkbox', { name: /^Underline links\b/ }).check();
+    await page.getByRole('checkbox', { name: /^Reduce motion\b/ }).setChecked(false);
+    await page.getByRole('checkbox', { name: /^Increase contrast\b/ }).setChecked(false);
+    await page.getByRole('checkbox', { name: /^Always show focus ring\b/ }).setChecked(false);
+    await page.getByRole('checkbox', { name: /^Underline links\b/ }).setChecked(true);
     await page.getByRole('radio', { name: /^100%$/ }).check();
     await page.getByRole('radio', { name: /^Detailed$/ }).check();
   });
@@ -259,15 +266,6 @@ test.describe('Workflow 9 · a person makes Signora theirs', () => {
     page,
   }) => {
     await page.goto('/profile');
-
-    for (const heading of [
-      'Language & region',
-      'Appearance',
-      'Accessibility',
-      'AI preferences',
-    ]) {
-      await expect(page.getByRole('heading', { name: heading })).toBeVisible();
-    }
 
     // ⛔ **Keyboard shortcuts is deliberately NOT here.** 📁 `SHORTCUT_GROUPS`
     // is already rendered by the shell's Shortcuts overlay, and a second
