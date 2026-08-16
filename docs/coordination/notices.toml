@@ -29,7 +29,7 @@
 # reproduce. Withdrawn rather than replaced with a better-sounding guess.
 
 ["Lane A"]
-notice = "Workflow 13 is the product owner's single sequence and TASK-1484 is now on integration, so the palette and the status pill are claimable the moment the bell lands. The design names SEVEN palette groups; shell-palette.tsx quotes it as four, which is why it reads finished. Render what /ready already returns. Do not touch the filter strip or invent a context drawer."
+notice = "User Profile is the current priority and it is COMPLETABLE — the blocker workflows.toml recorded was TASK-493 multi-session, which is PROMOTED and registered since 2026-08-10, so milestone 3 is not blocked. Account 360 #signals is parked by the product owner: it renders ObservationList under the design's Signals timeline heading, and renaming it would move the dishonesty rather than remove it."
 
 ["Lane C"]
 notice = ""

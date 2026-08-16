@@ -13,7 +13,7 @@ generated_from = "b669e54"
 task_count     = 56
 
 [lane.Lane_A]
-notice             = "Workflow 13 is the product owner's single sequence and TASK-1484 is now on integration, so the palette and the status pill are claimable the moment the bell lands. The design names SEVEN palette groups; shell-palette.tsx quotes it as four, which is why it reads finished. Render what /ready already returns. Do not touch the filter strip or invent a context drawer."
+notice             = "NOTICE WITHHELD — it asserted a task state ('is PROMOTED'), which only BACKLOG.md may do (D-144, B-216). Read the backlog on origin/integration for state; read queues/lane-*.toml for reasoning."
 backlog            = ["TASK-421", "TASK-1416", "TASK-1424", "TASK-1478", "TASK-1484"]
 assigned_total     = 47
 claimable          = 5
@@ -40,11 +40,11 @@ claimable_now      = 1
 awaiting_sync      = 0
 in_flight          = 2
 actionable         = 1
-awaiting_qe_transition = 2
+awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 3
-lane_utilization   = 0.0
+lane_utilization   = 0.4
 idle_prediction_days   = 0.1
 dependency_wait_days   = 3.3
 blocked_duration_days  = 3.3

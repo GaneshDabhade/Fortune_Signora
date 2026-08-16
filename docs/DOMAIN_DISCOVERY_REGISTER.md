@@ -215,6 +215,24 @@
 | **R-03 built five times** | **Five definitions of *applied*, five windows, and unpickable afterwards** — each copy load-bearing for its own screen |
 | **AI memory or caching** | ⛔ **Would reverse Statelessness and silently invalidate grounding** |
 
+### 🔀 A screen presenting a different domain object under the design's heading — Account 360 `#signals`
+
+**Recorded 2026-08-16, product owner's instruction. ⛔ PARKED. Not a task, not an ADR, not a backlog row, and it must not become one** — 📁 [D-076](DECISION_REGISTER.md): *"a row is never a task."*
+
+⚠️ **Classified HYBRID, not PARTIAL, and the reclassification is the finding.** ⛔ **The [Account 360 conformance audit](https://claude.ai/code/artifact/5e203c9c-6f6e-49b5-9bf6-f6fbb618bc05) had this section as *partially implemented*, which was too kind: a thin section is missing fields, and this one is showing something else.**
+
+| | |
+|---|---|
+| **Design** | 📁 **`Fortune Signora Account 360.dc.html` §`#signals` — *Signals timeline*.** Per event: **`title` · `tag` · `when` · `action` · `body` · `source`** |
+| **Current implementation** | ⛔ **`ObservationList`, under the heading *"What changed"*** — 📁 [`accounts/[accountId]/page.tsx:779`](../frontend/app/(app)/accounts/[accountId]/page.tsx). ⚡ **An observation is a *reading*; a signal is a *detected event*. Different domain objects, different modules** |
+| **Contract** | 📁 [`signal_engine/interface/triage_schemas.py:86`](../backend/modules/signal_engine/interface/triage_schemas.py) — **`QueueEntryResponse`**: `signal_id` · `signal_type` · `entity_id` · `rationale` · `state` · `resolution`. ⚠️ **Measured, and it is not in `schemas.py`** — the module splits its interface schemas, which is why a `modules/*/interface/schemas.py` sweep reports it absent |
+| **Missing capability** | ⛔ **`when`** *(no timestamp)* · ⛔ **`source`** *(no provenance — the design wants *"Call intelligence · Vantage QBR · 52 min"*)* · ⛔ **`action`** *(no suggested next step)* · ⚠️ **`tag`** *(`signal_type` is the nearest and is not the design's Risk/Buying/Competitive banding)*. ✅ **Two of six meet: `title` from the catalog, `body` from `rationale`** |
+| 🔴 **Conclusion** | ⛔ **This cannot honestly be closed by renaming the existing section.** ⚡ **Relabelling `ObservationList` as *Signals timeline* without the four missing fields would move the dishonesty rather than remove it** — **the heading would then be accurate and the content would not** |
+
+> ⚡ **Found by Lane A, measured against the shipped contracts before selecting their next slice, and reported rather than filed.** ✅ **The general form is worth more than the instance: a section can be design-conformant in its heading and wrong in its subject, and a section-level audit cannot see it — only a field-level one can.**
+
+⛔ **Parked deliberately.** 📁 **Product owner, 2026-08-16: *"Do not ask Lane A to build the missing Signals capability simply because the design shows it… we can select the next workflow based on what can actually be completed, rather than accumulating partially implemented sections."***
+
 ### 📐 Sequencing improvements
 
 **R-00 ahead of [TASK-406](BACKLOG.md)'s backtest** · **R-01 at wave 1.5** ✅ ruled · **R-05's first consumer named as the shell** · **[TASK-426](BACKLOG.md) before any named-person work** · **[TASK-901](BACKLOG.md) before any new timeline projection.**
