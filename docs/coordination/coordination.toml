@@ -20,7 +20,7 @@ claimable          = 7
 claimable_now      = 6
 awaiting_sync      = 1
 in_flight          = 20
-actionable         = 6
+actionable         = 5
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
@@ -710,7 +710,7 @@ on_integration = true
 id            = "TASK-480"
 title         = "The notification platform"
 state         = "IN FLIGHT"
-declared      = "CLAIMED"
+declared      = "IN VALIDATION"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
@@ -720,7 +720,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-489"
