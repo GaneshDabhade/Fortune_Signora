@@ -2676,6 +2676,30 @@ A  backend/migrations/versions/0060_webhook_delivery.py
 
 📁 **That is the general form and it is worth more than this item**: **a task row names its registry, so the registry is what gets read** — and a registry that is wrong is therefore read *more* often than the constitution it contradicts, not less.
 
+### ⛔ HELD OUT OF `integration` while this is unruled — and the hold is agreed, not imposed
+
+**`origin/lane-c-sync` = `a3f48681`, 3 ahead / 0 behind, fast-forwardable, and NOT taken.** It still carries:
+
+```
+M  backend/signora_platform/event_bus/__init__.py
+M  backend/signora_platform/event_bus/models.py
+A  backend/signora_platform/event_bus/webhook_delivery.py
+A  backend/signora_platform/event_bus/webhook_repository.py
+A  backend/migrations/versions/0060_webhook_delivery.py
+```
+
+⚡ **`integration` requires no certification — but it is the ref every lane pulls, and the next executable cycle certifies and promotes whatever sits on it.** ⛔ **So holding these out is the only thing that keeps this ruling meaningful.** ✅ **Nothing is lost: three commits, sound work, wrong location, costing nobody anything until this is answered.** 📁 **Lane C's words: *"not a compromise I am accepting — the correct call."***
+
+### ⚡ A rule earned while filing this item, and it is Lane C's second correction of QE today
+
+**Lane C reported *"3 ahead / 0 behind, ff-able"* while QE measured `7 ahead / 5 behind, ff NO`.** ⛔ **QE handed back Lane C's own morning rule — *"report a ref comparison with the SHA you compared against"* — and it does not fit.**
+
+📁 **They HAD compared against `e4c6be48`, the same SHA QE names.** ⚡ **They had rebased and not pushed, so they reported the state of a ref nobody else can read.** ⛔ **Naming the SHA would have made the message MORE convincing and no more true.**
+
+> ⚡ **Report the ref the reader can act on, not the one you are standing on.**
+
+📁 **Same shape as [B-1006](BUGS.md)** — `--audit-main` answering about a **ref** using the manifest in whichever **tree** it stands in — **and the same shape as this morning's notice channel, where the office believed it had routed something it had not.** ⛔ **Three instances, one cause: reporting your own side of a thing whose whole purpose is to be seen from the other side.**
+
 ### ⚡ The three answers that would each settle it
 
 **①** `modules.toml` is right — **amend `CLAUDE.md` §20e so D-022's grant names `signora_platform/` rather than `simulation/**`.**
