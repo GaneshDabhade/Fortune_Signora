@@ -57,7 +57,7 @@ export function AccountsToolbar({
   return (
     <div
       data-testid="accounts-toolbar"
-      className="mb-4 flex flex-col gap-3 border-b border-border pb-4"
+      className="mb-4 flex flex-col gap-3 border-b border-border-soft pb-4"
     >
       <div className="flex flex-wrap items-center gap-2">
         {/* 📁 *"Table · Cards · Board"* — ⛔ **Board is absent**: it groups by a
@@ -175,7 +175,7 @@ export function AccountsToolbar({
           <summary className="cursor-pointer text-content-muted">
             Columns · {chosen.size} of {COLUMNS.length}
           </summary>
-          <div className="mt-2 flex flex-col gap-1 rounded border border-border bg-surface p-2">
+          <div className="mt-2 flex flex-col gap-1 rounded border border-border-soft bg-surface p-2">
             {COLUMNS.map((column) => (
               <label key={column.id} className="flex items-center gap-2 text-content">
                 <input
