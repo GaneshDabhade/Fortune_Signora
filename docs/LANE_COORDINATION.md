@@ -2611,7 +2611,47 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 | **Raised by** | **QE**, 2026-08-16, building cycle 241's candidate |
 | **Owner** | **Product owner** — 🔴 `signora_platform/**` is the Change Budget's red tier: *product owner + ADR* |
 | **Blocks** | ⛔ **Nothing today.** `origin/lane-c-sync` is **not fast-forwardable** for unrelated reasons, so no work waits on this answer. ⚡ **Raised now precisely BECAUSE nothing is blocked** — the alternative is discovering it while a lane is waiting |
-| **Status** | 🔵 **`READY FOR PRODUCT DECISION`** — the measurement is complete and the question is one only the product owner may answer |
+| **Status** | 🟡 **`GOVERNANCE / DOCUMENTATION CONFLICT` — reclassified by the product owner, 2026-08-16.** ⛔ **NOT an implementation blocker, and it must not be allowed to block unrelated work.** 📁 ***"Record C-108 as a governance/documentation conflict, not as an implementation blocker. Lane A can continue with its assigned executable work."*** ⚠️ **QE flags it wherever certification depends on ownership and otherwise continues** |
+| **Standing instruction** | ⛔ **Do not change `modules.toml` ownership.** ⛔ **Do not reassign platform modules on inference.** ⛔ **Do not revive Lane C's implementation ownership merely because `modules.toml` currently says Lane C.** ⛔ **Do not re-measure this conflict** — it is established by three concrete artifacts and re-confirming it is waste |
+
+### 📌 The exact files and lines that disagree — pinned, so nobody re-derives them
+
+| artifact | line | what it says |
+|---|---|---|
+| [`CLAUDE.md`](../CLAUDE.md) | **`:600`** | Lane C builds `infra/**` · the `Makefile` · profiles · launchers · doctor · the demo lifecycle · **`signora_platform/simulation/**`** |
+| [`CLAUDE.md`](../CLAUDE.md) | **`:613`** | *"`signora_platform/` stays frozen (§20a) **except `simulation/`**"* |
+| [`CLAUDE.md`](../CLAUDE.md) | **`:1221`** | 🔴 **Red** — `signora_platform/**` → **product owner + ADR** |
+| [`modules.toml`](coordination/modules.toml) | **`:441`–`:442`** | `current_owner = "Lane C"` · `future_owner = "Lane C"` |
+| [`modules.toml`](coordination/modules.toml) | *(same block)* | `paths = ['infra/', 'Makefile', '`**`backend/signora_platform/`**`', 'backend/tests/playground/']` |
+| [`DECISION_REGISTER.md`](DECISION_REGISTER.md) | **`:227`** — **D-230**, 2026-08-12 | ① `platform_foundation` and `apps` **move Lane C → Lane A** · ④ *"Lane C retains NO implementation module… and builds nothing"* · ⑤ *"D-022 is superseded in its Platform Foundation half only"* |
+| [`DECISION_REGISTER.md`](DECISION_REGISTER.md) | **`:228`** — **D-240 §2**, 2026-08-16 | *"LANE C OWNS `platform_foundation`. §20e is the authority; `modules.toml` is corrected to match and TASK-1481 unblocks."* |
+
+### ⚠️ The framing corrected — both are the product owner's, and the later one is not a mistake
+
+**QE's first account read as *D-240 reverted D-230 in error*. That is not fair to either ruling.** ⛔ **Both are product-owner decisions and D-240 is the LATER one**, so by date it governs.
+
+⚡ **What is genuinely unresolved is narrower: D-240 §2 cites `CLAUDE.md` §20e as its authority, and §20e at `:600` and `:613` still describes D-022's arrangement** — **because D-230 ⑤ superseded D-022's platform half and nobody amended §20e.** ⛔ **So the later ruling rests on a document the earlier ruling had made stale, and no artifact records whether that was intended.**
+
+📁 **That is the whole of the question, and it is the product owner's alone**: **did D-240 §2 mean to supersede D-230 ①, or was it correcting a registry against a document that should itself have been corrected?**
+
+### 🔴 The general property this exposes, which outlives the instance
+
+> ⛔ **A product-owner ruling that exists only in a planning artifact, and is never written into the canonical document the lanes consume, can later be silently reversed** — **by somebody reading the canonical document correctly.**
+
+⚠️ **It has now happened twice in four days from one ruling.** 📁 **D-230 ② moved four Lane B rows to Lane A on 2026-08-12; on 2026-08-16 three still named Lane B** ([TASK-300](BACKLOG.md), [TASK-406](BACKLOG.md), [TASK-205](BACKLOG.md)) — **found only because the Lane B retirement made QE look.** ⚡ **Same mechanism, different artifact: the ruling was real and the document lanes read never learned of it.**
+
+### ✅ What must happen once ownership is settled — and it is NOT QE's to do
+
+📁 **Product owner, 2026-08-16: *"Do not make that amendment as an implicit QE decision."***
+
+**Whichever way it resolves, the canonical source must be made consistent so this cannot recur:**
+
+**①** **D-230's supersession is explicit if D-230 governs.**
+**②** **`CLAUDE.md` §20e no longer describes the superseded ownership** — `:600` and `:613` are the lines.
+**③** **`modules.toml` and the planning documents agree.**
+**④** **Future lane assignment cannot be reconstructed differently from different artifacts.**
+
+
 
 ### 🔴 The contradiction, measured
 
