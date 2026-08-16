@@ -2842,6 +2842,21 @@
 | ⚠️ **Risk, named before it is met** | ⛔ **The design shows a workspace with SSO, SCIM, 312 seats and five roles. None of that exists.** ✅ **The row renders what the platform can answer and states the rest as absent** — **the class this lane has now refused six times** |
 | **Build-vs-Buy** | ✅ **n/a for the surface; SSO/SCIM are Better Auth, ratified** |
 
+### TASK-1483 · Account 360's Opportunities section — the contract already works
+
+| | |
+|---|---|
+| **Status** | ✅ **`READY` — Lane C, 2026-08-16, on the product owner's prioritization direction.** ⚡ **P1: the one missing Account 360 section whose data contract EXISTS and is ALREADY FETCHED on the page** |
+| **Module** | **`product_surface`** — frontend only |
+| **Design authority** | 📁 **[`Fortune Signora Account 360.dc.html`](design-snapshot/MANIFEST.md)** — the `#opps` section, `pageNav` entry *Opportunities*. ⛔ **Read it; this row does not restate it** |
+| ✅ **Why this one and not the other twelve** | ⚡ **`useAccountOpportunity(...)` is already imported at `page.tsx:54` and called at `:153`, and its data already renders inside the summary at `:385` and `:497`.** ⛔ **So this is PRESENTATION, not a new contract, not a new endpoint and not new data.** 📁 **The other twelve each need something that does not exist: four need `notes_and_tasks` ([TASK-1479](#task-1479) ⓷), three are behind [C-210](LANE_COORDINATION.md)'s People deferral, four need providers that are not integrated, and `history` is [C-1430](LANE_COORDINATION.md)'s** |
+| ⛔ **NOT covered by an existing row — checked** | 📁 **[TASK-1469](#task-1469--opportunity-intelligence--the-deal-record-the-design-draws-and-the-product-does-not-have) is a DIFFERENT SCREEN** — the Opportunity Intelligence deal record, `SEQUENCED` on a genuinely unmet prerequisite *(no `Deals` route, no deal to open)*. ⚡ **Its own text says the nine intelligence components on `/accounts/[accountId]` are *"most likely Account 360's"*, which is the same separation read from the other side.** ⛔ **[TASK-1476](#task-1476) is `PROMOTED` and named the thirteen as not-started; it did not schedule any of them** |
+| ✅ **What to build** | **The `#opps` section in the design's geometry, in the `pageNav` order, with its `Loading · Empty · Error` states** — 📁 **the design declares those states for every section and the built five already carry them.** ⛔ **Reuse the opportunity data already on the page; do not add a fetch** |
+| ⛔ **Out of scope** | **The other twelve sections · the Opportunity Intelligence screen · any new endpoint · any provider work · anything the design does not draw in `#opps`** |
+| **Change Budget** | 🟢 **`app/(app)/accounts/[accountId]/page.tsx`** and 🟢 **`components/intelligence/**`** *(new components only)*. ⛔ **No 🟠, no migration, no contract change** |
+| ⚠️ **Seed data** | ✅ **None required.** ⛔ **The Playground already produces the opportunity the summary renders** — **if it did not, the summary would be empty today, and Lane A reports the journeys green** |
+| **Definition of Done** | **A rep opens an account, clicks *Opportunities* in *On this page*, and lands on the section the design draws** · **its three states covered** · **certified · `main`** |
+
 ### TASK-1482 · Remove the legacy `Attention` navigation entry
 
 | | |
