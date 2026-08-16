@@ -70,7 +70,7 @@ class TestAPartialChange:
         assert after.pronouns == "she/her"
         assert after.timezone == "Europe/Copenhagen"
 
-    async def test_the_twelve_profile_locale_and_accessibility_fields_all_survive(
+    async def test_the_nine_locale_and_accessibility_fields_all_survive(
         self,
     ) -> None:
         """🔴 **[B-264](../../../../docs/BUGS.md)'s shape, asserted for the
@@ -93,9 +93,6 @@ class TestAPartialChange:
             ChangePreferencesInput(
                 workspace_id=ws,
                 person_id=person,
-                job_title="Head of Revenue Operations",
-                department="Revenue",
-                mobile="+45 20 00 00 00",
                 date_format="31 Dec 2026",
                 number_format="1.234,56",
                 week_starts_on="Monday",
@@ -113,9 +110,6 @@ class TestAPartialChange:
         )
 
         assert after.theme is Theme.DARK
-        assert after.job_title == "Head of Revenue Operations"
-        assert after.department == "Revenue"
-        assert after.mobile == "+45 20 00 00 00"
         assert after.date_format == "31 Dec 2026"
         assert after.number_format == "1.234,56"
         assert after.week_starts_on == "Monday"

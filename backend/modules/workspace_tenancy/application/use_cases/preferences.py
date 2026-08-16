@@ -64,9 +64,6 @@ class ChangePreferencesInput:
     answer_style: Maybe[AnswerStyle] = UNSET
     confidence_floor: Maybe[int] = UNSET
     # ── The design's Profile, Language & region and Accessibility panels ──
-    job_title: Maybe[str | None] = UNSET
-    department: Maybe[str | None] = UNSET
-    mobile: Maybe[str | None] = UNSET
     date_format: Maybe[str | None] = UNSET
     number_format: Maybe[str | None] = UNSET
     week_starts_on: Maybe[str | None] = UNSET
@@ -132,9 +129,6 @@ class ChangePreferencesUseCase:
             ),
             answer_style=pick(input_.answer_style, current.answer_style),
             confidence_floor=pick(input_.confidence_floor, current.confidence_floor),
-            job_title=pick(input_.job_title, current.job_title),
-            department=pick(input_.department, current.department),
-            mobile=pick(input_.mobile, current.mobile),
             date_format=pick(input_.date_format, current.date_format),
             number_format=pick(input_.number_format, current.number_format),
             week_starts_on=pick(input_.week_starts_on, current.week_starts_on),

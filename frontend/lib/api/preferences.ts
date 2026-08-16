@@ -36,12 +36,6 @@ export interface Preferences {
   /** The design's control offers 3 · 4 · 5. */
   confidence_floor: number;
 
-  // ── Profile ──────────────────────────────────────────────────────────────
-  /** ⛔ **`null` means *not chosen*** — never a placeholder dressed as data. */
-  job_title: string | null;
-  department: string | null;
-  mobile: string | null;
-
   // ── Language & region ────────────────────────────────────────────────────
   /** ⛔ **A string, not a union, and deliberately.** ⚡ The design shows ONE
    *  value for each — *"31 Dec 2026"*, *"1.234,56"*, *"Monday"* — and never

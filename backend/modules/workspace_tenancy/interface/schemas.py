@@ -463,9 +463,6 @@ class PreferencesResponse(BaseModel):
     always_show_citations: bool
     answer_style: AnswerStyle
     confidence_floor: int
-    job_title: str | None
-    department: str | None
-    mobile: str | None
     date_format: str | None
     number_format: str | None
     week_starts_on: str | None
@@ -503,9 +500,6 @@ class PreferencesResponse(BaseModel):
             always_show_citations=prefs.always_show_citations,
             answer_style=prefs.answer_style,
             confidence_floor=prefs.confidence_floor,
-            job_title=prefs.job_title,
-            department=prefs.department,
-            mobile=prefs.mobile,
             date_format=prefs.date_format,
             number_format=prefs.number_format,
             week_starts_on=prefs.week_starts_on,
@@ -552,11 +546,6 @@ class ChangePreferencesRequest(BaseModel):
     confidence_floor: int | None = Field(
         default=None, ge=MIN_CONFIDENCE_FLOOR, le=MAX_CONFIDENCE_FLOOR
     )
-    #: 📁 **The design's Profile panel** — *Job title*, *Department*,
-    #: *Mobile number*. ⚡ **Bounded like every other free-text field here.**
-    job_title: str | None = Field(default=None, max_length=120)
-    department: str | None = Field(default=None, max_length=120)
-    mobile: str | None = Field(default=None, max_length=120)
     #: 📁 **Language & region.** ⛔ **No enum**: the design shows one value each
     #: and lists no options, so constraining them here would decide which
     #: formats Signora supports — a product question, not a schema one.

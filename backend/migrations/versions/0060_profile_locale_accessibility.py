@@ -1,11 +1,24 @@
 """workspace_tenancy: the rest of what a person chose about their own profile.
 
-📁 **The finalized design, `Fortune Signora User Profile.dc.html`** — three of
-its nine sections were unbuildable because the columns behind them did not
-exist: **Profile**'s last three fields, **Language & region**'s last three, and
-**Accessibility** entire.
+📁 **The finalized design, `Fortune Signora User Profile.dc.html`** — two of its
+nine sections were unbuildable because the columns behind them did not exist:
+**Language & region**'s last three fields, and **Accessibility** entire.
 
-## ⚡ Twelve columns, one shape, no new concept
+## ⛔ Profile's three remaining fields are NOT here, and that is a decision rather than an omission
+
+⚠️ **The first version of this migration added `job_title`, `department` and
+`mobile`, and it was wrong.** 📁 **The design marks Job title and Department
+`tagLocked` — *"From directory"* — and no directory exists**
+([C-248](../../../docs/LANE_COORDINATION.md),
+[D-156](../../../docs/DECISION_REGISTER.md) ④): **a locked field with no sync
+behind it is a rule the product does not have, painted as one it does.** ⛔
+**Mobile is noted *"Verified 14 Mar 2026"*, and nothing verifies a number.**
+
+✅ **`profile.test.tsx` already asserted their absence with those reasons**, and
+the columns were removed rather than left unused — **three columns nothing can
+write are the speculative shape [§6](../../../CLAUDE.md) forbids.**
+
+## ⚡ Nine columns, one shape, no new concept
 
 📁 **`0045_ai_preferences` is the pattern and it is followed exactly**: columns
 on `person_preferences`, `server_default` for every one, and a `CHECK` wherever
@@ -63,8 +76,7 @@ VERBOSITIES = ("concise", "detailed")
 
 #: ⚡ **Free text, deliberately** — the design shows one value each and
 #: enumerates none. Same treatment as `language` and `timezone`.
-_TEXT_COLUMNS = ("job_title", "department", "mobile", "date_format", "number_format",
-                 "week_starts_on")
+_TEXT_COLUMNS = ("date_format", "number_format", "week_starts_on")
 
 #: ⚡ **Toggles.** ⛔ `underline_links` is the one that defaults ON: the design
 #: shows it on, and links that stop being underlined for somebody who never

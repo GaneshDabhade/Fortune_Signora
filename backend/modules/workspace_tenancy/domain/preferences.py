@@ -216,14 +216,6 @@ class PersonPreferences:
     #: comparison is not asserted ([C-249](../../../../docs/LANE_COORDINATION.md)).
     confidence_floor: int = MIN_CONFIDENCE_FLOOR
 
-    # ── Profile ───────────────────────────────────────────────────────────
-    #: 📁 The design's *Job title*, *Department* and *Mobile number*.
-    #: ⚠️ **`None` means not chosen, never a default dressed as an answer** —
-    #: the surface renders what the person entered or nothing at all.
-    job_title: str | None = None
-    department: str | None = None
-    mobile: str | None = None
-
     # ── Language & region ─────────────────────────────────────────────────
     #: ⛔ **Text rather than an enum, and deliberately.** ⚡ The design shows
     #: ONE value for each — *"31 Dec 2026"*, *"1.234,56"*, *"Monday"* — and

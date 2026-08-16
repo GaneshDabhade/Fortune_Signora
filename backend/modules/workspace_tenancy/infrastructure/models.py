@@ -329,9 +329,6 @@ class PersonPreferencesModel(Base, TimestampMixin, AuditMixin):
     # ── The design's Profile, Language & region and Accessibility panels ──
     # 📁 Migration `0060`. ⚡ **Columns on a table that is already
     # person-scoped**, so `0044`'s tenancy policy covers them unchanged.
-    job_title: Mapped[str | None] = mapped_column(String(120), nullable=True)
-    department: Mapped[str | None] = mapped_column(String(120), nullable=True)
-    mobile: Mapped[str | None] = mapped_column(String(120), nullable=True)
     #: ⛔ **Text, not an enum** — the design shows one value each and lists no
     #: options; `language` and `timezone` above are stored the same way.
     date_format: Mapped[str | None] = mapped_column(String(120), nullable=True)

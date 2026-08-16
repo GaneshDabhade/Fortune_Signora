@@ -139,7 +139,6 @@ class TestTheProfileLocaleAndAccessibilityFieldsRoundTrip:
         assert fresh.text_size is TextSize.HUNDRED
         assert fresh.screen_reader_verbosity is ScreenReaderVerbosity.DETAILED
         # ⛔ **`None` means not chosen** — never a default dressed as an answer.
-        assert fresh.job_title is None
         assert fresh.date_format is None
 
     def test_the_enumerated_controls_carry_exactly_the_designs_options(self) -> None:

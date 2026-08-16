@@ -652,9 +652,6 @@ def _preferences_to_domain(model: PersonPreferencesModel) -> PersonPreferences:
         always_show_citations=model.always_show_citations,
         answer_style=AnswerStyle(model.answer_style),
         confidence_floor=model.confidence_floor,
-        job_title=model.job_title,
-        department=model.department,
-        mobile=model.mobile,
         date_format=model.date_format,
         number_format=model.number_format,
         week_starts_on=model.week_starts_on,
@@ -713,9 +710,6 @@ class SqlAlchemyPersonPreferencesRepository(SqlAlchemyRepository):
             # ⚡ **Every one round-trips.** ⛔ A column written on the way in and
             # dropped on the way out is a setting that silently forgets itself,
             # which is what TASK-1422 found one field over.
-            "job_title": preferences.job_title,
-            "department": preferences.department,
-            "mobile": preferences.mobile,
             "date_format": preferences.date_format,
             "number_format": preferences.number_format,
             "week_starts_on": preferences.week_starts_on,
