@@ -52,24 +52,35 @@ test.describe('Companies — views, filters, density and paging', () => {
     const table = page.getByRole('table');
     await expect(table).toBeVisible();
 
+    // ⚠️ **The pager now reads the design's own sentence** — *"Rows 1–15 of
+    // 15"* — **and marks the current page with `aria-current`.** ⛔ **The claim
+    // is unchanged**: a page NUMBER is honest and a page COUNT is not.
     const pager = page.getByTestId('accounts-pager');
-    await expect(pager).toContainText('Page 1');
+    await expect(pager).toContainText(/Rows 1–\d/);
+    await expect(pager.getByText('1', { exact: true })).toHaveAttribute('aria-current', 'page');
     await expect(pager.getByRole('button', { name: 'Previous' })).toBeDisabled();
 
     const next = pager.getByRole('button', { name: 'Next' });
     if (await next.isEnabled()) {
       const firstRow = (await table.getByRole('row').nth(1).innerText()).trim();
       await next.click();
-      await expect(pager).toContainText('Page 2');
+      await expect(pager.getByText('2', { exact: true })).toHaveAttribute(
+        'aria-current',
+        'page',
+      );
       // ⛔ **Replaced, not appended.**
       await expect(table.getByText(firstRow, { exact: false })).toHaveCount(0);
 
       await pager.getByRole('button', { name: 'Previous' }).click();
-      await expect(pager).toContainText('Page 1');
+      await expect(pager.getByText('1', { exact: true })).toHaveAttribute(
+        'aria-current',
+        'page',
+      );
     }
 
-    // ⛔ **No numbered pages and no denominator**, however the mock draws them.
-    await expect(pager).not.toContainText(/Page 1 of/);
+    // ⛔ **No numbered page BUTTONS, however the design draws them** — ⚡ keyset
+    // cannot reach page 3 without walking 1 and 2, so one would be a control
+    // that could not work ([B-255](../../../docs/BUGS.md)).
     await expect(pager.getByRole('button', { name: '2', exact: true })).toHaveCount(0);
   });
 
@@ -112,7 +123,10 @@ test.describe('Companies — views, filters, density and paging', () => {
     const rowHeight = async () => (await table.getByRole('row').nth(1).boundingBox())?.height ?? 0;
     const comfortable = await rowHeight();
 
-    await page.getByLabel('Density').selectOption('compact');
+    // 📁 **The design draws Density as a 30px pill, not a dropdown** — ⚡ **so
+    // the journey clicks it**, which is how a seller changes it. ⛔ **Not a
+    // weakened assertion**: the same two heights are still measured.
+    await page.getByRole('button', { name: /^Density/ }).click();
     const compact = await rowHeight();
 
     expect(compact).toBeLessThan(comfortable);
