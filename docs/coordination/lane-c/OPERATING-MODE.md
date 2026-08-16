@@ -399,6 +399,20 @@ origin/integration 🟠      origin/lane-qe 🟠      origin/main 🟠
 
 📁 **Same family as [§5g](#5g--a-count-compares-reachability-only-content-compares-content) — a number reported without the mapping its reader will apply.**
 
+## 5g-4 · A release and its regeneration are ONE act, not two
+
+**Recorded 2026-08-16, from QE reporting the same finding two cycles running with a different row each time.**
+
+> ## **Releasing a row and republishing the projection are one act. Do them in one commit.**
+
+🔴 **Cycle 237 reported *`TASK-1482` is `READY` and in no lane queue*. Cycle 238 reported *`TASK-1481` is `READY` and in no lane queue*.** ⚡ **QE's reading is the one that matters: *"it is not one row slipping through, it is the join between backlog and queue not being re-run after a release."***
+
+⛔ **And the stale coordination source is the same defect wearing a second coat** — **a release that does not propagate to the projection.** 📁 **Every lane reading the projection reads correctly and gets the wrong answer, which is this week's whole family.**
+
+⚠️ **What made it invisible is that each instance looks like a one-off.** **A different row every cycle reads as bad luck; the same row twice would have been obvious.**
+
+✅ **The rule is behavioural because the fix is: `python3 infra/coordination.py` runs in the SAME commit that changes a row's state, never in the next one.** ⛔ **A release pushed without its regeneration is [D-144](../../DECISION_REGISTER.md)'s own defect — *a planning change that is not published has not been made* — committed by the office that quotes it.**
+
 ## 5g-3 · A prepared row is not finished until somebody has tried to claim it
 
 **Recorded 2026-08-16, from Lane A's measurement of this office's own output.**
