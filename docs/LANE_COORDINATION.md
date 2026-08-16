@@ -2604,6 +2604,64 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 
 ---
 
+## C-108 · `modules.toml` grants Lane C the whole of `signora_platform/`, and `CLAUDE.md` grants `simulation/**`
+
+| | |
+|---|---|
+| **Raised by** | **QE**, 2026-08-16, building cycle 241's candidate |
+| **Owner** | **Product owner** — 🔴 `signora_platform/**` is the Change Budget's red tier: *product owner + ADR* |
+| **Blocks** | ⛔ **Nothing today.** `origin/lane-c-sync` is **not fast-forwardable** for unrelated reasons, so no work waits on this answer. ⚡ **Raised now precisely BECAUSE nothing is blocked** — the alternative is discovering it while a lane is waiting |
+| **Status** | 🔵 **`READY FOR PRODUCT DECISION`** — the measurement is complete and the question is one only the product owner may answer |
+
+### 🔴 The contradiction, measured
+
+| source | what it says about `signora_platform/` |
+|---|---|
+| **[`modules.toml`](coordination/modules.toml)** `platform_foundation.paths` | `['infra/', 'Makefile', '`**`backend/signora_platform/`**`', 'backend/tests/playground/']` — **the whole directory** |
+| **[`CLAUDE.md`](../CLAUDE.md) §20e, D-022** | `infra/**` · the `Makefile` · profiles and launchers · doctor and cleanup · the demo lifecycle · **`signora_platform/simulation/**`** — **that subdirectory only** |
+| **[`CLAUDE.md`](../CLAUDE.md) §20e, Change Budget** | 🔴 **`signora_platform/**`** — **product owner + ADR** |
+| **[`CLAUDE.md`](../CLAUDE.md) §20a** | **frozen**, except a security fix, a production defect, or an approved architectural change |
+
+⚠️ **`CLAUDE.md` is authoritative on behaviour and `modules.toml` is a registry.** ⛔ **So a `paths` cell is currently widening a 🔴 budget by three words**, and 📁 §2 names that exactly: ***"if applying the edit would change what somebody does tomorrow, it needed a decision yesterday."***
+
+⚡ **And the registry is not an ordinary document.** `infra/certification-guard.py:840` reads `modules.toml` inside `--audit-claims`, which is why [D-240](DECISION_REGISTER.md) §1 excluded it from the planning-projection allowlist. **A cell that both widens a budget and feeds a gate is worth one ruling rather than two discoveries.**
+
+### 📁 What prompted it, and it is not an accusation
+
+**[TASK-1481](BACKLOG.md) — webhook delivery, Lane C, claimed 2026-08-16 — writes into `backend/signora_platform/event_bus/`:**
+
+```
+M  backend/signora_platform/event_bus/__init__.py
+M  backend/signora_platform/event_bus/models.py
+A  backend/signora_platform/event_bus/webhook_delivery.py
+A  backend/signora_platform/event_bus/webhook_repository.py
+A  backend/migrations/versions/0060_webhook_delivery.py
+```
+
+✅ **The lane has a ruling pointing it there.** 📁 **[D-237](DECISION_REGISTER.md) ②: *"webhooks are treated separately: outbound delivery on the existing outbox/relay pattern."*** ⛔ **But *using* the outbox/relay pattern and *adding two modules and a model to the frozen substrate* are different acts, and D-237 closes with *"AUTHORIZES NOTHING FURTHER."***
+
+✅ **The row's own Change Budget declares 🟢 the relay and its worker · 🟠 a delivery table with its registration and a migration.** ⛔ **It declares no 🔴 and cites no ADR** — **which is consistent with `modules.toml`'s reading and inconsistent with `CLAUDE.md`'s.** ⚡ **The lane is following one of two rules that disagree, and picked the one written in the file its own row names.**
+
+### 🔴 The architectural half, which is independent of who may write there
+
+**The new table is TENANT-OWNED, inside the platform substrate. The lane says so itself, in the model's docstring:**
+
+> *"**Tenant-owned, unlike the three tables above it.** `outbox_event`, `processed_event` and `dead_letter_event` are platform infrastructure: the application role inserts and cannot read. This one carries `workspace_id` under forced RLS, because the design puts its state on a screen a customer opens — and a row `signora_app` cannot read is a column that renders nothing."*
+
+⛔ **[§8](../CLAUDE.md) says platform infrastructure tables *"span every workspace and deliberately carry no RLS"* and that the grant is the only thing separating tenants there.** ⚡ **A workspace-scoped, RLS-enforced table in `signora_platform/` is a fourth category none of the four documents describes.**
+
+📁 **And [§2](../CLAUDE.md) is the sharper objection**: ***"when something a module needs starts accumulating in the substrate every module already imports, the substrate has stopped being a substrate."*** ⚠️ **The reasoning in that docstring is good and the conclusion may still be right** — **a customer-visible delivery state genuinely does need RLS.** ⛔ **What it cannot be is decided inside a feature slice.**
+
+### ✅ What QE is NOT doing
+
+⛔ **Not blocking the work** — the branch cannot fast-forward for unrelated reasons and this changes nothing about that. ⛔ **Not filing it as a defect against Lane C**: they followed a registry that says they may, and a ruling that sent them there. ⛔ **Not editing `modules.toml`** — 📁 **a registry that contradicts the constitution is repaired by a ruling, not by QE quietly changing whichever copy it finds easier to reach** ([§2](../CLAUDE.md)).
+
+### ⚡ The three answers that would each settle it
+
+**①** `modules.toml` is right — **amend `CLAUDE.md` §20e so D-022's grant names `signora_platform/` rather than `simulation/**`.**
+**②** `CLAUDE.md` is right — **narrow the `paths` cell, and TASK-1481's platform files need an ADR before they land.**
+**③** Both stand and this slice is an **approved architectural change** under §20a's third exemption — **in which case it needs saying, because nothing in the row says it.**
+
 ## C-107 · The 🔴 promotion block reads a row's status, and the defect it names is already fixed in the candidate
 
 | | |
