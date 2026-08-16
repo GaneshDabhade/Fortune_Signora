@@ -183,6 +183,33 @@ test.describe('Workflow 8 · a person is guided in', () => {
 
     // **It ends in the product**, which is what makes it a journey rather than
     // a form: the run is finished and the person is where they work.
-    await expect(page).toHaveURL(/\/$|\/business/);
+    //
+    // 🔴 **The PATTERN changed at [TASK-1401](../../../docs/BACKLOG.md); the
+    // INTENT above did not.** ⚠️ **And this is a real behaviour change, not a
+    // URL change — it is reported rather than quietly widened.**
+    //
+    // ⛔ **`/` was a PLACEHOLDER and its own file said so.** 📁 `onboardingExit()`
+    // returned `'/'` under the comment *"not a product decision — it is today's
+    // behaviour, held in one place until the authority for post-login entry
+    // exists"*, and *"when D-193/D-194 reach `integration`, this becomes
+    // `resolveEntry({ intent: null })`."* ⚡ **They did, and it has.**
+    //
+    // ✅ **The engine's rule 11 · `SOLE_WORKSPACE`** — 📁 *"Enter it. No
+    // confirmation, no picker, no interstitial."* **A person who has just
+    // finished onboarding has exactly one workspace, so this is the design's
+    // own answer for them.**
+    //
+    // ⚠️ **`/w/:id/home` is NOT a re-export of `/` any more** —
+    // [TASK-1405](../../../docs/BACKLOG.md) gave it Home's composition — **so
+    // the screen genuinely differs.** ✅ **Watched headed before this line was
+    // written: it renders Home · *Activation · How do I begin?* with Connect a
+    // CRM, Connect calls and calendar, and Invite the team.** ⚡ **Which is a
+    // better destination for somebody who has just finished setup than the
+    // attention list, and is the composition the design specifies for them.**
+    //
+    // ⛔ **The assertion is STRONGER than the one it replaces, deliberately.**
+    // `/$|\/business/` would have passed for a person routed nowhere in
+    // particular; this one says they were routed into their own workspace.
+    await expect(page).toHaveURL(/\/w\/[^/]+\/home$/);
   });
 });
