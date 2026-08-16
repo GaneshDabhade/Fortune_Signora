@@ -20,17 +20,87 @@ import { ResendVerification } from '@/app/(auth)/verify/resend';
 
 const ADDRESS = 'm.reinhardt@northwind.com';
 
+/**
+ * 🔴 **Every test in this file drives the clock, and none of them lets it
+ * run** — [B-273](../../../docs/BUGS.md), found by QE when it cost a
+ * 16-minute certification run.
+ *
+ * ⛔ **The countdown is a pure tick counter** — 📁 `resend-timer.tsx`:
+ * `setInterval(() => setRemaining((left) => left - 1), 1000)`. ⚡ **So one real
+ * second elapsing between a click and an assertion turns `0:45` into `0:44`**,
+ * and on an unloaded machine that never happens.
+ *
+ * ⚠️ **`shouldAdvanceTime: true` was the cause and it looked like the fix.**
+ * **It makes the FAKE clock advance by REAL elapsed time**, which reintroduces
+ * exactly the dependency fake timers exist to remove. ✅ **It was there so
+ * `userEvent`'s own internal waits could resolve — and
+ * `userEvent.setup({ advanceTimers })` already does that**, which is what that
+ * option is for. **Two mechanisms for one need, and the redundant one was the
+ * non-deterministic one.**
+ *
+ * 🔴 **The rule: a test that asserts an exact time must own every millisecond
+ * that passes. If real elapsed time can reach the assertion, the machine is an
+ * input.**
+ */
 beforeEach(() => {
   vi.clearAllMocks();
   resendVerification.mockResolvedValue({ ok: true });
+  /**
+   * 🔴 **`toFake` is the whole repair, and a bare `vi.useFakeTimers()` does
+   * NOT work here.**
+   *
+   * ⛔ **Faking everything stalls React**: its scheduler and `userEvent`'s
+   * internal waits run on `setTimeout`/`setImmediate`/`MessageChannel`, and a
+   * fake clock nobody advances leaves every one of them pending — **nine tests
+   * time out rather than fail, which is a worse signal than the flake.**
+   *
+   * ✅ **The countdown uses `setInterval` and nothing else** — 📁
+   * `resend-timer.tsx`. **So that is all that is frozen**, and everything React
+   * and `userEvent` need keeps its real clock. ⚡ **The countdown can now move
+   * only where `advanceTimersByTime` says**, which is the property the file
+   * was missing.
+   */
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
 });
 
 afterEach(() => vi.useRealTimers());
 
+/**
+ * ⚡ **Let the mocked send resolve, WITHOUT letting the clock move.**
+ *
+ * ⛔ **`findByRole` cannot be used here.** 📁 **`waitFor` polls on the real
+ * clock, so under `useFakeTimers` it never re-checks and the test times out**
+ * — which is precisely why `shouldAdvanceTime: true` was in this file: it was
+ * holding `findBy*` up, and it was doing that by making the countdown tick in
+ * real time. ⚡ **One option was serving two purposes and only one of them was
+ * wanted.**
+ *
+ * ✅ **The wait here is for a PROMISE, not for a timer** — `resendVerification`
+ * is mocked and already resolved — **so flushing microtasks is the honest wait
+ * and it moves no clock at all.**
+ */
+async function sendResolves() {
+  await act(async () => {});
+}
+
+/** ⚡ **The only way this file builds a user**, so no test can forget the clock. */
+function person() {
+  // ⛔ **`delay: null` matters.** ⚡ **`userEvent` inserts its own waits between
+  // key and pointer events, and under fake timers nothing advances them** —
+  // which is the second thing `shouldAdvanceTime: true` was quietly doing.
+  // ✅ **Skipping those waits is honest here: this file tests a countdown, not
+  // typing cadence.**
+  // ⛔ **No `advanceTimers` hook.** ⚡ **`userEvent` would call it during its
+  // own waits and tick the countdown mid-click** — the same defect one layer
+  // down. ✅ **Its waits run on the real `setTimeout`, which is not faked.**
+  return userEvent.setup();
+}
+
 /** Send once and let the countdown start. */
 async function resendOnce(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole('button', { name: 'Resend' }));
-  expect(await screen.findByRole('button', { name: /Resend in/ })).toBeInTheDocument();
+  await sendResolves();
+  expect(screen.getByRole('button', { name: /Resend in/ })).toBeInTheDocument();
 }
 
 describe('the timer the design specifies', () => {
@@ -38,7 +108,7 @@ describe('the timer the design specifies', () => {
     // *"The resend timer starts at 45s and doubles."* And the design's own
     // accessibility note asks for the remaining time to be shown rather than
     // the control merely being disabled.
-    const user = userEvent.setup();
+    const user = person();
     render(<ResendVerification email={ADDRESS} />);
 
     await resendOnce(user);
@@ -47,8 +117,7 @@ describe('the timer the design specifies', () => {
   });
 
   it('counts down in real seconds', async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true });
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    const user = person();
     render(<ResendVerification email={ADDRESS} />);
 
     await resendOnce(user);
@@ -60,8 +129,7 @@ describe('the timer the design specifies', () => {
   });
 
   it('doubles on the second send', async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true });
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    const user = person();
     render(<ResendVerification email={ADDRESS} />);
 
     await resendOnce(user);
@@ -80,20 +148,20 @@ describe('the timer the design specifies', () => {
      * the product's own error**, and leave them no way to retry.
      */
     resendVerification.mockResolvedValue({ ok: false, error: 'Could not be reached.' });
-    const user = userEvent.setup();
+    const user = person();
     render(<ResendVerification email={ADDRESS} />);
 
     await user.click(screen.getByRole('button', { name: 'Resend' }));
 
-    expect(await screen.findByRole('button', { name: 'Resend' })).toBeEnabled();
+    await sendResolves();
+    expect(screen.getByRole('button', { name: 'Resend' })).toBeEnabled();
     expect(screen.getByText('Could not be reached.')).toBeVisible();
   });
 
   it('suggests spam and the corporate filter on the third send', async () => {
     // The design's own escalation: by the third attempt the likely cause is
     // not a slow queue, and saying so is more use than sending again.
-    vi.useFakeTimers({ shouldAdvanceTime: true });
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    const user = person();
     render(<ResendVerification email={ADDRESS} />);
 
     for (const wait of [45_000, 90_000]) {
@@ -108,7 +176,7 @@ describe('the timer the design specifies', () => {
   });
 
   it('says nothing about filters before then', async () => {
-    const user = userEvent.setup();
+    const user = person();
     render(<ResendVerification email={ADDRESS} />);
 
     await resendOnce(user);
@@ -144,7 +212,7 @@ describe('what the screen does not claim', () => {
 
   it('announces the wait politely, never as an alert', async () => {
     // It changes every second; an interruption per second is not feedback.
-    const user = userEvent.setup();
+    const user = person();
     render(<ResendVerification email={ADDRESS} />);
 
     await resendOnce(user);

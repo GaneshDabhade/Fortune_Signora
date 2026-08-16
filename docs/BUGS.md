@@ -837,6 +837,64 @@ python3 infra/state-check.py 2>&1 | grep -E "promoted task\(s\) have no"
 
 ---
 
+### B-273 · A resend countdown ticks in real time inside a fake-timer test, so certification fails under load
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`tests/components/verification.test.tsx`](../frontend/tests/components/verification.test.tsx) |
+| **Current assignee** | **Lane A** — current assignee of `product_surface` in [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 — ⛔ **a Blocking Quality Defect by [§20e](../CLAUDE.md)'s definition: a failing test prevents promotion.** ⚠️ **It cost a 16-minute certification run and would have cost another** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-16.** ⚠️ **QE verifies and closes.** ⚡ **Found by QE during cycle 235, reported rather than fixed** — 📁 *"QE reports bugs; feature lanes fix them"* |
+| **Found** | **2026-08-15, by QE**, under certification load — ⛔ **not reproducible by running the file** |
+| **Commit found** | **`d3cbfa6e`** |
+
+**Steps.** Run the frontend suite on a loaded machine — QE's measurement: ✅ **5 of 5 passes in isolation · 2 of 2 full-suite passes · one failure under certification load.**
+
+**Expected.** *"The resend timer starts at 45s"* asserts `Resend in 0:45`.
+
+**Actual.** `Resend in 0:43`.
+
+### 🔴 The cause, and it is that one option was doing two jobs
+
+📁 **The countdown is a pure tick counter** — `components/ui/resend-timer.tsx`:
+
+```ts
+setInterval(() => setRemaining((left) => Math.max(0, left - 1)), 1000)
+```
+
+⛔ **The file used `vi.useFakeTimers({ shouldAdvanceTime: true })`, which advances the FAKE clock by REAL elapsed time.** ⚡ **So two real seconds between the click and the assertion turned `0:45` into `0:43`** — **and on an unloaded machine that never happens.**
+
+⚠️ **The option was not careless: it was load-bearing.** ✅ **`findByRole` polls through `waitFor` on the real clock, so under frozen timers it never re-checks and the test times out.** 🔴 **`shouldAdvanceTime` was holding `findBy*` up, and it was doing that by making the countdown tick.** **One option, two jobs, and only one of them wanted.**
+
+### ⛔ What did not work, recorded because each looked right
+
+**① `vi.useFakeTimers()` with no options.** 🔴 **Nine tests TIMED OUT rather than failed** — **React's scheduler and `userEvent`'s internal waits run on `setTimeout`/`setImmediate`/`MessageChannel`, and a frozen clock nobody advances leaves every one pending.** ⚠️ **A worse signal than the flake it replaced.**
+
+**② `userEvent.setup({ advanceTimers })`.** ⛔ **`userEvent` calls that hook during its own waits, which ticks the countdown mid-click** — **the same defect one layer down.**
+
+### ✅ The repair — freeze only what the countdown uses
+
+```ts
+vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+```
+
+⚡ **Everything React and `userEvent` need keeps a real clock; the countdown moves only where `advanceTimersByTime` says.** ✅ **And the two `findByRole` waits become an explicit microtask flush** — 📁 **the wait was for a resolved PROMISE, never for a timer**, so flushing is the honest wait and it moves no clock.
+
+### 🔴 Fire-tested, and the flake reproduced deterministically
+
+⛔ **A real 2-second stall inserted between the click and the assertion.**
+
+| | |
+|---|---|
+| **Against the shipped file** | ⛔ ***"Unable to find… `Resend in 0:45`. Name `Resend in 0:43`"*** — **QE's failure, on demand** |
+| **Against the repair** | ✅ **passes** |
+
+⚡ **9 passed, and the file dropped from 35s of timeouts to 654ms.**
+
+> 🔴 **The rule this earns: a test that asserts an exact time must own every millisecond that reaches the assertion. If real elapsed time can get there, the machine is an input** — 📁 [§2](../CLAUDE.md), *hidden inputs are architecture defects*, and a loaded CPU is as hidden as an input gets.
+
+---
+
 ### B-272 · The coverage gate systematically understates every file that touches the database
 
 | | |
