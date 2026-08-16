@@ -9,7 +9,7 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "fa8cae0"
+generated_from = "b8706c2"
 task_count     = 56
 
 [lane.Lane_A]
@@ -943,5 +943,5 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 8.8
+blocked_days   = 8.9
 on_integration = true
