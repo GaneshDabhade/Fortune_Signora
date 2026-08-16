@@ -629,6 +629,18 @@ export default function CompaniesPage() {
                     <TH
                       key={column.id}
                       scope="col"
+                      /* 📁 **Rule ①, and the design's own words** — *"company
+                         and score pin left behind a soft gradient rather than a
+                         hard rule, so horizontal scroll never produces a
+                         seam."*
+
+                         🔴 **The shared `Table` already implemented the 24px
+                         `::after` fade; this screen was not consuming it.**
+                         ⚡ **The same defect class as the border audit**: the
+                         capability was correct at the shared layer and the page
+                         did not ask for it. ⛔ **`ColumnSpec.pinned` existed and
+                         did nothing visually.** */
+                      pin={column.pinned === true}
                       /* 📁 **The design right-aligns the figures** — Open ACV
                          and Renewal — **and the header follows the body.** ⛔ A
                          heading that aligned differently from its column reads
@@ -714,6 +726,7 @@ export default function CompaniesPage() {
                     {shownColumns.map((column) => (
                       <TD
                         key={column.id}
+                        pin={column.pinned === true}
                         className={cn(
                           ROW_PADDING[density],
                           // 📁 `font-variant-numeric:tabular-nums` — the design
