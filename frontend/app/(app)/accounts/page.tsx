@@ -67,7 +67,7 @@ import {
   type CompaniesDeclaration,
 } from '@/lib/accounts/view';
 import { AccountsToolbar } from './toolbar';
-import { ViewTabs } from './view-tabs';
+import { ViewTabs, type ViewMode } from './view-tabs';
 import {
   DEFAULT_COLUMNS,
   formatMoney,
@@ -190,7 +190,7 @@ export default function CompaniesPage() {
    * and makes *"which page am I on"* unanswerable.
    */
   const [page, setPage] = useState(0);
-  const [mode, setMode] = useState<'table' | 'cards'>('table');
+  const [mode, setMode] = useState<ViewMode>('table');
   const [density, setDensity] = useState<Density>('comfortable');
   /** ⚡ **`null` is the endpoint's own order** — oldest first, which is stable
    *  because *"a list ordered by anything the graph recomputes would reshuffle
@@ -524,6 +524,16 @@ export default function CompaniesPage() {
               icon={Building2}
               title="No companies match these filters"
               description="Nothing on this page matches. Clear a condition, or move to the next page — filters narrow what has been read, not the whole book."
+            />
+          ) : mode === 'board' ? (
+            /* 📁 **Board** — *"same data, same filters, same selection"*, laid
+               out as one lane per group. ⚡ **It IS the grouping**, rendered
+               sideways, which is why it reuses `groupRows` rather than
+               grouping a second time ([§2](../../../../CLAUDE.md)). */
+            <BoardLanes
+              groups={groups}
+              density={density}
+              onGroup={() => setGroup('renewal')}
             />
           ) : mode === 'cards' ? (
             <CardGrid rows={shown} density={density} />
@@ -884,18 +894,98 @@ export default function CompaniesPage() {
  * view rather than a second screen. ⛔ **It draws only fields that exist**, for
  * the reason the table does.
  */
+/**
+ * 📁 **Board view** — the design's third mode.
+ *
+ * ⛔ **A board without a grouping is not a board.** ⚡ **So an ungrouped board
+ * states what it needs and offers it**, rather than drawing one lane containing
+ * everything — which would look like a board that had failed.
+ *
+ * ⚠️ **Lanes scroll horizontally and each lane scrolls vertically**, which is
+ * what makes a board readable at 8,412 accounts. ⛔ **No drag between lanes**:
+ * a lane is a renewal quarter or a CRM stage, **and both are facts a customer's
+ * own system reports** — dragging one would be this screen writing a claim it
+ * does not own ([ADR-0409](../../../../docs/architecture/adr/0409-commercial-account-facts.md):
+ * absence is never inferred, and neither is presence).
+ */
+function BoardLanes({
+  groups,
+  density,
+  onGroup,
+}: {
+  groups: readonly {
+    label: string;
+    rows: readonly import('@/lib/api/types').ListedAccount[];
+    openAcv: import('@/lib/api/types').Money | null;
+  }[] | null;
+  density: Density;
+  onGroup: () => void;
+}) {
+  if (groups === null) {
+    return (
+      <EmptyState
+        icon={Building2}
+        title="A board needs a grouping"
+        description="Choose what the lanes should be — renewal quarter, stage, kind or source — and the same companies rearrange into columns."
+        action={
+          <Button variant="secondary" onClick={onGroup}>
+            Group by renewal quarter
+          </Button>
+        }
+      />
+    );
+  }
+  return (
+    <div data-testid="accounts-board" className="flex gap-3 overflow-x-auto pb-2">
+      {groups.map((lane) => (
+        <section
+          key={lane.label}
+          aria-label={lane.label}
+          className="flex max-h-[34rem] w-72 flex-none flex-col rounded-lg border border-border-soft bg-canvas"
+        >
+          {/* 📁 **The lane head carries the group header's own two figures** —
+              ⛔ **the same two**, because a board and a grouped table are one
+              grouping shown twice and a third figure in one of them would make
+              them disagree. */}
+          <header className="flex flex-wrap items-baseline gap-2 border-b border-border-soft px-3 py-2.5">
+            <span className="text-sm font-semibold text-content">{lane.label}</span>
+            <span className="text-2xs tabular-nums text-content-subtle">
+              {lane.rows.length.toLocaleString()}
+            </span>
+            {lane.openAcv === null ? null : (
+              <span className="ml-auto text-2xs tabular-nums text-content-subtle">
+                {formatMoney(lane.openAcv)}
+              </span>
+            )}
+          </header>
+          <div className="min-h-0 flex-1 overflow-y-auto p-2">
+            <CardGrid rows={lane.rows} density={density} board />
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
 function CardGrid({
   rows,
   density,
+  board = false,
 }: {
   rows: readonly import('@/lib/api/types').ListedAccount[];
   density: Density;
+  /** ⚡ **One column inside a lane**, where the grid is three across. ⛔ **The
+   *  CARD is unchanged** — 📁 the design's board and card views draw the same
+   *  card, and a board-specific variant would be the second definition
+   *  [§20c](../../../../CLAUDE.md) forbids. */
+  board?: boolean;
 }) {
   return (
     <ul
-      data-testid="accounts-cards"
+      data-testid={board ? undefined : 'accounts-cards'}
       className={cn(
-        'grid gap-3 smalllaptop:grid-cols-2 laptop:grid-cols-3',
+        'grid gap-3',
+        board ? 'grid-cols-1' : 'smalllaptop:grid-cols-2 laptop:grid-cols-3',
         density === 'compact' && 'gap-2',
       )}
     >

@@ -32,7 +32,7 @@ import type { SavedView } from '@/lib/api/types';
  * stores. ✅ **The names render; the numbers are not invented.**
  */
 
-export type ViewMode = 'table' | 'cards';
+export type ViewMode = 'table' | 'cards' | 'board';
 
 export interface ViewTabsProps {
   readonly views: readonly SavedView[];
@@ -88,19 +88,15 @@ export function ViewTabs({
       </div>
 
       {/* 🔴 **The switcher, on the tab row's right — the design's position.**
-          📁 *"Table · Cards · Board"*. ⛔ **Board is absent, and the REASON has changed.**
+          📁 *"Table · Cards · Board"*, three modes in a `--sunken` pill group
+          with a shadow on the active one.
 
-          ⚠️ **This said Board was impossible because *"every groupable column
-          the design names is C-209's"*.** 🔴 **That expired on 2026-08-12**:
+          ✅ **Board landed once `Group` did.** ⚠️ **This comment previously
+          explained why Board could not exist — *"every groupable column the
+          design names is C-209's"* — and that expired on 2026-08-12 when
           [ADR-0409](../../../../docs/architecture/adr/0409-commercial-account-facts.md)
-          released renewal and stage, and the toolbar's `Group` now offers
-          four real columns — **so a board CAN be grouped honestly.**
-
-          ✅ **It is unbuilt rather than unbuildable**, and this comment says so
-          rather than keeping a justification that has stopped being true
-          ([§2](../../../../CLAUDE.md)). ⛔ **A third tab that rendered nothing
-          would still be [B-255](../../../../docs/BUGS.md)**, which is why it
-          is absent until it is built. */}
+          released renewal and stage. **A board needs a grouping and there are
+          now four honest ones.** */}
       {/* ⚡ **One `ml-auto`, on the first of the two right-hand controls.**
           ⛔ **Two would fight**: the second would take the remaining space and
           the pair would drift apart as the tab row grew. */}
@@ -132,7 +128,7 @@ export function ViewTabs({
           onSave === undefined && 'ml-auto',
         )}
       >
-        {(['table', 'cards'] as const).map((value) => (
+        {(['table', 'cards', 'board'] as const).map((value) => (
           <button
             key={value}
             type="button"
