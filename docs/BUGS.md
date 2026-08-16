@@ -685,6 +685,31 @@ git push -q origin origin/lane-c-sync:refs/heads/integration      # ← not gate
 
 ✅ **The repair is the same one B-1009 arrived at from the other side: gate on the result, or do not print it.** **A check whose output does not change what happens next is Decorative Logic in a shell script.**
 
+### 🔴 A SIXTH instance, twenty minutes after the fifth, and it is worse
+
+**Building cycle 239's candidate:**
+
+```bash
+git merge --ff-only origin/lane-a-product-surface        # ok — integration → 9aa08c26
+git merge --ff-only origin/lane-qe || git rebase -q origin/lane-qe   # ← the defect
+```
+
+⛔ **The `--ff-only` correctly failed. The `||` then rebased `integration` — sitting at LANE A'S TIP — onto `lane-qe`**, replaying their seven commits under new hashes. **Then QE pushed, before checking what the fallback had done.**
+
+✅ **Verified after the fact and nothing was lost**: all seven present by subject, `git cherry e0d6443a HEAD` reports **0** duplicates, `e0d6443a` still an ancestor. ⛔ **The tree is correct. `9aa08c26` is no longer an ancestor of `integration`, so a lane checking for it gets a false negative** — 📁 **the same class as the orphaned board SHAs one cycle earlier.**
+
+### ⚠️ Why this is worse than instances one to five
+
+**Those were passive: an instrument produced a correct answer and the reading discarded it.** 🔴 **This one was ACTIVE — the fallback performed a different operation than the one that failed, and QE published the result before inspecting it.** ⚡ **A `||` is not a diagnostic being ignored; it is a second command nobody authorised.**
+
+### 🔴 The deeper error, which is not about shell syntax at all
+
+⛔ **QE put its own DOCUMENTATION-ONLY branch into a cycle carrying a lane's four slices.** ✅ **The lane's branch was fast-forwardable alone** — taking it by itself would have moved nothing of theirs, and `lane-qe` could have waited a cycle at zero cost.
+
+📁 **Two cycles earlier QE argued to Product Office, in writing, that a planning batch which blocks nobody must not force a lane to rebase.** ⚡ **QE then did precisely that to a lane, with its own branch, and the branch in question was four bug-register rows.** ⛔ **The rule was applied to somebody else's convenience and not to QE's own.**
+
+✅ **The operational cost was small and was stated to the lane immediately** — their work was already inside the running certification, so they reset rather than re-run. ⛔ **The cost that matters is that QE spent a lane's trust to save itself one cycle of waiting.**
+
 ✅ **Re-run against the synchronized ref: 1891 commits, 208 certified, 1679 in-snapshot, 4 Closeout, no violations.** ⚡ **The count that exposed it was `1 Closeout` — unchanged after adding three Closeout-class commits.** **A number that should have moved and did not is the cheapest signal in this class, and it is the one to look for**: a green verdict has no such tell.
 
 ### ⚠️ The checker named a cause that was not the cause

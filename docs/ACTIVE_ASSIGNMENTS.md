@@ -71,7 +71,17 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-16, `18036f09`
+## Current — as of 2026-08-16, `1dc2c39e`
+
+> ⚡ **Cycle 239 Closeout. Eleven commits, TWO lanes, ONE gate run** — Lane A's TASK-480 ⓑ, TASK-1482, TASK-1483 and TASK-495 ⓐ, plus QE's B-1000/B-1009 rows.
+>
+> ⛔ **TASK-495 stays on this board reading `IN PROGRESS`, not `IN VALIDATION`** — **the bell, the popover, the journey and the headed review are still Lane A's.** ✅ **The lane chose the accurate row over the tidy one.**
+>
+> 🔴 **Coverage fell a third consecutive cycle — 95.06 → 95.05 → 95.04, floor 95.0.** ⚠️ **Four basis points, reported as a trajectory rather than a point.**
+>
+> ⛔ **QE rebased a lane's commits through an ungated `||` fallback** — [B-1000](BUGS.md)'s sixth instance. **Nothing lost; the hashes the lane pushed are gone, and their branch is now entirely `-` under `git cherry`.**
+
+### Cycle 238 — 2026-08-16, `18036f09` — superseded
 
 > ⚡ **Cycle 238 Closeout. Eight commits, TWO lanes, ONE gate run** — Lane A's `TASK-480` slice ⓐ and Lane C's planning. ✅ **The first executable product code in three cycles.**
 >

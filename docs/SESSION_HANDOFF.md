@@ -1,5 +1,23 @@
 # Session Handoff
 
+> ## Cycle 239 — promoted `1dc2c39e`, 2026-08-16 · **a customer is told when Signora finishes researching an account**
+>
+> **`main` = `1dc2c39e` = the certified commit.** `pytest` **5199** · coverage **95.04%** · **668 Security Invariants** · `mypy` strict over **933** files · `import-linter` **37/37** · **`frontend-suite` 3324 in 189 files** · `eslint` clean · `smoke` 24 stages in **229s** · scenario **198 assertions** · **DR passed with 668 invariants** · **reversible base→head→base→head on a clean database** · head **`0059`**. ✅ **Eight gates, first attempt.**
+>
+> 🔴 **`notification` is the first person-scoped table whose policies are deliberately ASYMMETRIC, and QE read them from `pg_policies` rather than from the migration.** **`SELECT` narrows by `recipient_id`; `INSERT` and `DELETE` do not** — ⚡ **a notification is written FOR somebody else, so a recipient predicate on the write would permit notifying nobody but yourself.** ✅ **RLS enabled and forced; registered in both `TENANT_OWNED_TABLES` and `IMMUTABLE_TENANT_TABLES`.**
+>
+> ✅ **The Security Invariant suite refused the migration's first form** — no `DELETE` grant, argued from immutability. ⛔ **The lane fixed the MIGRATION, not the test**, and recorded the rule: ⚡ ***immutability is a claim about `UPDATE`; it is never a claim about `DELETE`.*** 📁 **Erasability is a property of the tenancy model, not of what a row means.**
+>
+> 🔴 **Coverage fell a THIRD consecutive cycle: 95.06 → 95.05 → 95.04 against a floor of 95.0.** ⛔ **Four basis points.** ⚡ **Each fall is unremarkable and three monotonic falls is not** — **reported as a trajectory, because the lane that crosses the floor will not be the lane that caused it.** ⚠️ **And `make coverage-debt`, the instrument that would name which files are responsible, is unavailable — its reader exits 2 on `coverage json`.**
+>
+> ⛔ **QE moved a lane's commits through an ungated shell fallback**: `git merge --ff-only … || git rebase -q …` — the `--ff-only` correctly failed and the `||` rebased `integration`, sitting at the lane's tip, onto `lane-qe`. ✅ **Verified: all seven present, `git cherry` 0 duplicates, prior `integration` still an ancestor.** ⚠️ **[B-1000](BUGS.md)'s SIXTH instance, twenty minutes after the fifth** — **and worse, because the fallback changed what happened next and QE pushed before checking what it had done.**
+>
+> 🔴 **The deeper error: QE put its own documentation-only branch into a cycle carrying a lane's four slices, when the lane's branch was fast-forwardable alone.** 📁 **The same reasoning QE had given Product Office two cycles earlier — do not make a lane rebase for a batch that blocks nobody — applied to their branch and not to its own.**
+>
+> ✅ **`git cherry` replaced the hand-rolled patch-id comparison and earned it in one measurement**: the lane's branch read **7 ahead** under `rev-list --count` and **all seven `-`** under `git cherry`. ⚡ **The same false signal that produced [B-1009](BUGS.md), answered in 43ms by a command with no window to get wrong.**
+>
+> ⚡ **The batch test decided two planning syncs in opposite directions in one session, correctly both times.** ⛔ **Cycle 238's blocked nobody and went second; cycle 239's blocked Lane A's entire remaining sequence and went first, by direct ref push during the gate run.** 📁 **Same rule, opposite outcome — *the test is on the BATCH, never on the class*.**
+
 > ## Cycle 238 — promoted `18036f09`, 2026-08-16 · **per-person notification state reaches `main`, unreachable and saying so**
 >
 > **`main` = `18036f09` = the certified commit.** ⚡ **Verified against the SHA the guard named, NOT against `integration`** — which had moved to `9023b187` before the promotion, for the second cycle running. `pytest` **5143** · coverage **95.05%** · **651 Security Invariants** · `mypy` strict over **924** files · `import-linter` **37/37** · **`frontend-suite` 3324 in 189 files** · `eslint` clean · `smoke` 24 stages in **219s** · **DR passed with 651 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** · head **`0058`**. ✅ **Eight gates, first attempt.**

@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `18036f09`, 2026-08-16.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `1dc2c39e`, 2026-08-16.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,19 +12,20 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `18036f09`, 2026-08-16.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `1dc2c39e`, 2026-08-16.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`18036f09`** — ⚡ **the certified commit itself**, `promoted == certified`, **verified against the SHA the guard named, not against `integration`'s head**. **Cycle 238** — ⛔ **and `integration` had already moved to `9023b187` when the promotion ran, for the second cycle running** |
+| **`main`** | **`1dc2c39e`** — ⚡ **the certified commit itself**, `promoted == certified`, **verified against the SHA the guard named, not against `integration`'s head**. **Cycle 238** — ⛔ **and `integration` had already moved to `9023b187` when the promotion ran, for the second cycle running** |
 | **Release candidate** | `integration` = **`9023b187`** — Lane C's three planning commits, rebased onto the pin and ref-pushed **while the gates were running**, so no lane waited and no gate was disturbed |
-| **Certification** | ✅ [`18036f09c9df`](certification/reports/18036f09c9df.md) · migration head **`0058`** · ✅ **eight gates, first attempt** · **DR passed, 651 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** |
-| **Cycle 238 gates** | ⚡ **EIGHT required, all recorded** — `pytest` **5143** · coverage **95.05%** · **651** security invariants · `mypy` strict over **924** files · `import-linter` **37/37** · `tsc` clean · **`frontend-suite` 3324 in 189 files** · **`eslint` clean** · `smoke` **24 stages in 219s** · scenario **baseline@1, 190 assertions** |
-| ⚠️ **Coverage margin narrowed and it is stated rather than rounded away** | **95.06% → 95.05%**, against a floor of **95.0**. ⛔ **Five basis points.** ⚡ **The slice added 359 lines of test and 19 invariants and coverage still fell**, because it also added domain, repository and contract code — **which is normal and is not a finding.** ⚠️ **What would be a finding is the next slice that takes it below the floor, and this row exists so that is not a surprise** |
+| **Certification** | ✅ [`1dc2c39e7f74`](certification/reports/1dc2c39e7f74.md) · migration head **`0059`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** |
+| **Cycle 239 gates** | ⚡ **EIGHT required, all recorded** — `pytest` **5199** · coverage **95.04%** · **668** security invariants · `mypy` strict over **933** files · `import-linter` **37/37** · `tsc` clean · **`frontend-suite` 3324 in 189 files** · **`eslint` clean** · `smoke` **24 stages in 229s** · scenario **baseline@1, 198 assertions** |
+| 🔴 **Coverage has fallen three cycles running, and the trend is now the report rather than the point** | **95.06% → 95.05% → 95.04%**, floor **95.0**. ⛔ **Four basis points.** ⚡ **Each fall is individually unremarkable — every slice added product code and test code together** — **but three consecutive monotonic falls is a different claim from three separate ones, and reporting them one at a time would have hidden it.** ⚠️ **Not yet a finding and no row opened.** ⛔ **At the current rate the fourth or fifth cycle crosses**, and **the lane that crosses it will not be the lane that caused it** — which is the reason this row states a trajectory rather than a number |
+| ⚠️ **`make coverage-debt` cannot answer the question this trend raises** | 📁 **Reported by Lane A**: its reader skips because `coverage json` exits 2 — **the READER failing rather than the run.** ⛔ **So the one instrument that would name WHICH files are pulling the figure down is unavailable exactly as the margin narrows.** ✅ **The certification figure is unaffected and is measured independently** |
 | ✅ **QE verified the guarantee in the database, not in the migration** | 🔴 **The whole slice rests on the PERSON predicate — two colleagues are legitimately the same tenant, so workspace isolation proves nothing here.** ✅ **Read from `pg_policies` on a freshly migrated database**: all three policies (`SELECT`, `INSERT`, `DELETE`) carry **`workspace_id` AND `user_id`**, and `relrowsecurity`/`relforcerowsecurity` are both `t`. ⛔ **No `UPDATE` policy, correctly** — the table is registered in **both** `TENANT_OWNED_TABLES` and `IMMUTABLE_TENANT_TABLES`, and requiring one would weaken immutability to satisfy a test |
 | 🔴 **A figure this dashboard published was transcribed, not measured — [B-1008](docs/BUGS.md)** | ⛔ **Cycle 236 printed *"458+ security invariants"*. Its own record said **632**. `458` is cycle **235**'s figure.** ⚡ **Found by refusing to carry either number forward and reading `certification/manifest.json` for all three runs instead.** 📁 **The footnote at the bottom of this section warns against precisely this and was written at cycle 232 — the class recurred four cycles later, in the file that documents it** |
 | ⚠️ **What the Security Invariant COUNT measures, and it is narrower than its name** | 🔴 **It counts test ids, and only `IMMUTABLE_TENANT_TABLES` is parametrized** — three sites in `test_tenancy_policy.py`, lines 338, 363 and 391. ⛔ **`TENANT_OWNED_TABLES` is iterated INSIDE single tests**, so registering a tenant-owned table adds **assertions and no ids**. ⚡ **Cycle 231's `+3` was one table entering the immutable set, times three parametrized tests; its three tenant-owned registrations moved the figure by ZERO.** ✅ **Those registrations are still enforced — the checks fail if a registered table lacks its policies — they are simply not counted.** ⛔ **So a cycle can protect more and move this number not at all, and a lane citing it as evidence that its registration is not decorative is citing the one figure insensitive to that.** 📁 **Measured by Lane C, verified independently by QE** |
-| **Measured beyond the record** | ⚡ **QE ran the gates certification names but does not capture** — **Disaster Recovery passed** with **651** invariants against the restarted production stack · **migrations reversible to base and back at head `0058`**, on a disposable clean database. ⛔ **[B-122](docs/BUGS.md): `frontend-suite` and `eslint` have run in **0 of 227** certification runs, and a red frontend suite reached `main` under a CERTIFIED stamp. Both are now REQUIRED and both are recorded above.** **A lane's figure is a claim; QE publishes a measurement** — 🔴 **and this row is where that failed: it carried `443`, `3254/184` and head `0054` forward for three cycles ([B-1008](docs/BUGS.md))** |
+| **Measured beyond the record** | ⚡ **QE ran the gates certification names but does not capture** — **Disaster Recovery passed** with **668** invariants against the restarted production stack · **migrations reversible to base and back at head `0059`**, on a disposable clean database. ⛔ **[B-122](docs/BUGS.md): `frontend-suite` and `eslint` have run in **0 of 227** certification runs, and a red frontend suite reached `main` under a CERTIFIED stamp. Both are now REQUIRED and both are recorded above.** **A lane's figure is a claim; QE publishes a measurement** — 🔴 **and this row is where that failed: it carried `443`, `3254/184` and head `0054` forward for three cycles ([B-1008](docs/BUGS.md))** |
 | ⚡ **Proven at runtime, not by reading** | **The `distDir` move ([B-219](docs/BUGS.md)) changed where the production image finds its static assets.** QE warned that copying to `.next/static` would produce **an image that starts and serves no CSS** — silent, and worse than a build failure. **Measured on the built image: `/_next/static/css/d8cb99ad71c03326.css`, `200`, 40 589 bytes.** ⛔ **The predicted failure mode is disproven on the one tree that could have had it** |
 | ⛔ **Promotion** | `promoted == certified` ✓ *(verified from `ls-remote` after the push, not from `rev-parse` before it)* · `--audit-main`: **1906 commits — 209 certified targets, 1697 inside a certified snapshot. None outside one** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN`, on the product owner's explicit override** — **not a resolution, and the severity was not touched** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
@@ -37,7 +38,7 @@
 
 > ⚠️ **`Load more` was replaced rather than kept, and that is the standard being applied rather than a preference.** 📁 **The two are different products**: one accumulates the page under somebody scanning it and makes *"which page am I on"* unanswerable. ✅ **`Previous`/`Next` over the existing keyset cursor, with a page number and NO denominator** — **keyset cannot know how many pages exist without reading them, and a total would be fabricated.**
 
-**Repository health:** **5143 backend tests** · ⚠️ **95.05% coverage** ✅ *(floor 95 — **5 basis points**)* · **3324 frontend tests** across **189 files** · **651 Security Invariants** · mypy strict over **924 files** · **59 migrations**, `0000`–`0058` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **219s** · **disaster recovery passing** · **migrations reversible on a clean database** · **20 module directories** · **59 ADRs** · **146 numbered architecture documents**.
+**Repository health:** **5199 backend tests** · ⚠️ **95.04% coverage** ⚠️ *(floor 95 — **4 basis points**, third consecutive fall)* · **3324 frontend tests** across **189 files** · **668 Security Invariants** · mypy strict over **933 files** · **60 migrations**, `0000`–`0059` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **229s** · **disaster recovery passing** · **migrations reversible on a clean database** · **20 module directories** · **59 ADRs** · **146 numbered architecture documents**.
 
 > ⚠️ **Two figures on that line were mislabelled rather than stale, and the distinction matters because only one of them is a measurement error.** ⛔ **It read *"60 ADRs"* — `ls adr/*.md`, which counts `README.md`** — **and *"148 numbered architecture documents"*, which counted `ARCHITECTURE_VALIDATION_M1_2.md` and `provider-qualification.md`, neither of them numbered. ✅ **59 and 146 are what the words claim.** ⚡ **The number was right for a question nobody asked** — the same shape as everything else this week, and the reason to re-derive a figure rather than re-read it.
 
@@ -113,6 +114,51 @@
 | **28 others** | various | mixed | — | See the register |
 
 **37 items · 5 closed.** ⚠️ **Four items have now waited five cycles or more, and every one of them needs the same person.** [C-024](docs/LANE_COORDINATION.md) is the sharpest: Timeline's backend was proven live this cycle by `runtime-composition`, so **ten lines of routing separate a working capability from a customer.**
+
+---
+
+## 1d · Release summary — 2026-08-16, cycle 239
+
+**Promoted `1dc2c39e` from `c349aff1`.** Eleven commits, two lanes. **First attempt, no aborts.**
+
+### ✅ What a customer can do that they could not before
+
+**A customer is told when Signora finishes researching an account, and the notification is theirs alone** — read state, unread counts, mark-as-read, and the delivery that produces them. **The legacy `Attention` rail entry is gone** and **Account 360 shows an Opportunities section.**
+
+⛔ **One half is honestly incomplete and the row says so**: TASK-495 reads `IN PROGRESS`, not `IN VALIDATION` — **the bell, the popover, the journey and the headed review are still the lane's.** ⚡ **The lane chose the accurate row over the tidy one.**
+
+### 🔴 The guarantee, read from PostgreSQL rather than from the migration
+
+**`notification` is the first person-scoped table whose policies are deliberately ASYMMETRIC**, and the asymmetry is the design rather than a gap:
+
+| | |
+|---|---|
+| `SELECT` | **`workspace_id` AND `recipient_id`** — narrowed to the recipient |
+| `INSERT` | **`workspace_id` only** — ⚡ **a notification is written FOR somebody else, and a recipient predicate on the write would permit notifying nobody but yourself** |
+| `DELETE` | **`workspace_id` only** — **erasability is a tenancy obligation, not a statement about what a row means** |
+| RLS | **enabled and forced**; registered in **both** `TENANT_OWNED_TABLES` and `IMMUTABLE_TENANT_TABLES` |
+
+✅ **The Security Invariant suite refused the migration's first form**, which shipped with no `DELETE` grant argued from immutability. ⛔ **The lane fixed the migration, not the test**, and recorded the rule for the fourth table of this class: ⚡ ***immutability is a claim about `UPDATE`; it is never a claim about `DELETE`.***
+
+### 🔴 Coverage fell for the third consecutive cycle
+
+**95.06 → 95.05 → 95.04**, floor **95.0**. ⛔ **Four basis points.** ⚡ **Reported as a trajectory because three monotonic falls is a different claim from three unremarkable points**, and ⚠️ **`make coverage-debt` — the instrument that would name which files are responsible — is unavailable, its reader exiting 2 on `coverage json`.**
+
+### ⛔ QE moved a lane's commits through an ungated shell fallback
+
+```bash
+git merge --ff-only origin/lane-qe || git rebase -q origin/lane-qe
+```
+
+**The `--ff-only` correctly failed; the `||` then rebased `integration` — sitting at the lane's tip — onto `lane-qe`**, replaying seven of their commits under new hashes. ✅ **Verified before proceeding: all seven present, `git cherry` reports 0 duplicates, the prior `integration` still an ancestor.** ⛔ **Nothing lost; the hashes the lane pushed are gone.**
+
+⚠️ **[B-1000](docs/BUGS.md)'s sixth instance, twenty minutes after the fifth was filed** — **and worse than it**: the fifth printed an answer nothing consumed; **this fallback changed what happened next and QE pushed before checking what it had done.**
+
+🔴 **The deeper error is the one worth keeping: QE put its own documentation-only branch into a cycle carrying a lane's four slices.** **The lane's branch was fast-forwardable alone.** 📁 **Which is exactly the reasoning QE had given Product Office two cycles earlier about not making a lane rebase for a batch that blocks nobody — applied to their branch and not to its own.**
+
+### ✅ `git cherry` replaced the hand-rolled comparison, and earned it immediately
+
+**The lane's branch read *7 ahead* under `rev-list --count` and *all seven `-`* under `git cherry`** — already upstream. ⚡ **That is the same false signal that produced [B-1009](docs/BUGS.md)'s *"never offered to QE"*, answered in 43ms by a command with no window to get wrong.**
 
 ---
 
