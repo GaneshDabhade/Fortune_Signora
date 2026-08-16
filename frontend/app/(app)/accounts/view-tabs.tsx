@@ -41,6 +41,12 @@ export interface ViewTabsProps {
   readonly onSelect: (id: string | null) => void;
   readonly mode: ViewMode;
   readonly onMode: (mode: ViewMode) => void;
+  /** ⚡ **Why the chosen view could not be opened**, or `null`. */
+  readonly refusal: string | null;
+  /** ⛔ **`undefined` when saving cannot work** — a control that fails after the
+   *  click is [B-255](../../../../docs/BUGS.md) with a delay. */
+  readonly onSave?: (name: string) => void;
+  readonly saving: boolean;
 }
 
 /** 📁 The design's own last tab — *"All companies"*, and it is the default. */
@@ -53,8 +59,12 @@ export function ViewTabs({
   onSelect,
   mode,
   onMode,
+  refusal,
+  onSave,
+  saving,
 }: ViewTabsProps) {
   return (
+    <>
     <div className="mb-4 flex flex-wrap items-center gap-1.5 border-b border-border-soft">
       <div role="tablist" aria-label="Saved views" className="flex flex-wrap items-center gap-1.5">
         <Tab label={ALL} active={selected === null} onSelect={() => onSelect(null)} />
@@ -78,16 +88,49 @@ export function ViewTabs({
       </div>
 
       {/* 🔴 **The switcher, on the tab row's right — the design's position.**
-          📁 *"Table · Cards · Board"*. ⛔ **Board is absent and deliberately
-          so**: it groups by a column, and every groupable column the design
-          names is [C-209](../../../../docs/LANE_COORDINATION.md)'s. **A third
-          tab grouping by `kind` would be the design's word on a different
-          idea** — and a control that silently did nothing is
-          [B-255](../../../../docs/BUGS.md). */}
+          📁 *"Table · Cards · Board"*. ⛔ **Board is absent, and the REASON has changed.**
+
+          ⚠️ **This said Board was impossible because *"every groupable column
+          the design names is C-209's"*.** 🔴 **That expired on 2026-08-12**:
+          [ADR-0409](../../../../docs/architecture/adr/0409-commercial-account-facts.md)
+          released renewal and stage, and the toolbar's `Group` now offers
+          four real columns — **so a board CAN be grouped honestly.**
+
+          ✅ **It is unbuilt rather than unbuildable**, and this comment says so
+          rather than keeping a justification that has stopped being true
+          ([§2](../../../../CLAUDE.md)). ⛔ **A third tab that rendered nothing
+          would still be [B-255](../../../../docs/BUGS.md)**, which is why it
+          is absent until it is built. */}
+      {/* ⚡ **One `ml-auto`, on the first of the two right-hand controls.**
+          ⛔ **Two would fight**: the second would take the remaining space and
+          the pair would drift apart as the tab row grew. */}
+      {onSave === undefined ? null : (
+        /* 📁 **The design's *"Save to view"***, in `--brand-ink` and 600
+            weight, on the right of the row it belongs to. ⚡ **A prompt rather
+            than a dialog**: the design shows no modal for it, and the one thing
+            it needs is a name. */
+        <button
+          type="button"
+          disabled={saving}
+          onClick={() => {
+            const name = window.prompt('Name this view');
+            if (name !== null && name.trim() !== '') onSave(name.trim());
+          }}
+          className="ml-auto rounded px-2 py-1 text-xs font-semibold text-accent hover:underline disabled:text-content-subtle focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        >
+          {saving ? 'Saving…' : 'Save to view'}
+        </button>
+      )}
+
       <div
         role="group"
         aria-label="View"
-        className="mb-1.5 ml-auto flex rounded-md bg-surface-sunken p-0.5"
+        // ⚡ **`ml-auto` only when Save is absent**, so exactly one control
+        // pushes and the pair stays together on the row's right.
+        className={cn(
+          'mb-1.5 flex rounded-md bg-surface-sunken p-0.5',
+          onSave === undefined && 'ml-auto',
+        )}
       >
         {(['table', 'cards'] as const).map((value) => (
           <button
@@ -107,6 +150,23 @@ export function ViewTabs({
         ))}
       </div>
     </div>
+
+      {/* 🔴 **The refusal, where the tab that caused it is.** ⛔ **An
+          `alert`, because the customer asked for something and did not get
+          it** — 📁 [P-A](../../../../docs/DOMAIN_DISCOVERY_REGISTER.md): a
+          failed read must never render as an empty result, and a view that
+          silently did not apply is exactly that.
+
+          ⚡ **The commonest case is not an error**: the store is
+          workspace-wide and holds four screens' declarations, so a Reports
+          definition in this row is ordinary — **and the sentence says so
+          rather than implying something broke.** */}
+      {refusal === null ? null : (
+        <p role="alert" className="-mt-2 mb-4 text-xs text-content-muted">
+          {refusal}
+        </p>
+      )}
+    </>
   );
 }
 

@@ -31,7 +31,11 @@ import { queryKeys } from '@/lib/query/keys';
  * opaque by contract** — pages are walked by echoing back what the last one
  * returned, never by computing anything.
  */
-const PAGE_SIZE = 50;
+/** ⚡ **Exported because the pager states the row range** — 📁 the design's
+ *  *"Rows 1–8 of 312"*. ⛔ **A second constant on the screen would drift from
+ *  the one the request actually sends**, and the range would be wrong by
+ *  exactly that difference ([§2](../../../CLAUDE.md)). */
+export const PAGE_SIZE = 50;
 
 export function useAccountsList(workspaceId: string | null) {
   return useInfiniteQuery({

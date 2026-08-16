@@ -40,7 +40,7 @@ import {
 } from '@/lib/query/hooks/account-segments';
 import { useWorkspaceMembers } from '@/lib/query/hooks/team';
 import { Building2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 
 import { formatDay } from '@/components/intelligence/dates';
 import { EntityName } from '@/components/intelligence/entity-name';
@@ -60,6 +60,12 @@ import {
   TR,
   Table,
 } from '@/components/ui';
+import {
+  apply as applyDeclaration,
+  declare as declareCompanies,
+  whyNotReadableHere,
+  type CompaniesDeclaration,
+} from '@/lib/accounts/view';
 import { AccountsToolbar } from './toolbar';
 import { ViewTabs } from './view-tabs';
 import {
@@ -71,14 +77,18 @@ import {
   type Density,
   type Filters,
   applyFilters,
+  applySort,
   choicesFor,
+  groupRows,
+  type GroupKey,
+  type Sort,
   toCsv,
   visibleColumns,
 } from '@/lib/accounts/table';
 import { cn } from '@/lib/design/cn';
 import { useAccountsCount } from '@/lib/query/hooks/accounts-count';
-import { useSavedViews } from '@/lib/query/hooks/saved-views';
-import { useAccountsList } from '@/lib/query/hooks/accounts-list';
+import { useSavedViews, useSaveView } from '@/lib/query/hooks/saved-views';
+import { PAGE_SIZE, useAccountsList } from '@/lib/query/hooks/accounts-list';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -120,6 +130,18 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
  * bites hardest: ⛔ **8,412 rows and zero look identical to a seller when the
  * difference is an outage.** ✅ **`error` is checked before `data`, always.**
  */
+/** 📁 **The design's pager control** — *"height:28px; padding:0 10px;
+ *  border-radius:7px; border:1px solid var(--line-soft)"*. ⚡ **`--line-soft`
+ *  and not `--line`**, which is what the design draws here and is the
+ *  distinction the product-wide border correction established: containers and
+ *  dividers take the soft hairline. */
+const PAGER =
+  'inline-flex h-control-sm items-center rounded-md border border-border-soft px-2.5 ' +
+  'text-xs font-medium text-content hover:bg-surface-sunken ' +
+  'disabled:cursor-not-allowed disabled:text-content-subtle disabled:hover:bg-transparent ' +
+  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ' +
+  'focus-visible:outline-accent';
+
 export default function CompaniesPage() {
   const { activeWorkspace } = useWorkspaceContext();
   const workspaceId = activeWorkspace?.id ?? null;
@@ -144,6 +166,12 @@ export default function CompaniesPage() {
    */
   const savedViews = useSavedViews(workspaceId);
   const [selectedView, setSelectedView] = useState<string | null>(null);
+  /** ⚡ **Why the chosen view could not be opened**, or `null`. ⛔ **A sentence
+   *  rather than a boolean**, because the screen has to say which view and why
+   *  — 📁 the same rule `LockedField` applies: a lock with no reason is worse
+   *  than an absent field. */
+  const [viewRefusal, setViewRefusal] = useState<string | null>(null);
+  const saveView = useSaveView(workspaceId);
 
   /**
    * 🔴 **Previous / Next over the cursor, and it REPLACED *Load more*** —
@@ -164,6 +192,16 @@ export default function CompaniesPage() {
   const [page, setPage] = useState(0);
   const [mode, setMode] = useState<'table' | 'cards'>('table');
   const [density, setDensity] = useState<Density>('comfortable');
+  /** ⚡ **`null` is the endpoint's own order** — oldest first, which is stable
+   *  because *"a list ordered by anything the graph recomputes would reshuffle
+   *  underneath somebody reading it."* */
+  const [sort, setSort] = useState<Sort | null>(null);
+  const [group, setGroup] = useState<GroupKey | null>(null);
+  /** 📁 **The design's collapsible groups** — *"groups collapse, and a collapsed
+   *  group still shows its worst status."* ⚡ **Collapsed rather than expanded
+   *  is the stored set**, so changing the grouping opens everything rather than
+   *  hiding rows behind a label the customer has not seen before. */
+  const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
   const [columns, setColumns] = useState<readonly ColumnId[]>(DEFAULT_COLUMNS);
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
 
@@ -172,7 +210,17 @@ export default function CompaniesPage() {
   const loadedAll = useMemo(() => pages.flatMap((p) => p.items), [pages]);
   // ⚠️ **`new Date()` is read once per render rather than per row**, so every
   // row on one screen is aged against one moment.
-  const shown = useMemo(() => applyFilters(current, filters, new Date()), [current, filters]);
+  // ⚡ **Filter, then order.** ⛔ **Never the reverse** — sorting rows that are
+  // about to be discarded is work for nothing, and the two are independent so
+  // the cheaper one goes first.
+  const shown = useMemo(
+    () => applySort(applyFilters(current, filters, new Date()), sort),
+    [current, filters, sort],
+  );
+  /** 📁 **The design's grouped table**, or `null` when nothing is grouped —
+   *  ⛔ **`null` rather than one group of everything**, which would draw a
+   *  header a customer never asked for. */
+  const groups = useMemo(() => groupRows(shown, group), [shown, group]);
   const shownColumns = useMemo(() => visibleColumns(columns), [columns]);
 
   // ⚡ **Only the rows on screen**, and only when the Tags column is on. 📁 A
@@ -394,7 +442,57 @@ export default function CompaniesPage() {
         views={savedViews.data?.items ?? []}
         loading={savedViews.isLoading}
         selected={selectedView}
-        onSelect={setSelectedView}
+        /**
+         * 🔴 **Opening a view APPLIES it, or says why it cannot.**
+         *
+         * ⛔ **Never partly applied.** 📁 `working-list.ts` names the outcome:
+         * *"the customer gets a list that is neither what they saved nor what
+         * they asked for, and nothing says so."* ⚡ **The store is
+         * workspace-wide and holds four screens' declarations**, so a Reports
+         * definition sitting in this tab row is the ordinary case rather than
+         * an error — **and the refusal says which it is.**
+         */
+        onSelect={(id) => {
+          setSelectedView(id);
+          setViewRefusal(null);
+          if (id === null) {
+            setFilters(NO_FILTERS);
+            setGroup(null);
+            setSort(null);
+            return;
+          }
+          const view = savedViews.data?.items.find((candidate) => candidate.id === id);
+          if (view === undefined) return;
+          const why = whyNotReadableHere(view.declaration);
+          if (why !== null) {
+            setViewRefusal(why);
+            return;
+          }
+          const applied = applyDeclaration(view.declaration as unknown as CompaniesDeclaration);
+          setFilters(applied.filters);
+          setGroup(applied.group);
+          setSort(applied.sort);
+          setPage(0);
+        }}
+        refusal={viewRefusal}
+        onSave={
+          // ⛔ **Offered only when it can work.** ⚡ A save with no workspace is
+          // a control that fails after the click, which is B-255 with a delay.
+          workspaceId === null
+            ? undefined
+            : (name: string) =>
+                saveView.mutate(
+                  {
+                    name,
+                    declaration: declareCompanies(filters, group, sort) as unknown as Record<
+                      string,
+                      unknown
+                    >,
+                  },
+                  { onSuccess: (view) => setSelectedView(view.id) },
+                )
+        }
+        saving={saveView.isPending}
         mode={mode}
         onMode={setMode}
       />
@@ -406,6 +504,10 @@ export default function CompaniesPage() {
         onColumns={setColumns}
         filters={filters}
         onFilters={setFilters}
+        sort={sort}
+        onSort={setSort}
+        group={group}
+        onGroup={setGroup}
         kinds={choicesFor(current, 'kind')}
         sources={choicesFor(current, 'source')}
         total={typeof total.data?.total === 'number' ? total.data.total : null}
@@ -503,7 +605,65 @@ export default function CompaniesPage() {
                 </TR>
               </THead>
               <TBody>
-                {shown.map((row) => (
+                {(groups ?? [{ label: '', rows: shown, openAcv: null }]).map((bucket) => (
+                  <Fragment key={bucket.label}>
+                    {/* 📁 **The design's group header row** — *"Renewal in Q3
+                        FY26 · 18 companies · $7.42M"* — on `--bg`, spanning the
+                        table, with a soft hairline beneath.
+
+                        ⛔ **Two figures, not four.** The design also prints a
+                        status badge and an average score; **a badge is a
+                        classification nothing stores and the average needs the
+                        score column that has no source.** ⚡ **A header carrying
+                        two true figures is worth more than one carrying two
+                        true and two invented.** */}
+                    {groups === null ? null : (
+                      <TR>
+                        <TD
+                          colSpan={shownColumns.length + 1}
+                          className="bg-canvas py-2.5 text-sm"
+                        >
+                          <span className="flex flex-wrap items-center gap-2.5">
+                            {/* 📁 **The design's chevron**, and it is the
+                                control rather than a decoration beside one. */}
+                            <button
+                              type="button"
+                              aria-expanded={!collapsed.has(bucket.label)}
+                              onClick={() =>
+                                setCollapsed((was) => {
+                                  const next = new Set(was);
+                                  if (!next.delete(bucket.label)) next.add(bucket.label);
+                                  return next;
+                                })
+                              }
+                              className="flex items-center gap-2.5 rounded text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                            >
+                              <span aria-hidden="true" className="text-xs text-content-subtle">
+                                {collapsed.has(bucket.label) ? '▸' : '▾'}
+                              </span>
+                              <span className="font-semibold text-content">{bucket.label}</span>
+                            </button>
+                            <span className="tabular-nums text-content-subtle">
+                              {bucket.rows.length.toLocaleString()}
+                              {bucket.rows.length === 1 ? ' company' : ' companies'}
+                            </span>
+                            {/* ⛔ **Omitted, never zero.** 📁 A `$0` subtotal
+                                over a group nobody has reported a figure for
+                                would be the header stating a fact no source
+                                supplied — and `groupRows` also withholds it
+                                when two currencies are present, because
+                                ADR-0409 forbids converting one into the
+                                other. */}
+                            {bucket.openAcv === null ? null : (
+                              <span className="tabular-nums text-content-subtle">
+                                · {formatMoney(bucket.openAcv)}
+                              </span>
+                            )}
+                          </span>
+                        </TD>
+                      </TR>
+                    )}
+                {(collapsed.has(bucket.label) ? [] : bucket.rows).map((row) => (
                   <TR key={row.account.account_id}>
                     <TD className={ROW_PADDING[density]}>
                       <input
@@ -636,6 +796,8 @@ export default function CompaniesPage() {
                     ))}
                   </TR>
                 ))}
+                  </Fragment>
+                ))}
               </TBody>
             </Table>
             </>
@@ -644,27 +806,69 @@ export default function CompaniesPage() {
           <nav
             aria-label="Pages"
             data-testid="accounts-pager"
-            className="mt-4 flex items-center gap-3"
+            className="mt-4 flex flex-wrap items-center gap-3 border-t border-border-soft pt-3"
           >
-            <Button
-              variant="secondary"
-              onClick={() => setPage((was) => Math.max(0, was - 1))}
-              disabled={page === 0}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={goNext}
-              disabled={!hasNext || accounts.isFetchingNextPage}
-            >
-              {accounts.isFetchingNextPage ? 'Loading…' : 'Next'}
-            </Button>
-            {/* ⛔ **A page number, never a page COUNT.** ⚡ **Keyset cannot know
-                how many pages exist without reading them**, and printing a
-                denominator would be the fabricated total
-                [C-1431](../../../../docs/LANE_COORDINATION.md) refuses. */}
-            <span className="text-2xs text-content-subtle">Page {page + 1}</span>
+            {/* 📁 **The design's own sentence** — *"Rows 1–8 of 312"*, 12px,
+                `--ink-3`, tabular numerals, on the row's left.
+
+                ⛔ **The denominator is the WORKSPACE total, and only when the
+                count has answered.** ⚡ **Never the loaded figure in its
+                place**: it would read correctly on the first page and be wrong
+                by more with every page after it.
+
+                ⚠️ **The design also says *"virtualised beyond 100"***. **This
+                table renders every row it has read** — a page is 50 — **so the
+                clause is omitted rather than claimed.** */}
+            <span className="text-2xs tabular-nums text-content-subtle">
+              {shown.length === 0
+                ? 'No rows'
+                : `Rows ${(page * PAGE_SIZE + 1).toLocaleString()}–${(
+                    page * PAGE_SIZE + shown.length
+                  ).toLocaleString()}${
+                    typeof total.data?.total === 'number'
+                      ? ` of ${total.data.total.toLocaleString()}`
+                      : ''
+                  }`}
+            </span>
+
+            <span className="ml-auto flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setPage((was) => Math.max(0, was - 1))}
+                disabled={page === 0}
+                className={PAGER}
+              >
+                Previous
+              </button>
+              {/* 🔴 **The current page, and no numbers around it.**
+
+                  📁 **The design draws *1 2 3*.** ⛔ **Keyset pagination cannot
+                  offer them**: a cursor names where the NEXT page resumes, so
+                  page 3 is unreachable without walking pages 1 and 2 — and the
+                  endpoint refuses offsets for a stated reason: *"the graph is
+                  written continuously, so an offset page would skip or repeat
+                  rows between two requests and a customer paging the list would
+                  silently miss accounts."*
+
+                  ⚡ **So the current page renders in the design's brand pill and
+                  the neighbours are absent rather than dead.** 📁
+                  [B-255](../../../../docs/BUGS.md): a control that silently
+                  does nothing is worse than one that is absent. */}
+              <span
+                aria-current="page"
+                className="inline-flex h-control-sm min-w-[2rem] items-center justify-center rounded-md bg-accent px-2.5 text-xs font-semibold tabular-nums text-accent-contrast"
+              >
+                {page + 1}
+              </span>
+              <button
+                type="button"
+                onClick={goNext}
+                disabled={!hasNext || accounts.isFetchingNextPage}
+                className={PAGER}
+              >
+                {accounts.isFetchingNextPage ? 'Loading…' : 'Next'}
+              </button>
+            </span>
           </nav>
         </>
       )}

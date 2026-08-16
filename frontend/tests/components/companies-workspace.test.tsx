@@ -193,7 +193,15 @@ describe('🔴 Previous / Next, never a fabricated total', () => {
     renderPage();
     const pager = await screen.findByTestId('accounts-pager');
 
-    expect(pager).toHaveTextContent('Page 1');
+    // ⚠️ **The wording moved to the design's** — *"Rows 1–8 of 312"* replaced
+    // *"Page 1"* — **and the claim did not.** ⛔ **The current page is marked
+    // and its neighbours do not exist**: keyset cannot reach page 3 without
+    // walking 1 and 2, so a numbered button would be a control that could not
+    // work.
+    expect(within(pager).getByText('1')).toHaveAttribute('aria-current', 'page');
+    expect(pager).toHaveTextContent(/Rows 1–\d/);
+    // ⛔ **No denominator here**, because this test does not answer the count —
+    // ⚡ **and the loaded figure is never printed in its place.**
     expect(pager.textContent).not.toMatch(/of \d/);
     expect(within(pager).queryByRole('button', { name: '2' })).not.toBeInTheDocument();
   });
@@ -217,7 +225,10 @@ describe('🔴 Previous / Next, never a fabricated total', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Next' }));
     await screen.findByText('Ashgrove Retail');
-    expect(screen.getByTestId('accounts-pager')).toHaveTextContent('Page 2');
+    expect(within(screen.getByTestId('accounts-pager')).getByText('2')).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
 
     await userEvent.click(screen.getByRole('button', { name: 'Previous' }));
     await screen.findByText('Vantage Logistics');

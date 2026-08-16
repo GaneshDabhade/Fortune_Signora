@@ -8,9 +8,15 @@ import {
   without,
   type Density,
   type Filters,
+  GROUPABLE,
+  type GroupKey,
   NO_FILTERS,
   isFiltered,
+  SORTABLE,
+  type Sort,
+  type SortKey,
 } from '@/lib/accounts/table';
+import { cn } from '@/lib/design/cn';
 
 /**
  * **The Companies toolbar** — [TASK-1475](../../../../docs/BACKLOG.md), against
@@ -25,6 +31,12 @@ import {
 export interface ToolbarProps {
   readonly density: Density;
   readonly onDensity: (density: Density) => void;
+  /** ⚡ **`null` is the endpoint's own order** — oldest first — 📁 and it is a
+   *  real choice rather than the absence of one. */
+  readonly sort: Sort | null;
+  readonly onSort: (sort: Sort | null) => void;
+  readonly group: GroupKey | null;
+  readonly onGroup: (group: GroupKey | null) => void;
   readonly columns: readonly ColumnId[];
   readonly onColumns: (columns: readonly ColumnId[]) => void;
   readonly filters: Filters;
@@ -49,6 +61,92 @@ export interface ToolbarProps {
  *  border-radius:8px; border:1px solid var(--line); font-size:12px;
  *  font-weight:600"*. ⚡ **Declared once** so Columns and Density are the same
  *  control at the same size, which is what the design's row actually shows. */
+/**
+ * 📁 **The design's arrangement chip** — *"Group: Renewal quarter ✕"* — which
+ * is a different control from the outline pill beside it: **`--sunken`, no
+ * border, 600 weight**, because an APPLIED arrangement and an AVAILABLE
+ * control should not look the same.
+ *
+ * ⛔ **A `<select>` inside the chip rather than a bespoke menu.** ⚡ **The
+ * native control carries its own keyboard, focus and announcement**, and this
+ * is not the place to reimplement any of it — 📁 the same reasoning
+ * `AccessibilityPanel` gives for using a real checkbox.
+ */
+function Chip({
+  label,
+  options,
+  value,
+  arrow,
+  onChoose,
+  onFlip,
+}: {
+  label: string;
+  options: readonly { value: string; label: string }[];
+  /** ⚡ **The chosen option's `value`, or `''` when none is chosen.** */
+  value: string;
+  /** 📁 The design's *"Score ↑"* — ⛔ **omitted where direction is meaningless**,
+   *  as it is for a grouping. */
+  arrow?: 'asc' | 'desc';
+  onChoose: (value: string | null) => void;
+  onFlip?: () => void;
+}) {
+  const applied = value !== '';
+  return (
+    <span
+      className={cn(
+        'inline-flex h-control-sm items-center gap-1 rounded-md px-2.5 text-xs font-semibold',
+        applied
+          ? 'bg-surface-sunken text-content'
+          : 'border border-border text-content-muted',
+      )}
+    >
+      <span className={applied ? 'text-content-subtle' : undefined}>{label}</span>
+      {/* ♿ **Labelled, because three unlabelled selects on one row are three
+          identical controls to a screen reader.** ⛔ **A native select rather
+          than a bespoke menu** — it carries its own keyboard, focus and
+          announcement, and this is not the place to reimplement any of it. */}
+      <select
+        aria-label={label}
+        value={value}
+        onChange={(event) => onChoose(event.target.value === '' ? null : event.target.value)}
+        className={cn(
+          'cursor-pointer border-0 bg-transparent p-0 pr-1 text-xs font-semibold outline-none',
+          applied ? 'text-content' : 'text-content-muted',
+        )}
+      >
+        <option value="">None</option>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+      {/* 📁 **The arrow IS the control** — the design writes the direction into
+          the chip rather than beside it, so clicking it is what reverses. */}
+      {applied && arrow !== undefined && onFlip !== undefined ? (
+        <button
+          type="button"
+          onClick={onFlip}
+          aria-label={`Sort ${arrow === 'asc' ? 'descending' : 'ascending'}`}
+          className="rounded px-0.5 text-content hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
+        >
+          {arrow === 'asc' ? '↑' : '↓'}
+        </button>
+      ) : null}
+      {applied ? (
+        <button
+          type="button"
+          onClick={() => onChoose(null)}
+          aria-label={`Remove the ${label.toLowerCase()}`}
+          className="rounded text-content-subtle hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
+        >
+          ×
+        </button>
+      ) : null}
+    </span>
+  );
+}
+
 const PILL =
   'inline-flex h-control-sm items-center gap-1.5 rounded-md border border-border ' +
   'px-2.5 text-xs font-semibold text-content ' +
@@ -58,6 +156,10 @@ const PILL =
 export function AccountsToolbar({
   density,
   onDensity,
+  sort,
+  onSort,
+  group,
+  onGroup,
   columns,
   onColumns,
   filters,
@@ -69,6 +171,8 @@ export function AccountsToolbar({
   loaded,
 }: ToolbarProps) {
   const chosen = new Set<ColumnId>(columns);
+  const sorted = sort === null ? undefined : SORTABLE.find((s) => s.key === sort.key);
+  const grouped = group === null ? null : GROUPABLE.find((g) => g.key === group);
   const conditions = conditionsOf(filters);
 
   return (
@@ -218,6 +322,39 @@ export function AccountsToolbar({
           nothing is worse than one that is absent. */}
       <div className="flex flex-wrap items-center gap-2">
 
+
+        {/* 📁 **The design's own chip** — *"Group: Renewal quarter ✕"*, with a
+            leading rule glyph and a remove when one is set. ⚡ **`--sunken` and
+            600 weight when active**, which is how the design distinguishes an
+            applied arrangement from an available control. */}
+        <Chip
+          label="Group"
+          value={grouped?.key ?? ''}
+          options={GROUPABLE.map((g) => ({ value: g.key, label: g.label }))}
+          onChoose={(value) => onGroup(value === null ? null : (value as GroupKey))}
+        />
+
+        {/* 📁 *"Sort: Score ↑, then ACV ↓"* — ⛔ **one key, because the
+            design's primary is Signora score and nothing publishes one.** ⚡ The
+            arrow is the direction and clicking the chip's value flips it. */}
+        <Chip
+          label="Sort"
+          value={sorted?.key ?? ''}
+          arrow={sort?.direction}
+          options={SORTABLE.map((option) => ({ value: option.key, label: option.label }))}
+          onChoose={(value) =>
+            onSort(value === null ? null : { key: value as SortKey, direction: 'asc' })
+          }
+          onFlip={
+            sort === null
+              ? undefined
+              : () =>
+                  onSort({
+                    key: sort.key,
+                    direction: sort.direction === 'asc' ? 'desc' : 'asc',
+                  })
+          }
+        />
 
         {/* 📁 *"Density"* — ⚡ **the profile's own vocabulary**, because a person
             already sets this about themselves. ⛔ **A pill that toggles, not a

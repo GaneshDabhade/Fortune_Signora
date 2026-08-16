@@ -422,3 +422,205 @@ export function without(filters: Filters, id: keyof Filters): Filters {
       return { ...filters, neverObserved: false };
   }
 }
+
+/* ------------------------------------------------------------------ sort */
+
+/**
+ * 📁 **The design's sort chip** — *"Sort: Score ↑, then ACV ↓"*.
+ *
+ * ⛔ **One key, not two.** ⚡ **The design's example sorts by score first**, and
+ * **Signora score is the one column with no source anywhere** — so the
+ * secondary key in that sentence cannot be built and a two-key control whose
+ * primary is permanently empty would be a control that does nothing.
+ * 📁 [B-255](../../docs/BUGS.md).
+ *
+ * ⚠️ **Client-side, over the page in hand — the same bound the filters carry
+ * and the same sentence states it.** ⛔ `accounts-list` publishes `limit` and
+ * `cursor` and nothing else, so a sort here orders what has been read. **A
+ * control that looked like it ordered 8,412 rows while ordering 50 would be
+ * the quiet lie this screen keeps refusing.**
+ */
+export type SortKey = 'company' | 'acv' | 'renewal' | 'freshness';
+export type SortDirection = 'asc' | 'desc';
+
+export interface Sort {
+  readonly key: SortKey;
+  readonly direction: SortDirection;
+}
+
+/** ⚡ **The list's own order, and the design's default is not available** —
+ *  📁 the endpoint returns oldest-first and says so: *"a list ordered by
+ *  anything the graph recomputes would reshuffle underneath somebody reading
+ *  it."* ⛔ **`null` is that order**, and it is a real choice rather than an
+ *  absence of one. */
+export const NO_SORT: Sort | null = null;
+
+export const SORTABLE: readonly { readonly key: SortKey; readonly label: string }[] = [
+  { key: 'company', label: 'Company' },
+  { key: 'acv', label: 'Open ACV' },
+  { key: 'renewal', label: 'Renewal' },
+  { key: 'freshness', label: 'Last observed' },
+];
+
+/**
+ * ⚠️ **A row with nothing to sort on always sorts LAST**, in both directions.
+ *
+ * ⛔ **Not treated as zero and not treated as infinity.** 📁 An unstated ACV is
+ * absence, and sorting an unreported account to the top of *"highest value"*
+ * would be exactly the fabrication the column refuses to make in its cell.
+ */
+function sortableValue(row: ListedAccount, key: SortKey): number | string | null {
+  switch (key) {
+    case 'company':
+      return row.account.name?.toLowerCase() ?? null;
+    case 'acv':
+      return row.commercial.open_acv?.amount ?? null;
+    case 'renewal':
+      return row.commercial.renewal_date;
+    case 'freshness':
+      return row.account.last_observed_at;
+  }
+}
+
+export function applySort(
+  rows: readonly ListedAccount[],
+  sort: Sort | null,
+): readonly ListedAccount[] {
+  if (sort === null) return rows;
+  const factor = sort.direction === 'asc' ? 1 : -1;
+  return [...rows].sort((left, right) => {
+    const a = sortableValue(left, sort.key);
+    const b = sortableValue(right, sort.key);
+    // **Absence sinks, whichever way the arrow points.**
+    if (a === null && b === null) return 0;
+    if (a === null) return 1;
+    if (b === null) return -1;
+    if (a === b) return 0;
+    return (a < b ? -1 : 1) * factor;
+  });
+}
+
+/* ----------------------------------------------------------------- group */
+
+/**
+ * 📁 **The design's group chip** — *"Group: Renewal quarter"* — **and its group
+ * header row**: *"Renewal in Q3 FY26 · 18 companies · $7.42M · Needs attention
+ * · Avg score 41"*.
+ *
+ * ⛔ **The badge and the average score are not built.** *Needs attention* is a
+ * classification nothing stores and *Avg score* needs the score column that
+ * has no source. ⚡ **The count and the value subtotal ARE built**, and a
+ * header carrying two true figures is worth more than one carrying two true
+ * and two invented.
+ */
+export type GroupKey = 'renewal' | 'stage' | 'kind' | 'source';
+
+export const GROUPABLE: readonly { readonly key: GroupKey; readonly label: string }[] = [
+  { key: 'renewal', label: 'Renewal quarter' },
+  { key: 'stage', label: 'Stage' },
+  { key: 'kind', label: 'Kind' },
+  { key: 'source', label: 'Source' },
+];
+
+/** 📁 **The design's own group label** — *"Renewal in Q3 FY26"*. ⚡ **Calendar
+ *  quarters**, because a fiscal year is a customer setting nothing stores and
+ *  guessing one would relabel every group wrongly for most tenants. */
+export function renewalQuarter(day: string): string {
+  const when = new Date(day);
+  if (Number.isNaN(when.getTime())) return 'Renewal date unreadable';
+  return `Renewal in Q${Math.floor(when.getUTCMonth() / 3) + 1} ${when.getUTCFullYear()}`;
+}
+
+/** ⚡ **The bucket a row belongs to**, or `null` when it belongs to none —
+ *  📁 which is its own group and is never folded into the first one. */
+export function groupOf(row: ListedAccount, key: GroupKey): string | null {
+  switch (key) {
+    case 'renewal':
+      return row.commercial.renewal_date === null
+        ? null
+        : renewalQuarter(row.commercial.renewal_date);
+    case 'stage':
+      return row.commercial.stage?.label ?? null;
+    case 'kind':
+      return row.kind;
+    case 'source':
+      return row.account.source;
+  }
+}
+
+export interface AccountGroup {
+  readonly label: string;
+  readonly rows: readonly ListedAccount[];
+  /** ⚡ **The subtotal across the rows that HAVE a figure.** ⛔ `null` when none
+   *  do — 📁 a `$0` subtotal over fifteen unreported accounts would be the
+   *  header stating a fact nobody supplied. */
+  readonly openAcv: Money | null;
+}
+
+/**
+ * **The design's grouped table, one level deep** — 📁 *"one level, on any
+ * groupable column, with per-group aggregates in the header."*
+ *
+ * ⛔ **Ungrouped rows come LAST, under their own stated heading.** 📁 The
+ * product owner's standing ruling one read away: *"the absence of results and
+ * the absence of the group represent different business meanings"* — **an
+ * account with no renewal date has not been left out, and the header says so
+ * rather than the row vanishing.**
+ *
+ * ⚠️ **Groups are ordered by their label**, deterministically. ⛔ **Never by
+ * size** — 📁 the same refusal `find_accounts_grouped` makes: *"a group that
+ * moves when its results change makes the same query render differently for a
+ * reason nobody asked about."*
+ */
+export const UNGROUPED = 'Not reported';
+
+/** ⚡ **A group heading is a sentence a person reads, so it is capitalised.**
+ *  ⛔ **Only the heading** — the `Kind` COLUMN keeps the contract's own word,
+ *  because a cell states a value and a heading names a set. 📁 The design's own
+ *  headings read *"Renewal in Q3 FY26"*, never `renewal_q3`. */
+function heading(label: string): string {
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+export function groupRows(
+  rows: readonly ListedAccount[],
+  key: GroupKey | null,
+): readonly AccountGroup[] | null {
+  if (key === null) return null;
+  const buckets = new Map<string, ListedAccount[]>();
+  for (const row of rows) {
+    const label = groupOf(row, key) ?? UNGROUPED;
+    const held = buckets.get(label);
+    if (held === undefined) buckets.set(label, [row]);
+    else held.push(row);
+  }
+  return [...buckets.entries()]
+    .sort(([a], [b]) => {
+      if (a === UNGROUPED) return 1;
+      if (b === UNGROUPED) return -1;
+      return a.localeCompare(b);
+    })
+    .map(([label, held]) => ({
+      label: label === UNGROUPED ? label : heading(label),
+      rows: held,
+      openAcv: subtotal(held),
+    }));
+}
+
+/**
+ * ⛔ **Currencies are never added together.** 📁 [ADR-0409](../../docs/architecture/adr/0409-commercial-account-facts.md)
+ * §5: *"currency is carried, never converted"* — ⚡ **so a group holding both
+ * USD and EUR has no single subtotal**, and this returns `null` rather than a
+ * number that would be silently wrong. **Summing them would require a rate
+ * applied at a moment, which is the conversion the ADR forbids.**
+ */
+function subtotal(rows: readonly ListedAccount[]): Money | null {
+  const stated = rows.map((row) => row.commercial.open_acv).filter((m): m is Money => m !== null);
+  if (stated.length === 0) return null;
+  const currencies = new Set(stated.map((m) => m.currency));
+  if (currencies.size > 1) return null;
+  return {
+    amount: stated.reduce((total, m) => total + m.amount, 0),
+    currency: stated[0]!.currency,
+  };
+}
