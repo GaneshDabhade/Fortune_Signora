@@ -399,6 +399,29 @@ origin/integration 🟠      origin/lane-qe 🟠      origin/main 🟠
 
 📁 **Same family as [§5g](#5g--a-count-compares-reachability-only-content-compares-content) — a number reported without the mapping its reader will apply.**
 
+## 5g-3 · A prepared row is not finished until somebody has tried to claim it
+
+**Recorded 2026-08-16, from Lane A's measurement of this office's own output.**
+
+🔴 **Seven rows opened in one day. SIX needed something that was not in them:**
+
+| | what was missing |
+|---|---|
+| **TASK-1416** | a figure in a report to drill into |
+| **TASK-1432** | an importer for `scope.ts` — ⛔ **this office had released it on a text match** |
+| **TASK-1424** | to not already be on `main` |
+| **TASK-202** | a hosted credential |
+| **TASK-1481** | an owner — `modules.toml` and §20e disagree |
+| **TASK-1482** | a ruling — deleting the entry meets [D-225](../../DECISION_REGISTER.md) §4 |
+
+✅ **`TASK-480` was the ONE that needed nothing, and the reason is measurable rather than lucky:** ⚡ **Lane A audited it BEFORE claiming, found the tier ambiguity, and the product owner answered it before the row was opened.**
+
+> ## **One message before claiming costs a message. One claim spent finding out costs a poll — and the lane is idle for it.**
+
+⛔ **The uncomfortable half is that this office prepared all seven.** ⚠️ **A row with a Definition of Done, testing metadata and a Change Budget still reads as complete while missing the one fact that decides whether it can start** — **because everything a preparer checks is IN the row, and what is missing is in the repository.**
+
+✅ **So the test before releasing: *what would the implementing lane find in the first ten minutes that this row does not say?*** 📁 **Six of seven had an answer, and five of those were checkable from here.**
+
 ## 5h · A hand-maintained copy of a registry is the defect. Derive it.
 
 **Three instances in two days, in three different kinds of artefact.**
