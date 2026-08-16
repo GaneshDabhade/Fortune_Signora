@@ -10,15 +10,15 @@
 [meta]
 generator      = "infra/coordination.py"
 generated_from = "e0d6443"
-task_count     = 55
+task_count     = 56
 
 [lane.Lane_A]
 notice             = "TASK-495's body contradicted its own Status in SIX cells, not the three you found — the sixth is the Definition of Done. Repaired; C-1436 carries it. The vendor is not this slice: nothing in it leaves the process. One correction to your shape — ai_platform registers where a credential exists AND deliberately does not fall back, so in-app is a channel, never a substitute for one nobody configured."
 backlog            = ["TASK-421", "TASK-1416", "TASK-1424", "TASK-1478", "TASK-1482"]
-assigned_total     = 46
-claimable          = 5
+assigned_total     = 47
+claimable          = 6
 claimable_now      = 5
-awaiting_sync      = 0
+awaiting_sync      = 1
 in_flight          = 22
 actionable         = 7
 awaiting_qe_transition = 0
@@ -26,9 +26,9 @@ blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 19
 lane_utilization   = 4.4
-idle_prediction_days   = 0.7
+idle_prediction_days   = 0.9
 dependency_wait_days   = 4.3
-blocked_duration_days  = 0.7
+blocked_duration_days  = 1.7
 critical_path_max      = 2
 
 [lane.Lane_C]
@@ -47,7 +47,7 @@ blocked            = 3
 lane_utilization   = 0.4
 idle_prediction_days   = 0.1
 dependency_wait_days   = 3.2
-blocked_duration_days  = 2.2
+blocked_duration_days  = 3.2
 critical_path_max      = 0
 
 [[task]]
@@ -239,7 +239,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— REVERTED by Lane C, 2026-08-15. ⛔ THIS OFFICE'S 2026-08-14 RELEASE W"
 waiting_for    = "— REVERTED by Lane C, 2026-08-15. ⛔ THIS OFFICE'S 2026-08-14 RELEASE WAS WRONG.** 🔴 **It said *'`copilot.tsx` and `top-bar.tsx` both read `lib/shell/s"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -255,7 +255,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane C, 2026-08-09, behind the state each banner reports**"
 waiting_for    = "— Lane C, 2026-08-09, behind the state each banner reports**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -287,7 +287,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — ⛔ **NOT `READY`, deliberately.** ⚡ **The prerequisite is named be"
 waiting_for    = "** — ⛔ **NOT `READY`, deliberately.** ⚡ **The prerequisite is named below and is genuinely unmet**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -385,6 +385,22 @@ estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
+
+[[task]]
+id            = "TASK-1484"
+title         = "The two top-bar specs the shell implements from a partial reading of the design"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-200"
@@ -511,7 +527,7 @@ next_lane      = "Lane A"
 critical_path  = 0
 estimated_ready = "** — **trigger: the Billing screen is scheduled for implementation**"
 waiting_for    = "** — **trigger: the Billing screen is scheduled for implementation**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -527,7 +543,7 @@ next_lane      = "—"
 critical_path  = 1
 estimated_ready = "when TASK-411 complete"
 waiting_for    = "behind [TASK-411](#task-411) — Lane C, 2026-08-11, on Lane A's finding.** ⛔ **It read `READY` and should not have.** ⚡ *'Every figure derives from TAS"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -575,7 +591,7 @@ next_lane      = "Lane A"
 critical_path  = 1
 estimated_ready = "** — after [TASK-421](#task-421), **and blocked on the ADR [437 §3](ar"
 waiting_for    = "** — after [TASK-421](#task-421), **and blocked on the ADR [437 §3](architecture/437-ai-platform-future-epic.md) calls *ADR-B*: *'where does AI policy"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -591,7 +607,7 @@ next_lane      = "—"
 critical_path  = 1
 estimated_ready = "** — after [TASK-421](#task-421)"
 waiting_for    = "** — after [TASK-421](#task-421)"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -607,7 +623,7 @@ next_lane      = "—"
 critical_path  = 2
 estimated_ready = "when TASK-422 complete"
 waiting_for    = "** — after [TASK-422](#task-422)"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -623,7 +639,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: the first support request that cannot be answered with"
 waiting_for    = "** — **trigger: the first support request that cannot be answered without database access**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -639,7 +655,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— AND TRIGGER *(c)* HAS FIRED. Recorded 2026-08-13** ([D-235](DECISION"
 waiting_for    = "— AND TRIGGER *(c)* HAS FIRED. Recorded 2026-08-13** ([D-235](DECISION_REGISTER.md) ③). 🔴 **`backend/migrations/versions/` on `integration` is at `005"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -687,7 +703,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: [SW-02](architecture/482-sales-workspace.md) is schedu"
 waiting_for    = "** — **trigger: [SW-02](architecture/482-sales-workspace.md) is scheduled.** [C-215](LANE_COORDINATION.md) blocks SW-02 and SW-06 **and blocks nothing"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -703,7 +719,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: the hosted evaluation credential ([C-334](LANE_COORDIN"
 waiting_for    = "** — **trigger: the hosted evaluation credential ([C-334](LANE_COORDINATION.md), ruled and being provided)**. ⚡ **Trigger checked 2026-08-12 by Lane A"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -831,7 +847,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: a measured certification wall-clock that demonstrably "
 waiting_for    = "** — **trigger: a measured certification wall-clock that demonstrably delayed a promotion, recorded at least twice**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
