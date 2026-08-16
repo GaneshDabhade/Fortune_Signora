@@ -1,5 +1,19 @@
 # Session Handoff
 
+> ## Cycle 235 — promoted `251f7183`, 2026-08-16 · **a second hosted vendor, and four attempts**
+>
+> **`main` = `251f7183` = the certified commit**, verified from `ls-remote` after the push. `pytest` **4950** · coverage **95.03%** · **458** Security Invariants · `mypy` strict over **911** files · **`frontend-suite` 3303 in 187 files** · `smoke` 24 stages in 147s · **DR passed** · **reversible base→head→base→head on a clean database** · head **`0057`**. ✅ **Eight gates.**
+>
+> ⚡ **[TASK-420](BACKLOG.md): a second hosted AI vendor reaches production and NOTHING ABOVE THE PORT MOVED.** **One `if key: register(...)` in the composition, a third contract subclass passing UNMODIFIED, and three vendors getting structured output three genuinely different ways** — a JSON-mode string, a forced tool call, a native `response_format`. ⛔ **`Demo:` UNCONFIGURED rather than unreachable, and the lane drew that distinction itself.**
+>
+> 🔴 **FOUR attempts. Only attempt 1 is a statement about the commit, and half of it is QE's.** ⛔ **QE pinned `b0048fea`, started `make certify`, and merged another lane's commit into `integration` twenty seconds later** — `make certify` runs in place, so the gates measured `d3cbfa6e` and the run recorded itself there. ⚡ ***A cycle cannot be half-measured at one commit and half at another*** — **the sentence QE had written to Lane C an hour earlier.** **Attempt 2: session ended. Attempt 3: databases down. Attempt 4: a tree that did not move.**
+>
+> ⚠️ **[B-273](BUGS.md) — the flake attempt 1 found — is diagnosed better by Lane A than by QE's report of it.** **`shouldAdvanceTime: true` was holding `findBy*` up BY making the countdown tick — one option doing two jobs.** ⛔ **Two repairs that looked right and were not are recorded**, including `vi.useFakeTimers()` bare turning nine failures into nine TIMEOUTS — *"a worse signal than the flake"*. ✅ **Fixed with `toFake: ['setInterval','clearInterval']` and a fire test that inserts a real 2-second stall and reproduces the exact message.** ⚡ ***A test that asserts an exact time must own every millisecond that reaches the assertion.***
+>
+> 🔴 **[B-1006](BUGS.md) filed from the promotion**: `--audit-main` audits a REF using the manifest from the WORKING TREE, and the bounded exception guarantees they disagree at exactly the moment of promotion. **It refused with three real commits named as *"reached `main` without a gate"*; the same audit on the same `main` reads *guarantee holds* from a tree holding the record.** ⛔ **A false refusal and the most alarming sentence the tool can print.**
+>
+> ⚠️ **Held deliberately out of this cycle: `c42de09e` ([TASK-1401](BACKLOG.md)), because the lane asked for time to watch it headed.** **The request was honoured.**
+>
 > ## Cycle 234 — promoted `723a0bf2`, 2026-08-15 · **the workspace chooser, and a handoff caught in time**
 >
 > **`main` = `723a0bf2` = the certified commit**, verified from `ls-remote` after the push. **19 commits, two lanes, one gate run.** `pytest` **4915** · coverage **95.01%** · **458** Security Invariants · `mypy` strict over **910** files · **`frontend-suite` 3303 in 187 files** · `smoke` 24 stages in 222s · **DR passed with 458 invariants** · **reversible base→head→base→head on a clean database** · head **`0057`**. ✅ **Eight gates, first attempt.**

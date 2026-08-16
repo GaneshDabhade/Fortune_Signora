@@ -90,6 +90,44 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-1006 · 🟠 `--audit-main` audits a REF using the manifest from whatever tree you are standing in, and refuses when they disagree
+
+| | |
+|---|---|
+| **Module** | **QE gates** — [`infra/certification-guard.py`](../infra/certification-guard.py), `_audit_main` |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — ⛔ **it produces a FALSE REFUSAL, not a false pass**, so nothing unsafe is admitted. ⚠️ **But it fires at the exact moment it matters most — immediately after a promotion — and it names real commits as having *"reached `main` without a gate"***, which is the most alarming sentence the tool can print |
+| **Status** | 🔵 **`OPEN`** |
+| **Found** | **2026-08-16**, promoting cycle 235: the audit refused with 3 commits listed, and the same audit on the same `main` reported *the guarantee holds* from a different working tree |
+| **Commit found** | **`251f7183`** |
+
+### 🔴 The two operands
+
+📁 **`rev-list RULE_RATIFIED_AT..main`** — **a REF.** 📁 **`_runs()` reads `certification/manifest.json`** — **from the WORKING TREE.**
+
+⛔ **Those are different things and nothing makes them agree.** ⚡ **The bounded exception guarantees they will disagree**: *"a certification record cannot contain its own commit hash, so the commit that WRITES the record is always created after the run it records."* **So the record for the commit just promoted lives on `lane-qe` while `main`'s tree still holds the previous manifest.**
+
+**Measured, both directions, same `main`:**
+
+| standing on | verdict |
+|---|---|
+| `main` | 🔴 **REFUSED — 3 commit(s) reached `main` uncertified** |
+| `lane-qe` *(has the record)* | ✅ **212 certified · 1750 in-snapshot · guarantee holds** |
+
+### ⚠️ Why the three it named are not violations
+
+**`b0048fea`** *(TASK-420)*, **`0309f75b`** and **`fb0cff64`** *(coordination projections)* **are all ancestors of `251f7183`, which IS certified.** ⛔ **They read as violations only because `certified_all` was empty of `251f7183` — the manifest in that tree had never heard of it.**
+
+📁 **The two coordination commits are also [B-1005](#b-1005)'s classifier gap showing through**: `docs/coordination/*.toml` fails `CLOSEOUT_SUFFIXES`, so they cannot be absorbed as Closeouts either. ⚡ **Two defects producing one alarming message.**
+
+### ⛔ The fix is not obviously "read the manifest from `main`"
+
+**Reading it from `main` would make the audit unable to see a record that has not been promoted yet** — **which is every record, at the moment it matters.** ⚠️ **And reading it from the working tree is what lets QE audit before promoting.**
+
+⚡ **The honest statement is that the tool answers a question about a ref using evidence from a tree, and the caller has to know which.** ✅ **A diagnostic naming both — *"audited `main` at X using the manifest in the working tree at Y"* — would have turned a two-minute alarm into a one-line read**, and that is the minimum. **Whether the predicate itself should change is a gate-meaning question and [B-131](#b-131)'s route.**
+
+📁 **Same family as everything else this week: the reading was correct and the operand was not the one the consumer uses.** ⚡ **This time the consumer is the audit and the operand is the tree it happens to be standing in.**
+
 ### B-1005 · 🟠 Two independent classifiers are both blind to `.toml`, so 157 planning commits in a week were treated as executable
 
 | | |

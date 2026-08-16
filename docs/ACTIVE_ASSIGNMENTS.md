@@ -71,7 +71,13 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-15, `723a0bf2`
+## Current — as of 2026-08-16, `251f7183`
+
+> ⚡ **Cycle 235 Closeout. [TASK-420](BACKLOG.md) promoted** — a second hosted AI vendor in production with nothing above the port changed.
+>
+> 🔴 **FOUR certification attempts, and the record keeps all four because only one is a statement about the commit.** ⛔ **Attempt 1 did not certify: a time-dependent frontend test failed under load ([B-273](BUGS.md)) — AND QE merged another lane's commit into `integration` twenty seconds into the run**, so the gates measured `d3cbfa6e` while the pin named `b0048fea`. ⚡ ***`integration` moving during certification is expected; moving the WORKING TREE of the machine running the gates is a different act.*** **Attempts 2 and 3 aborted on a session teardown and a stopped database.**
+>
+> ⚠️ **[B-1006](BUGS.md) filed from the promotion itself**: `--audit-main` audits a REF using the manifest from whatever tree you are standing in, and **refused with three real commits named as uncertified** — the same audit on the same `main` reads *guarantee holds* from a tree that has the record. ⛔ **A false refusal, at the moment it is most alarming.**
 
 > ⚡ **Cycle 234 Closeout. 19 commits, two lanes, ONE gate run** — Lane A rebased onto Lane C rather than each taking a cycle.
 >
