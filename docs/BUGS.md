@@ -126,6 +126,27 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ⚡ **The honest statement is that the tool answers a question about a ref using evidence from a tree, and the caller has to know which.** ✅ **A diagnostic naming both — *"audited `main` at X using the manifest in the working tree at Y"* — would have turned a two-minute alarm into a one-line read**, and that is the minimum. **Whether the predicate itself should change is a gate-meaning question and [B-131](#b-131)'s route.**
 
+### ⚡ It is one ruling with [B-1005](#b-1005), not two
+
+**Two of the three commits this refusal named are `docs/coordination/*.toml` failing `CLOSEOUT_SUFFIXES`** — ⛔ **so they cannot be absorbed as Closeouts either.** ✅ **Raised by Lane C, who owns the other half:**
+
+> ⚡ ***The classifier does not know `.toml`, and that shows up as noise in `--next-cycle` AND as a false refusal in the audit.***
+
+📁 **So the product owner should see one question rather than two**: **a file extension two independent allowlists were both written before, costing a cycle per republication in one place and a false alarm in the other.** ⛔ **Splitting it into two rulings invites two partial fixes.**
+
+### ⚠️ The distinction this cost me, stated so the two sentences do not read as contradictory
+
+**QE broke the cycle-235 snapshot while this was being found**, and a reader comparing §20e with the Closeout will otherwise see a contradiction:
+
+| | |
+|---|---|
+| 📁 §20e | ***"`integration` keeps moving during certification, deliberately"*** |
+| ⛔ what QE did | **merged another lane's commit into `integration` twenty seconds into a run, and the gates measured a different commit than the pin named** |
+
+⚡ **Both are true because they are about different things.** ✅ **§20e is about the REF: a lane merging while QE certifies is expected and must never block them.** ⛔ **What must not move is the WORKING TREE of the machine running the gates** — **`make certify` runs in place, so a checkout or a merge changes what every subsequent gate reads.**
+
+📁 **Named by Lane C as worth making explicit, and they were right: the rule I wrote to them an hour before breaking it did not cover the case I broke.**
+
 📁 **Same family as everything else this week: the reading was correct and the operand was not the one the consumer uses.** ⚡ **This time the consumer is the audit and the operand is the tree it happens to be standing in.**
 
 ### B-1005 · 🟠 Two independent classifiers are both blind to `.toml`, so 157 planning commits in a week were treated as executable
