@@ -721,6 +721,54 @@ git merge --ff-only origin/lane-qe || git rebase -q origin/lane-qe   # ← the d
 ### ✅ The fix, and why it is not a checker
 
 **The board is reconciled and the stamp corrected.** ⛔ **No new check is added.** A checker for *"did Closeout run all eleven activities?"* would be a fourth place recording what the eleven are, and **the copy is never wrong when written; it is wrong the first time the list grows.** ⚡ **What actually failed already had an instrument — `state-check` printed the finding.** **The repair is that QE reads findings, not exit codes**, and the evidence for whether it holds is the next cycle's board stamp rather than a green tick.
+### B-438 · 🟠 Five code citations point at a CLOSED item, and a lane is still reasoning from the wrong one four days later
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`components/intelligence/decision-history.tsx`](../frontend/components/intelligence/decision-history.tsx) · [`components/accounts/account-owner.tsx`](../frontend/components/accounts/account-owner.tsx) · [`tests/components/account-owner.test.tsx`](../frontend/tests/components/account-owner.test.tsx) |
+| **Current assignee** | ⚡ **Lane A**, joined from [`modules.toml`](coordination/modules.toml). 📁 **[C-1500](LANE_COORDINATION.md) already sets the practice** — *"Lane A repoints its own, as it did for `C-209`"* — ⛔ **and [B-259](BUGS.md) is what a per-file replace by another office costs** |
+| **Severity** | 🟠 — ⛔ **a reader following the citation lands on a `CLOSED` item and concludes the question is settled** |
+| **Status** | 🔵 **`OPEN` — Lane C, 2026-08-16** |
+| **Found** | ⚡ **Verifying a claim in Lane A's own report rather than accepting it.** ⛔ **The claim was *"C-024 — Nothing in the product can render a person's name — `OPEN`, architectural, the product owner's"*, and every attribute of that is false of `C-024`** |
+
+**Steps to reproduce.** Open [`decision-history.tsx:57`](../frontend/components/intelligence/decision-history.tsx) and follow the link it gives you.
+
+**Expected.** ⚡ *Nothing in the product can render a person's name* — **`DEFERRED`, with a concrete trigger.**
+
+**Actual.** 📁 **[C-024](LANE_COORDINATION.md) · *Timeline has a surface and nowhere to mount it*** — ⛔ **`CLOSED` 2026-08-03, *"Resolved: the feed is mounted on the account brief."***
+
+### ✅ The register is CORRECT and is not the defect
+
+> 📁 **[C-203](LANE_COORDINATION.md), verbatim: *"Renumbered from `C-024` by QE at merge, 2026-08-02. `C-024` was already allocated to a different finding; the later claim moves, and Lane A's block is `200`+. The original `C-024` is untouched."***
+
+⚡ **QE did exactly the right thing, recorded it, and left a trail.** ⛔ **The code was never repointed** — **and the register cannot know that, because a renumber has no way to reach a comment.**
+
+### 🔴 Which citations mean which item
+
+| File | Means | Correct? |
+|---|---|---|
+| `app/(app)/accounts/[accountId]/page.tsx` | **Timeline mounting** | ✅ |
+| `PROJECT_STATUS.md` ×4 | **Timeline mounting** | ✅ |
+| `components/intelligence/decision-history.tsx` ×3 | **the person-name question** | ⛔ **should be [C-203](LANE_COORDINATION.md)** |
+| `components/accounts/account-owner.tsx` | **the person-name question** | ⛔ **should be [C-203](LANE_COORDINATION.md)** |
+| `tests/components/account-owner.test.tsx` | **the person-name question** | ⛔ **should be [C-203](LANE_COORDINATION.md)** |
+
+⚠️ **One id, one repository, two subjects, and the file next door to each other disagrees.**
+
+### ⚡ The cost is not hypothetical — it was paid the day this was found
+
+**Lane A reported building `Actor` with `person_id` and deliberately no display-name field, citing `C-024`.** ✅ **The DECISION is right**: [C-203](LANE_COORDINATION.md) is `DEFERRED` on a stated trigger ([TASK-429](BACKLOG.md), M-E) and [TASK-427](BACKLOG.md) forbids a person's name anywhere.
+
+⛔ **But the citation says `OPEN`, and `C-024` says `CLOSED`.** 🔴 **The next reader who checks the citation rather than the reasoning gets *"that was resolved"* and adds the field.**
+
+> ⚡ **This is the rule Lane A and this office have traded three times in a week, arriving in its most literal form: *a right answer resting on a wrong fact is one refresh away from becoming wrong.*** ⛔ **Here the wrong fact is a hyperlink, and the refresh is somebody clicking it.**
+
+### 📁 The family, and why the register alone cannot close it
+
+**Third instance of one class in five days:** **[B-263](#b-263)** — `C-210` held by two lanes · **[B-259](#b-259)** — what a per-file replace costs · **this one**. ⚠️ **The common element is that an identifier moved and the things citing it did not**, and ⛔ **`infra/state-check.py` cannot see it: it checks for DUPLICATE allocations, and this is a duplicate MEANING under a unique id.**
+
+✅ **A check that would catch it exists in outline** — *does any file outside the register cite a `C-` id whose row is `CLOSED`, in a comment that reads as an open question?* ⛔ **Not built here, and not proposed as a row: it is one heuristic away from noise, and three instances is not yet evidence of a fourth.**
+
 ### B-437 · 🟠 The one channel this office has to the lanes discards 92% of every notice, and keeps the oldest half
 
 | | |

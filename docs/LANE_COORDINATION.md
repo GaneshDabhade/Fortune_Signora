@@ -13825,3 +13825,44 @@ if (!offline && queued.length === 0) return null;
 ### 📁 Where the answer lives
 
 **[TASK-495](BACKLOG.md)'s `Definition of Done`, `Change Budget`, `Approved design`, `Shared layout`, `Manual review gate`, `Reusable components` and `Testing metadata` cells** — ⛔ **rewritten rather than annotated, because a stale cell beside a correction is still a cell somebody reads.**
+
+---
+
+## C-1437 · `BACKLOG.md` says QE writes nothing in it, and four of its lifecycle states are QE's alone
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-16, setting [TASK-1482](BACKLOG.md) to `IN VALIDATION`. ⚡ **Raised explicitly as *"recorded for the product owner; it blocks nothing"*** — ✅ **which is the correct handling of a governance question found mid-slice** |
+| **Owner** | 🔴 **Product owner, and only the product owner.** 📁 **[`CLAUDE.md`](../CLAUDE.md) is theirs** ([§20e](../CLAUDE.md), *Shared files have one owner*) — ⛔ **this office may draft, never rule** |
+| **Status** | 🟣 **`READY FOR PRODUCT DECISION`** — ⚡ **no analysis is outstanding; the two sentences are quoted below and they are the whole item** |
+| **Blocks** | ⛔ **Nothing, and it has blocked nothing to date.** ⚠️ **What it costs is that both readings are defensible, so two sessions can behave differently and each cite the constitution** |
+
+### 🔴 The two sentences, verbatim
+
+📁 **[§20e](../CLAUDE.md), *Shared files have one owner*, on [`BACKLOG.md`](BACKLOG.md):**
+
+> **"Product owner owns scope and order… A Product Development lane writes preparation rows for its own modules… and its claims. Lane C sets `READY` on approval and `REVISION REQUESTED` on rejection… ⛔ *QE writes nothing.*"**
+
+📁 **[§20e](../CLAUDE.md), *Execution ownership ends at `IN VALIDATION`*, in the lifecycle table:**
+
+> **"`VERIFIED` · `CERTIFIED` · `PROMOTED` · `DONE` — **QE, exclusively.** A feature lane never writes one of these."**
+
+⛔ **Those states live in `BACKLOG.md`.** ⚡ **So QE must write four states into the one file it is told it writes nothing in.**
+
+### ✅ What is NOT in question
+
+⛔ **This is not a defect in either rule, and neither is wrong on its own subject.** **The first governs *scope and order* — who decides what work exists and in what sequence. The second governs *execution state* — who may assert that a thing has passed.** ✅ **Both are correct; the word *"writes"* is doing two jobs.**
+
+⚠️ **And the practice has been unambiguous throughout: QE does set those states, every cycle, and no lane has objected.** ⛔ **The rule is what disagrees with the repository, not the repository with itself** ([§2](../CLAUDE.md)).
+
+### ⚡ The narrowest correction that would close it
+
+**One clause, and this office is proposing rather than making it** — 📁 **[§2](../CLAUDE.md): *governance describes reality; it never quietly changes it*, and a `CLAUDE.md` edit is the product owner's or it is nothing.**
+
+> **"QE writes nothing"** → **"QE writes no scope and no ordering; the four terminal execution states are QE's, per the lifecycle table."**
+
+✅ **That changes what nobody does tomorrow** — ⚡ **which is the test [§2](../CLAUDE.md) gives for whether a governance edit needed a decision first.** ⛔ **It still needs the ruling, because the file is the product owner's.**
+
+### 📁 Why it is worth a row rather than a shrug
+
+**Third governance item this month whose cost is not a blocked slice but a *divided reading***, and the register's own standard is that an item exists when a lane cannot safely proceed without an answer. ⚠️ **A lane CAN proceed here — Lane A did, correctly.** ✅ **The row exists because the next lane may read the other sentence first**, and the two produce opposite behaviour in the same file.
