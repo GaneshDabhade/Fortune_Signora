@@ -2656,6 +2656,26 @@ A  backend/migrations/versions/0060_webhook_delivery.py
 
 ⛔ **Not blocking the work** — the branch cannot fast-forward for unrelated reasons and this changes nothing about that. ⛔ **Not filing it as a defect against Lane C**: they followed a registry that says they may, and a ruling that sent them there. ⛔ **Not editing `modules.toml`** — 📁 **a registry that contradicts the constitution is repaired by a ruling, not by QE quietly changing whichever copy it finds easier to reach** ([§2](../CLAUDE.md)).
 
+### ✅ A FOURTH answer, proposed by Lane C, and it is better than QE's three
+
+**Raised 2026-08-16 by the lane whose work it stops.** ⛔ **Lane C read `CLAUDE.md` against QE's message rather than accepting it, agreed, and halted implementation** — §20e's architectural blocker: *no accepted architecture exists for the next step.*
+
+> ⚡ **`backend/modules/webhook_delivery/` — a bounded context, exactly as machine credentials turned out to be.**
+
+📁 **The precedent is one ADR old and is its sibling.** [C-1404](#) asked *who owns machine credentials*; [D-237](DECISION_REGISTER.md) ⓐ ruled **a new bounded context**, and [ADR-0414](architecture/adr/0414-machine-credentials-bounded-context.md) is the contract. **This is the other half of the same settings section with the same shape**: no existing module owns it · it has customer-visible state · it needs RLS · it has its own vocabulary — *endpoint, delivery, attempt, park.*
+
+✅ **It answers both halves of this item at once**, which QE's three did not: **the freeze is respected entirely**, and **the RLS table becomes ordinary rather than a fourth category §8 has no words for.**
+
+⛔ **Still 🔴** — a new bounded context is the product owner's, with an ADR. **Lane C is recommending, not doing**, and has written no worker.
+
+### ⚠️ Lane C's own account of how they got there, recorded because it is the transferable part
+
+> 📁 ***"I cited a permitted-list item to justify something materially larger."*** **§20a permits *"adding a worker pool"* and the sentence ends *"Those are USES of the platform, not changes to it."*** ⛔ **Two modules, a model, an export change and an RLS table are not a use.**
+>
+> ⚡ ***"And I did it while reading `modules.toml` instead of `CLAUDE.md` — the registry was the file my own row named, and that made it the easy authority to reach rather than the right one."***
+
+📁 **That is the general form and it is worth more than this item**: **a task row names its registry, so the registry is what gets read** — and a registry that is wrong is therefore read *more* often than the constitution it contradicts, not less.
+
 ### ⚡ The three answers that would each settle it
 
 **①** `modules.toml` is right — **amend `CLAUDE.md` §20e so D-022's grant names `signora_platform/` rather than `simulation/**`.**
