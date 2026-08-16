@@ -252,6 +252,33 @@ a1e3841a  TASK-1482 — the legacy Attention rail entry
 
 ⚠️ **A `.toml` under `docs/coordination/` is generated and read only by `coordination.py` and by lanes polling.** ⚡ **But `CLOSEOUT_SUFFIXES` is not scoped to a directory, so admitting `.toml` admits it everywhere — including any future `.toml` that configures something.**
 
+#### 🔴 Corrected 2026-08-16 — that sentence is false, and the counter-example is inside `docs/`
+
+⛔ **`docs/coordination/modules.toml` is read by a GATE.** ✅ **Measured, not inferred — `infra/certification-guard.py:840`:**
+
+```python
+registry = tomllib.loads(_git("show", f"{commit}:docs/coordination/modules.toml"))
+```
+
+📁 **That is inside `--audit-claims`, which decides whether a claim commit was legal.** ⚡ **So there is a file under `docs/` that decides whether a gate passes — which is precisely the property `CLOSEOUT_PATHS` excludes `infra/` for.**
+
+🔴 **This turns the caution above into a named failure mode.** **A suffix-based widening would make `modules.toml` Closeout-legal, so an ownership change could reach `main` outside a snapshot and silently alter what `--audit-claims` accepts.** ⛔ **[B-014](#b-014) is that exact failure, one directory over.**
+
+✅ **The consequence for whoever rules on this: the fix must be PATH-based, never suffix-based.** ⚠️ **`coordination.toml` and `queues/*.toml` are projections; `modules.toml` is an operand of a gate. They share a directory and a file extension and nothing else that matters.**
+
+#### ⚡ Both directions observed in one poll — 2026-08-16, cycle 237
+
+**The row measures the cost as *157 commits treated as executable*, historically.** ✅ **It has now been watched deciding live, in both directions, from one repository state:**
+
+| instrument | on | verdict | why |
+|---|---|---|---|
+| **`--next-cycle`** | `integration` | ⛔ **`da7d3d7f` is EXECUTABLE** → cycle available | `.toml` matches no `IMPACT_RULE` → `platform` |
+| **`--audit-main`** | `main` | 🔴 **3 commits reached `main` uncertified** | the same `.toml` fails `CLOSEOUT_SUFFIXES` |
+
+📁 **`da7d3d7f` is four planning files** — `BACKLOG.md`, `DECISION_REGISTER.md`, `coordination.toml`, `queues/lane-a.toml`. **Nothing it touches changes what the software does.**
+
+⚡ **One blind spot, read as *too executable* by the warrant and *not documentary enough* by the audit, in the same minute.** ⛔ **A reader who saw only one of the two would conclude the classifier errs in one direction and could be tuned; seeing both makes it clear the classifier simply does not model the file.**
+
 ✅ **What this row does NOT do is propose the rule.** **It records the gap, the cost and the tension.** 📁 **The precedent is [B-122](#b-122): a change to what a gate MEANS went to the product owner with evidence and came back as a ruling.** **Same route.**
 
 ### ⚠️ The cost is narrower than first stated, and the remainder is QE's availability
