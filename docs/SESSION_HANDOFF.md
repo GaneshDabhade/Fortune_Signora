@@ -1,5 +1,21 @@
 # Session Handoff
 
+> ## Cycle 240 — promoted `6619c162`, 2026-08-16 · **Account 360's Research summary, and the guard repair that stops false cycle warrants**
+>
+> **`main` = `6619c162` = the certified commit.** `pytest` **5218** · coverage **95.05%** · **668 Security Invariants** · `mypy` strict over **934** files · `import-linter` **37/37** · **`frontend-suite` 3330 in 189 files** · `eslint` clean · `smoke` 24 stages in **250s** · scenario **198 assertions** · **DR passed with 668** · **reversible base→head→base→head on a clean database** · head **`0059`**. ✅ **Eight gates, first attempt.**
+>
+> ⚡ **Account 360's Research summary is rebuilt to the finalized design with Collapsed and Expanded states, and its journey PASSES HEADED** — [D-134](DECISION_REGISTER.md) performed rather than asserted.
+>
+> ✅ **[B-1005](BUGS.md)'s repair shipped, path-based as [D-240](DECISION_REGISTER.md) §1 ruled.** **Before: `--next-cycle` called 7 of 8 commits executable, every path markdown or `.toml` under `docs/`. After: *"No cycle needed."*** ⛔ **`docs/coordination/modules.toml` is deliberately excluded — `_audit_claims` reads it, so it is an operand of a gate**, and a suffix widening would have made an ownership change Closeout-legal. 📁 **[B-014](BUGS.md), one directory over.**
+>
+> ⚠️ **Allowlist rather than denylist, deliberately**: a missed projection costs one unnecessary certification, **a missed gate operand would be absorbed as documentation with nobody deciding it.** ✅ **Fire-tested four ways, each red.** ⚡ **`--audit-main` byte-identical before and after — the repair changes what happens next and rewrites no verdict about the past.**
+>
+> ⚡ **QE's branch absorbed the rebase this cycle and the lane's was taken untouched.** ⛔ **Cycle 239 did the opposite and moved seven of a lane's commits for a documentation-only branch.** 📁 **The rule QE had argued to Product Office two cycles earlier, finally applied to its own convenience.**
+>
+> ✅ **The three-cycle coverage fall broke: 95.06 → 95.05 → 95.04 → 95.05.** ⚡ **Reported as a trajectory while falling and as broken now it is not** — **a trend row quietly deleted the moment it stops being alarming teaches a reader that trends are only mentioned when they are bad.**
+>
+> 🔴 **[B-1000](BUGS.md) was RESCOPED after Lane C produced the seventh instance — `>/dev/null 2>&1` on the one command that reports a silent failure.** ⛔ **Seven instances, two lanes, filed under `Module: QE process` where no other lane would read it.** ⚡ **A repository-wide class scoped to one lane is invisible to the lanes committing it — this row's own defect, applied to itself.**
+
 > ## Cycle 239 — promoted `1dc2c39e`, 2026-08-16 · **a customer is told when Signora finishes researching an account**
 >
 > **`main` = `1dc2c39e` = the certified commit.** `pytest` **5199** · coverage **95.04%** · **668 Security Invariants** · `mypy` strict over **933** files · `import-linter` **37/37** · **`frontend-suite` 3324 in 189 files** · `eslint` clean · `smoke` 24 stages in **229s** · scenario **198 assertions** · **DR passed with 668 invariants** · **reversible base→head→base→head on a clean database** · head **`0059`**. ✅ **Eight gates, first attempt.**

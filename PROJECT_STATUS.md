@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `1dc2c39e`, 2026-08-16.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `6619c162`, 2026-08-16.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,15 +12,15 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `1dc2c39e`, 2026-08-16.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `6619c162`, 2026-08-16.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`1dc2c39e`** — ⚡ **the certified commit itself**, `promoted == certified`, **verified against the SHA the guard named, not against `integration`'s head**. **Cycle 238** — ⛔ **and `integration` had already moved to `9023b187` when the promotion ran, for the second cycle running** |
+| **`main`** | **`6619c162`** — ⚡ **the certified commit itself**, `promoted == certified`, **verified against the SHA the guard named, not against `integration`'s head**. **Cycle 238** — ⛔ **and `integration` had already moved to `9023b187` when the promotion ran, for the second cycle running** |
 | **Release candidate** | `integration` = **`9023b187`** — Lane C's three planning commits, rebased onto the pin and ref-pushed **while the gates were running**, so no lane waited and no gate was disturbed |
-| **Certification** | ✅ [`1dc2c39e7f74`](certification/reports/1dc2c39e7f74.md) · migration head **`0059`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** |
-| **Cycle 239 gates** | ⚡ **EIGHT required, all recorded** — `pytest` **5199** · coverage **95.04%** · **668** security invariants · `mypy` strict over **933** files · `import-linter` **37/37** · `tsc` clean · **`frontend-suite` 3324 in 189 files** · **`eslint` clean** · `smoke` **24 stages in 229s** · scenario **baseline@1, 198 assertions** |
-| 🔴 **Coverage has fallen three cycles running, and the trend is now the report rather than the point** | **95.06% → 95.05% → 95.04%**, floor **95.0**. ⛔ **Four basis points.** ⚡ **Each fall is individually unremarkable — every slice added product code and test code together** — **but three consecutive monotonic falls is a different claim from three separate ones, and reporting them one at a time would have hidden it.** ⚠️ **Not yet a finding and no row opened.** ⛔ **At the current rate the fourth or fifth cycle crosses**, and **the lane that crosses it will not be the lane that caused it** — which is the reason this row states a trajectory rather than a number |
+| **Certification** | ✅ [`6619c162e2e8`](certification/reports/6619c162e2e8.md) · migration head **`0059`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** |
+| **Cycle 240 gates** | ⚡ **EIGHT required, all recorded** — `pytest` **5218** · coverage **95.05%** · **668** security invariants · `mypy` strict over **934** files · `import-linter` **37/37** · `tsc` clean · **`frontend-suite` 3330 in 189 files** · **`eslint` clean** · `smoke` **24 stages in 250s** · scenario **baseline@1, 198 assertions** |
+| ✅ **The coverage fall broke at cycle 240, and the trend row is kept rather than deleted** | **95.06 → 95.05 → 95.04 → 95.05.** ⛔ **The three-cycle monotonic fall did NOT continue.** ⚡ **Reported as a trajectory while it was falling and reported as broken now it is not** — 📁 **a trend row that is quietly removed the moment it stops being alarming teaches a reader that trends are only mentioned when they are bad.** ⚠️ **Five basis points, and still the figure worth watching**: the rise came from a slice that was 19 tests against a small guard, not from anything structural |
 | ⚠️ **`make coverage-debt` cannot answer the question this trend raises** | 📁 **Reported by Lane A**: its reader skips because `coverage json` exits 2 — **the READER failing rather than the run.** ⛔ **So the one instrument that would name WHICH files are pulling the figure down is unavailable exactly as the margin narrows.** ✅ **The certification figure is unaffected and is measured independently** |
 | ✅ **QE verified the guarantee in the database, not in the migration** | 🔴 **The whole slice rests on the PERSON predicate — two colleagues are legitimately the same tenant, so workspace isolation proves nothing here.** ✅ **Read from `pg_policies` on a freshly migrated database**: all three policies (`SELECT`, `INSERT`, `DELETE`) carry **`workspace_id` AND `user_id`**, and `relrowsecurity`/`relforcerowsecurity` are both `t`. ⛔ **No `UPDATE` policy, correctly** — the table is registered in **both** `TENANT_OWNED_TABLES` and `IMMUTABLE_TENANT_TABLES`, and requiring one would weaken immutability to satisfy a test |
 | 🔴 **A figure this dashboard published was transcribed, not measured — [B-1008](docs/BUGS.md)** | ⛔ **Cycle 236 printed *"458+ security invariants"*. Its own record said **632**. `458` is cycle **235**'s figure.** ⚡ **Found by refusing to carry either number forward and reading `certification/manifest.json` for all three runs instead.** 📁 **The footnote at the bottom of this section warns against precisely this and was written at cycle 232 — the class recurred four cycles later, in the file that documents it** |
@@ -38,7 +38,7 @@
 
 > ⚠️ **`Load more` was replaced rather than kept, and that is the standard being applied rather than a preference.** 📁 **The two are different products**: one accumulates the page under somebody scanning it and makes *"which page am I on"* unanswerable. ✅ **`Previous`/`Next` over the existing keyset cursor, with a page number and NO denominator** — **keyset cannot know how many pages exist without reading them, and a total would be fabricated.**
 
-**Repository health:** **5199 backend tests** · ⚠️ **95.04% coverage** ⚠️ *(floor 95 — **4 basis points**, third consecutive fall)* · **3324 frontend tests** across **189 files** · **668 Security Invariants** · mypy strict over **933 files** · **60 migrations**, `0000`–`0059` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **229s** · **disaster recovery passing** · **migrations reversible on a clean database** · **20 module directories** · **59 ADRs** · **146 numbered architecture documents**.
+**Repository health:** **5218 backend tests** · ✅ **95.05% coverage** *(floor 95 — **5 basis points**, the three-cycle fall broken)* · **3330 frontend tests** across **189 files** · **668 Security Invariants** · mypy strict over **934 files** · **60 migrations**, `0000`–`0059` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **250s** · **disaster recovery passing** · **migrations reversible on a clean database** · **20 module directories** · **59 ADRs** · **146 numbered architecture documents**.
 
 > ⚠️ **Two figures on that line were mislabelled rather than stale, and the distinction matters because only one of them is a measurement error.** ⛔ **It read *"60 ADRs"* — `ls adr/*.md`, which counts `README.md`** — **and *"148 numbered architecture documents"*, which counted `ARCHITECTURE_VALIDATION_M1_2.md` and `provider-qualification.md`, neither of them numbered. ✅ **59 and 146 are what the words claim.** ⚡ **The number was right for a question nobody asked** — the same shape as everything else this week, and the reason to re-derive a figure rather than re-read it.
 
@@ -114,6 +114,38 @@
 | **28 others** | various | mixed | — | See the register |
 
 **37 items · 5 closed.** ⚠️ **Four items have now waited five cycles or more, and every one of them needs the same person.** [C-024](docs/LANE_COORDINATION.md) is the sharpest: Timeline's backend was proven live this cycle by `runtime-composition`, so **ten lines of routing separate a working capability from a customer.**
+
+---
+
+## 1d · Release summary — 2026-08-16, cycle 240
+
+**Promoted `6619c162` from `c8e53e17`.** Five commits, two lanes. **First attempt, no aborts.**
+
+### ✅ What a customer can do that they could not before
+
+**Account 360's Research summary is rebuilt to the finalized design, and it collapses and expands.** ⚡ **The Research journey passes headed** — [D-134](docs/DECISION_REGISTER.md)'s continuous product review **performed rather than asserted**, and the walk is now shared rather than repeated per spec.
+
+### ✅ The B-1005 repair D-240 ruled, and it warranted its own cycle
+
+**Before:** `--next-cycle` called **7 of 8** commits executable — every path markdown or `.toml` under `docs/`. **After:** *"8 documentation/planning commit(s), accumulating. No cycle needed."*
+
+⛔ **`docs/coordination/modules.toml` is deliberately excluded**: `_audit_claims` reads it, so it is an **operand of a gate**, and a suffix widening would let an ownership change reach `main` outside a snapshot and silently alter what the claim audit accepts. 📁 **B-014, one directory over.**
+
+⚠️ **Allowlist rather than denylist, and the direction of the failure is the reason.** **A new projection omitted classifies as executable and costs one unnecessary certification — cheap and visible.** ⛔ **A new gate operand under that directory would, under a denylist, be absorbed as documentation with nobody deciding it.**
+
+**Fire-tested four ways, each red:** admit `modules.toml` · revert one call site to the inline condition · empty the allowlist · widen to every `.toml` under `docs/coordination/`.
+
+✅ **`--audit-main` is byte-identical before and after** — 216 certified, 1813 in-snapshot, 1 Closeout, none refused. ⚡ **The repair changes what happens next and rewrites no verdict about the past.**
+
+### ⚡ QE's branch absorbed the rebase this time, and that is the correction
+
+**Three branches were fast-forwardable and only one could stay that way.** ✅ **The lane's was taken untouched; QE's rebased onto it.**
+
+⛔ **Cycle 239 did precisely the opposite** — QE put its own documentation branch into a cycle carrying a lane's four slices and moved seven of their commits. 📁 **The rule QE had argued to Product Office two cycles earlier, finally applied to its own convenience rather than only to somebody else's.**
+
+### ✅ Coverage: the three-cycle fall broke
+
+**95.06 → 95.05 → 95.04 → 95.05.** ⚡ **Reported as a trajectory while it was falling and reported as broken now it is not** — 📁 **a trend row quietly deleted the moment it stops being alarming teaches a reader that trends are only mentioned when they are bad.**
 
 ---
 

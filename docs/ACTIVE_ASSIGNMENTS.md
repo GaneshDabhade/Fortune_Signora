@@ -71,7 +71,17 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-16, `1dc2c39e`
+## Current — as of 2026-08-16, `6619c162`
+
+> ⚡ **Cycle 240 Closeout. Five commits, TWO lanes, ONE gate run** — Lane A's Account 360 Research summary (headed journey passing) and QE's [B-1005](BUGS.md) guard repair.
+>
+> ✅ **The [D-240](DECISION_REGISTER.md) §1 repair shipped**: `--next-cycle` no longer reads planning projections as executable. ⛔ **`modules.toml` excluded, because a gate reads it.**
+>
+> ⚡ **QE's branch absorbed the rebase and the lane's was taken untouched** — **the correction to cycle 239, where QE did the opposite.**
+>
+> ✅ **Coverage 95.04 → 95.05: the three-cycle fall broke.**
+
+### Cycle 239 — `1dc2c39e`
 
 > ⚡ **Cycle 239 Closeout. Eleven commits, TWO lanes, ONE gate run** — Lane A's TASK-480 ⓑ, TASK-1482, TASK-1483 and TASK-495 ⓐ, plus QE's B-1000/B-1009 rows.
 >
