@@ -433,8 +433,13 @@ paths = ["frontend/"]
 
 [platform_foundation]
 context = "Environment framework, repository tooling, developer commands"
-current_owner = "Lane A"
-future_owner = "Lane A"
+# 🔴 CORRECTED 2026-08-16 — D-240 §2, product owner, closing C-1519.
+#    This read "Lane A" while CLAUDE.md §20e assigns Platform Foundation to
+#    Lane C (D-022: infra/, the Makefile, environment tooling, simulation).
+#    The registry and the constitution disagreed, and TASK-1481 sat on it.
+#    §20e is the authority; the registry is corrected to match it.
+current_owner = "Lane C"
+future_owner = "Lane C"
 transition = "settled"
 implementation = 60
 basis = "Environment Framework phases 1-2 built; the demo profile and make doctor are IN VALIDATION"
