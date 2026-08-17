@@ -119,6 +119,18 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 **`GET /workspaces/{id}/accounts/{id}/decision-package`** — ⛔ **no reference anywhere under `frontend/`.** ✅ **Measured, not inferred.** ⚡ **Built, per-account, and nothing calls it**: it is the account drawer's AI block *and* Account 360's, whenever either is built.
 
+### ⚠️ The example moved within the hour, and the row is stronger for saying so
+
+**Reported by Lane A, 2026-08-17, hours after filing**: **`decision-package` now HAS a consumer** — `useAccountDecisionPackage` in `lib/query/hooks.ts`, read by the Companies expanded row's AI panel.
+
+✅ **Verified: the consumer is on their UNPUSHED branch only.** ⛔ **Absent from `origin/main`, `origin/integration` and both pushed lane refs** — **so this row was accurate when filed and remains accurate of every ref QE can certify.**
+
+⚡ **But the instance is now a poor witness, and pretending otherwise would be the defect this register keeps finding.** 📁 **The class is unchanged: *nothing walks endpoint → frontend consumer*.** ⛔ **What changed is that this particular endpoint stopped being inert because a lane happened to build its consumer — not because anything detected it.**
+
+🔴 **That is the argument FOR the row and AGAINST building the gate today, at the same time.** ⚠️ **An inert endpoint that resolves on its own within hours is weak evidence of a standing problem** — ✅ **and [B-301](#b-301) is the counter-example that keeps the class alive: Timeline shipped complete and inert and stayed that way, which is why the two sibling gates exist at all.**
+
+📁 **So the row waits for a second instance that does NOT resolve itself.** ⛔ **If none arrives, that is the answer.**
+
 ### ✅ What this row is NOT
 
 ⛔ **Not a defect in the endpoint.** 📁 **[§2](../CLAUDE.md) already names the cost of building ahead of a surface** — *"the pipeline ran nine stages ahead of any user-visible surface and that was a real cost"* — **so an endpoint waiting for its consumer is a known, accepted shape, and Lane A classified it correctly.**
