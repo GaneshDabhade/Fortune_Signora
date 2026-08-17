@@ -2,21 +2,25 @@
 
 **The single place the product owner reviews when making rulings.** Established 2026-08-05 by product owner directive.
 
-> ## ⛔ Six of the 31 items on this page hold a named row. The other 25 hold nothing, and that is the number worth reading.
+> ## ✅ Nothing on this page is a live product-owner decision blocking work.
 >
-> **Re-measured 2026-08-09 against `BACKLOG.md`, not asserted.** ⚡ **An item is listed as blocking only when a task row's own `Status` names it** — ⛔ **not when it sounds important, and not because it was blocking last week.**
+> **Re-measured 2026-08-17 against `LANE_COORDINATION.md` and `BACKLOG.md`, row by row.** ⚡ **An item is listed as blocking only when a task row's own `Status` names it** — ⛔ **not when it sounds important, and not because it was blocking last week.**
 >
-> | | Blocks | What it is |
-> |---|---|---|
-> | 🔴 **[C-1405](#-c-1405--the-entry-coverage-review-recommends-four-documents-and-three-of-them-block-work-already-released)** | **[TASK-1401](BACKLOG.md) · [1421](BACKLOG.md) · [1423](BACKLOG.md) · [1426](BACKLOG.md)** | **Commission three design documents.** ⚡ **The single highest-value decision on this page — it is four of the six** |
-> | 🟠 **[C-338](#c-338)** | **[TASK-003](BACKLOG.md)** | Customer labels in the file that builds the prompt |
-> | 🟠 **[C-1404](#-c-1404--where-do-machine-credentials-live)** | **[TASK-1413](BACKLOG.md)** | Where machine credentials live — three options, written |
-> | ⏱️ **[C-334](#-c-334--the-hosted-evaluation-credential--ruled-not-yet-provided)** | **[TASK-202](BACKLOG.md) · [459](BACKLOG.md)** | ⚡ **Ruled and unprovided — one credential, and release is automatic on configuration.** Nothing to decide |
-> | 🟡 **[C-003](#c-003)** · **[C-009](#c-009)** | **[TASK-454](BACKLOG.md)** | Both land on one row |
+> | Was listed | Measured 2026-08-17 |
+> |---|---|
+> | 🔴 **C-1405** — *"the single highest-value decision on this page"* | ✅ **`CLOSED` on delivery, 2026-08-12.** **All five commissioned designs are in the snapshot.** **Of its four tasks: two `IN VALIDATION`, one `PROMOTED`, and `TASK-1426` blocked on [C-1410](LANE_COORDINATION.md) instead** |
+> | 🟠 **C-338** | ✅ **`CLOSED` — RULED **A**, product owner, 2026-08-13.** **`TASK-003` waits on [R11-06](architecture/39-product-review-findings.md)'s own trigger, not on this** |
+> | 🟠 **C-1404** | ✅ **`CLOSED` — RULED **ⓐ new bounded context**, product owner, 2026-08-13.** **`TASK-1413` is `IN VALIDATION`** |
+> | ⏱️ **C-334** | ⚙️ **Reclassified `OPERATIONAL` by [D-139](DECISION_REGISTER.md).** ⚠️ **And `TASK-202`'s blocker has moved to [C-1525](LANE_COORDINATION.md); only `TASK-459` still keys off this trigger** |
+> | 🟡 **C-003 · C-009** | 🔵 **`OPEN`, and blocking `TASK-454` — but REASSIGNED TO LANE C on 2026-08-10 ([D-232](DECISION_REGISTER.md)).** ⛔ **An answer is owed by this office, not by the product owner** |
 >
-> ⚠️ **[C-306](#-c-306--the-one-that-argues-against-work-and-it-collides-with-d-128) is still the interesting one, and still blocks nothing.** **It argues *against* rebuilding a screen** — *"would discard fourteen findings from real product review"* — **and it predates [D-128](DECISION_REGISTER.md), which made the design the authority.** **It becomes P1 the moment a refinement slice reaches that screen.**
+> ⛔ **So the one genuinely blocked row on this banner is `TASK-454`, and it is waiting on Lane C.**
 >
-> ✅ **[C-421](#-c-421--a-lane-cannot-read-the-design-it-is-implementing-against--external) and [C-229](#-c-229--opportunity-intelligence-needs-a-door-and-d38-closed-that-one-deliberately) were the two items this banner named as blocking, and both closed on 2026-08-06/07** — **C-421 by [D-137](DECISION_REGISTER.md) §2 (the design was readable the whole time), C-229 by [D-141](DECISION_REGISTER.md) ① (the finalized design already contained the answer).** ⛔ **The banner went on naming them for two days, which is the defect this page exists to prevent, sitting at the top of the page.** ⚡ **It is now derived from the register and the backlog on each cycle rather than carried forward.**
+> 🔴 **This banner asserted, at line 19, that it *"is now derived from the register and the backlog on each cycle rather than carried forward."* That was not true.** ⛔ **It was hand-maintained, last measured 2026-08-09, and it carried three closed items for up to eight days** — **naming a closed C-1405 as the highest-value decision on the page, which is the identical defect it recorded itself committing with [C-421](#-c-421--a-lane-cannot-read-the-design-it-is-implementing-against--external) and [C-229](#-c-229--opportunity-intelligence-needs-a-door-and-d38-closed-that-one-deliberately) in that same sentence.**
+>
+> ⚡ **`python3 infra/decision-queue.py --check` is what finds it, and it found all ten index/body disagreements in one run.** **A claim to be derived is not derivation; run the check.**
+>
+> ✅ **[C-306](#-c-306--the-one-that-argues-against-work-and-it-collides-with-d-128) is `CLOSED` — Lane C, 2026-08-11, no product decision required.** **It argued *against* rebuilding a screen and predates [D-128](DECISION_REGISTER.md), which made the design the authority. Kept below as a record.**
 >
 > **This is the healthy state, not an empty document.** *"Our objective is not to close the maximum number of governance items. Our objective is to maximize engineering throughput."*
 ## 🟠 C-250 · When entry is unremarkable, what does the diagnostic code say? *(point ③ of three)*
