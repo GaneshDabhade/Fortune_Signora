@@ -56,7 +56,7 @@ def views() -> FakeSavedViewRepository:
 
 @pytest.fixture
 async def workspace(workspaces: FakeWorkspaceRepository) -> Workspace:
-    space, _ = Workspace.create(name="Acme", created_by=AUTHOR)
+    space, _ = Workspace.create(name="Acme", slug="a-workspace", created_by=AUTHOR)
     await workspaces.add(space)
     return space
 
@@ -256,7 +256,7 @@ class TestRevising:
         views: FakeSavedViewRepository,
         workspace: Workspace,
     ) -> None:
-        other, _ = Workspace.create(name="Other", created_by=COLLEAGUE)
+        other, _ = Workspace.create(name="Other", slug="a-workspace", created_by=COLLEAGUE)
         await workspaces.add(other)
         mine = await _declare(workspaces, views, workspace.id)
         with pytest.raises(SavedViewNotFoundError):
@@ -387,7 +387,7 @@ class TestListing:
         views: FakeSavedViewRepository,
         workspace: Workspace,
     ) -> None:
-        other, _ = Workspace.create(name="Other", created_by=COLLEAGUE)
+        other, _ = Workspace.create(name="Other", slug="a-workspace", created_by=COLLEAGUE)
         await workspaces.add(other)
         await _declare(workspaces, views, workspace.id, name="Mine")
         await _declare(workspaces, views, other.id, name="Theirs")
@@ -456,7 +456,7 @@ class TestGetting:
         views: FakeSavedViewRepository,
         workspace: Workspace,
     ) -> None:
-        other, _ = Workspace.create(name="Other", created_by=COLLEAGUE)
+        other, _ = Workspace.create(name="Other", slug="a-workspace", created_by=COLLEAGUE)
         await workspaces.add(other)
         theirs = await _declare(workspaces, views, other.id)
         found = await GetSavedViewUseCase(workspaces=workspaces, saved_views=views).execute(

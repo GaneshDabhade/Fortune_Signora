@@ -47,7 +47,7 @@ def use_case(
 
 @pytest.fixture
 async def existing_workspace(workspaces: FakeWorkspaceRepository) -> Workspace:
-    workspace, _ = Workspace.create(name="Acme", created_by=uuid4())
+    workspace, _ = Workspace.create(name="Acme", slug="a-workspace", created_by=uuid4())
     await workspaces.add(workspace)
     return workspace
 
@@ -139,8 +139,8 @@ async def test_same_user_may_belong_to_multiple_workspaces(
     """Duplicate detection is scoped per workspace, not global — a user
     legitimately belongs to many workspaces."""
     user_id = uuid4()
-    first, _ = Workspace.create(name="First", created_by=uuid4())
-    second, _ = Workspace.create(name="Second", created_by=uuid4())
+    first, _ = Workspace.create(name="First", slug="a-workspace", created_by=uuid4())
+    second, _ = Workspace.create(name="Second", slug="a-workspace", created_by=uuid4())
     await workspaces.add(first)
     await workspaces.add(second)
 

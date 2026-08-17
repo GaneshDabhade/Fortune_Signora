@@ -35,6 +35,7 @@ from signora_platform.tests.keys import (
     mint_token,
 )
 from tests.conftest import DEFAULT_APP_DATABASE_URL
+from tests.slugs import test_slug as _test_slug
 
 _FRONTEND = Path(__file__).resolve().parents[3] / "frontend"
 _MINTER = _FRONTEND / "tests" / "contract" / "mint-token.ts"
@@ -124,7 +125,7 @@ async def test_item_4_workspace_list_switch_and_signout_work() -> None:
     async with app.router.lifespan_context(app):
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:
-            created = await client.post("/workspaces", json={"name": "Demo"}, headers=headers)
+            created = await client.post("/workspaces", json={"name": "Demo", "slug": _test_slug("Demo")}, headers=headers)
             listed = await client.get("/workspaces", headers=headers)
             # "Switching" is naming a different workspace in the path; the
             # API re-verifies membership on every such request.
@@ -146,7 +147,7 @@ async def test_item_5_second_user_cannot_see_the_first_users_workspace() -> None
         async with AsyncClient(transport=transport, base_url="http://test") as client:
             created = await client.post(
                 "/workspaces",
-                json={"name": "Private"},
+                json={"name": "Private", "slug": _test_slug("Private")},
                 headers={"Authorization": f"Bearer {mint_token(key_pair, user_id=owner)}"},
             )
             outsider_headers = {"Authorization": f"Bearer {mint_token(key_pair, user_id=outsider)}"}

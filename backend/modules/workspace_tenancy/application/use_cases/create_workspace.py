@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from uuid import UUID
 
+from sqlalchemy.exc import IntegrityError
+
 from modules.workspace_tenancy.application.ports import (
     EventPublisher,
     MembershipRepository,
@@ -8,11 +10,17 @@ from modules.workspace_tenancy.application.ports import (
     WorkspaceRepository,
 )
 from modules.workspace_tenancy.domain.entities import Membership, Workspace, WorkspaceRole
+from modules.workspace_tenancy.domain.exceptions import WorkspaceSlugTakenError
 
 
 @dataclass(frozen=True)
 class CreateWorkspaceInput:
     name: str
+    #: 📁 Screen `03`'s URL field. ⛔ **Required, and not derived from `name`
+    #: here** — the client suggests, a person edits, and the value stored is
+    #: the one they accepted. **Deriving it a second time in this layer would
+    #: be two producers of one permanent identifier** ([§2](../../../../CLAUDE.md)).
+    slug: str
     created_by: UUID
     #: The founder's verified address, from the token. **Recorded so the roster
     #: can name the one person who is certainly in it** — every later member
@@ -52,9 +60,26 @@ class CreateWorkspaceUseCase:
         self, input_: CreateWorkspaceInput, *, correlation_id: UUID
     ) -> CreateWorkspaceResult:
         workspace, workspace_created = Workspace.create(
-            name=input_.name, created_by=input_.created_by
+            name=input_.name, slug=input_.slug, created_by=input_.created_by
         )
-        await self._workspace_repository.add(workspace)
+        # ⚡ **Asked before inserting, so the common case gets the error the
+        # design wrote** — *"That URL was taken while you were typing."*
+        # ⛔ **This is NOT what makes the slug unique**: the unique constraint
+        # is, and the window between this check and the insert is real. **A
+        # caller that lost that race gets the same error from the constraint**,
+        # which is why `WorkspaceSlugTakenError` is raised in both places
+        # rather than only here.
+        if await self._workspace_repository.slug_is_taken(workspace.slug):
+            raise WorkspaceSlugTakenError(workspace.slug)
+
+        try:
+            await self._workspace_repository.add(workspace)
+        except IntegrityError as collision:
+            # ⛔ **The race, closed.** 📁 [§2](../../../../CLAUDE.md): *a guard
+            # that cannot fail is not protection* — and the check above CAN
+            # fail to catch this, so the constraint's own refusal is translated
+            # rather than left to surface as a 500.
+            raise WorkspaceSlugTakenError(workspace.slug) from collision
 
         await self._tenant_context.activate_workspace(workspace.id)
 

@@ -18,6 +18,9 @@ from modules.workspace_tenancy.application.capability_use_cases import (
     ListCapabilityRoles,
     RenameCapabilityRole,
 )
+from modules.workspace_tenancy.application.use_cases.workspace_slug import (
+    CheckWorkspaceSlugUseCase,
+)
 from modules.workspace_tenancy.application.use_cases import (
     AddMemberUseCase,
     CreateWorkspaceUseCase,
@@ -93,6 +96,7 @@ from signora_platform.event_bus import PostgresOutboxEventPublisher
 @dataclass(frozen=True)
 class WorkspaceTenancyUseCases:
     create_workspace: CreateWorkspaceUseCase
+    check_workspace_slug: CheckWorkspaceSlugUseCase
     add_member: AddMemberUseCase
     accept_invitation: AcceptInvitationUseCase
     get_workspace: GetWorkspaceUseCase
@@ -144,6 +148,9 @@ def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
             membership_repository=membership_repository,
             tenant_context=tenant_context,
             event_publisher=event_publisher,
+        ),
+        check_workspace_slug=CheckWorkspaceSlugUseCase(
+            workspace_repository=workspace_repository,
         ),
         add_member=AddMemberUseCase(
             workspace_repository=workspace_repository,

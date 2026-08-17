@@ -23,6 +23,8 @@ from modules.workspace_tenancy.domain.exceptions import (
     EmptyDeclarationError,
     InvalidSavedViewNameError,
     InvalidWorkspaceNameError,
+    InvalidWorkspaceSlugError,
+    WorkspaceSlugTakenError,
     OnboardingRunAlreadyFinishedError,
     OnboardingRunNotFoundError,
     SavedViewAlreadyRetiredError,
@@ -76,6 +78,11 @@ ERROR_MAPPING: ErrorMapping = {
     TooManyGoalsError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "too_many_goals"),
     DuplicateMembershipError: (status.HTTP_409_CONFLICT, "membership_already_exists"),
     InvalidWorkspaceNameError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "invalid_workspace_name"),
+    InvalidWorkspaceSlugError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "invalid_workspace_slug"),
+    # ⚡ **`409`, not `422`.** 📁 The text is well-formed and somebody else has
+    # it — *"That URL was taken while you were typing"* — and a client cannot
+    # tell those apart from one status. **The screen shows different things.**
+    WorkspaceSlugTakenError: (status.HTTP_409_CONFLICT, "workspace_slug_taken"),
     # **404, covering never invited, already accepted and withdrawn alike.**
     # Telling them apart would answer *"has this workspace invited this
     # person?"* to anybody who can sign in, which is a fact about a customer's

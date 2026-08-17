@@ -27,6 +27,7 @@ from modules.workspace_tenancy.infrastructure.composition import (
     build_use_cases,
 )
 from signora_platform.db import tenant_scoped_session, user_scoped_session
+from tests.slugs import test_slug as _test_slug
 
 pytestmark = pytest.mark.integration
 
@@ -36,7 +37,7 @@ async def _create_workspace(
 ) -> UUID:
     async with user_scoped_session(session_factory, user_id=user_id) as session:
         result = await build_use_cases(session).create_workspace.execute(
-            CreateWorkspaceInput(name=name, created_by=user_id), correlation_id=uuid4()
+            CreateWorkspaceInput(name=name, slug=_test_slug(name), created_by=user_id), correlation_id=uuid4()
         )
         return result.workspace.id
 

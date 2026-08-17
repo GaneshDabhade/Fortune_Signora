@@ -11,15 +11,66 @@ layer's use cases coordinate the two where a single business operation
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from enum import StrEnum
 from uuid import UUID, uuid4
 
 from modules.workspace_tenancy.domain.events import MemberAdded, WorkspaceCreated
-from modules.workspace_tenancy.domain.exceptions import InvalidWorkspaceNameError
+from modules.workspace_tenancy.domain.exceptions import (
+    InvalidWorkspaceNameError,
+    InvalidWorkspaceSlugError,
+)
 
 MAX_WORKSPACE_NAME_LENGTH = 200
+
+#: 📁 Screen `03` — *"eu.signora.app/**northwind**"*. **The address bar is the
+#: constraint**: short enough to type, long enough to disambiguate two
+#: companies with the same first word.
+MIN_WORKSPACE_SLUG_LENGTH = 3
+MAX_WORKSPACE_SLUG_LENGTH = 63
+
+#: ⛔ **Lowercase, digits and single inner hyphens. Nothing else.**
+#: ⚡ **This is a hostname label, not a title** — 📁 the design puts it after a
+#: `/` in monospace, and a slug that needed percent-encoding to appear there
+#: would not be the thing the screen showed somebody.
+_SLUG = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+
+#: ⛔ **Reserved, because a customer may not take a path the product owns.**
+#: ⚠️ **Refused rather than silently suffixed**: somebody who typed `api` and
+#: got `api-2` was never told, and the address they remember is wrong.
+RESERVED_WORKSPACE_SLUGS = frozenset(
+    {"api", "app", "www", "admin", "signora", "static", "assets", "auth", "login", "health"}
+)
+
+
+def normalize_workspace_slug(candidate: str) -> str:
+    """Fold a candidate into the one form that can be stored.
+
+    ⚡ **Case and surrounding space only.** ⛔ **It does not invent a slug from
+    a name** — 📁 the design pre-fills the field from the email domain and
+    lets somebody edit it, so the suggestion is the *client's* to make and the
+    stored value is whatever they accepted. **Deriving here as well would be
+    two producers of one string** ([§2](../../../../CLAUDE.md)).
+    """
+    return candidate.strip().lower()
+
+
+def validate_workspace_slug(candidate: str) -> str:
+    """The normalized slug, or `InvalidWorkspaceSlugError`.
+
+    ⚠️ **Length is checked before shape**, so *"nw"* is told it is too short
+    rather than told it has the wrong characters — which it does not.
+    """
+    slug = normalize_workspace_slug(candidate)
+    if not (MIN_WORKSPACE_SLUG_LENGTH <= len(slug) <= MAX_WORKSPACE_SLUG_LENGTH):
+        raise InvalidWorkspaceSlugError(candidate)
+    if not _SLUG.match(slug):
+        raise InvalidWorkspaceSlugError(candidate)
+    if slug in RESERVED_WORKSPACE_SLUGS:
+        raise InvalidWorkspaceSlugError(candidate)
+    return slug
 
 
 class WorkspaceRole(StrEnum):
@@ -37,22 +88,31 @@ class WorkspaceRole(StrEnum):
 class Workspace:
     id: UUID
     name: str
+    #: 📁 Screen `03` — *"Workspace URL … **Permanent once created.**"*
+    #: ⛔ **There is no rename operation and that is deliberate**: the design
+    #: says permanent, and a link somebody shared must not stop resolving
+    #: because a colleague tidied the name.
+    slug: str
     created_at: datetime
     updated_at: datetime
     created_by: UUID
     updated_by: UUID
 
     @classmethod
-    def create(cls, *, name: str, created_by: UUID) -> tuple[Workspace, WorkspaceCreated]:
+    def create(
+        cls, *, name: str, slug: str, created_by: UUID
+    ) -> tuple[Workspace, WorkspaceCreated]:
         normalized_name = name.strip()
         if not normalized_name or len(normalized_name) > MAX_WORKSPACE_NAME_LENGTH:
             raise InvalidWorkspaceNameError(name)
+        normalized_slug = validate_workspace_slug(slug)
 
         now = datetime.now(UTC)
         workspace_id = uuid4()
         workspace = cls(
             id=workspace_id,
             name=normalized_name,
+            slug=normalized_slug,
             created_at=now,
             updated_at=now,
             created_by=created_by,

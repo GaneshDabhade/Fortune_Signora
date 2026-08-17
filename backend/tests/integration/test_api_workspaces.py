@@ -26,6 +26,7 @@ from signora_platform.tests.keys import (
     mint_token,
 )
 from tests.conftest import DEFAULT_APP_DATABASE_URL
+from tests.slugs import test_slug as _test_slug
 
 pytestmark = pytest.mark.integration
 
@@ -64,7 +65,7 @@ async def _create_workspace(
     client: AsyncClient, key_pair: KeyPair, user_id: UUID, name: str = "Acme"
 ) -> dict[str, Any]:
     response = await client.post(
-        "/workspaces", json={"name": name}, headers=_auth(key_pair, user_id)
+        "/workspaces", json={"name": name, "slug": _test_slug(name)}, headers=_auth(key_pair, user_id)
     )
     assert response.status_code == 201, response.text
     body: dict[str, Any] = response.json()
@@ -121,7 +122,7 @@ class TestWorkspaceLifecycle:
         self, client: AsyncClient, key_pair: KeyPair
     ) -> None:
         response = await client.post(
-            "/workspaces", json={"name": "   "}, headers=_auth(key_pair, uuid4())
+            "/workspaces", json={"name": "   ", "slug": _test_slug("   ")}, headers=_auth(key_pair, uuid4())
         )
 
         # Whitespace passes the schema's min_length but fails the domain
@@ -133,7 +134,7 @@ class TestWorkspaceLifecycle:
         self, client: AsyncClient, key_pair: KeyPair
     ) -> None:
         response = await client.post(
-            "/workspaces", json={"name": "a" * 500}, headers=_auth(key_pair, uuid4())
+            "/workspaces", json={"name": "a" * 500, "slug": _test_slug("a" * 500)}, headers=_auth(key_pair, uuid4())
         )
 
         body = response.json()

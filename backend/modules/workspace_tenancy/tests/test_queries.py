@@ -27,7 +27,7 @@ def memberships() -> FakeMembershipRepository:
 
 class TestGetWorkspace:
     async def test_returns_existing_workspace(self, workspaces: FakeWorkspaceRepository) -> None:
-        workspace, _ = Workspace.create(name="Acme", created_by=uuid4())
+        workspace, _ = Workspace.create(name="Acme", slug="a-workspace", created_by=uuid4())
         await workspaces.add(workspace)
         use_case = GetWorkspaceUseCase(workspace_repository=workspaces)
 
@@ -47,8 +47,8 @@ class TestListWorkspaceMembers:
     async def test_lists_only_members_of_the_requested_workspace(
         self, workspaces: FakeWorkspaceRepository, memberships: FakeMembershipRepository
     ) -> None:
-        target, _ = Workspace.create(name="Target", created_by=uuid4())
-        other, _ = Workspace.create(name="Other", created_by=uuid4())
+        target, _ = Workspace.create(name="Target", slug="a-workspace", created_by=uuid4())
+        other, _ = Workspace.create(name="Other", slug="a-workspace", created_by=uuid4())
         await workspaces.add(target)
         await workspaces.add(other)
 
@@ -76,7 +76,7 @@ class TestListWorkspaceMembers:
     async def test_returns_empty_list_for_workspace_without_members(
         self, workspaces: FakeWorkspaceRepository, memberships: FakeMembershipRepository
     ) -> None:
-        workspace, _ = Workspace.create(name="Empty", created_by=uuid4())
+        workspace, _ = Workspace.create(name="Empty", slug="a-workspace", created_by=uuid4())
         await workspaces.add(workspace)
         use_case = ListWorkspaceMembersUseCase(
             workspace_repository=workspaces, membership_repository=memberships

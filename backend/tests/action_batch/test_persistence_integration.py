@@ -31,6 +31,7 @@ from modules.action_batch.infrastructure.repository import SqlActionBatchReposit
 from modules.workspace_tenancy.application.use_cases import CreateWorkspaceInput
 from modules.workspace_tenancy.infrastructure.composition import build_use_cases
 from signora_platform.db import tenant_scoped_session, user_scoped_session
+from tests.slugs import test_slug as _test_slug
 
 pytestmark = pytest.mark.integration
 
@@ -44,7 +45,7 @@ async def _workspace(factory: async_sessionmaker[AsyncSession]) -> tuple[UUID, U
     user_id = uuid4()
     async with user_scoped_session(factory, user_id=user_id) as session:
         result = await build_use_cases(session).create_workspace.execute(
-            CreateWorkspaceInput(name="Action Batch", created_by=user_id),
+            CreateWorkspaceInput(name="Action Batch", slug=_test_slug("Action Batch"), created_by=user_id),
             correlation_id=uuid4(),
         )
         return result.workspace.id, user_id

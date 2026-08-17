@@ -93,10 +93,17 @@ class TestTheEnvelopeDecidesTheWorkspace:
             for workspace_id in (ours, theirs):
                 await owner.execute(
                     text(
-                        "INSERT INTO workspace (id, name, created_by, updated_by) "
-                        "VALUES (:id, :name, :by, :by)"
+                        "INSERT INTO workspace (id, name, slug, created_by, updated_by) "
+                        "VALUES (:id, :name, :slug, :by, :by)"
                     ),
-                    {"id": str(workspace_id), "name": "Northwind", "by": str(alice)},
+                    {
+                        "id": str(workspace_id),
+                        "name": "Northwind",
+                        # ⚡ Unique per row — two workspaces are created in this
+                        # loop and the column carries a unique constraint.
+                        "slug": f"nw-{str(workspace_id)[:8]}",
+                        "by": str(alice),
+                    },
                 )
 
         await deliver_requested_notification(

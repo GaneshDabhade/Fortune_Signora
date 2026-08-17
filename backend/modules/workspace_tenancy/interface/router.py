@@ -96,6 +96,7 @@ from modules.workspace_tenancy.interface.schemas import (
     SaveViewRequest,
     TransferOwnershipRequest,
     UnreadBadgeResponse,
+    SlugAvailabilityResponse,
     WorkspaceResponse,
 )
 from signora_platform.api import (
@@ -159,12 +160,37 @@ async def create_workspace(
     result = await build_use_cases(context.session).create_workspace.execute(
         CreateWorkspaceInput(
             name=body.name,
+            slug=body.slug,
             created_by=context.principal.user_id,
             created_by_email=context.principal.email,
         ),
         correlation_id=correlation_id_of(request),
     )
     return WorkspaceResponse.from_domain(result.workspace)
+
+
+@router.get(
+    "/workspaces/slug-available",
+    response_model=SlugAvailabilityResponse,
+    summary="Whether a workspace URL is free",
+)
+async def check_workspace_slug(slug: str, context: CurrentUser) -> SlugAvailabilityResponse:
+    """📁 Screen `03` — *"Checked as you type, 300ms after you stop."*
+
+    ⛔ **Declared BEFORE `GET /workspaces/{workspace_id}`**, or FastAPI matches
+    `slug-available` as a workspace id and answers `422`. **Route order is
+    behaviour here, not style.**
+
+    ⚡ **User-scoped context, like `create_workspace` above** — there is no
+    workspace to be a member of yet, and any signed-in person may create one.
+    ⛔ **No Casbin check applies for the same reason**, and the response is a
+    boolean over one column: it reveals exactly what pressing *Create* would
+    reveal a moment later, and nothing more.
+    """
+    result = await build_use_cases(context.session).check_workspace_slug.execute(slug)
+    return SlugAvailabilityResponse(
+        slug=result.slug, available=result.available, reason=result.reason
+    )
 
 
 @router.get(

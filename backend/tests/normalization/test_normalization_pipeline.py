@@ -23,6 +23,7 @@ from signora_platform.db import tenant_scoped_session, user_scoped_session
 from signora_platform.event_bus import PostgresOutboxEventPublisher
 from tests.integration.test_provider_ingestion import _adapter
 from tests.pipeline import normalize_all
+from tests.slugs import test_slug as _test_slug
 
 pytestmark = pytest.mark.integration
 
@@ -33,7 +34,7 @@ async def _ingest(factory: async_sessionmaker[AsyncSession]) -> tuple[UUID, UUID
     async with user_scoped_session(factory, user_id=user_id) as session:
         workspace_id = (
             await build_use_cases(session).create_workspace.execute(
-                CreateWorkspaceInput(name="Normalization", created_by=user_id),
+                CreateWorkspaceInput(name="Normalization", slug=_test_slug("Normalization"), created_by=user_id),
                 correlation_id=uuid4(),
             )
         ).workspace.id

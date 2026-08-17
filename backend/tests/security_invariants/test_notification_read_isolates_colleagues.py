@@ -40,10 +40,16 @@ async def _a_workspace(session: AsyncSession, workspace_id: UUID, founder: UUID)
     the constraint saying so."""
     await session.execute(
         text(
-            "INSERT INTO workspace (id, name, created_by, updated_by) "
-            "VALUES (:id, :name, :by, :by)"
+            "INSERT INTO workspace (id, name, slug, created_by, updated_by) "
+            "VALUES (:id, :name, :slug, :by, :by)"
         ),
-        {"id": str(workspace_id), "name": "Northwind", "by": str(founder)},
+        {
+            "id": str(workspace_id),
+            "name": "Northwind",
+            # ⚡ Unique per row; the column carries a unique constraint.
+            "slug": f"nw-{str(workspace_id)[:8]}",
+            "by": str(founder),
+        },
     )
 
 

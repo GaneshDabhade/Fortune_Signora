@@ -27,6 +27,7 @@ from signora_platform.event_bus import (
 )
 from signora_platform.event_bus import dispatch as dispatch_module
 from signora_platform.event_bus.dead_letter import MAX_BACKOFF_SECONDS
+from tests.slugs import test_slug as _test_slug
 
 pytestmark = pytest.mark.integration
 
@@ -84,7 +85,7 @@ class TestEventDurability:
         with pytest.raises(RuntimeError):
             async with user_scoped_session(session_factory, user_id=user_id) as session:
                 await build_use_cases(session).create_workspace.execute(
-                    CreateWorkspaceInput(name="Rolled back", created_by=user_id),
+                    CreateWorkspaceInput(name="Rolled back", slug=_test_slug("Rolled back"), created_by=user_id),
                     correlation_id=uuid4(),
                 )
                 raise RuntimeError("caller fails after the domain write")

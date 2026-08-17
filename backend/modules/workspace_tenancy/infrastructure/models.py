@@ -36,6 +36,10 @@ class WorkspaceModel(Base, TimestampMixin, AuditMixin):
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
+    #: 📁 Screen `03`'s URL. **Unique across the whole table** — the constraint
+    #: is the guarantee; the availability check is only a courtesy that saves
+    #: somebody from discovering the collision after they press Create.
+    slug: Mapped[str] = mapped_column(String(63), nullable=False, unique=True)
 
 
 class MembershipModel(Base, TimestampMixin, AuditMixin):

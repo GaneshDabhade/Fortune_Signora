@@ -395,12 +395,19 @@ export function useSignalCatalog(workspaceId: string | null) {
   });
 }
 
+/**
+ * ⚠️ **Takes a name AND an address now** — 📁 screen `03` made the slug
+ * required, and `createWorkspace` on the server refuses to invent one.
+ *
+ * ⛔ **An object rather than two positional strings**, because two adjacent
+ * `string` parameters are two things a caller can swap silently.
+ */
 export function useCreateWorkspace() {
   const client = useQueryClient();
 
   return useMutation({
-    mutationFn: (name: string) =>
-      apiRequest<Workspace>('/workspaces', { method: 'POST', body: { name } }),
+    mutationFn: ({ name, slug }: { name: string; slug: string }) =>
+      apiRequest<Workspace>('/workspaces', { method: 'POST', body: { name, slug } }),
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: queryKeys.workspaces() });
     },

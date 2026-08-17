@@ -56,7 +56,7 @@ async def _started() -> tuple[FakeWorkspaceRepository, FakeOnboardingRunReposito
     runs = FakeOnboardingRunRepository()
     # `create` returns the aggregate and the event it raised; only the first
     # is this helper's business.
-    workspace, _event = Workspace.create(name="Northwind", created_by=uuid4())
+    workspace, _event = Workspace.create(name="Northwind", slug="a-workspace", created_by=uuid4())
     await workspaces.add(workspace)
     person = uuid4()
     await StartOnboardingUseCase(workspaces=workspaces, runs=runs).execute(

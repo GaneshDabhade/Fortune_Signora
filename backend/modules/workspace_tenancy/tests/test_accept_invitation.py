@@ -149,7 +149,7 @@ def use_case(
 async def _workspace(workspaces: FakeWorkspaceRepository) -> UUID:
     from modules.workspace_tenancy.domain.entities import Workspace
 
-    workspace, _ = Workspace.create(name="Acme", created_by=uuid4())
+    workspace, _ = Workspace.create(name="Acme", slug="a-workspace", created_by=uuid4())
     await workspaces.add(workspace)
     return workspace.id
 

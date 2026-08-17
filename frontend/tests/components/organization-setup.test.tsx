@@ -125,7 +125,14 @@ describe('Organization setup', () => {
     render(<OrganizationSetupPage />);
     await user.type(screen.getByLabelText('Organization name'), '  Northwind APAC  ');
     await user.click(screen.getByRole('button', { name: 'Create organization' }));
-    expect(createMutate).toHaveBeenCalledWith('Northwind APAC', expect.anything());
+    // ⚠️ **A name AND an address now** — 📁 screen `03` made the slug required
+    // and the server refuses to invent one. ⚡ **The suggestion is the
+    // client's**, from `lib/workspace/slug.ts`, and it is asserted here so a
+    // change to the suggester cannot silently alter what this form sends.
+    expect(createMutate).toHaveBeenCalledWith(
+      { name: 'Northwind APAC', slug: 'northwind-apac' },
+      expect.anything(),
+    );
   });
 
   it('refuses to submit a blank name', async () => {

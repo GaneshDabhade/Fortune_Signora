@@ -25,6 +25,8 @@ from modules.workspace_tenancy.application.use_cases.organization_history import
 )
 from modules.workspace_tenancy.domain.entities import (
     MAX_WORKSPACE_NAME_LENGTH,
+    MAX_WORKSPACE_SLUG_LENGTH,
+    MIN_WORKSPACE_SLUG_LENGTH,
     Membership,
     Workspace,
     WorkspaceRole,
@@ -64,6 +66,26 @@ class CreateWorkspaceRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     name: str = Field(min_length=1, max_length=MAX_WORKSPACE_NAME_LENGTH)
+    #: 📁 Screen `03` — *"Workspace URL … Permanent once created."*
+    #: ⛔ **Bounds only here; the SHAPE is the domain's.** A regex duplicated in
+    #: this layer would be a second definition of what a slug is, and the two
+    #: would eventually disagree ([§2](../../../../CLAUDE.md)).
+    slug: str = Field(min_length=MIN_WORKSPACE_SLUG_LENGTH, max_length=MAX_WORKSPACE_SLUG_LENGTH)
+
+
+class SlugAvailabilityResponse(BaseModel):
+    """📁 Screen `03`'s *Available* marker.
+
+    ⚡ **Three states in two fields** — available · taken · malformed — because
+    a screen given one boolean would have to say *"taken"* about text that is
+    not a slug at all.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    slug: str
+    available: bool
+    reason: str | None
 
 
 class AddMemberRequest(BaseModel):
@@ -78,6 +100,7 @@ class WorkspaceResponse(BaseModel):
 
     id: UUID
     name: str
+    slug: str
     created_at: datetime
     updated_at: datetime
 
@@ -86,6 +109,7 @@ class WorkspaceResponse(BaseModel):
         return cls(
             id=workspace.id,
             name=workspace.name,
+            slug=workspace.slug,
             created_at=workspace.created_at,
             updated_at=workspace.updated_at,
         )

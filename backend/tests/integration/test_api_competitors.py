@@ -29,6 +29,7 @@ from signora_platform.tests.keys import (
     mint_token,
 )
 from tests.conftest import DEFAULT_APP_DATABASE_URL
+from tests.slugs import test_slug as _test_slug
 
 pytestmark = pytest.mark.integration
 
@@ -61,7 +62,7 @@ def _auth(key_pair: KeyPair, user_id: UUID) -> dict[str, str]:
 
 async def _workspace(client: AsyncClient, key_pair: KeyPair, user_id: UUID) -> UUID:
     response = await client.post(
-        "/workspaces", json={"name": "Acme"}, headers=_auth(key_pair, user_id)
+        "/workspaces", json={"name": "Acme", "slug": _test_slug("Acme")}, headers=_auth(key_pair, user_id)
     )
     assert response.status_code == 201, response.text
     return UUID(response.json()["id"])

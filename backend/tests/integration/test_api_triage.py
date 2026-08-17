@@ -42,6 +42,7 @@ from signora_platform.tests.keys import (
 )
 from tests.conftest import DEFAULT_APP_DATABASE_URL
 from tests.opportunity_engine.test_opportunity_pipeline import _tracked
+from tests.slugs import test_slug as _test_slug
 
 pytestmark = pytest.mark.integration
 
@@ -396,7 +397,7 @@ class TestTheWorkspaceQueue:
         on *"you are finished"* would be treating success as a fault."""
         user_id = uuid4()
         created = await client.post(
-            "/workspaces", json={"name": "Acme"}, headers=_auth(key_pair, user_id)
+            "/workspaces", json={"name": "Acme", "slug": _test_slug("Acme")}, headers=_auth(key_pair, user_id)
         )
         workspace_id = UUID(created.json()["id"])
 

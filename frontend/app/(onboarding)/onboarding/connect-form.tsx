@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { CAPABILITY_VALUE, systemName } from '@/components/integrations/connection-center';
@@ -11,7 +12,6 @@ import { useChangePreferences, usePreferences } from '@/lib/query/hooks/preferen
 
 import { OnboardingShell } from '../onboarding-shell';
 import { OnboardingSkeleton } from './company-form';
-import { useOnboardingExit } from './exit';
 import { useOnboarding } from './use-onboarding';
 
 /**
@@ -61,7 +61,7 @@ import { useOnboarding } from './use-onboarding';
  * same fact without the false affordance.**
  */
 export function ConnectForm() {
-  const { exit } = useOnboardingExit();
+  const router = useRouter();
   const { run, workspaceId, error, isLoading, isSaving, save } = useOnboarding();
   const integrations = useIntegrations(workspaceId);
   const preferences = usePreferences(workspaceId);
@@ -70,9 +70,18 @@ export function ConnectForm() {
 
   if (isLoading) return <OnboardingSkeleton />;
 
+  /**
+   * ⚡ **Finishes the run, then shows the payoff.**
+   *
+   * ⚠️ **This used to call `useOnboardingExit` directly**, because screen `09`
+   * did not exist and there was nowhere else to go. 📁 The design ends on
+   * Completion — *"the payoff is the product, not a congratulation"* — and
+   * **`exit()` moves there**: it decides where somebody lands *after*
+   * onboarding, and Completion is still inside it.
+   */
   const finish = async () => {
     await save((id) => finishOnboarding(id));
-    exit();
+    router.push('/onboarding/complete');
   };
 
   return (

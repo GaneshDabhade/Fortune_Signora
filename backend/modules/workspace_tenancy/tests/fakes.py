@@ -26,6 +26,13 @@ class FakeWorkspaceRepository:
     async def get(self, workspace_id: UUID) -> Workspace | None:
         return self.workspaces.get(workspace_id)
 
+    async def slug_is_taken(self, slug: str) -> bool:
+        """⛔ **The fake enforces uniqueness because the real one does.** A fake
+        that always answered `False` would make every *URL taken* test pass
+        without the behaviour existing — the decorative shape
+        [§2](../../../../CLAUDE.md) names."""
+        return any(w.slug == slug for w in self.workspaces.values())
+
     async def list_visible(self, *, limit: int, after: CursorPosition | None) -> list[Workspace]:
         """Mirrors the newest-first keyset ordering the real repository gets
         from SQL, so pagination behaviour is exercised without a database."""

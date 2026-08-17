@@ -55,6 +55,7 @@ from signora_platform.simulation.generators import (
     CrunchbaseFixtureGenerator,
 )
 from tests.pipeline import normalize_all, queries, resolve_all
+from tests.slugs import test_slug as _test_slug
 
 pytestmark = pytest.mark.integration
 
@@ -131,7 +132,7 @@ async def _workspace(factory: async_sessionmaker[AsyncSession], name: str) -> tu
     user_id = uuid4()
     async with user_scoped_session(factory, user_id=user_id) as session:
         result = await build_use_cases(session).create_workspace.execute(
-            CreateWorkspaceInput(name=name, created_by=user_id), correlation_id=uuid4()
+            CreateWorkspaceInput(name=name, slug=_test_slug(name), created_by=user_id), correlation_id=uuid4()
         )
         return result.workspace.id, user_id
 

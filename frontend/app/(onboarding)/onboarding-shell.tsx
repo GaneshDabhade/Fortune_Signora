@@ -58,7 +58,14 @@ export interface OnboardingShellProps {
    * restating it.
    */
   readonly title?: string;
+  /**
+   * 📁 **Rendered ABOVE the heading** — screen `09`'s 44px success mark, which
+   * the design places before the words rather than beside them.
+   */
+  readonly lead?: React.ReactNode;
   readonly description?: React.ReactNode;
+  /** 📁 **Welcome and Completion set 28px; every counted step 24px.** */
+  readonly largeTitle?: boolean;
   /** 📁 *"the primary action sits bottom-left of the content column."* */
   readonly actions?: React.ReactNode;
   readonly children: React.ReactNode;
@@ -73,10 +80,12 @@ export interface OnboardingShellProps {
 export function OnboardingShell({
   rail = null,
   title,
+  lead,
   description,
   actions,
   children,
   roomy = false,
+  largeTitle = false,
 }: OnboardingShellProps) {
   // ⚡ **A rail-less screen is one plane, not a two-column grid with an empty
   // column.** 📁 Screen `07`'s padding is `36px 40px` where a step's is
@@ -98,8 +107,11 @@ export function OnboardingShell({
             its own position** — WCAG 2.4.3, which the design names by number
             and quotes: *"Step 3 of 4, What do you do at Northwind?"*. */}
         <main className={cn('min-w-0', railed ? 'px-11' : 'px-10', roomy ? 'py-10' : 'py-9')}>
+          {lead}
           {title === undefined ? null : (
-            <StepHeading title={title}>{description}</StepHeading>
+            <StepHeading title={title} large={largeTitle}>
+              {description}
+            </StepHeading>
           )}
           <div className={title === undefined ? undefined : 'mt-6'}>{children}</div>
           {actions === undefined ? null : <StepFooter>{actions}</StepFooter>}

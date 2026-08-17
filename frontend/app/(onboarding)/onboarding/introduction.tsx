@@ -71,11 +71,11 @@ export function ProductIntroduction() {
               and that is not an oversight.** 📁 `infra/reachability.py` reads
               static route strings: `href={NEXT}` is a link a customer can use
               and a link the check cannot see, and it reported
-              `/onboarding/company` as having **no entrance at all** the moment
+              `/onboarding/organization` as having **no entrance at all** the moment
               this screen became its only door. ⛔ **Making the checker's job
               possible is cheaper than declaring an exception.** */}
           <Link
-            href="/onboarding/company"
+            href="/onboarding/organization"
             className="ml-auto text-[12.5px] font-semibold text-content-subtle hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             Skip introduction
@@ -154,7 +154,7 @@ export function ProductIntroduction() {
 }
 
 /** 📁 Where the introduction lets go — the first counted step. */
-const NEXT = '/onboarding/company';
+const NEXT = '/onboarding/organization';
 
 const PANELS = [
   {

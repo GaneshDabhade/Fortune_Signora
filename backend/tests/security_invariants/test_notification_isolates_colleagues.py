@@ -58,10 +58,16 @@ NOW = datetime(2026, 8, 16, 9, 30, tzinfo=UTC)
 async def _a_workspace(session: AsyncSession, workspace_id: UUID, founder: UUID) -> None:
     await session.execute(
         text(
-            "INSERT INTO workspace (id, name, created_by, updated_by) "
-            "VALUES (:id, :name, :by, :by)"
+            "INSERT INTO workspace (id, name, slug, created_by, updated_by) "
+            "VALUES (:id, :name, :slug, :by, :by)"
         ),
-        {"id": str(workspace_id), "name": "Northwind", "by": str(founder)},
+        {
+            "id": str(workspace_id),
+            "name": "Northwind",
+            # ⚡ Unique per row; the column carries a unique constraint.
+            "slug": f"nw-{str(workspace_id)[:8]}",
+            "by": str(founder),
+        },
     )
 
 

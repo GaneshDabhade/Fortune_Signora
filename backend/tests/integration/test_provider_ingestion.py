@@ -41,6 +41,7 @@ from signora_platform.simulation import (
     load_scenario,
 )
 from signora_platform.simulation.generators import ApolloFixtureGenerator
+from tests.slugs import test_slug as _test_slug
 
 pytestmark = pytest.mark.integration
 
@@ -74,7 +75,7 @@ async def _workspace(factory: async_sessionmaker[AsyncSession]) -> tuple[UUID, U
     user_id = uuid4()
     async with user_scoped_session(factory, user_id=user_id) as session:
         result = await build_use_cases(session).create_workspace.execute(
-            CreateWorkspaceInput(name="Ingestion", created_by=user_id), correlation_id=uuid4()
+            CreateWorkspaceInput(name="Ingestion", slug=_test_slug("Ingestion"), created_by=user_id), correlation_id=uuid4()
         )
         return result.workspace.id, user_id
 

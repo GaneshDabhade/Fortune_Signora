@@ -18,6 +18,34 @@ class InvalidWorkspaceNameError(WorkspaceTenancyError):
         self.name = name
 
 
+class InvalidWorkspaceSlugError(WorkspaceTenancyError):
+    """📁 Screen `03`'s URL field refused.
+
+    ⚠️ **One error for every reason** — too short, wrong characters, reserved.
+    ⛔ **The screen tells somebody what a valid slug looks like rather than
+    which rule they broke**: three separate messages would teach the rules one
+    failure at a time, and the field is two words long.
+    """
+
+    def __init__(self, slug: str) -> None:
+        super().__init__(
+            f"A workspace URL is 3–63 characters of lowercase letters, "
+            f"numbers and hyphens, got: {slug!r}"
+        )
+        self.slug = slug
+
+
+class WorkspaceSlugTakenError(WorkspaceTenancyError):
+    """⚡ **Somebody else has it.** ⛔ Distinct from `InvalidWorkspaceSlugError`
+    because the answers differ: one is *fix the text*, the other is *that text
+    is fine and gone*. 📁 The design writes the second one out — *"That URL was
+    taken while you were typing. Your other answers are saved."*"""
+
+    def __init__(self, slug: str) -> None:
+        super().__init__(f"The workspace URL {slug!r} is already taken")
+        self.slug = slug
+
+
 class WorkspaceNotFoundError(WorkspaceTenancyError):
     def __init__(self, workspace_id: UUID) -> None:
         super().__init__(f"Workspace {workspace_id} does not exist")

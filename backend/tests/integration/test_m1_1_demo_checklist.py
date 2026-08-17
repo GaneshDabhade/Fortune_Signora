@@ -39,6 +39,7 @@ from signora_platform.event_bus import (
     to_envelope,
 )
 from signora_platform.observability import JsonFormatter, logging_context
+from tests.slugs import test_slug as _test_slug
 
 pytestmark = pytest.mark.integration
 
@@ -101,7 +102,7 @@ async def test_item_1_event_committed_atomically_with_domain_write(
     with pytest.raises(RuntimeError):
         async with user_scoped_session(session_factory, user_id=user_id) as session:
             await build_use_cases(session).create_workspace.execute(
-                CreateWorkspaceInput(name="Rolled Back", created_by=user_id),
+                CreateWorkspaceInput(name="Rolled Back", slug=_test_slug("Rolled Back"), created_by=user_id),
                 correlation_id=uuid4(),
             )
             raise RuntimeError("force rollback after publish")
@@ -113,7 +114,7 @@ async def test_item_1_event_committed_atomically_with_domain_write(
     # And the positive case: a committed workspace leaves its events behind.
     async with user_scoped_session(session_factory, user_id=user_id) as session:
         await build_use_cases(session).create_workspace.execute(
-            CreateWorkspaceInput(name="Acme Revenue", created_by=user_id),
+            CreateWorkspaceInput(name="Acme Revenue", slug=_test_slug("Acme Revenue"), created_by=user_id),
             correlation_id=uuid4(),
         )
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { suggestSlug } from '@/lib/workspace/slug';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -87,7 +88,7 @@ export default function SettingsPage() {
   const [name, setName] = useState('');
 
   const submit = () => {
-    createWorkspace.mutate(name.trim(), {
+    createWorkspace.mutate({ name: name.trim(), slug: suggestSlug(name) }, {
       onSuccess: (workspace) => {
         setActiveWorkspace(workspace.id);
         setDialogOpen(false);

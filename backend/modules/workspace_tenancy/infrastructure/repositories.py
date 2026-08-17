@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import Select, func, literal, select, tuple_, update
+from sqlalchemy import Select, func, literal, select, text, tuple_, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from modules.workspace_tenancy.domain.entities import Membership, Workspace, WorkspaceRole
@@ -68,6 +68,7 @@ def _workspace_to_domain(model: WorkspaceModel) -> Workspace:
     return Workspace(
         id=model.id,
         name=model.name,
+        slug=model.slug,
         created_at=model.created_at,
         updated_at=model.updated_at,
         created_by=model.created_by,
@@ -125,6 +126,7 @@ class SqlAlchemyWorkspaceRepository(SqlAlchemyRepository):
             WorkspaceModel(
                 id=workspace.id,
                 name=workspace.name,
+                slug=workspace.slug,
                 created_at=workspace.created_at,
                 updated_at=workspace.updated_at,
                 created_by=workspace.created_by,
@@ -135,6 +137,23 @@ class SqlAlchemyWorkspaceRepository(SqlAlchemyRepository):
     async def get(self, workspace_id: UUID) -> Workspace | None:
         model = await self._session.get(WorkspaceModel, workspace_id)
         return _workspace_to_domain(model) if model is not None else None
+
+    async def slug_is_taken(self, slug: str) -> bool:
+        """⛔ **One column, one boolean, and RLS deliberately bypassed for it.**
+
+        ⚡ **Uniqueness is a property of the whole table**, so a member of one
+        workspace has to be able to learn that another workspace holds a slug
+        — ⛔ **without learning anything else about it.** `SELECT 1 … LIMIT 1`
+        returns no name, no id and no count, so the only fact that crosses the
+        boundary is the one the constraint would reveal anyway on insert.
+
+        ⚠️ **The check is a courtesy, not the guarantee.** 📁 The design says
+        so itself — *"That URL was taken while you were typing"* — and the
+        unique index is what actually holds.
+        """
+        statement = text("SELECT 1 FROM workspace WHERE slug = :slug LIMIT 1")
+        result = await self._session.execute(statement, {"slug": slug})
+        return result.first() is not None
 
     async def list_visible(self, *, limit: int, after: CursorPosition | None) -> list[Workspace]:
         """No user filter appears here by design: the workspace table's RLS

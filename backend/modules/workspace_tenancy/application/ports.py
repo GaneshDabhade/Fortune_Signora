@@ -22,6 +22,22 @@ class WorkspaceRepository(Protocol):
     async def add(self, workspace: Workspace) -> None: ...
     async def get(self, workspace_id: UUID) -> Workspace | None: ...
 
+    async def slug_is_taken(self, slug: str) -> bool:
+        """Whether any workspace already holds this URL.
+
+        ⛔ **Deliberately a boolean and not the workspace.** 📁 Screen `03`
+        asks *"is this available?"* before anybody is a member of anything, so
+        returning the row would hand an unauthenticated-for-that-tenant caller
+        a workspace's name — **an enumeration oracle in exchange for nothing
+        the screen needs.**
+
+        ⚠️ **This read crosses RLS by design and is the reason it lives here
+        rather than being expressed as a `get`**: uniqueness is a property of
+        the whole table, and no member of one workspace may see another's row.
+        **The implementation restricts itself to one column and one boolean.**
+        """
+        ...
+
     async def list_visible(self, *, limit: int, after: CursorPosition | None) -> list[Workspace]:
         """Workspaces the *current session's user* may see, newest first.
 

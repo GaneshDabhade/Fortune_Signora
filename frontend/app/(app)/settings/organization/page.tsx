@@ -1,5 +1,6 @@
 'use client';
 
+import { suggestSlug } from '@/lib/workspace/slug';
 import { Building2, Globe, Palette, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 
@@ -69,7 +70,7 @@ export default function OrganizationSetupPage() {
   const submit = () => {
     const trimmed = name.trim();
     if (!trimmed) return;
-    createWorkspace.mutate(trimmed, {
+    createWorkspace.mutate({ name: trimmed, slug: suggestSlug(trimmed) }, {
       onSuccess: (created) => {
         setActiveWorkspace(created.id);
         setName('');

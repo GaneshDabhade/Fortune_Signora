@@ -2669,35 +2669,46 @@ logger.info("connecting to postgres://signora_app:S3cr3tPassw0rd@db:5432/signora
 
 ⛔ **Not option ③, an allowlist.** 📁 [§2](../CLAUDE.md) — **a guard with a growing exception list is one nobody reads the failures of.**
 
-### B-276 · 402 lines of onboarding domain and 245 of its use cases had no backend tests at all
+### B-276 · ⛔ WITHDRAWN — the onboarding tests existed and I looked in one of the two places tests live
 
 | | |
 |---|---|
-| **Module** | **`workspace_tenancy`** — [`domain/onboarding.py`](../backend/modules/workspace_tenancy/domain/onboarding.py) · [`application/use_cases/onboarding.py`](../backend/modules/workspace_tenancy/application/use_cases/onboarding.py) |
+| **Module** | **`workspace_tenancy`** |
 | **Current assignee** | ⚡ **Lane A**, joined from [`modules.toml`](coordination/modules.toml) |
-| **Severity** | 🟠 — ⛔ **wrong behaviour a customer would hit, and nothing would catch it.** Onboarding is the first screen a new customer ever sees, and **the goal→capability table, the three-goal limit, the finished-run refusals and every provenance transition were unexercised** |
-| **Status** | 🟡 **`FIXING` — Lane A, 2026-08-17.** ✅ **The aggregate is now covered — [`tests/workspace_tenancy/test_onboarding_run.py`](../backend/tests/workspace_tenancy/test_onboarding_run.py), 28 tests.** ⛔ **The use cases and the repository are NOT**, and that is the rest of this row |
-| **Found** | **2026-08-17**, looking for the existing tests before adding one for `features_off` |
-| **Commit found** | `d532a5cc` |
+| **Severity** | ⛔ **None. This row was wrong.** |
+| **Status** | 🔴 **`WITHDRAWN` by its own author, 2026-08-17, hours after filing** |
+| **Found** | **2026-08-17**, and **the withdrawal was found by `mypy` refusing a call site in a test file this row said did not exist** |
 
-**Steps to reproduce.** `grep -rln "domain.onboarding\|StartOnboarding\|ChooseGoals\|describe_person" backend/tests/` — **no matches.** `pytest --collect-only | grep -i onboarding` returns **six** items, and all six are `test_machine_credential_scope.py` parametrisations of an unrelated resource name.
+#### 🔴 What I claimed, and what is true
 
-**Expected.** ⚡ The module's aggregate and use cases exercised by their own suite, golden path **and** the refusals ([§11](../CLAUDE.md)).
+⛔ **I claimed:** *"402 lines of onboarding domain and 245 of its use cases had no backend tests at all — nothing under `tests/` imported either."*
 
-**Actual.** ⛔ **Nothing under `tests/` imported either file.** The behaviour reached a customer through the API and the frontend suite, and **neither of those can fail on a domain rule** — a limit dropped from `choose_goals` would have been caught by no backend test.
+✅ **What is true, measured:**
 
-#### ⚠️ This is [B-1011](#b-1011)'s shape, one module over
-
-⛔ **A file nobody tested, carrying behaviour that ships, found by reading rather than by a gate.** ⚡ **There the half that had never executed was an attribute guard; here it is every refusal in the aggregate** — the fourth goal, the finished run, the double finish.
-
-📁 **And the same mechanism hid it**: `coverage-debt` ranks by *missing lines*, so a module with strong coverage elsewhere never surfaces its untested corner.
-
-#### ✅ What is done, and what is not
-
-| | |
+| File | Coverage |
 |---|---|
-| ✅ **Covered** | The goal table and its complement · selection order · deduplication · the three-goal refusal · every finished-run refusal · skip-is-not-finish · advance-does-not-uncomplete · provenance confirm/correct · partial `confirm_company` |
-| ⛔ **Not covered** | `application/use_cases/onboarding.py` — start, advance, describe, choose, finish, skip — and the repository behind them. **A separate slice, because it needs the async fixtures the use-case suites use and this one is a UI slice** |
+| `application/use_cases/onboarding.py` | ⚡ **100%** |
+| `domain/onboarding.py` | ⚡ **100%** |
+
+📁 **`modules/workspace_tenancy/tests/test_onboarding.py` and `test_onboarding_use_cases.py` have both existed the whole time**, alongside 20 other module-local suites — **334 tests in that directory.**
+
+#### ⚠️ The mechanism, because it will catch somebody else
+
+📁 **`pyproject.toml`: `testpaths = ["modules", "signora_platform", "tests"]`.**
+
+⛔ **There are THREE test roots and I searched one.** **A module's own tests live beside the module**, which is the layout `backend/tests/README.md` describes and which every other `workspace_tenancy` suite follows. ⚠️ **My `grep -rln … backend/tests/` was scoped to the root that holds the cross-cutting suites**, and it returned nothing because nothing there imports a module's internals — **which is correct architecture, and I read it as absence.**
+
+⚡ **`pytest --collect-only | grep -i onboarding` returned six unrelated items**, and I treated that as confirmation. ⛔ **It was run without the module path and confirmed only my own scope.**
+
+#### 🔴 This is the defect I corrected in somebody else's row this morning
+
+📁 **[B-438](#b-438)** — a row filed against a defect that had already been fixed, where *"grep finds `C-024`"* was never the right test. ⚠️ **I wrote that sentence and then filed this.** ⛔ **A `grep` that returns nothing is a claim about the pattern and the path, never about the repository.**
+
+✅ **Reported before anybody asked**, and Lane C was told the false version first — **so the correction went to them by the same route.**
+
+#### ✅ What survives
+
+⚡ **The 34 tests added in [`tests/workspace_tenancy/test_onboarding_run.py`](../backend/tests/workspace_tenancy/test_onboarding_run.py) are kept**, and they are not redundant: **they took `domain/onboarding.py` from 96% to 100%** by covering `describe_person`'s team-size range — 📁 **screen `05`'s own guard, which genuinely had never executed.** ⛔ **The file's header claim that it was the module's first test is corrected in place.**
 
 ### B-277 · Onboarding loaded forever when there was no active organization
 

@@ -61,7 +61,7 @@ async def test_persists_workspace_and_founding_membership(
     creator = uuid4()
 
     result = await use_case.execute(
-        CreateWorkspaceInput(name="Acme Revenue", created_by=creator),
+        CreateWorkspaceInput(name="Acme Revenue", slug="acme-revenue", created_by=creator),
         correlation_id=uuid4(),
     )
 
@@ -74,7 +74,7 @@ async def test_creator_becomes_workspace_owner(use_case: CreateWorkspaceUseCase)
     creator = uuid4()
 
     result = await use_case.execute(
-        CreateWorkspaceInput(name="Acme", created_by=creator), correlation_id=uuid4()
+        CreateWorkspaceInput(name="Acme", slug="acme-revenue", created_by=creator), correlation_id=uuid4()
     )
 
     assert result.founding_membership.user_id == creator
@@ -88,7 +88,7 @@ async def test_activates_rls_workspace_context_before_inserting_membership(
     see the workspace-creation bootstrap pattern in
     docs/architecture/11-tenancy.md."""
     result = await use_case.execute(
-        CreateWorkspaceInput(name="Acme", created_by=uuid4()), correlation_id=uuid4()
+        CreateWorkspaceInput(name="Acme", slug="acme-revenue", created_by=uuid4()), correlation_id=uuid4()
     )
 
     assert tenant_context.activated == [result.workspace.id]
@@ -98,7 +98,7 @@ async def test_publishes_both_events_in_causal_order(
     use_case: CreateWorkspaceUseCase, publisher: FakeEventPublisher
 ) -> None:
     await use_case.execute(
-        CreateWorkspaceInput(name="Acme", created_by=uuid4()), correlation_id=uuid4()
+        CreateWorkspaceInput(name="Acme", slug="acme-revenue", created_by=uuid4()), correlation_id=uuid4()
     )
 
     assert [event.event_type for event in publisher.published] == [
@@ -111,7 +111,7 @@ async def test_member_added_event_is_caused_by_workspace_created_event(
     use_case: CreateWorkspaceUseCase, publisher: FakeEventPublisher
 ) -> None:
     await use_case.execute(
-        CreateWorkspaceInput(name="Acme", created_by=uuid4()), correlation_id=uuid4()
+        CreateWorkspaceInput(name="Acme", slug="acme-revenue", created_by=uuid4()), correlation_id=uuid4()
     )
 
     workspace_created, member_added = publisher.published
@@ -124,7 +124,7 @@ async def test_propagates_supplied_correlation_id(
     correlation_id = uuid4()
 
     await use_case.execute(
-        CreateWorkspaceInput(name="Acme", created_by=uuid4()), correlation_id=correlation_id
+        CreateWorkspaceInput(name="Acme", slug="acme-revenue", created_by=uuid4()), correlation_id=correlation_id
     )
 
     assert publisher.correlation_ids == [correlation_id]
@@ -138,7 +138,7 @@ async def test_invalid_name_publishes_nothing_and_persists_nothing(
 ) -> None:
     with pytest.raises(InvalidWorkspaceNameError):
         await use_case.execute(
-            CreateWorkspaceInput(name="   ", created_by=uuid4()), correlation_id=uuid4()
+            CreateWorkspaceInput(name="   ", slug="acme-revenue", created_by=uuid4()), correlation_id=uuid4()
         )
 
     assert workspaces.workspaces == {}

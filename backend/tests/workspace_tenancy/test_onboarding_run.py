@@ -1,17 +1,17 @@
 """The onboarding run's own behaviour — [TASK-469](../../../docs/BACKLOG.md).
 
-🔴 **This file exists because there were none.** `domain/onboarding.py` is 402
-lines and `application/use_cases/onboarding.py` is 245, and before this commit
-**nothing under `tests/` imported either** — the only collected test matching
-*onboarding* was a machine-credential scope parametrisation about a different
-subject entirely. 📁 Recorded as [B-276](../../../docs/BUGS.md), because this
-file closes the part the current slice touches and not the whole gap.
+⚠️ **This header claimed these were the module's first onboarding tests and
+that was FALSE** — 📁 [B-276](../../../docs/BUGS.md), withdrawn by its author.
+**`modules/workspace_tenancy/tests/test_onboarding.py` and
+`test_onboarding_use_cases.py` have always existed**; `pyproject.toml` sets
+`testpaths = ["modules", "signora_platform", "tests"]` and I searched one of
+the three.
 
-⚠️ **That is the shape [B-1011](../../../docs/BUGS.md) had.** A file nobody
-tested, carrying behaviour a customer meets on their first screen, discovered
-at a coverage gate rather than by reading. **The half that had never executed
-there was a guard; the halves that had never executed here are the goal table
-and every refusal in the aggregate.**
+✅ **The file stays because it is not redundant.** ⚡ **It took
+`domain/onboarding.py` from 96% to 100%**, and the gap it closed was
+`describe_person`'s team-size range — 📁 **screen `05`'s own guard, which had
+never executed**: zero refused rather than corrected, both bounds inclusive,
+and one past the top.
 """
 
 from __future__ import annotations
