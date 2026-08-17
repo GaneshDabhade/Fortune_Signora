@@ -2,6 +2,16 @@ import { cn } from '@/lib/design/cn';
 
 export interface InferredProps {
   readonly className?: string;
+  /**
+   * 📁 **Where the value came from, in the design's own two words.**
+   *
+   * ⚡ `'inference'` wears §14's reserved hue, because a value derived from an
+   * enrichment record is generated content and that is the one thing the hue is
+   * for. ⛔ `'browser'` does NOT — 📁 the design tints it `--sunken`, and it is
+   * right to: a timezone read from `Intl` was not inferred by anything, it was
+   * **reported**, and dressing it as intelligence would overstate what happened.
+   */
+  readonly from?: 'inference' | 'browser';
 }
 
 /**
@@ -25,17 +35,19 @@ export interface InferredProps {
  * only where a caller has a value whose provenance says `inferred` — a badge
  * on an empty field would claim the product knew something it did not.
  */
-export function Inferred({ className }: InferredProps) {
+export function Inferred({ className, from = 'inference' }: InferredProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-sm bg-surface-sunken px-1.5 py-0.5 text-xs font-medium text-content-muted',
+        // 📁 *"font-size:10.5px; font-weight:600; padding:1px 7px; border-radius:6px"*.
+        'inline-flex items-center rounded-md px-[7px] py-px text-2xs font-semibold',
+        from === 'inference' ? 'bg-ai-subtle text-ai' : 'bg-surface-sunken text-content-muted',
         className,
       )}
     >
       {/* The word, not an icon. Somebody meeting this on their first screen
           has no legend to look it up in. */}
-      Inferred
+      {from === 'inference' ? 'Inferred' : 'From your browser'}
     </span>
   );
 }

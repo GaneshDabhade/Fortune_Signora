@@ -269,10 +269,19 @@ describe('§14 AI system — the reserved hue is actually reserved', () => {
     // says a machine wrote what you are reading and what it stood on. ⛔ **Only
     // the two disclosures use the hue**; the sources, the exclusion reasons and
     // the generated-at line are ordinary content colours.
+    // ⚡ **`inferred.tsx` joins on the onboarding rebuild, and it meets this
+    // test's own criterion rather than being excused from it.** 📁 The
+    // Onboarding design tints the *Inferred* badge `--ai-tint` / `--ai-ink`,
+    // and it is right to: **an inferred value is a value a machine produced**,
+    // which is the exact distinction the sentence above says the pairing keeps.
+    // ⛔ **Its `browser` variant deliberately does NOT use the hue** — a
+    // timezone read from `Intl` was reported rather than inferred, and dressing
+    // it as intelligence would overstate what happened.
     const allowed = new Set([
       'attribution.tsx',
       'badge.tsx',
       'confidence.tsx',
+      'inferred.tsx',
       'table.tsx',
     ]);
     const dir = join(process.cwd(), 'components', 'ui');
