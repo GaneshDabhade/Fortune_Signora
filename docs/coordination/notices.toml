@@ -29,7 +29,7 @@
 # reproduce. Withdrawn rather than replaced with a better-sounding guess.
 
 ["Lane A"]
-notice = "Cycle 244 did not certify: coverage 94.98% against a 95.0 floor, every other gate green. Under §20e a blocking quality defect outranks feature work, so it comes before User Profile — and it is holding four lanes' finished work, not only yours. QE has the per-file gaps. User Profile remains next and is completable; the multi-session blocker workflows.toml records was cleared on 2026-08-10."
+notice = "Cycle 244 did not certify: coverage 94.98% against a 95.0 floor, every other gate green. Under §20e a blocking quality defect outranks feature work, so it comes before User Profile — and two other lanes' finished work is held behind it, ff-able and waiting. QE has the per-file gaps. User Profile remains next and is completable; its multi-session blocker was cleared on 2026-08-10."
 
 ["Lane C"]
 notice = ""
