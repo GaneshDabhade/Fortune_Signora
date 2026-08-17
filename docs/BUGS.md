@@ -887,6 +887,33 @@ for _lane, _spec in sorted(_notice_health(rows).items()):
 ### ✅ The fix, and why it is not a checker
 
 **The board is reconciled and the stamp corrected.** ⛔ **No new check is added.** A checker for *"did Closeout run all eleven activities?"* would be a fourth place recording what the eleven are, and **the copy is never wrong when written; it is wrong the first time the list grows.** ⚡ **What actually failed already had an instrument — `state-check` printed the finding.** **The repair is that QE reads findings, not exit codes**, and the evidence for whether it holds is the next cycle's board stamp rather than a green tick.
+### B-439 · 🟠 `doc-drift` measured from the LOCAL `integration`, so it blamed a lane for another lane's promoted work
+
+| | |
+|---|---|
+| **Module** | **Platform Foundation** — `infra/doc-drift.py` ([D-022](DECISION_REGISTER.md)) |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟠 — **wrong behaviour a lane would hit**, and it hits hardest on the run that matters: the check you do before handing a slice to QE |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-17**, with the four regression tests it had never had |
+| 🔴 **What it did** | ⛔ **The default range was the bare string `integration..HEAD`.** **A branch name resolves to whatever THIS CLONE last put there.** 📁 **Measured on a lane whose local `integration` was 49 commits behind: 95 changed files, and drift reported against `knowledge_graph`, `provider_normalization` and `workspace_tenancy` — three modules the slice never touched.** ✅ **The same slice from `origin/integration` is 14 files and zero modules** |
+| ⚠️ **The damage is not the noise** | ⛔ **It is what noise does to an advisory gate.** **A check that cries drift on work you did not do is one people learn to run past — and then it is worth less than nothing, because it looks like coverage.** 📁 **The same reasoning `CLAUDE.md` §20e already applies to `Planning-Sync`**: *a check that fails on something its own lane cannot fix teaches people to ignore it* |
+| ✅ **An instance, not a class — measured** | **Every other tool already used `origin/`**: `repository-dashboard.py` and `production-readiness.py` default to `origin/integration`, `state-check.py` and `pipeline-dashboard.py` name it explicitly. ⚡ **`repository-dashboard.py` even states the rule in its docstring** — *"counted from the ref a lane can actually claim from, never from the working tree and never from a lane branch."* ⛔ **`doc-drift.py` was the single outlier** |
+| ⛔ **No silent fallback, and that is the whole fix** | **An unresolvable `origin/integration` now exits 2 with a diagnostic naming `git fetch origin`.** ⚠️ **Falling back to the local branch would reintroduce the defect on exactly the clones least likely to notice it** — a fresh one, or one that has never fetched |
+| ✅ **Fire-tested, and the assertion ORDER is part of it** | **Reverting `DEFAULT_BASE` to the local name kills two of four tests.** ⚠️ **On the first attempt the range-string assertion fired first — a source-shaped assertion standing in for a behavioural one, which is [B-436](#b-436)'s Decorative Logic exactly.** ✅ **Reordered so *another lane's module appears in this slice's range* is what dies.** ⚡ **One test asserts the DEFECT still reproduces** — a regression test whose failure mode was never demonstrated is one nobody can trust |
+| **Found** | Running the four `infra/` tools that have no tests, to see whether they tell the truth |
+
+**Steps to reproduce.**
+
+```bash
+git fetch origin                       # local `integration` left where it was
+git rev-parse --short integration origin/integration    # they differ
+python3 infra/doc-drift.py             # names modules the slice never touched
+```
+
+**Expected.** ⚡ **The range a lane can actually hand to QE.**
+
+**Actual.** 📁 **Whatever this clone last had on a branch called `integration`.**
+
 ### B-438 · 🟠 Five code citations point at a CLOSED item, and a lane is still reasoning from the wrong one four days later
 
 | | |

@@ -19,9 +19,17 @@ Three mechanical signals, and nothing else:
 
 Run it over the range a lane is about to hand to QE:
 
-    python3 infra/doc-drift.py                 # integration..HEAD
+    python3 infra/doc-drift.py                 # origin/integration..HEAD
     python3 infra/doc-drift.py main..HEAD
     python3 infra/doc-drift.py --strict        # exit 1 on any finding
+
+**The default is `origin/integration`, never the local branch of that name.**
+A lane's local `integration` is whatever it last fetched, and on a lane that
+has not fast-forwarded it, this reported ninety-five changed files and named
+three modules the slice never touched — attributing another lane's promoted
+work to the slice being handed over. `repository-dashboard.py` already states
+the rule this now follows: *counted from the ref a lane can actually claim
+from, never from the working tree and never from a lane branch.*
 
 CLAUDE.md §12 states the rule this reports against; it does not enforce it.
 Enforcement is a human reading the finding and deciding.
@@ -72,6 +80,17 @@ def _changed_files(rev_range: str) -> list[str]:
     return [line for line in _git("diff", "--name-only", rev_range).splitlines() if line]
 
 
+DEFAULT_BASE = "origin/integration"
+
+
+def _resolves(ref: str) -> bool:
+    try:
+        _git("rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}")
+    except subprocess.CalledProcessError:
+        return False
+    return True
+
+
 def _is_production_code(path: str) -> bool:
     """A module's own tests are not production code, and a slice may legitimately
     change only them."""
@@ -80,7 +99,11 @@ def _is_production_code(path: str) -> bool:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("rev_range", nargs="?", default="integration..HEAD")
+    parser.add_argument(
+        "rev_range",
+        nargs="?",
+        help=f"default: {DEFAULT_BASE}..HEAD",
+    )
     parser.add_argument(
         "--strict",
         action="store_true",
@@ -88,14 +111,30 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    rev_range: str | None = args.rev_range
+    if rev_range is None:
+        # **No silent fallback to the local branch.** That fallback is the bug:
+        # it produces a plausible answer about the wrong tree, and a plausible
+        # wrong answer is the one nobody checks.
+        if not _resolves(DEFAULT_BASE):
+            print(
+                f"doc-drift: {DEFAULT_BASE} does not resolve — run `git fetch origin`, "
+                f"or pass an explicit range. Refusing to fall back to the local "
+                f"`integration`, whose position depends on when this clone last "
+                f"fetched.",
+                file=sys.stderr,
+            )
+            return 2
+        rev_range = f"{DEFAULT_BASE}..HEAD"
+
     try:
-        changed = _changed_files(args.rev_range)
+        changed = _changed_files(rev_range)
     except subprocess.CalledProcessError as error:
-        print(f"cannot read {args.rev_range}: {error.stderr.strip()}", file=sys.stderr)
+        print(f"cannot read {rev_range}: {error.stderr.strip()}", file=sys.stderr)
         return 2
 
     if not changed:
-        print(f"doc-drift: {args.rev_range} changed nothing.")
+        print(f"doc-drift: {rev_range} changed nothing.")
         return 0
 
     touched_modules: set[str] = set()
@@ -123,7 +162,7 @@ def main() -> int:
             )
 
     if touched_modules:
-        log = _git("log", "--format=%B", args.rev_range)
+        log = _git("log", "--format=%B", rev_range)
         if "Slice-Handoff" in log:
             values = [m.group("value").strip() for m in _HANDOFF_DOCS.finditer(log)]
             if not values or all(v in ("", "none", "None", "-") for v in values):
@@ -139,12 +178,12 @@ def main() -> int:
 
     if not findings:
         print(
-            f"doc-drift: {args.rev_range} — "
+            f"doc-drift: {rev_range} — "
             f"{len(touched_modules)} module(s) touched, documentation moved with them."
         )
         return 0
 
-    print(f"doc-drift: {len(findings)} advisory finding(s) in {args.rev_range}\n")
+    print(f"doc-drift: {len(findings)} advisory finding(s) in {rev_range}\n")
     for finding in findings:
         print(f"  · {finding}")
     print(
