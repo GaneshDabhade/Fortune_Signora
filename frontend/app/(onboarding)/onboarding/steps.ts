@@ -40,6 +40,26 @@ export const RAIL_STEPS: readonly RailStep[] = [
   { id: 'connect', label: 'Connect' },
 ];
 
+/**
+ * 📁 **The rail on every counted step** — the design drops *Welcome* once the
+ * flow starts, so screens `03`–`06` list five and count four.
+ *
+ * ⚠️ **`connect` is listed and NOT counted**, exactly as the design draws it:
+ * the counter reads *of 4* while five entries are visible, because connecting
+ * comes after the four questions rather than being the fifth.
+ */
+export const COUNTED_STEPS: readonly RailStep[] = RAIL_STEPS.filter(
+  (step) => step.id !== 'welcome',
+);
+
+/** 📁 The design's *Step n of 4*. ⛔ Derived from one list rather than written
+ *  twice — the counter and the rail cannot disagree. */
+export const COUNTED_TOTAL = 4;
+
+export function positionOf(id: string): number {
+  return COUNTED_STEPS.findIndex((step) => step.id === id) + 1;
+}
+
 /** Screen `04`. *"Single choice, pre-selected. Never blocks — 'Other' is
  * always available."* */
 export const INDUSTRIES: readonly Choice[] = [

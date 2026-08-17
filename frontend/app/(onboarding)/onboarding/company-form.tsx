@@ -7,7 +7,8 @@ import { Button, ChoiceCards, Inferred, Input } from '@/components/ui';
 import { confirmCompany, type Answer } from '@/lib/api/onboarding';
 
 import { OnboardingShell } from '../onboarding-shell';
-import { SIZE_BANDS, INDUSTRIES, RAIL_STEPS } from './steps';
+import { OnboardingRail } from './rail';
+import { SIZE_BANDS, INDUSTRIES, COUNTED_STEPS, COUNTED_TOTAL, positionOf } from './steps';
 import { SkipSetup } from './skip-setup';
 import { useOnboarding } from './use-onboarding';
 
@@ -42,9 +43,14 @@ export function CompanyForm() {
   if (error !== null && run === null) {
     return (
       <OnboardingShell
-        steps={RAIL_STEPS}
-        currentId="company"
-        completedIds={[]}
+        rail={
+          <OnboardingRail
+            steps={COUNTED_STEPS}
+            currentId="company"
+            completedIds={[...([]), 'workspace']}
+            progress={{ step: positionOf('company'), of: COUNTED_TOTAL }}
+          />
+        }
         title="About your company"
       >
         <p role="alert" className="text-sm text-danger">
@@ -88,13 +94,18 @@ export function CompanyForm() {
 
   return (
     <OnboardingShell
-      steps={RAIL_STEPS}
-      currentId="company"
-      completedIds={run?.completed_steps ?? []}
-      railFooter={
-        <SkipSetup
-          completedIds={run?.completed_steps ?? []}
-          industry={run?.industry?.value ?? null}
+      rail={
+        <OnboardingRail
+          steps={COUNTED_STEPS}
+          currentId="company"
+          completedIds={[...(run?.completed_steps ?? []), 'workspace']}
+          progress={{ step: positionOf('company'), of: COUNTED_TOTAL }}
+            footer={
+              <SkipSetup
+                completedIds={run?.completed_steps ?? []}
+                industry={run?.industry?.value ?? null}
+              />
+            }
         />
       }
       title="About your company"

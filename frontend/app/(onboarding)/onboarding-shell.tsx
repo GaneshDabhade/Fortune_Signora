@@ -1,85 +1,139 @@
-import { StepRail, type RailStep } from '@/components/ui';
+import { cn } from '@/lib/design/cn';
 
 /**
- * **The onboarding container** — [TASK-469](../../../docs/BACKLOG.md), and
- * *"the one genuinely new layout in Workflows 1–8"*, named in the row rather
- * than improvised.
+ * **The onboarding frame** — 📁 `docs/design-snapshot/screens/Fortune Signora Onboarding.dc.html`.
  *
- * ### ⛔ Not the authentication shell, and not the App Shell
+ * ## 📁 The design's own figures
  *
- * **Onboarding runs after authentication and before the App Shell.** The
- * `(auth)` shell is a 400px card for a person who is not yet anybody; this is
- * a 920px frame for somebody who now owns a workspace. **Reusing either would
- * bend a shared component to suit one caller** ([§20c](../../../CLAUDE.md)),
- * which is the thing the frozen foundation exists to prevent.
+ * > *"One frame throughout: a 240px step rail on the left, an 560px content
+ * > column on the right, **both inside a 16px-radius plane on the warm
+ * > ground**. The rail never changes position, so progress is felt rather than
+ * > announced."*
  *
- * ### The frame the design specifies, in its own figures
+ * 🔴 **The plane is the part the previous implementation did not have.** It
+ * rendered the rail and the content directly on the page ground with no
+ * surface, no border and no elevation — ⚠️ **structurally a different screen**,
+ * not a styling difference, which is why this file was rewritten rather than
+ * adjusted.
  *
- * > *"920px frame, 240px rail, 560px content column. Rail visible throughout;
- * > the primary action sits bottom-left of the content column, never
- * > floating."*
+ * ## ⚡ Tokens, and the consumption checked as well as the value
  *
- * ⚠️ **Below `lg` the rail becomes a bar above the content** — the design's
- * tablet row — because a 240px column beside a 560px one does not fit, and
- * dropping the rail entirely would remove the only thing telling somebody how
- * much is left.
+ * | Design | Token | Value |
+ * |---|---|---|
+ * | `--bg` — the ground | `bg-canvas` | `250 248 246` |
+ * | `--surface` — the plane | `bg-surface` | `255 255 255` |
+ * | `--bg-rail` — the rail | `bg-surface-raised` | `253 252 251` |
+ * | `--line-soft` — every hairline | `border-border-soft` | `234 229 223` |
+ * | `--e2` — the plane's lift | `shadow` | the second elevation |
+ *
+ * ⛔ **`border-border` is NOT used on the plane**, and that is the mistake the
+ * repository has already paid for once: the strong hairline everywhere makes
+ * the whole surface read heavier than the design. 📁 The design uses
+ * `--line-soft` for the plane, the rail's edge and every divider inside it.
+ *
+ * ## ⚠️ Below the reference layout
+ *
+ * 📁 *"Rail collapses to a horizontal progress bar with step name and count
+ * above the content."* ⚡ **The rail stays** — it is the only thing saying how
+ * much is left — **and stacks above rather than beside.**
  */
 export interface OnboardingShellProps {
-  readonly steps: readonly RailStep[];
-  readonly currentId: string;
-  readonly completedIds: readonly string[];
-  readonly title: string;
+  /** 📁 The rail, composed by the screen — see `onboarding/rail.tsx`. */
+  readonly rail: React.ReactNode;
+  /**
+   * 📁 **The design's step heading**, rendered above the body so every counted
+   * step gets the same 24px/700 treatment and the same focus target without
+   * restating it.
+   */
+  readonly title?: string;
   readonly description?: React.ReactNode;
-  readonly children: React.ReactNode;
-  /** The primary action, and anything beside it. **Bottom-left of the content
-   * column, never floating** — the design says so in terms. */
+  /** 📁 *"the primary action sits bottom-left of the content column."* */
   readonly actions?: React.ReactNode;
-  readonly railFooter?: React.ReactNode;
+  readonly children: React.ReactNode;
+  /**
+   * 📁 **Welcome is padded `40px 44px`; every step after it `36px 44px`.** ⚡ A
+   * value rather than a class, so the difference is stated once here instead of
+   * being re-chosen on each screen.
+   */
+  readonly roomy?: boolean;
 }
 
 export function OnboardingShell({
-  steps,
-  currentId,
-  completedIds,
+  rail,
   title,
   description,
-  children,
   actions,
-  railFooter,
+  children,
+  roomy = false,
 }: OnboardingShellProps) {
   return (
     <div className="min-h-screen bg-canvas px-5 py-10 phone:py-16">
-      <div className="mx-auto flex w-full max-w-[57.5rem] flex-col gap-8 smalllaptop:flex-row smalllaptop:gap-12">
-        <StepRail
-          steps={steps}
-          currentId={currentId}
-          completedIds={completedIds}
-          footer={railFooter}
-          className="smalllaptop:w-60 smalllaptop:shrink-0"
-        />
-
-        <main className="flex w-full flex-col gap-6 smalllaptop:max-w-[35rem]">
-          {/*
-            **Focus moves here on every step change and the heading carries
+      <div
+        className={cn(
+          // 📁 *"920px frame"* — 57.5rem.
+          'mx-auto grid w-full max-w-[57.5rem] overflow-hidden rounded-xl',
+          'border border-border-soft bg-surface shadow',
+          'laptop:grid-cols-[15rem_minmax(0,1fr)]',
+        )}
+      >
+        {rail}
+        {/* ♿ **Focus moves here on every step change and the heading carries
             its own position** — WCAG 2.4.3, which the design names by number
-            and quotes: *"Step 3 of 4, What do you do at Northwind?"*.
-            `tabIndex={-1}` makes it programmatically focusable without
-            putting it in the tab order, which is the whole of that pattern.
-          */}
-          <header className="flex flex-col gap-2">
-            <h1 tabIndex={-1} className="text-xl font-semibold tracking-tight text-content">
-              {title}
-            </h1>
-            {description ? (
-              <p className="text-sm leading-6 text-content-muted">{description}</p>
-            ) : null}
-          </header>
-
-          {children}
-
-          {actions ? <div className="flex items-center gap-3 pt-2">{actions}</div> : null}
+            and quotes: *"Step 3 of 4, What do you do at Northwind?"*. */}
+        <main className={cn('min-w-0 px-11', roomy ? 'py-10' : 'py-9')}>
+          {title === undefined ? null : (
+            <StepHeading title={title}>{description}</StepHeading>
+          )}
+          <div className={title === undefined ? undefined : 'mt-6'}>{children}</div>
+          {actions === undefined ? null : <StepFooter>{actions}</StepFooter>}
         </main>
       </div>
     </div>
   );
+}
+
+/**
+ * 📁 **The step heading and its supporting line** — *"24px / 700 / -0.026em"*
+ * on a step, with the sub-line at 14px on `--ink-2`.
+ *
+ * ♿ **`tabIndex={-1}`** makes it programmatically focusable without putting it
+ * in the tab order, which is the whole of the 2.4.3 pattern.
+ */
+export function StepHeading({
+  title,
+  children,
+  large = false,
+}: {
+  title: string;
+  children?: React.ReactNode;
+  /** 📁 Welcome sets its greeting at 28px; every step after it at 24px. */
+  large?: boolean;
+  }) {
+  return (
+    <>
+      <h1
+        tabIndex={-1}
+        className={cn(
+          'font-bold text-content outline-none',
+          large
+            ? 'text-[28px] leading-[1.15] tracking-[-0.028em]'
+            : 'text-2xl tracking-[-0.026em]',
+        )}
+      >
+        {title}
+      </h1>
+      {children === undefined ? null : (
+        <p className="mt-2 max-w-[52ch] text-sm leading-relaxed text-content-muted">{children}</p>
+      )}
+    </>
+  );
+}
+
+/**
+ * 📁 **The step footer** — *"the primary action sits bottom-left of the content
+ * column, never floating."* ⚡ Gap 12px, and the secondary is a quiet 13px
+ * `--ink-3` label rather than a second button.
+ */
+export function StepFooter({ children }: { children: React.ReactNode }) {
+  return <div className="mt-7 flex flex-wrap items-center gap-3">{children}</div>;
 }
