@@ -463,6 +463,23 @@ a1e3841a  TASK-1482 — the legacy Attention rail entry
 
 📁 **So the minimum fix is not one diagnostic — it is the SAME diagnostic in all three, positioned where truncation cannot remove it.** ⚡ **A note that only survives an untruncated read is a note that works for careful readers and nobody else.**
 
+### ⚠️ A FOURTH entry point, reported by Lane C and deliberately not filed separately
+
+**`certification-guard.py:1444` — the positional `commit` argument defaults to the string `"main"`, a LOCAL branch name.**
+
+```python
+parser.add_argument("commit", nargs="?", default="main",
+                    help="the commit proposed for promotion (default: `main`, …)")
+```
+
+⛔ **Same property as the three above: it answers about whatever this clone last put there.** ⚡ **Lane C found it while their own local `main` sat 655 commits behind, and reported it rather than touching it** — 📁 **§20e names `certification-guard.py` among the gates that are QE's.**
+
+✅ **QE's assessment, and it agrees with theirs: NOT a live defect.** **Every real promotion passes an explicit 40-character SHA, because the promotion equality rule requires it, and QE's `main` is verified current before each one.** ⚠️ **What it is, is the same footgun shape in a place the discipline currently covers.**
+
+📁 **Recorded HERE rather than as its own row, deliberately.** ⛔ **B-1006 IS the observed instance of this class in this file; a second row would split one question across two and invite two partial fixes** — **the reasoning [B-1005](#b-1005) and this row already share.**
+
+⚡ **And one honest difference from B-439, which Lane C drew and is worth keeping**: **the help text SAYS *"default: `main`, i.e. verify what is already there"*.** ✅ **It is documented rather than hidden**, which is precisely the property the three entry points above lack — **and by this row's own standard, an instrument that states its operand is the one that did not mislead anybody.**
+
 ### ⚡ It is one ruling with [B-1005](#b-1005), not two
 
 **Two of the three commits this refusal named are `docs/coordination/*.toml` failing `CLOSEOUT_SUFFIXES`** — ⛔ **so they cannot be absorbed as Closeouts either.** ✅ **Raised by Lane C, who owns the other half:**
