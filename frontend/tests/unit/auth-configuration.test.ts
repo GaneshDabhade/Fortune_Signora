@@ -55,7 +55,43 @@ describe('the controls are registered', () => {
      * built, tested and unreachable is the defect `reachability.py` exists to
      * catch, one layer down.**
      */
-    expect(SERVER).toMatch(/rateLimit:\s*\{\s*enabled:\s*true\s*\}/);
+    expect(SERVER).toMatch(/rateLimit:\s*\{[^}]*enabled:\s*true/);
+  });
+
+  it('🔴 keeps the counters OUT of process memory — C-287 ⓐ, ruled 2026-08-17', () => {
+    /**
+     * ⛔ **`enabled: true` alone was not protection.** Better Auth's `storage`
+     * defaults to `"memory"` and falls back to it when neither
+     * `rateLimit.storage` nor `secondaryStorage` is set — **and this file set
+     * neither for nine days**, from the moment `enabled: true` landed.
+     *
+     * 📁 [ADR-0408](../../../docs/architecture/adr/0408-inbound-rate-limiting.md)
+     * §9 states the consequence, and it is why this is 🔴 rather than a tidy-up:
+     * ***"an in-process limiter in a horizontally scaled system does not
+     * provide equivalent protection — it provides a number that is wrong by a
+     * factor of n and looks right."*** ⚡ **A limiter that looks right is worse
+     * than none, because nobody goes looking.**
+     *
+     * ✅ **The setting was verified BEHAVIOURALLY before this assertion was
+     * written**, against a real database, by diffing the vendor's own migration
+     * plan:
+     *
+     *     memory   : ["account","session","user","verification"]
+     *     database : ["account","rateLimit","session","user","verification"]
+     *
+     * ⚡ **So `storage: 'database'` genuinely changes what Better Auth asks the
+     * database for.** ⛔ **This test reads source only because the file's own
+     * header already settled that trade** — *"the alternative is booting Better
+     * Auth against a real database … a heavier test that would assert the same
+     * fact less clearly."* **The heavier check was run once, by hand, and its
+     * result is recorded above so the next reader need not repeat it.**
+     *
+     * ⚠️ **It requires `npm run auth:migrate`**, which creates the table. ⛔ **And
+     * Alembic must never create it** — `0005_auth_schema.py` creates the schema
+     * *"and nothing inside it"*, deliberately.
+     */
+    const rateLimit = /rateLimit:\s*\{[^}]*\}/.exec(SERVER)?.[0] ?? '';
+    expect(rateLimit).toMatch(/storage:\s*'(database|secondary-storage)'/);
   });
 });
 

@@ -11,6 +11,7 @@ from functools import lru_cache
 from pydantic import PostgresDsn, RedisDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from signora_platform.rate_limit_settings import RateLimitSettings
 from signora_platform.environment import SignoraEnvironment
 
 
@@ -73,6 +74,23 @@ class Settings(BaseSettings):
     # test that constructs `Settings` to check an unrelated field should not
     # have to supply a queue it never opens.
     redis_url: RedisDsn | None = None
+
+    #: ## Inbound rate limiting — [ADR-0408](../../docs/architecture/adr/0408-inbound-rate-limiting.md) §4
+    #:
+    #: **The platform's own configuration, and it belongs here for that reason
+    #: alone.** ⛔ [§6](../../CLAUDE.md) forbids putting a *module's* settings in
+    #: this file *"because it is the file that already exists"* — **the limiter
+    #: is not a module's.** It runs before routing, in front of every module,
+    #: and no module reads it or configures it.
+    #:
+    #: ⚡ **Nested rather than four flat fields**, so `SIGNORA_RATE_LIMIT__MAX_REQUESTS`
+    #: reads as one subject and a future field lands in the object that owns it
+    #: rather than at the top of this class.
+    #:
+    #: ⚠️ **The defaults are conservative rather than measured** — ADR-0408 §15
+    #: refuses to name a budget: *"set from measured traffic, and until traffic
+    #: exists a conservative default that is changed without a code change."*
+    rate_limit: RateLimitSettings = RateLimitSettings()
 
     def require_redis_url(self) -> RedisDsn:
         """The queue this environment owns. **Refuses rather than guessing.**

@@ -143,8 +143,38 @@ export function createAuth(config: AuthConfig = loadAuthConfig()) {
      * the limit and the `/signin` special case are the vendor's own and are
      * not restated here** — restating them would be the second copy this
      * codebase keeps refusing.
+     *
+     * ## 🔴 `storage: 'database'` — [C-287](../../../docs/LANE_COORDINATION.md) ⓐ, ruled by the product owner 2026-08-17
+     *
+     * ⛔ **`enabled: true` alone left the counters IN PROCESS.** Better Auth's
+     * `storage` defaults to `"memory"` and falls back to it when neither
+     * `rateLimit.storage` nor `secondaryStorage` is configured — **and this
+     * file configured neither**. 📁 [ADR-0408](../../../docs/architecture/adr/0408-inbound-rate-limiting.md)
+     * §1 measured it and §9 states the consequence: ***"an in-process limiter
+     * in a horizontally scaled system does not provide equivalent protection —
+     * it provides a number that is wrong by a factor of n and looks right."***
+     *
+     * ⚡ **`'database'` rather than `'secondary-storage'`, and the reason is
+     * [§6](../../../CLAUDE.md) rather than preference**: Redis would need a
+     * client in this tier, which is a new dependency and 🔴 under the Change
+     * Budget. **The auth pool above is already attached**, Better Auth owns
+     * its own tables and migrates them itself (`0005_auth_schema.py`), so this
+     * uses infrastructure that exists and adds nothing.
+     *
+     * ⚠️ **It needs `npm run auth:migrate` to create the `rateLimit` table** —
+     * the same command a clean workstation already runs, and `make demo` runs
+     * it. ⛔ **Alembic must never create that table**: `0005_auth_schema.py`
+     * creates the schema *"and nothing inside it"*, because two migration
+     * systems with authority over one object is how an upgrade silently
+     * conflicts with our history.
+     *
+     * 📁 **This is the AUTHENTICATION policy of the two [C-287](../../../docs/LANE_COORDINATION.md)
+     * ⓓ approved.** ⛔ **It protects the Next.js auth routes and nothing else**;
+     * the business API's limiter is a separate policy in the Python tier and
+     * cannot see these routes. **Neither limiter protects both tiers, and
+     * [`501-rate-limiting-boundary.md`](../../../docs/architecture/501-rate-limiting-boundary.md) is where that boundary is stated.**
      */
-    rateLimit: { enabled: true },
+    rateLimit: { enabled: true, storage: 'database' },
 
     /**
      * ✅ **[C-243](../../../docs/LANE_COORDINATION.md) — ruled [D-185](../../../docs/DECISION_REGISTER.md)

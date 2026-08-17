@@ -7,13 +7,15 @@ Workspace & Tenancy's concrete implementation, so the platform never imports
 a module (15-project-structure.md).
 """
 
+import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import Literal
+from typing import Literal, cast
 
 from fastapi import FastAPI, Response, status
 from pydantic import BaseModel
 from sqlalchemy import text
+from redis.asyncio import from_url as redis_from_url
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
 from modules.action_batch.interface.router import router as action_batch_router
@@ -71,7 +73,17 @@ from signora_platform.observability import (
     instrument_sqlalchemy,
 )
 from signora_platform.pagination import InvalidCursorError
+from signora_platform.api.rate_limit import (
+    CounterStore,
+    InMemoryCounterStore,
+    RateLimiter,
+    RateLimitMiddleware,
+    RedisCounterStore,
+    RedisLike,
+)
 from signora_platform.settings import Settings, get_settings
+
+_LOG = logging.getLogger(__name__)
 
 
 class HealthResponse(BaseModel):
@@ -230,4 +242,53 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             authentication_detail=auth_health.detail,
         )
 
+    # ## Inbound rate limiting — [ADR-0408](../../../docs/architecture/adr/0408-inbound-rate-limiting.md), [C-287](../../../docs/LANE_COORDINATION.md) ⓓ
+    #
+    # **Registered LAST so it runs FIRST.** Starlette applies middleware in
+    # reverse registration order, so this sits outside `instrument_fastapi`'s
+    # tracing and therefore *after* correlation-id assignment on the way in —
+    # ADR-0408 §4's ordering requirement, and why a refused request is still
+    # traceable (§16).
+    #
+    # ⚠️ **`app.routes` is passed and it is load-bearing.** Without it the
+    # limiter keys on the concrete path, so `/workspaces/w1/...`,
+    # `/workspaces/w2/...` each get a full budget and nothing is ever limited.
+    # **Written that way first and caught by a test**, not by review.
+    #
+    # ⛔ **This protects the business API and cannot see `/signin`.** Those
+    # routes are Better Auth's, in Next.js, and are limited there — the second
+    # of the two policies C-287 ⓓ approved. [`501-rate-limiting-boundary.md`](../../../docs/architecture/501-rate-limiting-boundary.md)
+    # states the boundary; neither limiter covers both tiers.
+    app.add_middleware(
+        RateLimitMiddleware,
+        limiter=RateLimiter(
+            _counter_store(resolved_settings),
+            resolved_settings.rate_limit,
+        ),
+        routes=app.routes,
+    )
+
     return app
+
+
+def _counter_store(settings: Settings) -> CounterStore:
+    """Redis when it is configured, and an in-process counter when it is not.
+
+    ⚠️ **The fallback is for a developer running the API with no Redis**, and
+    it is the one ADR-0408 §9 warns about — *"a number that is wrong by a
+    factor of n and looks right."* ⛔ **It is safe here only because
+    `require_redis_url()` already refuses to invent a URL**, so a deployed
+    service without Redis fails at configuration rather than limping.
+    """
+    if settings.redis_url is None:
+        _LOG.warning(
+            "rate_limit_counters_in_process",
+            extra={"reason": "no redis_url configured; counters are per-process"},
+        )
+        return InMemoryCounterStore()
+    # **`redis.asyncio.from_url` is untyped at the vendor boundary.** The
+    # narrow `RedisLike` Protocol the store declares is what this satisfies,
+    # and casting to it here keeps the untyped call at the one edge that has
+    # to touch a client rather than letting `Any` travel inward.
+    client = cast(RedisLike, redis_from_url(str(settings.redis_url)))  # type: ignore[no-untyped-call]
+    return RedisCounterStore(client)
