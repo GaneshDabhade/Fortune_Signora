@@ -176,13 +176,17 @@ export interface MultiChoiceCardsProps extends Omit<ChoiceCardsProps, 'value' | 
   readonly onChange: (value: readonly string[]) => void;
   /** The design's limit. Reaching it disables the rest rather than hiding it. */
   readonly max: number;
-  /**
-   * The sentence under the group. *"The fourth goal beyond the limit dims to
-   * 55% **with the reason stated in the footer count**"* — the dimming alone
-   * would be a control that stopped working without saying why.
-   */
-  readonly countLabel: (selected: number, max: number) => string;
 }
+
+/**
+ * ⚠️ **`countLabel` was a prop here and is gone.** 📁 The design puts the
+ * count in the **action row** — *"`margin-left:auto` · 3 of 3 selected"* —
+ * beside the primary button and not under the group. ⛔ **Rendering it in both
+ * places would be two representations of one number** ([§2](../../../CLAUDE.md)),
+ * and the `role="status"` announcement has to live wherever the visible text
+ * does or a screen reader hears a count that is not on screen. **The screen
+ * owns it.**
+ */
 
 /**
  * **The goal grid** — screen `06`, up to three.
@@ -206,7 +210,6 @@ export function MultiChoiceCards({
   onChange,
   name,
   max,
-  countLabel,
   className,
 }: MultiChoiceCardsProps) {
   const groupId = useId();
@@ -229,7 +232,8 @@ export function MultiChoiceCards({
       <legend className={cn('text-sm font-medium text-content', legendHidden && 'sr-only')}>
         {legend}
       </legend>
-      <div className="flex flex-col gap-2">
+      {/* 📁 *"flex-direction:column; gap:9px"*. */}
+      <div className="flex flex-col gap-[9px]">
         {choices.map((choice) => {
           const inputId = `${groupId}-${choice.value}`;
           const selected = chosen.has(choice.value);
@@ -240,14 +244,22 @@ export function MultiChoiceCards({
               key={choice.value}
               htmlFor={inputId}
               className={cn(
-                'flex items-start gap-3 rounded-md border p-3 transition-colors',
-                'focus-within:outline-none focus-within:ring-2 focus-within:ring-accent focus-within:ring-offset-2',
+                // 📁 *"padding:13px 15px; border-radius:12px; gap:12px"*.
+                'flex items-start gap-3 rounded-lg border px-[15px] py-[13px] transition-colors',
+                'has-[:focus-visible]:outline-none has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent has-[:focus-visible]:ring-offset-2',
                 selected
                   ? 'border-accent bg-accent-subtle'
                   : 'border-border-soft bg-surface hover:border-border',
+                // ⚠️ **The 55% dim belongs to the LIMIT, not to being
+                // unselected.** 📁 The mock shows every unpicked row at 0.55
+                // because it is drawn at three-of-three — ⛔ **dimming them
+                // before the limit is reached would present a live control as
+                // a dead one.**
                 blocked ? 'cursor-not-allowed opacity-55' : 'cursor-pointer',
               )}
             >
+              {/* ♿ Same pattern as the role card: a real checkbox out of
+                  sight, the design's box drawn beside it. */}
               <input
                 type="checkbox"
                 id={inputId}
@@ -256,25 +268,64 @@ export function MultiChoiceCards({
                 checked={selected}
                 disabled={blocked}
                 onChange={() => toggle(choice.value)}
-                className="mt-0.5 h-4 w-4 shrink-0 accent-accent"
+                className="sr-only"
               />
-              <span className="flex flex-col gap-0.5">
-                <span className="text-sm font-medium text-content">{choice.label}</span>
-                {choice.description ? (
-                  <span className="text-xs leading-5 text-content-muted">{choice.description}</span>
+              <span
+                aria-hidden
+                className={cn(
+                  // 📁 **4px, which is `--r-xs`** — *"Checkbox, tag, inline
+                  // code"*. ⚠️ **The mock draws 5px and the Design System's
+                  // radius scale has no such step** ([C-1527](../../../docs/LANE_COORDINATION.md)
+                  // is the same disagreement one property over).
+                  'pointer-events-none mt-0.5 grid h-4 w-4 flex-none place-items-center rounded-xs border-[1.5px] transition-colors',
+                  selected ? 'border-accent bg-accent' : 'border-border',
+                )}
+              >
+                {/* 📁 The design's tick, at 9px/700. ⚠️ **The mark carries the
+                    state** — *"never colour alone."* */}
+                {selected ? (
+                  <svg
+                    width="9"
+                    height="9"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-accent-contrast"
+                  >
+                    <path d="M3.5 8.5l3 3 6-6" />
+                  </svg>
                 ) : null}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold text-content">{choice.label}</span>
+                {choice.description ? (
+                  <span className="mt-[3px] block text-xs leading-[1.5] text-content-muted">
+                    {choice.description}
+                  </span>
+                ) : null}
+              </span>
+              {/* 📁 **The design's tag, and it is the reason the dim is not
+                  mute.** *"The fourth selection is disabled, not silently
+                  ignored"* — ⚡ **`Max 3` on the rows that cannot be picked
+                  says why they look different**, right where somebody is
+                  clicking. */}
+              <span
+                className={cn(
+                  'flex-none rounded-xs px-2 py-0.5 text-2xs font-semibold',
+                  selected
+                    ? 'bg-surface text-accent'
+                    : 'bg-surface-sunken text-content-subtle',
+                )}
+              >
+                {selected ? 'Selected' : `Max ${max}`}
               </span>
             </label>
           );
         })}
       </div>
-      {/* ⚡ **A status, not an alert.** *"Progress changes and autosave
-          confirmations are status messages, not alerts — they do not
-          interrupt"* (4.1.3). The count changes on every click, and an alert
-          would talk over somebody choosing quickly. */}
-      <p role="status" className="text-xs text-content-muted">
-        {countLabel(value.length, max)}
-      </p>
     </fieldset>
   );
 }

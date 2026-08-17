@@ -44,7 +44,26 @@ export function useOnboarding(): OnboardingState {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (workspaceId === null) return;
+    if (workspaceId === null) {
+      // 🔴 **Otherwise this screen loads forever.** ⛔ `isLoading` starts
+      // `true` and only ever cleared in the `finally` below, which is gated on
+      // having a workspace — so **somebody arriving without an active
+      // organization saw *"Loading your setup…"* with nothing behind it and no
+      // way out.**
+      //
+      // ⚡ **Found in a headed run, not by a gate** ([B-277](../../../../docs/BUGS.md)):
+      // every test supplies a workspace, so the one path where the product
+      // hangs is the one path nothing exercised.
+      //
+      // ✅ **Stops loading and says so.** 📁 [P-A](../../../../docs/DOMAIN_DISCOVERY_REGISTER.md)
+      // — a read that cannot happen must not render as a read still happening,
+      // any more than as an empty result.
+      setIsLoading(false);
+      setError('We could not tell which organization you are setting up. Refresh to try again.');
+      return;
+    }
+    setIsLoading(true);
+    setError(null);
     let live = true;
 
     startOnboarding(workspaceId)

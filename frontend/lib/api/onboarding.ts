@@ -45,6 +45,20 @@ export interface OnboardingRun {
    * displays it and never computes it — a second copy of the mapping here is
    * exactly the disagreement §2 forbids. */
   features: string[];
+  /**
+   * 📁 **The other half of screen `06`'s sentence** — *"and leave Marketing
+   * attribution off"*.
+   *
+   * ⛔ **Derived server-side, for the same reason `features` is.** A client
+   * computing the complement would need its own copy of the goal table to know
+   * what the universe *is* — 📁 [§2](../../../CLAUDE.md) — **and it would be
+   * the copy nobody updates**, so a capability added to the table would
+   * silently stop being reported as off.
+   *
+   * ⚠️ **Empty until a goal is chosen.** *"We left these off"* would otherwise
+   * describe a decision nobody has made.
+   */
+  features_off: string[];
   started_at: string;
   finished_at: string | null;
   /** ⚡ What the resume banner reads. *Left* is not *finished*. */

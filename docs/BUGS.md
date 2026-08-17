@@ -2638,6 +2638,94 @@ logger.info("connecting to postgres://signora_app:S3cr3tPassw0rd@db:5432/signora
 
 **A structured value becomes canonical JSON with sorted keys**, so two providers reporting the same object with their keys in a different order **agree** rather than disputing a serialisation detail. ⛔ **And a test asserts that two genuinely different objects are still `DISPUTED`** — a canonical form that collapsed distinct values would hide the exact disagreement `ValueAgreement` exists to surface ([§2](../CLAUDE.md): a guard that cannot fail is not protection).
 
+### B-275 · The type-scale guard reads raw source, so it refuses a comment explaining why the pattern was avoided
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`frontend/tests/components/design-tokens.test.tsx`](../frontend/tests/components/design-tokens.test.tsx) |
+| **Current assignee** | ⚡ **Lane A**, joined from [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟡 **Wrong but survivable** — ⛔ **it never lets a real violation through**, so nothing ships broken. **The cost is that the fix it wants and the explanation of the fix cannot coexist in one file** |
+| **Status** | 🔵 **`OPEN`** — ⛔ **NOT fixed here.** 📁 The guard is a shared test rather than a component, and **rewording one comment was the change the slice actually needed** |
+| **Found** | **2026-08-17** by **Lane A**, rebuilding screen `05`'s role cards against the finalized design |
+| **Commit found** | `66fa9ebb` |
+
+**Steps to reproduce.** In any file under `frontend/components/ui/`, write a comment containing the literal characters `text-` followed by `[` — for example, to record *why* the design system's `text-label` role was used instead of the mock's one-off pixel value. Run `npx vitest run tests/components/design-tokens.test.tsx`.
+
+**Expected.** ⚡ **The guard fails on a class attribute and passes on prose.** 📁 Its own stated purpose is *"an arbitrary `text-[…]` survives a type-scale change unaltered, which is the bug"* — **a sentence in a comment survives nothing and changes no pixel.**
+
+**Actual.** `'ui/choice-cards.tsx' uses no arbitrary type size` fails. **`ARBITRARY_TYPE = /\btext-\[/` is tested against the whole file**, and a comment is part of the file.
+
+#### ⚠️ Why this is worth a row rather than a shrug
+
+⛔ **The guard is *correct* about the code every time; it is the documentation of compliance that it refuses.** ⚡ **And that documentation is exactly what [§12](../CLAUDE.md) asks a lane to leave behind** — *"could a lane that has never seen this module continue the work without reading commit history?"* 📁 **The next person who reaches for the mock's literal pixel value has to be told why not, in the file, and today they cannot be told there in the obvious words.**
+
+⚠️ **It also silently teaches the wrong lesson.** **A lane that hits this and does not read the regex concludes the guard is flaky**, which is how a check stops being trusted — 📁 the shape [B-1000](#b-1000)'s family is named for.
+
+#### ✅ Two repairs, and the second is the one to take
+
+**① Strip comments before matching.** **Faithful to intent and the most work** — it needs a comment stripper that does not choke on a `//` inside a string.
+
+**② Match an attribute position rather than a bare occurrence** — require the pattern to sit inside a quoted string, or simply anchor on a preceding `"`, `'`, `` ` ``, space-inside-quotes or `cn(`. ⚡ **Cheaper, and it tightens the guard rather than loosening it**: today `text-[` anywhere passes as a violation, including in an import path or a URL.
+
+⛔ **Not option ③, an allowlist.** 📁 [§2](../CLAUDE.md) — **a guard with a growing exception list is one nobody reads the failures of.**
+
+### B-276 · 402 lines of onboarding domain and 245 of its use cases had no backend tests at all
+
+| | |
+|---|---|
+| **Module** | **`workspace_tenancy`** — [`domain/onboarding.py`](../backend/modules/workspace_tenancy/domain/onboarding.py) · [`application/use_cases/onboarding.py`](../backend/modules/workspace_tenancy/application/use_cases/onboarding.py) |
+| **Current assignee** | ⚡ **Lane A**, joined from [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 — ⛔ **wrong behaviour a customer would hit, and nothing would catch it.** Onboarding is the first screen a new customer ever sees, and **the goal→capability table, the three-goal limit, the finished-run refusals and every provenance transition were unexercised** |
+| **Status** | 🟡 **`FIXING` — Lane A, 2026-08-17.** ✅ **The aggregate is now covered — [`tests/workspace_tenancy/test_onboarding_run.py`](../backend/tests/workspace_tenancy/test_onboarding_run.py), 28 tests.** ⛔ **The use cases and the repository are NOT**, and that is the rest of this row |
+| **Found** | **2026-08-17**, looking for the existing tests before adding one for `features_off` |
+| **Commit found** | `d532a5cc` |
+
+**Steps to reproduce.** `grep -rln "domain.onboarding\|StartOnboarding\|ChooseGoals\|describe_person" backend/tests/` — **no matches.** `pytest --collect-only | grep -i onboarding` returns **six** items, and all six are `test_machine_credential_scope.py` parametrisations of an unrelated resource name.
+
+**Expected.** ⚡ The module's aggregate and use cases exercised by their own suite, golden path **and** the refusals ([§11](../CLAUDE.md)).
+
+**Actual.** ⛔ **Nothing under `tests/` imported either file.** The behaviour reached a customer through the API and the frontend suite, and **neither of those can fail on a domain rule** — a limit dropped from `choose_goals` would have been caught by no backend test.
+
+#### ⚠️ This is [B-1011](#b-1011)'s shape, one module over
+
+⛔ **A file nobody tested, carrying behaviour that ships, found by reading rather than by a gate.** ⚡ **There the half that had never executed was an attribute guard; here it is every refusal in the aggregate** — the fourth goal, the finished run, the double finish.
+
+📁 **And the same mechanism hid it**: `coverage-debt` ranks by *missing lines*, so a module with strong coverage elsewhere never surfaces its untested corner.
+
+#### ✅ What is done, and what is not
+
+| | |
+|---|---|
+| ✅ **Covered** | The goal table and its complement · selection order · deduplication · the three-goal refusal · every finished-run refusal · skip-is-not-finish · advance-does-not-uncomplete · provenance confirm/correct · partial `confirm_company` |
+| ⛔ **Not covered** | `application/use_cases/onboarding.py` — start, advance, describe, choose, finish, skip — and the repository behind them. **A separate slice, because it needs the async fixtures the use-case suites use and this one is a UI slice** |
+
+### B-277 · Onboarding loaded forever when there was no active organization
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`app/(onboarding)/onboarding/use-onboarding.ts`](../frontend/app/\(onboarding\)/onboarding/use-onboarding.ts) |
+| **Current assignee** | ⚡ **Lane A**, joined from [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 — ⛔ **a dead end with no error, no retry and no way out**, on the first screen a new customer sees |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-17.** Awaiting QE verification |
+| **Found** | **2026-08-17**, in a headed run. ⚠️ **Not by any gate** |
+| **Commit found** | `d532a5cc` |
+
+**Steps to reproduce.** Open any `/onboarding/*` route while `useWorkspaceContext()` has no active workspace.
+
+**Expected.** ⚡ The screen says what went wrong and offers a way forward.
+
+**Actual.** ⛔ ***"Loading your setup…"*, permanently.** `isLoading` initialises `true` and is only ever cleared in the `finally` of an effect that returns early when `workspaceId === null` — **so the one path where the product cannot proceed is the one path that never stops pretending it is about to.**
+
+#### 🔴 Why no test could have caught it
+
+⛔ **Every test supplies a workspace.** The component suites mock `useOnboarding` outright; the journeys authenticate into the Playground. ⚡ **The uncovered path is not an edge case of the data — it is the absence of the data**, and a fixture's job is to provide exactly that.
+
+⚠️ **It surfaced only because the Playground had been wiped** by a destructive backend run, which is [`RUNNING.md`](RUNNING.md)'s first named environment hazard. **The hazard exposed a product defect rather than causing one.**
+
+#### ✅ The fix, and the shape it belongs to
+
+**Stop loading, and say which fact is missing.** 📁 [P-A](DOMAIN_DISCOVERY_REGISTER.md) is usually quoted as *a failed read must never render as an empty result* — ⚡ **this is its other face: a read that cannot happen must not render as a read still happening.** ⛔ **An indefinite skeleton is the same lie as an empty state**, and slightly worse, because it also refuses to let go.
+
 ### B-264 · Changing any preference silently forgot which workspace you were last in
 
 | | |

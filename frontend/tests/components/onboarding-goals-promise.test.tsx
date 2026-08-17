@@ -48,14 +48,28 @@ vi.mock('@/lib/api/onboarding', () => ({
 
 import { GoalsForm } from '@/app/(onboarding)/onboarding/goals-form';
 
-function withFeatures(features: string[]) {
+function withFeatures(features: string[], featuresOff: string[] = []) {
   useOnboarding.mockReturnValue({
-    run: { id: 'r1', goals: [], features },
+    run: { id: 'r1', goals: [], features, features_off: featuresOff },
     error: null,
     isLoading: false,
     isSaving: false,
     save: vi.fn(),
+    advance: vi.fn(),
   });
+}
+
+/**
+ * ⚡ **The card, or `null` when there is nothing true to put in it.**
+ *
+ * ⛔ **Every assertion here is scoped to it and never to the page.** 📁 The
+ * original test already learned this once — *"scoped to the promise, not to
+ * the page"* — because ***"Forecast accurately"* is one of the six goals and
+ * MUST still be offerable.** ⚠️ **The defect was never that the word appears;
+ * it was that the product claimed to open on a screen it does not have.**
+ */
+function card(): HTMLElement | null {
+  return screen.queryByText(/Based on these/)?.closest('div') ?? null;
 }
 
 beforeEach(() => useOnboarding.mockReset());
@@ -72,12 +86,9 @@ describe('🔴 the screen names only what a customer can reach', () => {
 
     render(<GoalsForm />);
 
-    // ⛔ **The promise sentence is absent entirely.**
-    expect(screen.queryByText(/Signora will open on/)).not.toBeInTheDocument();
-    // ⚠️ **Scoped to the promise, not to the page.** ⚡ ***"Forecast
-    // accurately"* is one of the six goals and MUST still be offerable** — the
-    // defect was never that the word appears, it was that the product claimed
-    // to open on a screen it does not have.
+    // ⛔ **The card is absent entirely** — nothing reachable is on, nothing
+    // reachable is off, so there is no true sentence to write.
+    expect(card()).toBeNull();
     expect(screen.queryByText(/the Executive Dashboard/)).not.toBeInTheDocument();
   });
 
@@ -90,10 +101,10 @@ describe('🔴 the screen names only what a customer can reach', () => {
 
     render(<GoalsForm />);
 
-    expect(screen.getByText(/Signora will open on/)).toBeInTheDocument();
-    expect(screen.getByText('Signals')).toBeInTheDocument();
+    expect(card()).not.toBeNull();
+    expect(card()).toHaveTextContent('Signals');
     // ⛔ **And not the unbuilt half of the same goal.**
-    expect(screen.queryByText(/Opportunity Intelligence/)).not.toBeInTheDocument();
+    expect(card()).not.toHaveTextContent('Opportunity Intelligence');
   });
 
   /**
@@ -106,7 +117,46 @@ describe('🔴 the screen names only what a customer can reach', () => {
 
     render(<GoalsForm />);
 
-    expect(screen.getByText('Companies')).toBeInTheDocument();
-    expect(screen.queryByText(/Research/)).not.toBeInTheDocument();
+    expect(card()).toHaveTextContent('Companies');
+    expect(card()).not.toHaveTextContent('Research');
+  });
+  /**
+   * 🔴 **The SAME defect has a second surface now, and it is the new one.**
+   *
+   * ⚡ `features_off` arrived so the card can say the design's other half —
+   * *"and leave Marketing attribution off"*. ⛔ **An unreachable capability is
+   * no more nameable as OFF than as ON**: telling somebody Signora *left
+   * Forecast off* still asserts that Forecast is a thing they could have had.
+   *
+   * ⚠️ **This is [B-256](../../../docs/BUGS.md) one clause over**, and the
+   * reason the filter is applied to both lists rather than to the one that
+   * failed.
+   */
+  it('🔴 will not name an unreachable capability as OFF either', () => {
+    withFeatures(['signals'], ['forecast', 'executive_dashboard']);
+
+    render(<GoalsForm />);
+
+    expect(card()).toHaveTextContent('Signals');
+    expect(card()).not.toHaveTextContent('Forecast');
+    expect(card()).not.toHaveTextContent('Executive Dashboard');
+    // ⛔ **And with nothing true to say about the off half, the clause is
+    // absent** rather than trailing into nothing.
+    expect(card()).not.toHaveTextContent('leave');
+  });
+
+  /**
+   * ✅ **Both halves, when both are true.** ⚡ This is the design's sentence as
+   * the product can actually say it.
+   */
+  it('✅ says both halves when both are reachable', () => {
+    withFeatures(['signals'], ['companies', 'reports']);
+
+    render(<GoalsForm />);
+
+    expect(card()).toHaveTextContent('switch on');
+    expect(card()).toHaveTextContent('leave');
+    expect(card()).toHaveTextContent('Signals');
+    expect(card()).toHaveTextContent('Companies and Reports');
   });
 });

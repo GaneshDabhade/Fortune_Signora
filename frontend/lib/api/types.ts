@@ -1360,6 +1360,22 @@ export interface PersonPreferences {
    * somebody put away.
    */
   invite_hidden: boolean;
+  /**
+   * 📁 **Screen `07`'s first consent** — *"Surface insights I did not ask for ·
+   * Ranked findings on your home page. Off means Signora only answers
+   * questions."*
+   *
+   * ⚡ **It joins this type because a screen now reads it**, which is exactly
+   * what the note above describes. ⛔ **Not a new capability** — migration
+   * `0045_ai_preferences` has carried it since it landed; onboarding is the
+   * first surface that asks.
+   */
+  ai_insights: boolean;
+  /**
+   * 📁 **Screen `07`'s second** — *"Draft emails and summaries · Drafts only.
+   * Nothing sends without your approval, ever."*
+   */
+  ai_drafts: boolean;
 }
 
 /**

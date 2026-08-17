@@ -185,7 +185,20 @@ describe('📁 2.4.7 — the focus ring is never suppressed', () => {
         if (!file.endsWith('.tsx')) continue;
         const source = readFileSync(join(process.cwd(), dir, file), 'utf8');
         const suppresses = /\boutline-none\b/.test(source);
-        const replaces = /focus(-visible|-within)?:(outline|ring)/.test(source);
+        /**
+         * ⚠️ **Widened 2026-08-17, and it is the SECOND instance of the lesson
+         * three paragraphs up.** ⛔ `choice-cards.tsx` moved from
+         * `focus-within:ring` to **`has-[:focus-visible]:ring`** — 📁 because
+         * `focus-within` fires on a mouse click and left a ring the design does
+         * not draw — **and this regex read the newer selector as no
+         * replacement at all.**
+         *
+         * ✅ **A widening, never a weakening** ([§11](../../../CLAUDE.md)):
+         * the ring is genuinely restored and the check simply could not see it.
+         * **A guard that flags a correct fix teaches people to route around
+         * the guard**, which is the failure mode it exists to prevent.
+         */
+        const replaces = /(has-\[:)?focus(-visible|-within)?\]?:(outline|ring)/.test(source);
         // ⚡ A programmatically-focused container is not a tab stop.
         const programmatic = /tabIndex=\{-1\}/.test(source);
         if (suppresses && !replaces && !programmatic) offenders.push(`${dir}/${file}`);

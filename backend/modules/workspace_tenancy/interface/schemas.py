@@ -408,6 +408,11 @@ class OnboardingRunResponse(BaseModel):
     team_size: AnswerResponse | None
     goals: list[Goal]
     features: list[str]
+    #: 📁 **The other half of screen `06`'s sentence** — *"and leave Marketing
+    #: attribution off"*. ⛔ **Derived server-side for the same reason
+    #: `features` is**: a client computing the complement would need its own
+    #: copy of the goal table to know what the universe is.
+    features_off: list[str]
     started_at: datetime
     finished_at: datetime | None
     #: ⚡ **The resume banner reads this**, and it is why *left* is a separate
@@ -432,6 +437,7 @@ class OnboardingRunResponse(BaseModel):
             team_size=AnswerResponse.from_domain(run.team_size),
             goals=list(run.goals),
             features=list(run.features),
+            features_off=list(run.features_off),
             started_at=run.started_at,
             finished_at=run.finished_at,
             skipped_at=run.skipped_at,

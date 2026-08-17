@@ -160,6 +160,22 @@ _FEATURES_BY_GOAL: dict[Goal, tuple[str, ...]] = {
 }
 
 
+def _every_feature() -> tuple[str, ...]:
+    """Every capability the goal table can imply, in first-appearance order.
+
+    ⚡ **Derived from the table rather than listed beside it.** A second list
+    would be the copy that disagrees the first time a goal gains a
+    feature — [§2](../../../../CLAUDE.md), *truth has exactly one
+    authoritative representation* — and it would disagree **silently**,
+    because a feature missing from it simply never appears as *off*.
+    """
+    seen: dict[str, None] = {}
+    for features in _FEATURES_BY_GOAL.values():
+        for feature in features:
+            seen.setdefault(feature, None)
+    return tuple(seen)
+
+
 @dataclass(frozen=True, slots=True)
 class Answer[T]:
     """A value and where it came from, which the design requires together.
@@ -239,6 +255,30 @@ class OnboardingRun:
             for feature in _FEATURES_BY_GOAL[goal]:
                 seen.setdefault(feature, None)
         return tuple(seen)
+
+    @property
+    def features_off(self) -> tuple[str, ...]:
+        """What the chosen goals did **not** switch on.
+
+        📁 **Screen `06` says both halves out loud**: *"Signora will switch on
+        Forecast, Signal Center and Renewal risk, **and leave Marketing
+        attribution off**. Change any of it in Settings."*
+
+        ⛔ **The complement is derived here and never in the client.** A
+        frontend computing it would need its own copy of the goal table to
+        know what the universe *is*, which is the second representation §2
+        forbids — and it would be the copy nobody updates, so a new capability
+        would silently stop being reported as off.
+
+        ⚠️ **Empty while no goal is chosen, deliberately.** With no goals
+        nothing was switched on, so *"we left these off"* would describe a
+        decision the person has not made yet. **Absence of a choice is not a
+        choice against.**
+        """
+        if not self.goals:
+            return ()
+        chosen = frozenset(self.features)
+        return tuple(f for f in _every_feature() if f not in chosen)
 
     def _open(self) -> None:
         """A finished run is history and history is not edited ([§2](../../../../CLAUDE.md))."""

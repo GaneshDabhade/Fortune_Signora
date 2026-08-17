@@ -143,7 +143,6 @@ describe('goals stop at three, and the fourth says why', () => {
         value={[GOALS[0]!.value, GOALS[1]!.value, GOALS[2]!.value]}
         onChange={onChange}
         max={3}
-        countLabel={(count, max) => `${count} of ${max} chosen.`}
       />,
     );
 
@@ -164,7 +163,6 @@ describe('goals stop at three, and the fourth says why', () => {
         value={[GOALS[0]!.value, GOALS[1]!.value, GOALS[2]!.value]}
         onChange={onChange}
         max={3}
-        countLabel={(count, max) => `${count} of ${max} chosen.`}
       />,
     );
 
@@ -173,9 +171,19 @@ describe('goals stop at three, and the fourth says why', () => {
     expect(onChange).toHaveBeenCalledWith([GOALS[1]!.value, GOALS[2]!.value]);
   });
 
-  it('states the count as a status, not an alert — 4.1.3', () => {
-    // *"Progress changes and autosave confirmations are status messages, not
-    // alerts — they do not interrupt."* The count changes on every click.
+  it('⚡ tags every row, so the dim at the limit is never mute', () => {
+    /**
+     * 📁 *"The fourth selection is disabled, not silently ignored"* — and
+     * *"dims to 55% **with the reason stated**"*. ⛔ **The dim alone would be a
+     * control that stopped working without saying why**, so the design puts
+     * `Selected` on what is chosen and `Max 3` on what is not, right where
+     * somebody is clicking.
+     *
+     * ⚠️ **The running count is NOT here any more.** 📁 The design puts it in
+     * the action row beside the primary button, so the screen owns it and
+     * `goals-form.tsx` renders it as the `role="status"` — two copies of one
+     * number is what §2 forbids.
+     */
     render(
       <MultiChoiceCards
         legend="Your goals"
@@ -184,11 +192,11 @@ describe('goals stop at three, and the fourth says why', () => {
         value={[GOALS[0]!.value]}
         onChange={vi.fn()}
         max={3}
-        countLabel={(count, max) => `${count} of ${max} chosen.`}
       />,
     );
 
-    expect(screen.getByRole('status')).toHaveTextContent('1 of 3 chosen.');
+    expect(screen.getByText('Selected')).toBeInTheDocument();
+    expect(screen.getAllByText('Max 3')).toHaveLength(GOALS.length - 1);
   });
 
   it('⚡ keeps selection order, because the goals order the home page', async () => {
@@ -201,7 +209,6 @@ describe('goals stop at three, and the fourth says why', () => {
         value={[GOALS[2]!.value]}
         onChange={onChange}
         max={3}
-        countLabel={(count, max) => `${count} of ${max} chosen.`}
       />,
     );
 

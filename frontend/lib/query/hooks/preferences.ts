@@ -77,3 +77,40 @@ export function useSkipInvite(workspaceId: string | null) {
     },
   });
 }
+
+/**
+ * 📁 **Change one preference** — screen `07`'s AI consents.
+ *
+ * ⚡ **Adding a hook is a *use* of the frozen foundation rather than a change
+ * to it** ([§20c](../../../../CLAUDE.md)), on the precedent this file's own
+ * header sets.
+ *
+ * ### 🔴 One key, one thing
+ *
+ * ⛔ **The endpoint distinguishes *absent* from `null`**, so a caller spreading
+ * the whole object would clear every field it does not own. **This takes a
+ * `Partial` and sends exactly what it was given** — the same contract
+ * `changePreferences` in `lib/api/preferences.ts` states, reached through the
+ * cache key every other reader of this resource already uses.
+ *
+ * ### ✅ The response is the new state
+ *
+ * ⚡ **Set rather than invalidated.** A toggle that flipped back for one frame
+ * while a re-read landed would look like a control that failed, and a *consent*
+ * control that appears to fail is the one worth spending a round trip to avoid.
+ */
+export function useChangePreferences(workspaceId: string | null) {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: (changes: Partial<PersonPreferences>) =>
+      apiRequest<PersonPreferences>(`/workspaces/${workspaceId}/preferences`, {
+        method: 'PATCH',
+        body: changes,
+        workspaceId: workspaceId ?? undefined,
+      }),
+    onSuccess: (preferences) => {
+      client.setQueryData(queryKeys.preferences(workspaceId ?? ''), preferences);
+    },
+  });
+}
