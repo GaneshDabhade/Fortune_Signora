@@ -746,6 +746,24 @@ git merge-base --is-ancestor origin/$b main    # → "has this ref anything main
 >
 > ⛔ ***"It cost nothing here because a fast-forward cannot destroy unpushed local commits. It would have cost something under any operation that could — and 'idle' is the word that would have justified one."***
 
+### 🔴 It recurred within the hour, in the handover that acknowledged it
+
+**QE briefed a fresh Lane C session with:**
+
+> ⛔ ***"`lane-c-sync a93bfe0a` — fast-forwarded, clean."***
+
+**Their reply, having verified rather than accepted:** *"`lane-c-sync` had two unpushed commits and the tree had two uncommitted files, so *fast-forwarded, clean* was true of neither."*
+
+### ⚠️ The two halves are different and only one is QE's error
+
+✅ **The SHA was accurate when measured.** 📁 **Their commits are timestamped `2026-08-17 03:03`–`03:09`; the Closeout that set `a93bfe0a` was `2026-08-16 20:15`.** ⛔ **`origin/lane-c-sync` genuinely was `a93bfe0a` when the briefing was written, and their new session pushed afterwards.** ⚡ **That is `integration` keeps moving, working as designed — not staleness.**
+
+🔴 **`clean` is the error, and it is the same word-class as `idle` above.** **QE meant *the branch carries no held work*; it reads as *your working tree is clean*, which QE cannot see and did not check.** ⛔ **Twice in one hour, and the second time inside the message acknowledging the first.**
+
+### ✅ What it cost, and what it nearly cost
+
+**Nothing, because the lane verified.** ⚠️ **But `clean` is the word that would justify a `reset --hard`, and the tree held two uncommitted `infra/` files** — **one a `NameError` (`sys.stderr` with no `import sys`) in a file-not-found branch, so the module loads, every happy path works, and it waits for the one run that needed the diagnostic.** 📁 **The failure mode this repository keeps finding: the tool works right up to the moment it has something to tell you.**
+
 ### ✅ The repair is a word, not a check
 
 **The check is correct and stays.** ⛔ **What changes is the claim QE publishes from it:** ✅ ***"no pushed work"*, never *"idle"***.
