@@ -961,7 +961,9 @@ for _lane, _spec in sorted(_notice_health(rows).items()):
 | **Status** | ✅ **`FIXED` — Lane C, 2026-08-17**, with eight regression tests |
 | 🔴 **The mechanism** | **`coverage json` obeys `fail_under` from `pyproject.toml`.** **Below the floor it does two things and both are fatal here:** ⛔ **exits `2`, which `_coverage_json` read as *the reader failed*** · ⛔ **appends `Coverage failure: total of N is less than fail-under=95` to STDOUT, after the closing brace** — **so parsing anyway raises `Extra data` on a report that is completely intact** |
 | ⚠️ **Why it was never noticed** | ⚡ **Above the floor everything works.** **The tool was correct in every situation except the one it is for** — 📁 **and nobody runs `make coverage-debt` when coverage is fine** |
-| 🔴 **It has a live cost, today** | **Cycle 244 failed at 94.98%.** **The per-file gaps were read out of `pytest --cov` by eye instead, and named `interface/handlers.py` at 90% as the largest gap.** ⛔ **The actual cause was `provider_normalization/public/claims.py` at 78%** — **accessors added and never tested through a claim.** ✅ **Lane A found it themselves** |
+| 🔴 **CORRECTED 2026-08-17 — the trigger is NOT *"below the floor"*, and I claimed a live cost this defect did not have** | ⛔ **Lane A measured `coverage-debt` running CLEANLY against the 94.98% data — full ranking, sub-floor total printed in its own header, no exit 2.** ✅ **They are right and my mechanism was wrong.** ⚡ **`coverage/results.py`: `return round(total, precision) < fail_under`, and `precision` is unset so it is `0`.** **`round(94.98, 0) == 95.0`, and `95.0 < 95` is `False`** — **cycle 244 never triggered it.** 🔴 **So my claim that this is why the gaps were read out of `pytest --cov` by eye is FALSE and is withdrawn.** **That misattribution was mine and QE believed it** |
+| ⚠️ **The real trigger, measured at the boundary rather than from one reproduction** | **`round(total, 0) < 95` — so it bites at ≤ **94.49%**, and NOT between 94.50% and 94.99%.** 📁 **My reproduction was a 38-test subset at 0.00%, which is deep in the failing region; QE's check was above the floor; Lane A's was in the rounding band.** ⛔ **Three attempts, three regions, and each of us named our own region as the rule.** ⚡ **My own line, turned around by QE and correctly: *a "did reproduce" is equally a claim about the attempt*** |
+| ✅ **The defect and both fixes are unaffected** | **It still refuses to run whenever the total rounds below the floor, which is every serious coverage regression.** **`--fail-under=0` and `raw_decode` are correct whatever the trigger.** ⚡ **Only the *description* was wrong — and a row describing a condition that reproduces only sometimes gets closed by the next person who cannot reproduce it, which is why this is corrected before verification rather than after** |
 | ✅ **Two fixes, and the second is defence in depth** | **`--fail-under=0`** — ⚡ **the reader is not the gate**, and the exit code goes back to meaning *did the report generate*. **`raw_decode` instead of `loads`** — **a trailing message cannot matter even if the flag ever stops working.** 📁 **Belt and braces is warranted precisely here: this function's own docstring already records a lane being sent to re-run a five-minute suite because the reader failed and said the run had** |
 | ✅ **And a second question the tool answered silently** | **It ranks by MISSING LINES and never said so.** ⚡ ***Which file moves the total*** **and** ***which file is least understood*** **are different questions, and the ordering was the only thing distinguishing them** — **which is exactly the 90%-vs-78% confusion above.** ✅ **The header now states the ordering, and `--by-coverage` answers the other question** |
 | ✅ **Fire-tested** | **Reverting `raw_decode` to `loads` kills one test; collapsing `--by-coverage` into the default kills another.** ⚡ **The contaminated fixture is the REAL captured stdout, and one test asserts the defect still reproduces** |
@@ -971,7 +973,10 @@ for _lane, _spec in sorted(_notice_health(rows).items()):
 
 **Steps to reproduce.**
 
+⚠️ **Requires a `.coverage` whose total ROUNDS below the floor — at or under 94.49%.** ⛔ **A total of 94.50–94.99 will NOT reproduce it**, which is what made three people measure three different answers.
+
 ```bash
+python3 -c "print(round(94.98, 0) < 95, round(94.49, 0) < 95)"   # False True
 cd backend && uv run coverage json -o - --pretty-print > /tmp/cj.json; echo $?   # 2
 tail -c 80 /tmp/cj.json     # "}Coverage failure: total of 0 is less than fail-under=95"
 python3 infra/coverage-debt.py                                                   # "Cannot read coverage"
@@ -979,7 +984,7 @@ python3 infra/coverage-debt.py                                                  
 
 **Expected.** ⚡ **The file that is short, when coverage is short.**
 
-**Actual.** 📁 **`Cannot read coverage` — precisely then, and only then.**
+**Actual.** 📁 **`Cannot read coverage` — whenever the shortfall is more than a rounding error, which is every regression worth investigating.**
 
 ### B-442 · 🟠 The `Planning-Sync` matcher counts prose that QUOTES the trailer — and it was caught by the commit that introduced it, eight minutes later
 
