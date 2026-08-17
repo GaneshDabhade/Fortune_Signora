@@ -71,7 +71,17 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-17, `cbc71c12`
+## Current — as of 2026-08-17, `0281e08b`
+
+> ⚡ **Cycles 244–246 Closeout. 41 commits, THREE lanes, three certification attempts** — two refused, both correctly.
+>
+> 🔴 **[B-1011](BUGS.md) cleared**: coverage 94.98% → **95.08%**. **Lane A fixed it, split the branch on request, and re-measured on the split rather than carrying the combined figure across.**
+>
+> ⛔ **Cycle 245 passed every gate and refused to record on a dirty tree** — cycle 244's own leftovers. **QE read `READY` on line 2 and the refusal on line 4.**
+>
+> ⚠️ **QE overruled a lane's defect report and the lane was right.** ✅ **Lane C found the mechanism and credited Lane A on their own row, unprompted.**
+
+### Cycle 243 — `cbc71c12`
 
 > ⚡ **Cycle 243 Closeout. Six commits, TWO lanes** — Lane C's two `infra/` defects and publish-ordering fix, plus QE's [B-1000](BUGS.md) and [B-1010](BUGS.md) rows.
 >

@@ -1,10 +1,30 @@
 # Session Handoff
 
+> ## Cycles 244–246 — promoted `0281e08b`, 2026-08-17 · **three attempts, two correct refusals, and a lane's measurement that overruled QE's**
+>
+> **`main` = `0281e08b` = the certified commit.** `pytest` **5280** · coverage **95.08%** · **668 Security Invariants** · `mypy` **939** files · `frontend-suite` **3405/192** · `smoke` 24/162s · **DR passed** · **reversible** · head **`0060`**. **41 commits, three lanes.**
+>
+> 🔴 **Cycle 244 refused: coverage 94.98%.** ⚡ **Predicted in `PROJECT_STATUS.md` five cycles earlier, both halves** — *"the fourth or fifth cycle crosses, and the lane that crosses it will not be the lane that caused it."*
+>
+> ⛔ **Cycle 245 passed all eight gates and refused to RECORD** — *"the working tree was dirty, so the tree certified was never stored."* ⚡ **The dirty files were cycle 244's own uncommitted outputs; the preflight said so on line 4 and QE read `READY` on line 2.** ✅ **The guard refusing to attest to a tree it cannot store is correct.**
+>
+> ⚠️ **QE began a SPLIT candidate to promote around the failure** — the product owner asked for whatever could be promoted, and it was cleanly separable. ✅ **Abandoned the moment Lane A's fix landed.**
+>
+> 🔴 **QE overruled a lane's defect report and the lane was right.** **`make coverage-debt` — QE ran it, it worked, QE told Lane A their report was stale.** ⛔ **QE's `.coverage` was from a run above the floor.** ⚡ **Lane C found the mechanism: `round(total, precision) < fail_under` with `precision` unset, so `round(94.98, 0) = 95.0` and cycle 244 never triggered it.** 📁 **Three parties measured three regions and each named their own as the rule; Lane A's was the only one taken in the condition under discussion.**
+>
+> ⚠️ **And QE's evidence sent Lane A to the wrong file** — `handlers.py` at 90% (30 missing) rather than `claims.py` at 78% (8 missing). ⛔ **`coverage-debt` ranks by missing lines and never said so**: *which file moves the total* and *which file is least understood* are different questions with one output.
+>
+> ⚡ **Two rules now name the whole of [B-1000](BUGS.md)'s family, both Lane C's, both applied against Lane C's own work within the hour:**
+> ⛔ ***A "cannot reproduce" is a claim about the reproduction attempt, not about the defect.***
+> ⛔ ***A failure is a claim about the RUN, not about the code, until you check the conditions the run needed.***
+>
+> ✅ **The false `infra/` claim QE published at cycle 243 is corrected in `PROJECT_STATUS.md`** — `review.py` alone has 64 test files. ⚡ **Lane C retracted it to one reader; QE had published it to every future one, *because the false version was the more alarming one*.**
+
 > ## Cycle 243 — promoted `cbc71c12`, 2026-08-17 · **two `infra/` defects only the type gate could see**
 >
 > **`main` = `cbc71c12` = the certified commit.** `pytest` **5225** · coverage **95.04%** · **668 Security Invariants** · `mypy` **935** files · `frontend-suite` **3330/189** · `smoke` 24 stages in **191s** · **DR passed** · **reversible** · head **`0059`**. ✅ **Eight gates, first attempt.**
 >
-> ⛔ **`decision-queue.py` used `sys.stderr` with no `import sys`, in the file-not-found branch** — **the module loads, every happy path works, and the `NameError` waits for the one run that needed the diagnostic.** ⚡ **`state-check.py` bound one name to two things seventy lines apart.** 🔴 **Both found by `mypy` because `infra/` is outside the suite ([B-435](BUGS.md)) — for `infra/`, the type gate is the WHOLE net, not a supplement.**
+> ⛔ **`decision-queue.py` used `sys.stderr` with no `import sys`, in the file-not-found branch** — **the module loads, every happy path works, and the `NameError` waits for the one run that needed the diagnostic.** ⚡ **`state-check.py` bound one name to two things seventy lines apart.** 🔴 **Both found by `mypy` because **mypy was reading NONE of these files** ([B-435](BUGS.md)) — ⛔ **CORRECTED 2026-08-17: this said the type gate was the WHOLE net and that `infra/` had no suite. Both false — `review.py` alone has 64 test files.****
 >
 > 🔴 **[B-1000](BUGS.md) took three more instances, and all three were caught by somebody other than QE.** **QE called a lane's branches *"idle"* when they held 22 unpushed commits, and another lane's *"clean"* when its tree held two uncommitted files** — ⚡ ***"'idle' is the word that would have justified an operation that COULD destroy them."*** ✅ **The checks stay; the claims change to *no pushed work*.**
 >

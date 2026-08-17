@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `cbc71c12`, 2026-08-17.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `0281e08b`, 2026-08-17.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `cbc71c12`, 2026-08-17.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `0281e08b`, 2026-08-17.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`cbc71c12`** — ⚡ **the certified commit itself**, `promoted == certified`, **verified against the SHA the guard named, not against `integration`'s head**. **Cycle 238** — ⛔ **and `integration` had already moved to `9023b187` when the promotion ran, for the second cycle running** |
+| **`main`** | **`0281e08b`** — ⚡ **the certified commit itself**, `promoted == certified`, **verified against the SHA the guard named, not against `integration`'s head**. **Cycle 238** — ⛔ **and `integration` had already moved to `9023b187` when the promotion ran, for the second cycle running** |
 | **Release candidate** | `integration` = **`9023b187`** — Lane C's three planning commits, rebased onto the pin and ref-pushed **while the gates were running**, so no lane waited and no gate was disturbed |
-| **Certification** | ✅ [`cbc71c12ebbf`](certification/reports/cbc71c12ebbf.md) · migration head **`0059`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** |
-| **Cycle 243 gates** | ⚡ **EIGHT required, all recorded** — `pytest` **5225** · coverage **95.04%** · **668** security invariants · `mypy` strict over **935** files · `import-linter` **37/37** · `tsc` clean · **`frontend-suite` 3330 in 189 files** · **`eslint` clean** · `smoke` **24 stages in 191s** · scenario **baseline@1, 198 assertions** |
+| **Certification** | ✅ [`0281e08be27d`](certification/reports/0281e08be27d.md) · migration head **`0060`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** |
+| **Cycle 246 gates** | ⚡ **EIGHT required, all recorded** — `pytest` **5280** · coverage **95.08%** · **668** security invariants · `mypy` strict over **939** files · `import-linter` **37/37** · `tsc` clean · **`frontend-suite` 3330 in 189 files** · **`eslint` clean** · `smoke` **24 stages in 162s** · scenario **baseline@1, 198 assertions** |
 | ✅ **The coverage fall broke at cycle 240, and the trend row is kept rather than deleted** | **95.06 → 95.05 → 95.04 → 95.05.** ⛔ **The three-cycle monotonic fall did NOT continue.** ⚡ **Reported as a trajectory while it was falling and reported as broken now it is not** — 📁 **a trend row that is quietly removed the moment it stops being alarming teaches a reader that trends are only mentioned when they are bad.** ⚠️ **Five basis points, and still the figure worth watching**: the rise came from a slice that was 19 tests against a small guard, not from anything structural |
 | ⚠️ **`make coverage-debt` cannot answer the question this trend raises** | 📁 **Reported by Lane A**: its reader skips because `coverage json` exits 2 — **the READER failing rather than the run.** ⛔ **So the one instrument that would name WHICH files are pulling the figure down is unavailable exactly as the margin narrows.** ✅ **The certification figure is unaffected and is measured independently** |
 | ✅ **QE verified the guarantee in the database, not in the migration** | 🔴 **The whole slice rests on the PERSON predicate — two colleagues are legitimately the same tenant, so workspace isolation proves nothing here.** ✅ **Read from `pg_policies` on a freshly migrated database**: all three policies (`SELECT`, `INSERT`, `DELETE`) carry **`workspace_id` AND `user_id`**, and `relrowsecurity`/`relforcerowsecurity` are both `t`. ⛔ **No `UPDATE` policy, correctly** — the table is registered in **both** `TENANT_OWNED_TABLES` and `IMMUTABLE_TENANT_TABLES`, and requiring one would weaken immutability to satisfy a test |
@@ -38,7 +38,7 @@
 
 > ⚠️ **`Load more` was replaced rather than kept, and that is the standard being applied rather than a preference.** 📁 **The two are different products**: one accumulates the page under somebody scanning it and makes *"which page am I on"* unanswerable. ✅ **`Previous`/`Next` over the existing keyset cursor, with a page number and NO denominator** — **keyset cannot know how many pages exist without reading them, and a total would be fabricated.**
 
-**Repository health:** **5225 backend tests** · ⚠️ **95.04% coverage** *(floor 95 — **4 basis points**)* · **3330 frontend tests** across **189 files** · **668 Security Invariants** · mypy strict over **935 files** · **60 migrations**, `0000`–`0059` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **191s** · **disaster recovery passing** · **migrations reversible on a clean database** · **20 module directories** · **59 ADRs** · **146 numbered architecture documents**.
+**Repository health:** **5280 backend tests** · ✅ **95.08% coverage** *(floor 95 — **8 basis points**, recovered from a breach)* · **3405 frontend tests** across **192 files** · **668 Security Invariants** · mypy strict over **939 files** · **61 migrations**, `0000`–`0060` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **162s** · **disaster recovery passing** · **migrations reversible on a clean database** · **20 module directories** · **59 ADRs** · **146 numbered architecture documents**.
 
 > ⚠️ **Two figures on that line were mislabelled rather than stale, and the distinction matters because only one of them is a measurement error.** ⛔ **It read *"60 ADRs"* — `ls adr/*.md`, which counts `README.md`** — **and *"148 numbered architecture documents"*, which counted `ARCHITECTURE_VALIDATION_M1_2.md` and `provider-qualification.md`, neither of them numbered. ✅ **59 and 146 are what the words claim.** ⚡ **The number was right for a question nobody asked** — the same shape as everything else this week, and the reason to re-derive a figure rather than re-read it.
 
@@ -117,6 +117,58 @@
 
 ---
 
+## 1d · Release summary — 2026-08-17, cycles 244–246
+
+**Promoted `0281e08b` from `25765808`.** ⚡ **41 commits, THREE lanes, and it took three certification attempts.** 🔴 **Two of the three were refused, both correctly.**
+
+### 🔴 Cycle 244 — coverage crossed the floor, predicted five cycles earlier
+
+**`a837ebd5`, coverage 94.98% against 95.0.** ⛔ **Every other gate passed. One is sufficient.**
+
+📁 **QE had written this into this file at cycle 239**: *"at the current rate the fourth or fifth cycle crosses, and **the lane that crosses it will not be the lane that caused it**."* ⚡ **Both halves held**: 95.06 → 95.05 → 95.04 → 95.05 → 95.05 → 95.04 → 95.04 → **94.98**, and the slice that crossed it added ~6200 lines while the four basis points had been spent one at a time by seven earlier cycles, several of them QE's.
+
+### ⛔ Cycle 245 — all eight gates passed and it refused to record
+
+> **`NOT CERTIFIED · the working tree was dirty, so the tree certified was never stored`**
+
+⚡ **The dirty files were cycle 244's OWN uncommitted outputs**, left behind when it failed. 🔴 **The preflight said so on line 4 and QE read `READY` on line 2.** ✅ **The guard refused to attest to a tree it could not store, which is exactly right** — **cost: one re-run, and no verdict published either way.**
+
+### ✅ Cycle 246 — the complete candidate
+
+**`0281e08b` = Lane A's coverage fix + Lane C's thirteen + QE's two.** **`pytest` 5280 · coverage 95.08% · 668 Security Invariants · `mypy` 939 files · `frontend-suite` 3405/192 · `smoke` 24 stages/162s · DR passed · reversible · head `0060`.**
+
+⚡ **QE had begun assembling a SPLIT candidate that promoted around the failure** — the product owner asked for whatever could be promoted, and the coverage failure was cleanly separable (Lane A's 27 commits touched 15 measured files; the other two lanes' touched zero). ✅ **That was abandoned the moment Lane A's fix landed, because there was no longer a reason to promote around them.**
+
+### 🔴 A lane's measurement overruled QE's, and the lane was right
+
+**QE told Lane A that `make coverage-debt`'s reader-exits-2 defect was not real, having run it successfully.** ⛔ **QE's `.coverage` was from a run ABOVE the floor.**
+
+**Lane C then found the mechanism in `coverage/results.py`:**
+
+```python
+round(total, precision) < fail_under      # precision unset → 0
+round(94.98, 0) = 95.0  →  False          # cycle 244 NEVER triggered it
+```
+
+⚡ **So the retraction was right and its stated reason was wrong.** ⛔ **Three parties measured three regions — 0.00%, above the floor, and 94.98% — and each named their own as the rule.** ✅ **Lane A's was the only measurement taken in the condition under discussion, and theirs was the report QE had overruled.**
+
+### ⚠️ And QE's evidence sent Lane A to the wrong file
+
+**QE gave `handlers.py` (30 missing, 90%) as the largest gap.** ⛔ **The cause was `claims.py` (8 missing, 78%)** — accessors Lane A had added and never tested *through a claim*.
+
+🔴 **`coverage-debt` ranks by MISSING LINES and never said so.** ⚡ **Two legitimate questions — *which file moves the total* and *which file is least understood* — one output, and nothing on screen saying which was answered.** ✅ **Lane A found it by asking *which of these did this slice introduce*, which is §19's question; QE's was a proxy for it.**
+
+📁 **Lane A's sentence is the one worth keeping**: ***"without the guard, `as_money()` on a `RENEWAL_DATE` claim still answers `None`, for the wrong reason — a test that never asks a claim the wrong question cannot tell a correct refusal from an accidental one."***
+
+### ⚡ Two rules that name the whole of [B-1000](docs/BUGS.md)'s family
+
+> ⛔ **A *"cannot reproduce"* is a claim about the reproduction attempt, not about the defect.**
+> ⛔ **A failure is a claim about the RUN, not about the code, until you check the conditions the run needed.**
+
+📁 **One covers a negative result, the other a positive one, and both are the same omission: not checking whether the CONDITION the result depends on was present.** ⚡ **Both were authored by Lane C, and both were applied against Lane C's own work within the hour.**
+
+---
+
 ## 1d · Release summary — 2026-08-17, cycle 243
 
 **Promoted `cbc71c12` from `a93bfe0a`.** Six commits, two lanes. **First attempt, no aborts.**
@@ -127,7 +179,7 @@
 
 ⛔ **`state-check.py` bound `named` twice in one function, seventy lines apart** — a commit SHA and a set of task ids — **working only because the second binding precedes the second use.** ⚠️ **An early return between them makes one name answer two questions.**
 
-⚡ **Both found by `mypy`, because `infra/` is outside the test suite ([B-435](docs/BUGS.md)).** 🔴 **For `infra/`, the type gate is not a supplementary check — it is the whole net.**
+⚡ **Both found by `mypy` because it was reading NONE of these files** — [B-435](docs/BUGS.md) widened the gate to all of `infra/`. 🔴 **CORRECTED 2026-08-17: this said *`infra/` is outside the test suite* and *the type gate is the whole net*. Both are false.** ⛔ **`review.py` 64 test files · `validate.py` 34 · `workstation.py` 11 · `certification-guard.py` 9 · `state-check.py` 9 · `registers.py` 9 · `environments.py` 7 · `reachability.py` 6 · `coordination.py` 5.** ⚡ **The true claim is narrower and sufficient: the gate's REACH, not the suite's absence** — the defects it found are bindings and narrowings no behavioural test would reach. 📁 **Lane C retracted it to one reader; QE published it to every future one, and their explanation of why is the part worth keeping**: ⛔ ***"the false version was the MORE ALARMING one — a claim that overstates the danger is not the safe direction to be wrong in."*** ⚠️ **QE amplified it precisely BECAUSE it was alarming.**
 
 ### ✅ A publish-ordering defect, fixed by reordering rather than by adding a check
 
