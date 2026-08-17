@@ -39,6 +39,8 @@ import {
   useAccountSegments,
 } from '@/lib/query/hooks/account-segments';
 import { useWorkspaceMembers } from '@/lib/query/hooks/team';
+import { useSession } from '@/lib/auth/client';
+import { ExpandedRow } from './expanded-row';
 import { Building2 } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Fragment, useMemo, useState } from 'react';
@@ -231,10 +233,22 @@ export default function CompaniesPage() {
    *  is the stored set**, so changing the grouping opens everything rather than
    *  hiding rows behind a label the customer has not seen before. */
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
-  /** 📁 **The design's context drawer** — *"row preview"*. ⚡ **The row id, not
-   *  the row**, so a refetch that replaces the page's objects leaves the drawer
-   *  showing the current facts rather than a snapshot from when it opened. */
+  /** 📁 **The active row — the one the design expands AND previews.** The mock's
+   *  expanded panel and its context drawer both name *Vantage Logistics*, so
+   *  one chevron opens both.
+   *
+   *  ⚡ **The row id, not the row**, so a refetch that replaces the page's
+   *  objects leaves both showing the current facts rather than a snapshot from
+   *  when they opened. */
   const [previewing, setPreviewing] = useState<string | null>(null);
+  /** ⚠️ **The drawer's ✕ is its own control, and it closes its own panel.**
+   *
+   *  ⛔ **The first version drove both from `previewing` alone**, and the
+   *  screenshot showed the cost: **dismissing the preview silently collapsed
+   *  the expanded row underneath it** — a customer who wanted the panel out of
+   *  the way lost the thing they had opened. ⚡ **Expansion outlives the
+   *  drawer**; expanding a row re-opens it. */
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [columns, setColumns] = useState<readonly ColumnId[]>(DEFAULT_COLUMNS);
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
 
@@ -290,6 +304,9 @@ export default function CompaniesPage() {
   /** ⚡ **The member list the screen already holds**, which is what turns a
    * `member_user_id` into somebody a person recognises. */
   const members = useWorkspaceMembers(columns.includes('owner') ? workspaceId : null);
+  /** ⚡ So the expanded row's workflow line can say *you* rather than repeating
+   *  a name the reader would have to recognise as their own. */
+  const viewerId = useSession().data?.user.id ?? null;
   /** ⛔ **Asked only when the column is on**, on the same terms as the owner
    *  and tag reads. */
   const segmentIds = useMemo(
@@ -734,7 +751,8 @@ export default function CompaniesPage() {
                       </TR>
                     )}
                 {(collapsed.has(bucket.label) ? [] : bucket.rows).map((row) => (
-                  <TR key={row.account.account_id}>
+                  <Fragment key={row.account.account_id}>
+                  <TR>
                     <TD className={ROW_PADDING[density]}>
                       <input
                         type="checkbox"
@@ -748,10 +766,20 @@ export default function CompaniesPage() {
                     <TD className={ROW_PADDING[density]}>
                       <button
                         type="button"
-                        aria-label={`Preview ${row.account.name ?? row.account.account_id}`}
+                        aria-label={`Expand ${row.account.name ?? row.account.account_id}`}
                         aria-expanded={previewing === row.account.account_id}
-                        onClick={() => setPreviewing(row.account.account_id)}
-                        className="rounded px-1 text-content-subtle hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
+                        onClick={() => {
+                          const collapsing = previewing === row.account.account_id;
+                          setPreviewing(collapsing ? null : row.account.account_id);
+                          setPreviewOpen(!collapsing);
+                        }}
+                        className={cn(
+                          'rounded px-1 text-content-subtle transition-transform hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent',
+                          // ⚡ **The chevron turns rather than being swapped**,
+                          // so the control a reader is pointing at does not
+                          // change shape under the cursor.
+                          previewing === row.account.account_id && 'rotate-90',
+                        )}
                       >
                         ›
                       </button>
@@ -877,6 +905,23 @@ export default function CompaniesPage() {
                       </TD>
                     ))}
                   </TR>
+                  {/* 📁 **The design expands the row it is previewing** — the
+                      mock's expanded panel and its context drawer name the same
+                      account, *Vantage Logistics*. ⚡ **So one chevron drives
+                      both**, rather than two controls competing for the same
+                      row. */}
+                  {previewing === row.account.account_id ? (
+                    <ExpandedRow
+                      row={row}
+                      /* ⚡ The checkbox and the expander, plus every shown
+                         column. */
+                      span={shownColumns.length + 2}
+                      workspaceId={workspaceId}
+                      viewerId={viewerId}
+                      members={members.data?.items ?? []}
+                    />
+                  ) : null}
+                  </Fragment>
                 ))}
                   </Fragment>
                 ))}
@@ -961,12 +1006,12 @@ export default function CompaniesPage() {
             note: the width *"belongs to the design's contract and a class would
             put it in a second place."* ⚡ **Sticky**, so the panel stays with
             the row while the list scrolls. */}
-        {previewing === null ? null : (
+        {previewing === null || !previewOpen ? null : (
           <div className="sticky top-4 w-[360px] flex-none">
             <ContextDrawer
               row={shown.find((r) => r.account.account_id === previewing) ?? null}
-              open={previewing !== null}
-              onClose={() => setPreviewing(null)}
+              open={previewOpen}
+              onClose={() => setPreviewOpen(false)}
               assignment={ownerFor(previewing ?? '', owners.data?.assignments)}
               members={members.data?.items ?? []}
               segments={membershipFor(previewing ?? '', segmentMemberships.data?.memberships)}

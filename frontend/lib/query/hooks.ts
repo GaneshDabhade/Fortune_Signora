@@ -13,6 +13,7 @@ import type {
   AccountValidation,
   BusinessEventEvidence,
   DecidedAccount,
+  DecisionPackage,
   CursorPage,
   OpenedOpportunity,
   RecordDecision,
@@ -162,6 +163,47 @@ export function useAccountOpportunity(
     enabled: workspaceId !== null && accountId !== null,
     retry: (attempt, error) =>
       !(error instanceof ApiError && error.status === 404) && attempt < 2,
+  });
+}
+
+/**
+ * What Signora concluded about one account, **and what argues against it**.
+ *
+ * ⚡ **The endpoint has existed since the AI Reasoning Engine shipped and
+ * nothing anywhere read it** — 📁 the class [`infra/reachability.py`](../../../infra/reachability.py)
+ * exists for: *"something is built, correct, tested, and nothing reaches it."*
+ * ✅ **This hook is the first consumer**, and the row-level AI panel the
+ * Companies design draws is the first surface.
+ *
+ * ⛔ **A 404 is the ordinary state, not an error**, and it is not retried. A
+ * package is written by a background worker once the deterministic pipeline
+ * has a score worth explaining, so a freshly qualified account genuinely has
+ * none — ⚠️ **and retrying makes a fast truthful answer look like a slow
+ * broken one**, the same reasoning `useAccountNarration` records.
+ *
+ * ⚡ **Held for five minutes, like the narration.** A package is **immutable**
+ * — a better conclusion is a *new* package naming a later score — so a cached
+ * copy cannot go subtly wrong, only become older than the newest.
+ *
+ * ⛔ **No `enabled` knob for the Companies row.** The expanded panel MOUNTS on
+ * expansion, so the read is already gated by the thing that asks for it —
+ * forty rows on screen are never forty conclusions nobody asked for.
+ */
+export function useAccountDecisionPackage(
+  workspaceId: string | null,
+  accountId: string | null,
+) {
+  return useQuery({
+    queryKey: queryKeys.accountDecisionPackage(workspaceId ?? '', accountId ?? ''),
+    queryFn: () =>
+      apiRequest<DecisionPackage>(
+        `/workspaces/${workspaceId}/accounts/${accountId}/decision-package`,
+        { workspaceId: workspaceId ?? undefined },
+      ),
+    enabled: workspaceId !== null && accountId !== null,
+    retry: (attempt, error) =>
+      !(error instanceof ApiError && error.status === 404) && attempt < 2,
+    staleTime: 5 * 60_000,
   });
 }
 

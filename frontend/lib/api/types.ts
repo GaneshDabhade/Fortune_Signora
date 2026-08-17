@@ -538,6 +538,82 @@ export interface AccountNarration {
 }
 
 /**
+ * One sentence a model wrote, and the evidence it rests on.
+ *
+ * ⛔ **`evidence` is never empty** — 📁 the backend refuses an uncited statement
+ * before the package is stored, so a caller may render the citation count
+ * without guarding for zero.
+ */
+export interface ReasonedStatement {
+  text: string;
+  /** Citation tokens (`kind:id`), not prose. */
+  evidence: string[];
+}
+
+/** A reading that was considered and set aside, with the reason it was. */
+export interface AlternativeReading {
+  signal_type: string;
+  reason: string;
+}
+
+/** What the conclusion stands on, in the pipeline's own counted terms. */
+export interface DecisionSupport {
+  level: string;
+  corroborating_providers: string[];
+  contributing_events: number;
+  evidence_state: EvidenceState;
+  /** Whether signals read the same evidence differently. */
+  contested: boolean;
+  dissenting_signals: number;
+}
+
+/** When the reading beneath the conclusion was taken, and which way it moved. */
+export interface DecisionTemporal {
+  trigger: string;
+  basis_at: string;
+  computed_at: string;
+  /** Signed. **Zero on a first reading**, which is a fact rather than a gap. */
+  delta: number;
+  trend: string;
+  evidence_state: EvidenceState;
+  valid_until: string | null;
+  supersedes: string | null;
+}
+
+/**
+ * One conclusion about one account, **and everything needed to disagree with it**.
+ *
+ * 📁 The endpoint's own words: *"a conclusion arrives with what argues against
+ * it."* ⛔ **`limitations` is never empty** — a package that stated none is
+ * refused at construction, because an empty one means the catalog was never
+ * consulted. ⚠️ **`alternative_readings` MAY be empty, and that is a real
+ * answer**: it means nothing else was tested, not that nothing else was
+ * possible.
+ *
+ * ⚡ **The field order is the order of the argument** — what Signora concluded,
+ * why, what it rests on, what argues against it, what it cannot see, how to
+ * check it, and who produced it.
+ */
+export interface DecisionPackage {
+  account_id: string;
+  proposition: ReasonedStatement;
+  /** The conclusion in one sentence, cited like any other. */
+  summary: ReasonedStatement;
+  stated_reasoning: ReasonedStatement[];
+  supporting_evidence: string[];
+  support: DecisionSupport;
+  temporal: DecisionTemporal;
+  alternative_readings: AlternativeReading[];
+  limitations: string[];
+  suggested_validation: string[];
+  catalog_version: number;
+  model: string;
+  vendor: string;
+  prompt_name: string;
+  prompt_version: number;
+}
+
+/**
  * One live hypothesis, and what a seller should do about it.
  *
  * **Not a recommendation.** Nothing here is about this account: `limitations`

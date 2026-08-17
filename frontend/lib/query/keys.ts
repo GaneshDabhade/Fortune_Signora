@@ -115,6 +115,9 @@ export const queryKeys = {
   accountOpportunity: (workspaceId: string, accountId: string) =>
     ['workspace', workspaceId, 'accounts', accountId, 'opportunity'] as const,
 
+  accountDecisionPackage: (workspaceId: string, accountId: string) =>
+    ['workspace', workspaceId, 'accounts', accountId, 'decision-package'] as const,
+
   accountTimeline: (workspaceId: string, accountId: string) =>
     ['workspace', workspaceId, 'accounts', accountId, 'timeline'] as const,
 

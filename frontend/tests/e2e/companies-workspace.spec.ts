@@ -131,4 +131,42 @@ test.describe('Companies — views, filters, density and paging', () => {
 
     expect(compact).toBeLessThan(comfortable);
   });
+
+  /**
+   * 📁 **The design's expanded row** — *"Expanded · Vantage Logistics"*, and
+   * the context drawer beside it naming the same account.
+   *
+   * 🔴 **What a browser proves here**: that the panel opens INSIDE the table,
+   * spanning the row rather than replacing it, ⛔ **and that dismissing the
+   * preview does not take the expanded row with it** — the defect a screenshot
+   * caught while every gate was green.
+   */
+  test('@journey a row expands in place, and the preview closes without it', async ({ page }) => {
+    await page.goto('/accounts');
+    const table = page.getByRole('table');
+    await expect(table).toBeVisible();
+
+    const rowsBefore = await table.getByRole('row').count();
+    await page.getByRole('button', { name: /^Expand / }).first().click();
+
+    // ✅ **The panel is a row of the table**, which is what keeps the columns
+    // above it aligned with the columns below it.
+    await expect(table.getByText(/^Expanded · /)).toBeVisible();
+    expect(await table.getByRole('row').count()).toBe(rowsBefore + 1);
+
+    // 📁 The design's three panels.
+    await expect(table.getByText('Open opportunity')).toBeVisible();
+    await expect(table.getByText(/^Commercial · /)).toBeVisible();
+    await expect(table.getByText('Row-level AI')).toBeVisible();
+
+    // ⛔ **No way to type an ACV** — ADR-0409 §5: a claim is only produced
+    // where the provider supplies the fact.
+    await expect(page.getByRole('textbox', { name: /acv/i })).toHaveCount(0);
+
+    await page.getByText('Row preview').waitFor();
+    await page.getByRole('button', { name: /close/i }).first().click();
+    await expect(page.getByText('Row preview')).toHaveCount(0);
+    // 🔴 **The row is still open.**
+    await expect(table.getByText(/^Expanded · /)).toBeVisible();
+  });
 });
