@@ -23,6 +23,7 @@ import re
 import subprocess
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import sys
 
@@ -45,13 +46,14 @@ def _read(relative: str) -> str:
     return path.read_text() if path.exists() else ""
 
 
-def _runs() -> list[dict]:
+def _runs() -> list[dict[str, Any]]:
     if not MANIFEST.exists():
         return []
-    return json.loads(MANIFEST.read_text()).get("runs") or []
+    runs = json.loads(MANIFEST.read_text()).get("runs")
+    return list(runs) if isinstance(runs, list) else []
 
 
-def _satisfied(run: dict) -> bool:
+def _satisfied(run: dict[str, Any]) -> bool:
     gates = all(g.get("passed") for g in run.get("gates") or [])
     scenarios = all(s.get("passed") for s in run.get("scenarios") or [])
     coverage = run.get("coverage")

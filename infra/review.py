@@ -481,7 +481,7 @@ def _await(url: str, *, label: str, timeout: int) -> bool:
 
 
 def _write(session: dict[str, Any]) -> Path:
-    directory = SESSIONS / session["id"]
+    directory = SESSIONS / str(session["id"])
     directory.mkdir(parents=True, exist_ok=True)
     (directory / "session.json").write_text(json.dumps(session, indent=2, sort_keys=True))
     (directory / "summary.md").write_text(_render(session))
@@ -494,9 +494,13 @@ def _load() -> dict[str, Any] | None:
         return None
     try:
         identifier = json.loads(POINTER.read_text())["id"]
-        return json.loads((SESSIONS / identifier / "session.json").read_text())
-    except (json.JSONDecodeError, KeyError, FileNotFoundError):
+        session = json.loads((SESSIONS / str(identifier) / "session.json").read_text())
+    # `TypeError` belongs here with the rest: a pointer file holding `[]` rather
+    # than an object raises it from the subscript, and the handler's intent is
+    # already *a broken record means no session* rather than a crash.
+    except (json.JSONDecodeError, KeyError, TypeError, FileNotFoundError):
         return None
+    return session if isinstance(session, dict) else None
 
 
 def _verdict(certification: dict[str, Any], *, long: bool) -> str:

@@ -94,7 +94,8 @@ def _unpushed(cwd: Path) -> int:
 def survey(cwd: Path) -> tuple[list[str], list[str], int, str]:
     """Untracked paths, modified paths, unpushed commits, branch."""
     branch = _git("rev-parse", "--abbrev-ref", "HEAD", cwd=cwd)
-    untracked, modified = [], []
+    untracked: list[str] = []
+    modified: list[str] = []
     # **`-uall`, and the reason is that this tool's own author got it wrong.**
     # `git status --porcelain` collapses an untracked *directory* into one line,
     # so the first survey counted a whole untracked module as a single path and

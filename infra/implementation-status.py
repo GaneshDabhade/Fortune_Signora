@@ -25,6 +25,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+from typing import TypedDict
 
 ROOT = Path(__file__).resolve().parent.parent
 MODULES = ROOT / "backend" / "modules"
@@ -48,7 +49,24 @@ def _layers(module: Path) -> dict[str, bool]:
     return {name: (module / name).is_dir() for name in ("domain", "application", "infrastructure", "interface")}
 
 
-def _module_row(module: Path) -> dict[str, object]:
+class ModuleRow(TypedDict):
+    """One row of the backend table.
+
+    A `TypedDict` rather than `dict[str, object]`, because the renderer sums
+    `endpoints` and indexes `layers` — under `object` both are errors the type
+    checker cannot see past, so every field read was unverified.
+    """
+
+    name: str
+    layers: dict[str, bool]
+    endpoints: int
+    events: int
+    public: bool
+    tests: int
+    design_doc: str
+
+
+def _module_row(module: Path) -> ModuleRow:
     layers = _layers(module)
     return {
         "name": module.name,
@@ -101,7 +119,9 @@ def _head() -> str:
 def render() -> str:
     rows = [_module_row(m) for m in sorted(MODULES.iterdir()) if m.is_dir() and not m.name.startswith("_")]
     fe = _frontend()
-    tick = lambda b: "✅" if b else "—"  # noqa: E731
+
+    def tick(present: bool) -> str:
+        return "✅" if present else "—"
 
     out = [
         "# Implementation Status",
@@ -172,7 +192,10 @@ def main() -> int:
         current = OUT.read_text() if OUT.exists() else ""
         # The commit line moves on every commit; comparing without it asks the
         # question that matters — has anything *counted* changed?
-        strip = lambda s: "\n".join(l for l in s.splitlines() if not l.startswith("> Counted at"))  # noqa: E731
+
+        def strip(text: str) -> str:
+            return "\n".join(l for l in text.splitlines() if not l.startswith("> Counted at"))
+
         if strip(current) == strip(new):
             print("implementation-status: current.")
             return 0

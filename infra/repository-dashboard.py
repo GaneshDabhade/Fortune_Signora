@@ -33,6 +33,7 @@ import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
 J = "«judgement»"
@@ -64,7 +65,7 @@ PREPARING = ("PREPARING", "REVISION REQUESTED", "APPROVED")
 NOT_PIPELINE = ("DONE", "DISPOSED", "SEQUENCED", "RATIFIED")
 
 
-def queues(ref: str) -> dict[str, dict]:
+def queues(ref: str) -> dict[str, dict[str, Any]]:
     """Each lane's assigned execution queue, read at `ref`.
 
     **Absent is not empty.** A missing queue file returns no entry at all rather
@@ -72,7 +73,7 @@ def queues(ref: str) -> dict[str, dict]:
     opposite things: one is a lane with nothing to do, the other is a lane the
     Product Office has not written a queue for. The second is the finding.
     """
-    out: dict[str, dict] = {}
+    out: dict[str, dict[str, Any]] = {}
     for path in ls(ref, "docs/coordination/queues"):
         if not path.endswith(".toml"):
             continue
@@ -149,7 +150,7 @@ def tasks(ref: str) -> list[tuple[str, str, str]]:
     return out
 
 
-def _owners(board: str, modules: list[str], registry: dict) -> dict[str, str]:
+def _owners(board: str, modules: list[str], registry: dict[str, Any]) -> dict[str, str]:
     """Which lane a board row names for each module.
 
     Parsed from the execution board rather than assumed, because assignment is
@@ -225,12 +226,14 @@ def board_rows(board: str) -> list[dict[str, str]]:
             continue
         task = re.search(r"TASK-\d+", c[2])
         status = re.search(r"`([A-Z][A-Z ]+)`", c[6])
-        blocked = re.search(r"(C-\d+|B-\d+)", c[7]) if len(c) > 7 else None
+        blocked = re.search(r"(C-\d+|B-\d+)", c[7])
+        module = re.search(r"`([a-z_]+)`", c[4])
+        epic = re.search(r"Epic ([A-Z0-9]+)", c[2])
         out.append({
             "lane": c[1].strip("* "),
             "task": task.group(0) if task else "—",
-            "module": (re.search(r"`([a-z_]+)`", c[4]).group(1) if re.search(r"`([a-z_]+)`", c[4]) else "—"),
-            "epic": (re.search(r"Epic ([A-Z0-9]+)", c[2]).group(0) if re.search(r"Epic ([A-Z0-9]+)", c[2]) else "—"),
+            "module": module.group(1) if module else "—",
+            "epic": epic.group(0) if epic else "—",
             "status": status.group(1).strip() if status else "—",
             "blocker": blocked.group(0) if blocked else "—",
         })

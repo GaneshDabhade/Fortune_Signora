@@ -137,7 +137,10 @@ def main() -> int:
     new = render()
     if args.check:
         current = OUT.read_text() if OUT.exists() else ""
-        strip = lambda s: "\n".join(l for l in s.splitlines() if not l.startswith("> Built at"))  # noqa: E731
+
+        def strip(text: str) -> str:
+            return "\n".join(l for l in text.splitlines() if not l.startswith("> Built at"))
+
         if strip(current) == strip(new):
             print("project-history: current.")
             return 0

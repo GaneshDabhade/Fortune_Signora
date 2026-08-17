@@ -375,17 +375,25 @@ validate:
 # three times in `environments.py`, one dead and one a no-op · `named` bound
 # twice in `state-check.py`.
 #
-# ⚠️ **Deliberately a NAMED LIST rather than `infra/`.** Twenty-six files carry
-# twenty-three further errors, and gating all of them today would mean either
-# fixing them in one unreviewable change or adding ignores that make the gate
-# decorative. **This list is what is clean AND load-bearing, so it can only
-# grow** — and a file joining it is a file somebody made pass.
-INFRA_TYPED = certification-guard.py state-check.py coordination.py \
-              release-preflight.py environment-lease.py environments.py \
-              decision-queue.py
-
+# ✅ **Widened from a named list to the whole directory, 2026-08-17.** It began
+# as seven files because the other nineteen carried twenty-three errors, and
+# gating them the same day would have meant one unreviewable change or ignores
+# that make the gate decorative. **Those twenty-three are now fixed, so the
+# caveat is gone**: a new file in `infra/` is covered the moment it lands,
+# rather than the moment somebody remembers to add it here.
+#
+# ⚡ **What the second pass caught**: `_load()` in `review.py` returning a
+# corrupt `session.json` as if it were a session, so every caller's `[...]`
+# raised far from the cause · `_coverage_json()` declaring `dict` and able to
+# return a list · `len(c) > 7` guarding a branch three lines under
+# `if len(c) < 8: continue`, which is Decorative Logic (`CLAUDE.md` §2) · the
+# same regex searched twice per field to narrow it, so a future edit to one
+# copy and not the other crashes on `.group`.
+#
+# ⛔ **No ignores, no `--follow-imports=skip`, no per-file relaxation.** A gate
+# that has been made to pass by lowering it is the thing it exists to catch.
 types-infra:
-	@cd backend && uv run mypy --strict $(addprefix ../infra/,$(INFRA_TYPED))
+	@cd backend && uv run mypy --strict ../infra/
 
 ## **Does the platform emit an event the contract does not name?**
 #

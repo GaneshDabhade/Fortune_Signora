@@ -25,12 +25,13 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 BACKEND = REPO_ROOT / "backend"
 
 
-def _coverage_json() -> dict | str:
+def _coverage_json() -> dict[str, Any] | str:
     """The data pytest already produced, rendered as JSON — or **why not**.
 
     `coverage json` is used rather than parsing the text report because the
@@ -71,9 +72,12 @@ def _coverage_json() -> dict | str:
     if not result.stdout.strip():
         return "`coverage json` produced nothing, and did not report an error"
     try:
-        return json.loads(result.stdout)
+        parsed = json.loads(result.stdout)
     except json.JSONDecodeError as broken:
         return f"`coverage json` produced output that is not JSON: {broken}"
+    if not isinstance(parsed, dict):
+        return f"`coverage json` produced {type(parsed).__name__}, not an object"
+    return parsed
 
 
 def main() -> int:
