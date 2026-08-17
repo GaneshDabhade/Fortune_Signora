@@ -575,6 +575,64 @@ databaseUrl: required(
 
 ---
 
+## C-1528 · Onboarding's completion screen is built on a forecast, and the domain refuses to produce one
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-17, reaching screen `09` of the onboarding rebuild |
+| **Owner** | 🔴 **Product owner** — ⛔ **a ratified design document and a ratified architectural boundary require opposite things**, and a lane may not choose between them |
+| **Type** | **A conflict between the finalized design and the module's stated domain law** |
+| **Blocks** | ⚠️ **Screen `09` only.** ✅ Screens 01, 02, 04, 05, 06 and 07 are built and browser-verified; the flow runs end to end and finishes on Connect |
+| **Status** | **`OPEN`** |
+
+### 🔴 ① The design's payoff is three numbers, and the third cannot exist
+
+📁 *"09 · Completion — **the payoff is the product, not a congratulation**"*, and it is right to be: a completion screen that congratulates somebody for filling in a form has given them nothing. **The design's answer is three real findings**, and this is the whole point of the screen.
+
+| Design's finding | Its example | Can Signora produce it? |
+|---|---|---|
+| **Accounts read** | *8,412 · "312 enterprise, of which 41 have an open renewal"* | ⚠️ **No producer today, and buildable** |
+| **At risk today** | *$8.3M · "Across 11 deals, concentrated in Negotiation"* | ⚠️ **No producer today, and it raises [ADR-0409](architecture/adr/0409-commercial-account-facts.md) §5** |
+| **Forecast gap** | *56 pts · "Between the model and the committed number"* | 🔴 **NO — refused by domain law** |
+
+### ⛔ ② The third is not unbuilt. It is forbidden.
+
+📁 **`buying_score_engine/domain/events.py`:**
+
+> ⛔ ***"…it does not forecast a purchase"***
+
+📁 **`buying_score_engine/public/__init__.py`:**
+
+> ⛔ ***"no recommendation, no opportunity, and no probability. A score is a…"***
+
+⚡ **So *"the gap between the model and the committed number"* asks for a model output this product has ruled it does not produce.** ⛔ **It is not a missing endpoint** — building it would reverse the boundary that defines what a Signora score is.
+
+⚠️ **And the same word governs the AI line beneath the findings**: *"ordered by **forecast accuracy** and renewal risk"*. **Half of that ordering is unproducible for the same reason.**
+
+### ⚠️ ③ The second is a real question rather than a gap
+
+**Summing `OPEN_ACV` across at-risk accounts sounds like an endpoint and is not.** 📁 [ADR-0409](architecture/adr/0409-commercial-account-facts.md) §5: ***"absence is never inferred, defaulted or zero-filled"*** and ***"a claim is only produced where the provider supplies the fact."***
+
+⛔ **So a total over a set where some accounts have no `OPEN_ACV` silently understates**, and a customer reading *"$8.3M at risk"* has no way to see that it is *"$8.3M across the deals we have a figure for."* 📁 §3 of the same ADR: ***"a figure without its currency is not a fact"*** — **and a figure without its coverage is not one either.**
+
+⚡ **This is answerable** — report the figure with the population it covers — **but the shape is a product decision, not an implementation detail.**
+
+### ✅ ④ The first is straightforwardly buildable
+
+**A count of accounts read.** ⚠️ **The list is keyset-paginated by design, so no total exists anywhere today** — 📁 numbered page jumps are architecturally impossible and a total was never needed. **A count is a small, honest addition.**
+
+### ⚡ ⑤ Three ways out
+
+**①** **Ship the screen with the findings that have producers, and say what is absent.** ⚡ **Build the account count; report *at risk* with its coverage; ⛔ draw no forecast.** **The screen keeps its shape and every number on it is true.**
+**②** **Ship the confirmation and the three actions, with no findings**, until the producers exist. ⛔ **This is the *congratulation* the design's own title refuses.**
+**③** **Reverse the domain law** so a forecast can be produced. 🔴 **An architectural decision far larger than this screen**, and it would change what a Signora score means.
+
+⚡ **Lane A's recommendation is ①.** **The design's principle — the payoff is the product — survives with two findings; it does not survive a fabricated third.** ⛔ **It is a recommendation and not a decision** ([§20e](../CLAUDE.md)).
+
+> ⚠️ **Nothing is half-built while this is open.** Screen `09` is **not started**, and the flow currently completes on Connect — 📁 which is where the design puts *"Connect and finish"* — so **a customer reaches a finished setup today**. **The completion screen adds a payoff; its absence does not leave a dead end.**
+
+---
+
 ## C-1527 · The Onboarding mock draws four type sizes the Design System's scale does not have
 
 | | |
