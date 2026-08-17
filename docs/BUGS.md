@@ -887,6 +887,34 @@ for _lane, _spec in sorted(_notice_health(rows).items()):
 ### ✅ The fix, and why it is not a checker
 
 **The board is reconciled and the stamp corrected.** ⛔ **No new check is added.** A checker for *"did Closeout run all eleven activities?"* would be a fourth place recording what the eleven are, and **the copy is never wrong when written; it is wrong the first time the list grows.** ⚡ **What actually failed already had an instrument — `state-check` printed the finding.** **The repair is that QE reads findings, not exit codes**, and the evidence for whether it holds is the next cycle's board stamp rather than a green tick.
+### B-443 · 🔴 `coverage-debt` refuses to run when coverage is below the floor — the only situation it exists for
+
+| | |
+|---|---|
+| **Module** | **Platform Foundation** — `infra/coverage-debt.py` ([D-022](DECISION_REGISTER.md)) |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🔴 — ⛔ **not because anything breaks, but because the instrument for a blocking quality defect is unavailable during one.** 📁 **§20e makes a coverage failure the owning lane's highest priority; this is the tool that names the file** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-17**, with eight regression tests |
+| 🔴 **The mechanism** | **`coverage json` obeys `fail_under` from `pyproject.toml`.** **Below the floor it does two things and both are fatal here:** ⛔ **exits `2`, which `_coverage_json` read as *the reader failed*** · ⛔ **appends `Coverage failure: total of N is less than fail-under=95` to STDOUT, after the closing brace** — **so parsing anyway raises `Extra data` on a report that is completely intact** |
+| ⚠️ **Why it was never noticed** | ⚡ **Above the floor everything works.** **The tool was correct in every situation except the one it is for** — 📁 **and nobody runs `make coverage-debt` when coverage is fine** |
+| 🔴 **It has a live cost, today** | **Cycle 244 failed at 94.98%.** **The per-file gaps were read out of `pytest --cov` by eye instead, and named `interface/handlers.py` at 90% as the largest gap.** ⛔ **The actual cause was `provider_normalization/public/claims.py` at 78%** — **accessors added and never tested through a claim.** ✅ **Lane A found it themselves** |
+| ✅ **Two fixes, and the second is defence in depth** | **`--fail-under=0`** — ⚡ **the reader is not the gate**, and the exit code goes back to meaning *did the report generate*. **`raw_decode` instead of `loads`** — **a trailing message cannot matter even if the flag ever stops working.** 📁 **Belt and braces is warranted precisely here: this function's own docstring already records a lane being sent to re-run a five-minute suite because the reader failed and said the run had** |
+| ✅ **And a second question the tool answered silently** | **It ranks by MISSING LINES and never said so.** ⚡ ***Which file moves the total*** **and** ***which file is least understood*** **are different questions, and the ordering was the only thing distinguishing them** — **which is exactly the 90%-vs-78% confusion above.** ✅ **The header now states the ordering, and `--by-coverage` answers the other question** |
+| ✅ **Fire-tested** | **Reverting `raw_decode` to `loads` kills one test; collapsing `--by-coverage` into the default kills another.** ⚡ **The contaminated fixture is the REAL captured stdout, and one test asserts the defect still reproduces** |
+| **Found** | **Running the tool with real coverage data, to check whether it would have named the file Lane A eventually found.** ⛔ **It would not have run at all** |
+
+**Steps to reproduce.**
+
+```bash
+cd backend && uv run coverage json -o - --pretty-print > /tmp/cj.json; echo $?   # 2
+tail -c 80 /tmp/cj.json     # "}Coverage failure: total of 0 is less than fail-under=95"
+python3 infra/coverage-debt.py                                                   # "Cannot read coverage"
+```
+
+**Expected.** ⚡ **The file that is short, when coverage is short.**
+
+**Actual.** 📁 **`Cannot read coverage` — precisely then, and only then.**
+
 ### B-442 · 🟠 The `Planning-Sync` matcher counts prose that QUOTES the trailer — and it was caught by the commit that introduced it, eight minutes later
 
 | | |

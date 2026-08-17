@@ -52,11 +52,29 @@ def _coverage_json() -> dict[str, Any] | str:
 
     **A diagnostic that misdiagnoses is worse than one that says nothing**, and
     this one was confidently wrong in the direction of wasted work.
+
+    ## 🔴 `--fail-under=0`, and it is the whole of [B-443](../docs/BUGS.md)
+
+    **`coverage json` obeys `fail_under` from `pyproject.toml`.** Below the
+    floor it does two things, and both are fatal here:
+
+      · exits `2`, which this function read as *the reader failed*;
+      · appends ``Coverage failure: total of N is less than fail-under=95``
+        **to stdout, after the closing brace** — so even parsing it anyway
+        raises `Extra data`.
+
+    ⛔ **So the tool that names which file is short refused to run in exactly
+    the situation where a lane needs it: when coverage is below the floor.**
+    Above it, everything worked, which is why it was never noticed.
+
+    **The reader is not the gate.** `--fail-under=0` restores the exit code to
+    meaning *did the report generate*, which is the only question this function
+    asks.
     """
     if not (BACKEND / ".coverage").exists():
         return "no `.coverage` file — the suite has not been run with `--cov` here"
     result = subprocess.run(
-        ["uv", "run", "coverage", "json", "-o", "-", "--pretty-print"],
+        ["uv", "run", "coverage", "json", "-o", "-", "--pretty-print", "--fail-under=0"],
         cwd=BACKEND,
         capture_output=True,
         text=True,
@@ -71,8 +89,25 @@ def _coverage_json() -> dict[str, Any] | str:
         )
     if not result.stdout.strip():
         return "`coverage json` produced nothing, and did not report an error"
+    return _parse(result.stdout)
+
+
+def _parse(stdout: str) -> dict[str, Any] | str:
+    """The JSON object, tolerating anything `coverage` appends after it.
+
+    **`raw_decode` rather than `loads`, and the difference is [B-443](../docs/BUGS.md).**
+    `coverage json -o -` writes its `fail_under` failure to *stdout*, after the
+    closing brace, so a whole-string parse raises `Extra data` on a report that
+    is completely intact up to that point.
+
+    `--fail-under=0` stops that happening. **This stops it mattering** — the
+    report is the payload and a trailing message is not part of it. Belt and
+    braces is warranted precisely here: this function's own docstring records a
+    lane being sent to re-run a five-minute suite because the reader failed and
+    said the run had.
+    """
     try:
-        parsed = json.loads(result.stdout)
+        parsed, _ = json.JSONDecoder().raw_decode(stdout.lstrip())
     except json.JSONDecodeError as broken:
         return f"`coverage json` produced output that is not JSON: {broken}"
     if not isinstance(parsed, dict):
@@ -80,11 +115,39 @@ def _coverage_json() -> dict[str, Any] | str:
     return parsed
 
 
+Row = tuple[int, float, str]
+
+
+def ordered(rows: list[Row], *, by_coverage: bool) -> list[Row]:
+    """The two questions, in the two orders that answer them.
+
+    **Default — most missing lines first**: what will move the total. Covering
+    N lines moves the number the same wherever they are, so this is the right
+    ranking for a floor.
+
+    **`by_coverage` — lowest percentage first**: what is least understood. A
+    file at 78% can hold more untested *behaviour* than one at 90% with three
+    times the missing lines, and on 2026-08-17 that was exactly the difference
+    between the file named as the cause and the file that was
+    ([B-443](../docs/BUGS.md)). Ties break on missing lines, descending.
+    """
+    if by_coverage:
+        return sorted(rows, key=lambda r: (r[1], -r[0]))
+    return sorted(rows, reverse=True)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("module", nargs="?", help="restrict to paths containing this")
     parser.add_argument("--new", action="store_true", help="only files at 0%%")
     parser.add_argument("--limit", type=int, default=15)
+    # **Two questions, and the default answers only one** ([B-443](../docs/BUGS.md)).
+    # *Which file moves the number* is missing lines; *which file is least
+    # understood* is percentage. On 2026-08-17 a file at 90% was named as the
+    # largest gap while the cause sat at 78% — fewer missing lines, more
+    # untested behaviour, and the lane found it themselves.
+    parser.add_argument("--by-coverage", action="store_true",
+                        help="rank by percentage covered rather than by missing lines")
     args = parser.parse_args()
 
     data = _coverage_json()
@@ -124,12 +187,17 @@ def main() -> int:
         print(f"\n  No uncovered statements{scope}. Nothing to pay down.")
         return 0
 
-    rows.sort(reverse=True)
+    rows = ordered(rows, by_coverage=args.by_coverage)
     total = data.get("totals", {}).get("percent_covered", 0.0)
 
     print(f"\n  Coverage debt{' — ' + args.module if args.module else ''}"
           f"  ·  repository at {total:.2f}%\n")
-    print(f"    {'MISSED':>6}  {'COVER':>6}  FILE")
+    # **The ordering is stated, because the two readings answer different
+    # questions and the ordering was the only thing distinguishing them.**
+    order = ("lowest coverage first — least understood"
+             if args.by_coverage else
+             "most missing lines first — moves the number most; --by-coverage for the other question")
+    print(f"    {'MISSED':>6}  {'COVER':>6}  FILE        ({order})")
     for missing, percent, path in rows[: args.limit]:
         mark = "  ←  never executed" if percent == 0 else ""
         print(f"    {missing:>6}  {percent:>5.0f}%  {path}{mark}")
