@@ -90,6 +90,53 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-1011 · 🔴 Coverage crossed the floor at cycle 244 — 94.98% against 95.0, and certification refused
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** and the modules the slice touched — `knowledge_graph`, `provider_normalization`, `workspace_tenancy` |
+| **Current assignee** | **Lane A** |
+| **Severity** | 🔴 — ⛔ **Blocking Quality Defect** ([§20e](../CLAUDE.md)): *"coverage below the floor… the owning lane's highest priority, addressed before significant new feature work"* |
+| **Status** | 🔵 **`OPEN`** — ⛔ **`a837ebd5` is NOT certified and NOT promoted.** ⚠️ **It sits on `integration`, so promotion is blocked for every lane until this clears** |
+| **Found** | **2026-08-17**, cycle 244's certification run |
+| **Commit found** | **`a837ebd5`** |
+
+### 🔴 The gate refused, and the refusal is the decision
+
+```
+coverage            94.98%
+NOT CERTIFIED
+  · coverage 94.98% is below 95.0%
+```
+
+⛔ **Every other gate passed** — `pytest` **5243**, **668** Security Invariants, `mypy` **935** files, `import-linter` 37/37, `tsc`, `frontend-suite` **3405/192**, `eslint`, `smoke` 24 stages, scenario 198 assertions. ✅ **One gate failed and that is sufficient**: there is no partial promotion and no expedited path.
+
+### 📊 It was predicted, and the prediction is on `main`
+
+**QE recorded this as a trajectory at cycle 239 rather than reporting each point in isolation:**
+
+> ⚠️ ***"Not yet a finding and no row opened. At the current rate the fourth or fifth cycle crosses**, and **the lane that crosses it will not be the lane that caused it** — which is the reason this row states a trajectory rather than a number."*
+
+| cycle | 237 | 238 | 239 | 240 | 241 | 242 | 243 | **244** |
+|---|---|---|---|---|---|---|---|---|
+| coverage | 95.06 | 95.05 | 95.04 | 95.05 | 95.05 | 95.04 | 95.04 | 🔴 **94.98** |
+
+⚡ **Five cycles after the prediction, and the sentence held in both halves**: **it crossed**, and **the slice that crossed it is not the slice that spent the margin.** ⛔ **Cycle 244 added ~6200 lines across 68 paths; the four basis points it needed had been consumed one at a time by seven earlier cycles.**
+
+### ⛔ The rule this breaches was already written, and it is the lane's
+
+📁 **[`CLAUDE.md` §19](../CLAUDE.md), *Quality is the lane's, before it is QE's*, the Coverage row verbatim:**
+
+> **`make coverage-debt ARGS="<your module>"`** — **no file the slice introduced sits at 0%, and *the slice does not push the repository under the floor*.**
+
+⚠️ **The second clause is the one that failed, and it is checkable before handover.** ✅ **`make coverage-debt` runs and works** — QE ran it against all three touched modules and it reported per-file gaps in each. ⛔ **So this was visible to the lane in seconds**, which is exactly what §19 says: *"a coverage gap found at certification is the same gap that was visible to the lane in seconds."*
+
+### ✅ What QE is NOT doing
+
+⛔ **Not lowering the floor.** ⛔ **Not promoting with a failing gate.** ⛔ **Not fixing it** — QE reports; the module's assignee fixes ([§20e](../CLAUDE.md)). ⛔ **Not weakening or deleting a test to recover the figure.**
+
+⚠️ **And not treating the earlier cycles as blameless.** 📁 **Each was individually unremarkable and QE certified every one of them**, which is what a floor with four basis points of margin permits. **The trend row existed so this would arrive expected rather than as a surprise, and it did.**
+
 ### B-1010 · 🟡 Two sibling gates ask *"is this built thing reachable?"* and an HTTP endpoint falls between them
 
 | | |
