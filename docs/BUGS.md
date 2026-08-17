@@ -722,6 +722,38 @@ git merge --ff-only origin/lane-qe || git rebase -q origin/lane-qe   # ← the d
 
 ✅ **The operational cost was small and was stated to the lane immediately** — their work was already inside the running certification, so they reset rather than re-run. ⛔ **The cost that matters is that QE spent a lane's trust to save itself one cycle of waiting.**
 
+### ⚠️ A TWELFTH — QE calls a branch *idle* on evidence that cannot show it, every cycle
+
+**Closeout stage 6 fast-forwards *"every idle lane branch"* and never touches *"a lane in active development"* ([§20e](../CLAUDE.md)).** ⛔ **QE decides which is which with:**
+
+```bash
+git merge-base --is-ancestor origin/$b main    # → "has this ref anything main lacks?"
+```
+
+🔴 **That is not the question §20e asks.** ⚡ **It answers *has this branch PUSHED anything*, and QE has been reporting the answer as *idle*.**
+
+**Reported by Lane A, 2026-08-16, about themselves:**
+
+> ⛔ ***"`lane-a-product-surface` — ahead 22, behind 7. Twenty-two commits, none of them pushed. The branch was the most active thing in my session."***
+
+### ✅ The action was safe, and NOT for the reason QE gave
+
+**The ancestor gate is what made it safe**: `git push origin main:refs/heads/<branch>` only succeeds where the old value is already an ancestor of `main`, **so no pushed work can be destroyed and no unpushed local commit is reachable by it at all.** ⚡ **Verified: `origin/lane-a-product-surface` was an ancestor, so the push moved a ref whose content was already promoted.**
+
+⛔ **But QE justified it as *"both your branches were idle"*, and that word is doing work the evidence does not support.** 📁 **Lane A's framing is the correct one:**
+
+> ⚡ ***"A ref with no unpushed work and a ref whose work is invisible to you look identical from where you stand, and only one of them is idle."***
+>
+> ⛔ ***"It cost nothing here because a fast-forward cannot destroy unpushed local commits. It would have cost something under any operation that could — and 'idle' is the word that would have justified one."***
+
+### ✅ The repair is a word, not a check
+
+**The check is correct and stays.** ⛔ **What changes is the claim QE publishes from it:** ✅ ***"no pushed work"*, never *"idle"***.
+
+⚠️ **And where the stronger claim is genuinely needed — before anything that COULD destroy unpushed work — QE asks the lane**, because `git log origin/<branch>..<branch>` runs only on their machine. **QE cannot determine lane activity from remote refs and must stop implying that it can.**
+
+📁 **Same family as the other eleven, and the most routine of them**: **an instrument answering correctly, a narrower question than the word attached to its answer** — **in a step QE runs every single cycle.**
+
 ### ⚠️ An EIGHTH, caught BEFORE it ran — and it is about fire-testing itself
 
 **QE announced the mutation it would use to test a suspected Decorative Logic finding: collapse `None` into `[]` inside `_running_containers`.** ⛔ **Lane C stopped it, having already run it:**
