@@ -67,6 +67,7 @@ import {
   whyNotReadableHere,
   type CompaniesDeclaration,
 } from '@/lib/accounts/view';
+import { ContextDrawer } from './context-drawer';
 import { AccountsToolbar } from './toolbar';
 import { ViewTabs, type ViewMode } from './view-tabs';
 import {
@@ -230,6 +231,10 @@ export default function CompaniesPage() {
    *  is the stored set**, so changing the grouping opens everything rather than
    *  hiding rows behind a label the customer has not seen before. */
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
+  /** 📁 **The design's context drawer** — *"row preview"*. ⚡ **The row id, not
+   *  the row**, so a refetch that replaces the page's objects leaves the drawer
+   *  showing the current facts rather than a snapshot from when it opened. */
+  const [previewing, setPreviewing] = useState<string | null>(null);
   const [columns, setColumns] = useState<readonly ColumnId[]>(DEFAULT_COLUMNS);
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
 
@@ -442,6 +447,16 @@ export default function CompaniesPage() {
         }
       />
 
+      {/* 📁 **The design places the drawer BESIDE the table**, not above it —
+          *"a non-modal panel that pushes content"* (Design System v2 §12).
+          ⛔ **`Drawer` deliberately does not push**: *"pushing is a layout
+          decision belonging to whichever shell places it, and a component that
+          reached out to reflow the page would be a primitive taking a
+          page-level decision."* ⚡ **So the pushing is here**, which is where
+          the component's own docstring says it belongs. */}
+      <div className="flex items-start gap-4">
+        <div className="min-w-0 flex-1">
+
       {/* 🔴 **`isError` FIRST.** 📁 [P-A](../../../../docs/DOMAIN_DISCOVERY_REGISTER.md):
           a failed read must never render as an empty result. ⚠️ **On this screen
           the two are indistinguishable to a seller**, and the wrong one costs
@@ -625,6 +640,13 @@ export default function CompaniesPage() {
                       }
                     />
                   </TH>
+                  {/* 📁 **The design's 32px expander column**, between the
+                      checkbox and Company. ⚡ **It opens the context drawer** —
+                      the design's own pairing: *"↑↓ moves the row · the drawer
+                      follows."* */}
+                  <TH scope="col" className="w-8">
+                    <span className="sr-only">Preview</span>
+                  </TH>
                   {shownColumns.map((column) => (
                     <TH
                       key={column.id}
@@ -668,7 +690,7 @@ export default function CompaniesPage() {
                     {groups === null ? null : (
                       <TR>
                         <TD
-                          colSpan={shownColumns.length + 1}
+                          colSpan={shownColumns.length + 2}
                           className="bg-canvas py-2.5 text-sm"
                         >
                           <span className="flex flex-wrap items-center gap-2.5">
@@ -722,6 +744,17 @@ export default function CompaniesPage() {
                           setSelection(toggle(selection, row.account.account_id, onScreen))
                         }
                       />
+                    </TD>
+                    <TD className={ROW_PADDING[density]}>
+                      <button
+                        type="button"
+                        aria-label={`Preview ${row.account.name ?? row.account.account_id}`}
+                        aria-expanded={previewing === row.account.account_id}
+                        onClick={() => setPreviewing(row.account.account_id)}
+                        className="rounded px-1 text-content-subtle hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
+                      >
+                        ›
+                      </button>
                     </TD>
                     {shownColumns.map((column) => (
                       <TD
@@ -921,6 +954,28 @@ export default function CompaniesPage() {
           </nav>
         </>
       )}
+
+        </div>
+
+        {/* 📁 **360px, and the number travels as a value** — `Drawer`'s own
+            note: the width *"belongs to the design's contract and a class would
+            put it in a second place."* ⚡ **Sticky**, so the panel stays with
+            the row while the list scrolls. */}
+        {previewing === null ? null : (
+          <div className="sticky top-4 w-[360px] flex-none">
+            <ContextDrawer
+              row={shown.find((r) => r.account.account_id === previewing) ?? null}
+              open={previewing !== null}
+              onClose={() => setPreviewing(null)}
+              assignment={ownerFor(previewing ?? '', owners.data?.assignments)}
+              members={members.data?.items ?? []}
+              segments={membershipFor(previewing ?? '', segmentMemberships.data?.memberships)}
+              vocabulary={segments.data?.segments ?? []}
+              tags={tagsFor(previewing ?? '', assignments.data?.assignments, vocabulary.data?.tags)}
+            />
+          </div>
+        )}
+      </div>
     </>
   );
 }
