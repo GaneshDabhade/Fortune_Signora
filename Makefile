@@ -361,11 +361,20 @@ validate:
 
 ## **The files that decide whether a commit may be promoted, type-checked.**
 #
-# ⛔ **[B-435](docs/BUGS.md): `infra/` is outside every gate.** `mypy` runs from
-# `backend/`, so the promotion guard, the state check, the coordination
+# ⛔ **[B-435](docs/BUGS.md): `infra/` was outside the TYPE gate.** `mypy` runs
+# from `backend/`, so the promotion guard, the state check, the coordination
 # generator and the release preflight — the tools that decide what ships — were
-# read by nothing. **For `infra/`, `mypy` is not a supplementary check; it is
-# the whole net**, because these files have no test suite behind them either.
+# read by no type checker at all.
+#
+# ⚠️ **Corrected 2026-08-17: this comment claimed those files "have no test
+# suite behind them either", and that is FALSE.** ✅ **Measured rather than
+# assumed**: `certification-guard.py` has 9 test files, `review.py` 64,
+# `validate.py` 34, `workstation.py` 11, `state-check.py` and `coordination.py`
+# 5 each. **Exactly four `infra/` tools have none** — `doc-drift.py`,
+# `pipeline-dashboard.py`, `production-readiness.py`, `runtime-composition.py`
+# — and all four are advisory. ⛔ **The false version was the more alarming
+# one, which is why it survived a reading: a claim that overstates the danger
+# is not the safe direction to be wrong in** (`CLAUDE.md` §2).
 #
 # ⚡ **What it caught on the day it was written**, none of which any other gate
 # could see: `sys.stderr` with no `import sys`, in an error branch that only
