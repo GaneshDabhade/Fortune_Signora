@@ -517,6 +517,64 @@ databaseUrl: required(
 
 ---
 
+## C-1526 · Two documents in one snapshot disagree about how many columns may pin, and the design's own example does not exist
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-17, finishing Companies against the design |
+| **Owner** | 🔴 **Product owner** — 📁 [D-138](DECISION_REGISTER.md) makes [`docs/design-snapshot/`](design-snapshot/MANIFEST.md) the implementation authority, ⛔ **and a lane may not decide which of two of its documents wins** |
+| **Type** | **A conflict between two ratified design documents** |
+| **Blocks** | ⛔ **Nothing.** ⚡ **Companies ships with one pinned column and the design's gradient treatment** — this asks whether a second is wanted, not whether the screen can go out |
+| **Status** | **`OPEN`** |
+
+### ⚡ ① The two sentences
+
+📁 **`Fortune Signora Design System v2.dc.html`, *Pinned identity*:**
+
+> ✅ ***"**The first column** pins with a 24px gradient fade instead of a border, so horizontal scroll never produces a hard seam."***
+
+📁 **`Fortune Signora Companies.dc.html`, the Column configuration panel:**
+
+> ⚡ ***"**Two columns** may be pinned left; pinning is per view, not per user, so a shared view looks the same for everyone."***
+
+⚠️ **Both are in the same snapshot and neither is wrong on its own.** ⛔ **They cannot both be implemented by one primitive**: `components/ui/table.tsx` pins with `sticky left-0`, which is correct for exactly one column, and its own docstring records the Design System's wording — *"⛔ At most one per row."*
+
+### ⛔ ② The design's second pinned column does not exist
+
+📁 **Companies names which two:** *"**Company and score** pin left behind a soft gradient rather than a hard rule."*
+
+🔴 **There is no Signora score on this screen and no source anywhere produces one** — ⚡ **already recorded**, and it is the one column of the design's nine with nothing behind it. **So the design's own example cannot be built even if the rule is adopted.** ⛔ **The second pin would be whichever column a customer chose**, which is a different feature from the one the sentence illustrates.
+
+### ⚡ ③ What the second pin costs, measured rather than estimated
+
+**Four pieces, and the first is the one that leaves Companies:**
+
+**① The shared primitive.** ⛔ **A second sticky column needs `left: <width of the first>`, and nothing knows that width** — the table sizes its columns automatically and the design's fixed `232px` template was never adopted. ✅ **Either measure the first pinned cell at runtime and publish it as a CSS variable, or fix the identity column's width.** 📁 **Both change `components/ui/table.tsx`, which every table in the product renders** ([§20c](../CLAUDE.md): permitted under the UI Migration Program, ⚠️ **but it is a change to a shared contract rather than to Companies**).
+
+**② View state.** **`ColumnSpec.pinned` is a literal `true` today.** It becomes a per-view value, in the saved view and in the URL, exactly as sort and group already are.
+
+**③ A control.** 📁 The design puts a pin marker beside each column in its configuration panel; ⚡ **the screen's equivalent is the Columns pill.**
+
+**④ The refusal.** ⛔ **A third pin must not silently replace the second** ([B-255](BUGS.md)), so the control has to say what it did.
+
+### ✅ ④ What is shipped, and why it is not a partial implementation
+
+✅ **Company pins, with the design's 24px gradient fade rather than a border** — 📁 **the Design System's rule, implemented exactly**, and the shared table already carried it.
+
+⛔ **The half-measure was deliberately NOT built.** ⚠️ **A pin control that can only ever pin the column that is already pinned is a control that does nothing**, which is the defect this repository names most often.
+
+### 🔴 ⑤ What is being asked
+
+**One of three, and the third is a real answer:**
+
+**①** **Design System v2 wins** — one pinned column, and Companies' sentence is corrected in the next snapshot.
+**②** **Companies wins** — two, and ① above becomes a Design System slice before Companies can consume it.
+**③** **Neither yet** — ⚡ **the second pin waits for a column worth pinning.** **The design's example is the score, and until something produces one, a customer pinning a second column is choosing between Segment, Renewal, Owner and Tags — none of which the design says needs it.**
+
+⚡ **Lane A's recommendation is ③**, on 📁 [§6](../CLAUDE.md): *do not add generalization for cases that do not exist yet*. ⛔ **It is a recommendation and not a decision** — 📁 [§20e](../CLAUDE.md): *proposing a direction is expected; proceeding on it is not*.
+
+---
+
 ## C-1525 · TASK-202 was released on a premise a later measurement overturned — every remaining action is forbidden
 
 | | |

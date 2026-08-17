@@ -2048,7 +2048,9 @@ logger.info("connecting to postgres://signora_app:S3cr3tPassw0rd@db:5432/signora
 
 **The fix is one fixture, and it is not the size that matters.** ⛔ **A new session-scoped autouse guard changes what a failing gate means for every lane and for QE**, and it would have travelled inside an unrelated slice. 📁 **[§20e](../CLAUDE.md): finding a defect outside the slice is an obligation to report it, not a licence to fix it.** ⚡ **And this one is worth QE seeing before it is closed** — QE runs the full suite every cycle and is the reader the guard would be written for.
 
-### B-265 · Resolving any structured attribute raised `TypeError: unhashable type: 'dict'`
+### B-274 · Resolving any structured attribute raised `TypeError: unhashable type: 'dict'`
+
+> ⚠️ **Renumbered from `B-265` by Lane A on 2026-08-17, before the branch reached QE.** 📁 [B-265](#b-265--a-database-behind-the-migration-head-fails-26-tests-and-never-says-so) was already taken — **2026-08-13, three days earlier, in the same lane's own block** — and `infra/state-check.py` reported the collision. ⚡ **The later claim moves**, which is the rule's own tie-break; ⛔ **the earlier row keeps its number, its references and its history.** **Commits written before this line cite `B-265`; this note is what makes them followable.**
 
 | | |
 |---|---|
