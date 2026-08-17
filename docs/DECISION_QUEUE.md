@@ -2,7 +2,15 @@
 
 **The single place the product owner reviews when making rulings.** Established 2026-08-05 by product owner directive.
 
-> ## ✅ Nothing on this page is a live product-owner decision blocking work.
+> ## 🔴 One live decision: [C-1528](#-c-1528--screen-09-asks-for-a-forecast-and-the-scoring-engine-states-twice-that-it-does-not-forecast). Everything below it was already decided.
+>
+> ⚡ **Raised by Lane A 2026-08-17 and verified by this office against the code, not accepted from the report.** ⛔ **It blocks nothing today — screen 09 is not started and the flow already completes on Connect — but it must be answered before that screen is built.**
+>
+> ⚠️ **It is a different CLASS from [C-1526](#c-1526) and [C-1527](#c-1527), which are two design documents disagreeing with each other.** 🔴 **This is the finalized design disagreeing with a ratified architectural boundary**, which is why no lane may settle it.
+>
+> ---
+>
+> ## ✅ Nothing else on this page is a live product-owner decision blocking work.
 >
 > **Re-measured 2026-08-17 against `LANE_COORDINATION.md` and `BACKLOG.md`, row by row.** ⚡ **An item is listed as blocking only when a task row's own `Status` names it** — ⛔ **not when it sounds important, and not because it was blocking last week.**
 >
@@ -23,6 +31,55 @@
 > ✅ **[C-306](#-c-306--the-one-that-argues-against-work-and-it-collides-with-d-128) is `CLOSED` — Lane C, 2026-08-11, no product decision required.** **It argued *against* rebuilding a screen and predates [D-128](DECISION_REGISTER.md), which made the design the authority. Kept below as a record.**
 >
 > **This is the healthy state, not an empty document.** *"Our objective is not to close the maximum number of governance items. Our objective is to maximize engineering throughput."*
+## 🔴 C-1528 · Screen 09 asks for a forecast, and the scoring engine states twice that it does not forecast
+
+**Raised by Lane A, 2026-08-17. ✅ Verified by Lane C against the code rather than accepted from the report.**
+
+> ⚠️ **`decision-queue.py --check` reports *"C-1528 has a row here and no item in `LANE_COORDINATION.md`"*, and it is right.** 📁 **The register row is Lane A's and sits on `lane-a-product-surface`, unpushed.** ⛔ **This office is NOT authoring it** — a second authored copy of a coordination item is the duplication [§2](../CLAUDE.md) spends most of its length on, and Lane A declined exactly that offer from QE on 2026-08-17. ✅ **The finding clears itself when their branch integrates.**
+
+> ### ⛔ **This is not a missing endpoint. Building it reverses the boundary that defines what a Signora score IS.**
+
+### The three findings screen 09 pays off with
+
+| | Buildable? | |
+|---|---|---|
+| **① Accounts read** | ✅ **Yes** | A count. No total exists only because keyset pagination never needed one |
+| **② At risk today — $8.3M** | ⚠️ **Answerable, but the SHAPE is a product decision** — see below | |
+| **③ Forecast gap** — *"between the model and the committed number"* | 🔴 **No** | **It contradicts a ratified boundary** |
+
+### 🔴 ③ — the two statements it contradicts, quoted from the code
+
+`backend/modules/buying_score_engine/public/__init__.py`:
+
+> ⛔ *"There is deliberately no account representation in this surface, **no recommendation, no opportunity, and no probability**. A score is a decision-support artifact, not a source of truth about an account — and the moment a consumer reads it INSTEAD OF the intelligence, the pipeline has been replaced by its own summary."*
+
+`backend/modules/buying_score_engine/domain/events.py`:
+
+> ⛔ *"**No probability, no likelihood, no prediction.** A buying score prioritizes commercial attention; **it does not forecast a purchase**, and a field here implying otherwise **would be believed**."*
+
+⚠️ **The AI line beneath the findings has the same problem** — *"ordered by forecast accuracy and renewal risk."*
+
+### ⚠️ ② — the subtler one, and Lane A's extension of ADR-0409 is right
+
+**"At risk today — $8.3M" means summing `OPEN_ACV` across at-risk accounts.** 📁 [ADR-0409](architecture/adr/0409-account-facts-contract.md) §5: ⛔ *"absence is never inferred, defaulted or zero-filled."* **So a total over a set where some accounts have no figure silently UNDERSTATES, and the customer cannot see that it did.**
+
+⚡ **§3 of that ADR says *"a figure without its currency is not a fact."*** 🔴 **Lane A's extension: a figure without its COVERAGE is not one either.** ✅ **This office agrees, and it generalises past this screen.**
+
+### The options
+
+| | |
+|---|---|
+| ✅ **①** | **Ship screen 09 with the findings that have producers, and say what is absent.** ⚡ **Lane A's recommendation and this office's.** 📁 *"The design's own title refuses a congratulation, and that principle survives two findings; it does not survive a fabricated third"* |
+| ⚠️ **②** | **Reverse the boundary** — `buying_score_engine` gains a forecast. ⛔ **An architectural decision requiring an ADR**, and it makes the score a source of truth about an account, which its own contract refuses |
+| ⚠️ **③** | **Source the forecast elsewhere** — a different module owns *committed number* versus *model*. ⚡ **Does not violate the boundary**; ⛔ **but no such module exists and inventing one is not a screen's decision** |
+| ⛔ **④** | **Defer screen 09** | **Costs nothing today and buys nothing either** — the flow already completes on Connect |
+
+### ⚡ What is NOT at stake
+
+⛔ **Nothing is half-built while this is open.** **Screen 09 is not started**, and the design puts *"Connect and finish"* on screen 07 — **so a customer reaches a finished setup today.** ✅ **The completion screen adds a payoff; its absence is not a dead end.**
+
+---
+
 ## 🟠 C-250 · When entry is unremarkable, what does the diagnostic code say? *(point ③ of three)*
 
 > ⚡ **Found by Lane A BUILDING the entry engine, not by reading the design** — the third of three disagreements it reported, and **the only one that is a product question.**
