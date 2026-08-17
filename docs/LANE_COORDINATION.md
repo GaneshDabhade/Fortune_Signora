@@ -575,6 +575,68 @@ databaseUrl: required(
 
 ---
 
+## C-1527 · The Onboarding mock draws four type sizes the Design System's scale does not have
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-17, rebuilding onboarding against the finalized design |
+| **Owner** | 🔴 **Product owner** — 📁 [D-138](DECISION_REGISTER.md) makes [`docs/design-snapshot/`](design-snapshot/MANIFEST.md) the implementation authority, ⛔ **and a lane may not decide which of two of its documents wins** |
+| **Type** | **A conflict between two ratified design documents** |
+| **Blocks** | ⛔ **Nothing.** ⚡ **Onboarding is shipping** — the resolution below is applied and stated, and a ruling would change class names rather than what anyone can do |
+| **Status** | **`OPEN`** |
+
+### ⚡ ① The two documents
+
+📁 **`Fortune Signora Design System v2.dc.html`, §04 `typeRows`** — **the scale is nine roles and it is exhaustive:**
+
+| Role | Token | Spec |
+|---|---|---|
+| Display · Title · Section · Metric | `--text-display` · `--text-title` · `--text-section` · `--text-metric` | 40 · 26 · 18 · 30 |
+| Body · Body strong | `--text-body` · `--text-body-md` | **14** / 1.6 / 400 · **14** / 1.6 / 600 |
+| Label | `--text-label` | **12.5** / 1.45 / 600 |
+| Caption | `--text-caption` | **12** / 1.5 / 400 |
+| Column head | `--text-col` | **11** / 1.4 / 600 / +0.06em |
+
+📁 **`Fortune Signora Onboarding.dc.html` uses four sizes that are not on it**, and uses them everywhere:
+
+| Size | Where | Nearest role |
+|---|---|---|
+| **13.5px** | every control, every primary button | Body (14) |
+| **13px** | the role card's label, every secondary action | Label (12.5) |
+| **12.5px** | rail items, field labels | ✅ **Label — this one is on the scale** |
+| **11.5px** | every supporting line and hint | Caption (12) |
+
+⚠️ **None is more than 1px from a role.** ⛔ **That is what makes it worth a ruling rather than an obvious call** — **a 0.5px difference is invisible on screen and total in the code**, because one form is a token and the other is not.
+
+### ⚠️ ② Why it cannot simply be resolved in favour of the mock
+
+📁 **`frontend/tests/components/design-tokens.test.tsx` refuses an arbitrary `text-…` size inside `components/ui`**, on its own stated reasoning: ***"an arbitrary value is to a scale what a hex colour is to the palette: correct today, and invisible to whoever changes the scale tomorrow."***
+
+⚡ **That guard is the repository's existing answer and it was ratified before this snapshot.** ⛔ **Implementing the mock's literal pixels inside a shared component would require weakening it**, and 📁 [§11](../CLAUDE.md) forbids weakening a guard to make a change pass.
+
+### ✅ ③ What is implemented, and it is stated rather than assumed
+
+**The line the repository already draws, followed rather than moved:**
+
+| | |
+|---|---|
+| **Inside [`components/ui/`](../frontend/components/ui/)** | ⚡ **The Design System's scale.** `choice-cards.tsx` renders the role label as `text-label` and its description as `text-xs` |
+| **Inside the onboarding route files** | 📁 **The mock's literal geometry**, as `company-form.tsx` already shipped and as every gate has passed |
+
+⛔ **This split is the guard's own scope and not a new rule Lane A invented.** ⚠️ **It is nonetheless a split**, and a reader comparing the role card with the field label beneath it is comparing 12.5px with 13.5px for no reason either document gives.
+
+### ⚡ ④ The three ways out
+
+**①** **The Design System wins** — ⚡ **the onboarding mock is corrected to the nine roles in the next snapshot.** **Cheapest, and it makes onboarding consistent with every other screen.**
+**②** **The Onboarding mock wins** — **the scale gains `13.5` and `11.5`**, which is a 🔴 change to `tailwind.config.ts` and `globals.css` and reaches every surface in the product.
+**③** **Neither** — **the split above stands and is documented.** ⛔ **Today's state, and the one nobody chose.**
+
+⚡ **Lane A's recommendation is ①.** 📁 A scale exists so that *"a theme change is a token edit"*, and a screen that opts out of it for half a pixel has taken the cost of a scale without its benefit. ⛔ **It is a recommendation and not a decision** ([§20e](../CLAUDE.md)).
+
+> ⚠️ **Related and separate: [B-275](BUGS.md).** **The guard reads raw source, so it also refuses a *comment* explaining why the scale was used** — a defect in the check, not in this conflict.
+
+---
+
 ## C-1525 · TASK-202 was released on a premise a later measurement overturned — every remaining action is forbidden
 
 | | |

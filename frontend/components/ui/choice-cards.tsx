@@ -23,8 +23,14 @@ export interface ChoiceCardsProps {
 }
 
 /**
- * **A single-choice grid** — the industries on screen `04` and the roles on
- * `05`, [TASK-469](../../../docs/BACKLOG.md).
+ * **The role grid on screen `05`** — [TASK-469](../../../docs/BACKLOG.md).
+ *
+ * ⚠️ **This said *"the industries on screen `04`* and the roles on `05`"* and
+ * screen 04 no longer uses it** — 📁 the design draws industry as 32px chips,
+ * not cards, so `company-form.tsx` renders its own. **Corrected rather than
+ * left standing** ([§2](../../../CLAUDE.md)): a component docstring naming a
+ * caller it no longer has is the drift that makes the next reader widen a
+ * change to protect a consumer that is not there.
  *
  * ### 🔴 Real radios, and the design says so by number
  *
@@ -67,7 +73,9 @@ export function ChoiceCards({
       <legend className={cn('text-sm font-medium text-content', legendHidden && 'sr-only')}>
         {legend}
       </legend>
-      <div className="flex flex-col gap-2">
+      {/* 📁 *"grid-template-columns:1fr 1fr; gap:10px"*. ⚡ One column below the
+          phone width, where two 15px-padded cards cannot both be read. */}
+      <div className="grid gap-2.5 phone:grid-cols-2">
         {choices.map((choice) => {
           const inputId = `${groupId}-${choice.value}`;
           const selected = choice.value === value;
@@ -77,31 +85,84 @@ export function ChoiceCards({
               key={choice.value}
               htmlFor={inputId}
               className={cn(
-                'flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors',
+                // 📁 *"padding:14px 15px; border-radius:12px"*.
+                'cursor-pointer rounded-lg border px-[15px] py-[14px] transition-colors',
                 // The focus ring is on the label because the input is the
                 // thing focused and the card is the thing seen — 2px at 2px
                 // offset, the design's own figure, on cards and fields alike.
-                'focus-within:outline-none focus-within:ring-2 focus-within:ring-accent focus-within:ring-offset-2',
+                //
+                // ⚠️ **`has-[:focus-visible]`, not `focus-within`** — 📁 the
+                // design draws the selected card with a brand border and tint
+                // and **no ring**, and `focus-within` fires on a mouse click,
+                // so every card kept a 2px ring after being picked. ⛔ **Found
+                // in the screenshot, not by a gate**: the keyboard ring was
+                // correct throughout and only the pointer path was wrong.
+                'has-[:focus-visible]:outline-none has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent has-[:focus-visible]:ring-offset-2',
                 selected
-                  ? 'border-accent bg-accent-subtle'
-                  : 'border-border-soft bg-surface hover:border-border',
+                  ? // ⚡ **The selected card loses its shadow.** 📁 The design
+                    // gives `--e1` to the unselected cards and `none` to the
+                    // chosen one, so the choice settles into the surface
+                    // rather than lifting off it.
+                    'border-accent bg-accent-subtle'
+                  : 'border-border-soft bg-surface shadow-sm hover:border-border',
               )}
             >
-              <input
-                type="radio"
-                id={inputId}
-                name={name}
-                value={choice.value}
-                checked={selected}
-                onChange={() => onChange(choice.value)}
-                className="mt-0.5 h-4 w-4 shrink-0 accent-accent"
-              />
-              <span className="flex flex-col gap-0.5">
-                <span className="text-sm font-medium text-content">{choice.label}</span>
-                {choice.description ? (
-                  <span className="text-xs leading-5 text-content-muted">{choice.description}</span>
-                ) : null}
+              <span className="flex items-center gap-[9px]">
+                {/* ♿ **A real radio, moved out of sight rather than replaced.**
+                    ⛔ `sr-only` keeps it focusable, arrow-navigable and
+                    announced — 📁 *"choice grids are `radiogroup`… not
+                    clickable divs"* — while the design's 16px dot beside it is
+                    what a sighted person actually sees. */}
+                <input
+                  type="radio"
+                  id={inputId}
+                  name={name}
+                  value={choice.value}
+                  checked={selected}
+                  onChange={() => onChange(choice.value)}
+                  className="sr-only"
+                />
+                <span
+                  aria-hidden
+                  // ⛔ **Decorative, so it is never a pointer target.** Without
+                  // this the dot sits over the `sr-only` input and intercepts
+                  // the click — **found by Playwright refusing to `check()` the
+                  // radio**, which is the same defect a person would meet as a
+                  // card that ignores one particular pixel.
+                  className={cn(
+                    'pointer-events-none',
+                    // 📁 *"width:16px;height:16px;border:1.5px solid"*.
+                    'grid h-4 w-4 flex-none place-items-center rounded-full border-[1.5px] transition-colors',
+                    selected ? 'border-accent bg-accent' : 'border-border',
+                  )}
+                >
+                  {/* 📁 The 6px inner dot. ⚠️ **The mark carries the state, not
+                      the tint** — *"never colour alone."* */}
+                  <span
+                    className={cn(
+                      'h-1.5 w-1.5 rounded-full',
+                      selected ? 'bg-accent-contrast' : 'bg-transparent',
+                    )}
+                  />
+                </span>
+                {/* ⚠️ **`text-label`, not the mock's literal 13px** — 📁 the
+                    Design System's nine type roles have no 13px step, and
+                    `Label · 12.5 / 1.45 / 600` is the role this is. **An
+                    arbitrary size here would survive a type-scale change
+                    unaltered**, which is what `design-tokens.test.tsx` refuses
+                    inside `components/ui`. 📁 Raised as [C-1527](../../../docs/LANE_COORDINATION.md).
+                    ⚠️ **That guard reads raw source, so it flags the pattern in
+                    prose too** — [B-275](../../../docs/BUGS.md). */}
+                <span className="text-label text-content">{choice.label}</span>
               </span>
+              {choice.description ? (
+                // 📁 *"margin-top:6px; padding-left:25px"* — the description
+                // aligns under the label, clear of the dot. 📁 `Caption ·
+                // 12 / 1.5 / 400` for the same reason as the label above.
+                <span className="mt-1.5 block pl-[25px] text-xs leading-[1.45] text-content-muted">
+                  {choice.description}
+                </span>
+              ) : null}
             </label>
           );
         })}
