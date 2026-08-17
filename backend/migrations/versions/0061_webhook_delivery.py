@@ -6,12 +6,26 @@ Settings.dc.html`, *API keys & webhooks*:
     "Failed webhook deliveries retry with backoff for 24 hours, then park with
      the payload retained."
 
-## 🔴 Tenant-owned, and its three neighbours are not
+## ⚠️ Renumbered `0060` → `0061`, and the reason is worth two lines
+
+**Lane A's `0060_profile_locale_accessibility` claimed `0060` from `0059` and
+promoted first.** 📁 [§20e](../../../CLAUDE.md) exempts migrations from the
+identifier-block scheme precisely so this stays dense: *"Alembic's
+`down_revision` is a linear chain, so a gap is not a cosmetic oddity but a
+broken migration graph … the chain is the identity; the filename follows it."*
+✅ **QE flagged the collision before it was hit**, which is why it cost a
+rename rather than a debugging session.
+
+## 🔴 Tenant-owned, and its former neighbours are not
 
 ⚠️ **`outbox_event`, `processed_event` and `dead_letter_event` are
 `PLATFORM_INFRASTRUCTURE_TABLES`** — 📁 [§8](../../../CLAUDE.md): *"the
-application role publishes (`INSERT`) and cannot read"*. **This table sits
-beside them in the same package and is classified the opposite way.**
+application role publishes (`INSERT`) and cannot read"*. ⛔ **This table was
+first written beside them, in `signora_platform/event_bus/`, and classified the
+opposite way** — which is what made [C-108](../../../docs/LANE_COORDINATION.md)
+a question. ✅ **It now lives in its own bounded context**,
+`modules/webhook_delivery/`, on the product owner's 2026-08-17 ruling and the
+[D-237](../../../docs/DECISION_REGISTER.md) precedent.
 
 ⚡ **The design decides it, not the neighbourhood.** 📁 The *API keys &
 webhooks* table has a **`State`** column and a **`Last used`** column, on a
@@ -48,8 +62,8 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
-revision: str = "0060"
-down_revision: str | None = "0059"
+revision: str = "0061"
+down_revision: str | None = "0060"
 branch_labels: str | None = None
 depends_on: str | None = None
 

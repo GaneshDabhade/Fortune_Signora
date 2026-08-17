@@ -17,8 +17,9 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from signora_platform.event_bus import dead_letter, webhook_delivery
-from signora_platform.event_bus.webhook_delivery import (
+from modules.webhook_delivery.domain import delivery as webhook_delivery
+from signora_platform.event_bus import dead_letter
+from modules.webhook_delivery.domain.delivery import (
     DELIVERY_WINDOW,
     DeliveryState,
     backoff_seconds,

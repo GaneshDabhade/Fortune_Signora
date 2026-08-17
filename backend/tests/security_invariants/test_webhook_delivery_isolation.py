@@ -21,13 +21,13 @@ import pytest
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from signora_platform.event_bus.models import WebhookDeliveryModel
-from signora_platform.event_bus.webhook_delivery import (
+from modules.webhook_delivery.infrastructure.models import WebhookDeliveryModel
+from modules.webhook_delivery.domain.delivery import (
     DELIVERY_WINDOW,
     DeliveryState,
     utcnow,
 )
-from signora_platform.event_bus.webhook_repository import (
+from modules.webhook_delivery.infrastructure.repository import (
     claim_due,
     enqueue,
     record_failure,

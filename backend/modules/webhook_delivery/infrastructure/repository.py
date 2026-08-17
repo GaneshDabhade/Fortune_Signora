@@ -1,7 +1,7 @@
 """Reading and moving webhook deliveries — TASK-1481.
 
 **The policy decides; this executes.** Every state transition here is the
-return value of :mod:`signora_platform.event_bus.webhook_delivery`, never a
+return value of :mod:`modules.webhook_delivery.domain.delivery`, never a
 branch of its own. Two places deciding when to retry is two places that
 eventually disagree, and the one nobody is maintaining is the one somebody
 will read (``CLAUDE.md`` §2).
@@ -26,8 +26,8 @@ from uuid import UUID, uuid4
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from signora_platform.event_bus.models import WebhookDeliveryModel
-from signora_platform.event_bus.webhook_delivery import (
+from modules.webhook_delivery.infrastructure.models import WebhookDeliveryModel
+from modules.webhook_delivery.domain.delivery import (
     Attempt,
     DeliveryState,
     delivered,
