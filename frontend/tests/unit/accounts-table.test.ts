@@ -186,4 +186,57 @@ describe('📁 export is exactly what is on screen', () => {
 
     expect(csv.split('\n')[1]).toBe('"Vantage, ""the"" A/S"');
   });
+
+  /**
+   * 📁 **The design's Export exports the CURRENT VIEW** — *"filters, sort,
+   * **grouping** and visible columns."* ⚡ **Grouping was the one of the four
+   * that was not travelling.**
+   */
+  describe('⚡ and grouping travels with it', () => {
+    const rows = [
+      account({ account_id: 'a1', name: 'Vantage' }, 'company'),
+      account({ account_id: 'a2', name: 'Northwind' }, 'person'),
+      account({ account_id: 'a3', name: 'Calderwood' }, 'company'),
+    ];
+
+    it('✅ a leading column named for the grouping, and the rows in its order', () => {
+      const csv = toCsv(rows, visibleColumns([]), 'kind').split('\n');
+
+      // ⚡ **Named for the grouping, not *Group*** — the file explains itself to
+      // somebody who did not choose the grouping.
+      expect(csv[0]).toBe('Grouped by Kind,Company');
+      // ⛔ **Grouped order, not input order.** `a3` follows `a1` because they
+      // share a bucket; `a2` comes after both. ⚡ **And the value is the group
+      // HEADING** — capitalised, because it is a label a person reads.
+      expect(csv.slice(1)).toEqual(['Company,Vantage', 'Company,Calderwood', 'Person,Northwind']);
+    });
+
+    /**
+     * ⛔ **Three of the four groupings share a name with a column.** ⚠️ A bare
+     * label would put two headers called `Kind` in one file, and **a reader
+     * sorting on the wrong one gets a plausible, wrong answer.**
+     */
+    it('🔴 the group column can never collide with a column of the same name', () => {
+      const header = toCsv(rows, visibleColumns(['kind']), 'kind').split('\n')[0]!;
+
+      const names = header.split(',');
+      expect(new Set(names).size).toBe(names.length);
+    });
+
+    /**
+     * ⛔ **Heading ROWS would have been the easy version and the wrong one.**
+     * ⚠️ Every spreadsheet reads an interleaved heading as a short data row,
+     * and the columns stop lining up from there.
+     */
+    it('🔴 every line has the same number of fields', () => {
+      const lines = toCsv(rows, visibleColumns(['kind']), 'kind').split('\n');
+
+      const widths = new Set(lines.map((line) => line.split(',').length));
+      expect(widths.size).toBe(1);
+    });
+
+    it('⛔ and an ungrouped view exports exactly as it always did', () => {
+      expect(toCsv(rows, visibleColumns([]), null)).toBe(toCsv(rows, visibleColumns([])));
+    });
+  });
 });

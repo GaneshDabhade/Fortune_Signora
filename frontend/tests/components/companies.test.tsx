@@ -112,7 +112,14 @@ describe('⛔ an empty book is a designed state, not a blank', () => {
     await waitFor(() => expect(screen.getByText('No companies yet')).toBeInTheDocument());
     // ⛔ **Never *"coming soon"*.** ⚡ **Somebody who wants rows must learn what
     // produces them**, or the screen is a dead end.
-    expect(screen.getByText(/connect a source/i)).toBeInTheDocument();
+    //
+    // ⚠️ **Scoped to the empty state's own copy.** The header now says the same
+    // thing to the same person for the same reason, so an unscoped match found
+    // two elements — ✅ **the collision is a sign both say it, which is right**,
+    // and the assertion names which one it is about.
+    expect(
+      screen.getByText(/Connect a source and the first ones arrive with it/i),
+    ).toBeInTheDocument();
   });
 });
 
@@ -242,5 +249,49 @@ describe('⚡ paging walks the server’s cursor and never computes one', () => 
     const second = listReads[1];
     expect(second).toContain('cursor=CURSOR_ONE');
     expect(second).not.toContain('offset');
+  });
+});
+
+/**
+ * 🔴 **The design draws three header actions and Signora has one.**
+ *
+ * ⛔ **The screen previously CLAIMED, in a code comment, that the absence was
+ * stated in the description — and the description said nothing about it.** 📁
+ * [§2](../../../CLAUDE.md): the repository must not assert something that is
+ * not true of it, ⚠️ **and this screen has already shipped one false
+ * self-description** (*"score, owner, value and renewal are not on this list"*,
+ * while it drew three of the four).
+ *
+ * ⚡ **So the sentence is asserted rather than trusted.**
+ */
+describe('⛔ the two header actions with no capability behind them', () => {
+  it('✅ are stated as unavailable, never drawn as dead buttons', async () => {
+    servePages(page([listed('a1', 'Vantage')]));
+    renderPage();
+    await screen.findByText('Vantage');
+
+    // 📁 [B-255](../../../docs/BUGS.md): a control that silently does nothing
+    // is worse than one that is absent.
+    expect(screen.queryByRole('button', { name: /^Import$/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^New company$/i })).not.toBeInTheDocument();
+
+    expect(
+      screen.getByText(/Importing a file and adding one by hand are not available yet/),
+    ).toBeInTheDocument();
+  });
+
+  /**
+   * ⚡ **A customer whose list is empty needs the route in, not an apology** —
+   * so the sentence names the capability that DOES exist and links to it.
+   */
+  it('✅ and the sentence names how companies actually arrive', async () => {
+    servePages(page([listed('a1', 'Vantage')]));
+    renderPage();
+    await screen.findByText('Vantage');
+
+    expect(screen.getByRole('link', { name: 'connect a source' })).toHaveAttribute(
+      'href',
+      '/settings/connections',
+    );
   });
 });

@@ -42,6 +42,7 @@ import { useWorkspaceMembers } from '@/lib/query/hooks/team';
 import { useSession } from '@/lib/auth/client';
 import { ExpandedRow } from './expanded-row';
 import { Building2 } from 'lucide-react';
+import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Fragment, useMemo, useState } from 'react';
 
@@ -360,7 +361,11 @@ export default function CompaniesPage() {
   };
 
   const download = (rows: readonly ListedAccount[], name: string) => {
-    const csv = toCsv(rows, shownColumns);
+    /* 📁 **The design's Export exports the CURRENT VIEW** — *"filters, sort,
+       grouping and visible columns."* ⚡ **Grouping was the one of the four
+       that was not travelling**, and a file that dropped it would disagree
+       with the screen it was taken from. */
+    const csv = toCsv(rows, shownColumns, group);
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
     const link = document.createElement('a');
     link.href = url;
@@ -416,9 +421,11 @@ export default function CompaniesPage() {
            sitting in the toolbar, which is not where the design puts it.
            ⛔ **Import and New company are NOT rendered as disabled buttons**:
            📁 [B-255](../../../../docs/BUGS.md) — *a control that silently does
-           nothing is worse than one that is absent* — and neither has an
-           endpoint behind it. **Their absence is stated in the description
-           rather than drawn as dead chrome.** */
+           nothing is worse than one that is absent* — and **neither has an
+           endpoint behind it anywhere in `backend/modules/**`.** ✅ **Their
+           absence is stated in the description, in the sentence that also
+           names how companies DO arrive** — 📁 the treatment
+           [`avatar-area.tsx`](../profile/avatar-area.tsx) established. */
         secondaryActions={
           <Button variant="ghost" onClick={exportCsv}>
             Export
@@ -459,6 +466,34 @@ export default function CompaniesPage() {
               A Signora score is not on this list yet. Value, renewal and stage arrive from a
               connected system — until one is connected they read as not reported, never as
               zero.
+            </span>{' '}
+            {/* 🔴 **Where the design's `Import` and `New company` are.** ⛔ **The
+                comment above `secondaryActions` claimed this sentence existed
+                and it did not** — 📁 [§2](../../../../CLAUDE.md): the
+                repository must not assert something that is not true of it, and
+                this screen has already shipped one false self-description.
+
+                ⚡ **Audited rather than assumed**: there is no create-account
+                endpoint and no import endpoint anywhere in `backend/modules/**`
+                — and the design's Import is a four-step wizard with duplicate
+                resolution, a preview and a reversible named batch, none of
+                which exists. ✅ **What DOES exist is named**, because a
+                customer whose list is empty needs the route in, not an
+                apology. */}
+            <span className="text-content-muted">
+              {' '}
+              {/* ⚠️ **The first draft said *"companies arrive from a connected
+                  system"* immediately after the sentence above says value
+                  arrives from one** — ⛔ **the same clause twice in consecutive
+                  sentences**, which a screenshot showed and no gate could. */}
+              Companies themselves arrive the same way —{' '}
+              <Link
+                href="/settings/connections"
+                className="font-medium text-accent hover:underline"
+              >
+                connect a source
+              </Link>
+              . Importing a file and adding one by hand are not available yet.
             </span>
           </>
         }

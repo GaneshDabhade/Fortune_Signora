@@ -323,16 +323,30 @@ export function choicesFor(
 }
 
 /**
- * 📁 **The design's `Export`.** ⚡ **Exactly what is on screen** — the visible
- * columns, in their order, over the filtered rows.
+ * 📁 **The design's `Export`.** ⚡ **Exactly what is on screen** — 📁 *"exports
+ * the current view: filters, sort, grouping and visible columns."*
  *
  * ⛔ **Not the whole book**: this screen has read one page and nothing else,
  * and an export named *"all companies"* that contained 50 would be the worst
  * kind of wrong — **silently plausible.**
+ *
+ * ## ⚡ Grouping travels as a COLUMN, never as heading rows
+ *
+ * ⚠️ **A CSV with headings interleaved between its rows is not a CSV** — every
+ * spreadsheet reads the heading as a short data row and the columns stop
+ * lining up from there. ✅ **A leading group column carries the same fact and
+ * survives the trip**: the reader can sort by it, pivot on it, or ignore it.
+ *
+ * ⚡ **The row ORDER is the grouping too.** `groupRows` is reused rather than
+ * re-derived, so the file's sequence is the screen's sequence
+ * ([§2](../../../CLAUDE.md): behaviour exists exactly once).
  */
 export function toCsv(
   rows: readonly ListedAccount[],
   columns: readonly ColumnSpec[],
+  /** ⛔ **`null` is not *"no grouping happened"* — it is the ungrouped view**,
+   *  and it exports exactly as it always did: no extra column. */
+  group: GroupKey | null = null,
 ): string {
   const escape = (value: string) =>
     /[",\n]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value;
@@ -346,9 +360,28 @@ export function toCsv(
   // records it, and the first row that needs tags in an export will need the
   // joined read here too.
   const exportable = columns.filter((column) => column.read !== undefined);
-  const header = exportable.map((column) => escape(column.label)).join(',');
-  const body = rows.map((row) =>
-    exportable.map((column) => escape(column.read!(row))).join(','),
+  const cells = (row: ListedAccount) => exportable.map((column) => escape(column.read!(row)));
+
+  const grouped = groupRows(rows, group);
+  if (group === null || grouped === null) {
+    const header = exportable.map((column) => escape(column.label)).join(',');
+    return [header, ...rows.map((row) => cells(row).join(','))].join('\n');
+  }
+
+  // ⚡ **The column names what the grouping IS**, so the file explains itself
+  // to somebody who did not choose the grouping.
+  //
+  // ⛔ **`Grouped by Stage` rather than `Stage`, and the qualifier is
+  // load-bearing**: three of the four groupings share a name with a COLUMN, so
+  // the bare label would put two headers called `Stage` in one file — and a
+  // reader sorting on the wrong one gets a plausible, wrong answer.
+  const label = GROUPABLE.find((option) => option.key === group)?.label ?? group;
+  const header = [
+    escape(`Grouped by ${label}`),
+    ...exportable.map((column) => escape(column.label)),
+  ].join(',');
+  const body = grouped.flatMap((bucket) =>
+    bucket.rows.map((row) => [escape(bucket.label), ...cells(row)].join(',')),
   );
   return [header, ...body].join('\n');
 }
