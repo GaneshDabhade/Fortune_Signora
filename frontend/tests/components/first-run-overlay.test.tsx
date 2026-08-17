@@ -28,7 +28,7 @@ describe('📁 "one sentence on what this is, one on what to do"', () => {
   it('shows both to somebody who has not dismissed it', () => {
     usePreferences.mockReturnValue({ data: { first_run_dismissed: false } });
 
-    render(<FirstRunOverlay />);
+    render(<FirstRunOverlay composition="activation" />);
 
     expect(screen.getByRole('heading', { name: /which accounts need you/i })).toBeVisible();
     expect(screen.getByText(/Start by connecting a CRM below/i)).toBeVisible();
@@ -40,7 +40,7 @@ describe('📁 "one sentence on what this is, one on what to do"', () => {
     // composition.
     usePreferences.mockReturnValue({ data: { first_run_dismissed: false } });
 
-    const { container } = render(<FirstRunOverlay />);
+    const { container } = render(<FirstRunOverlay composition="activation" />);
 
     expect(container.querySelector('[role="dialog"]')).toBeNull();
     expect(container.querySelector('section')?.getAttribute('aria-labelledby')).toBe(
@@ -53,7 +53,7 @@ describe('🔴 dismissal is forever, and absence is not a "no"', () => {
   it('renders nothing once it has been dismissed', () => {
     usePreferences.mockReturnValue({ data: { first_run_dismissed: true } });
 
-    const { container } = render(<FirstRunOverlay />);
+    const { container } = render(<FirstRunOverlay composition="activation" />);
 
     expect(container).toBeEmptyDOMElement();
   });
@@ -67,7 +67,7 @@ describe('🔴 dismissal is forever, and absence is not a "no"', () => {
   it('⛔ renders nothing while the preference is still unknown', () => {
     usePreferences.mockReturnValue({ data: undefined, isLoading: true });
 
-    const { container } = render(<FirstRunOverlay />);
+    const { container } = render(<FirstRunOverlay composition="activation" />);
 
     expect(container).toBeEmptyDOMElement();
   });
@@ -78,7 +78,7 @@ describe('🔴 dismissal is forever, and absence is not a "no"', () => {
     // one missing greeting rather than a missing capability.
     usePreferences.mockReturnValue({ data: undefined, isError: true });
 
-    const { container } = render(<FirstRunOverlay />);
+    const { container } = render(<FirstRunOverlay composition="activation" />);
 
     expect(container).toBeEmptyDOMElement();
   });
@@ -88,7 +88,7 @@ describe('✅ closing it records the dismissal on the server', () => {
   it('the control calls the mutation', async () => {
     usePreferences.mockReturnValue({ data: { first_run_dismissed: false } });
 
-    render(<FirstRunOverlay />);
+    render(<FirstRunOverlay composition="activation" />);
     screen.getByRole('button', { name: 'Dismiss' }).click();
 
     expect(mutate).toHaveBeenCalledTimes(1);
@@ -102,9 +102,45 @@ describe('✅ closing it records the dismissal on the server', () => {
     window.localStorage.clear();
     usePreferences.mockReturnValue({ data: { first_run_dismissed: false } });
 
-    render(<FirstRunOverlay />);
+    render(<FirstRunOverlay composition="activation" />);
     screen.getByRole('button', { name: 'Dismiss' }).click();
 
     expect(window.localStorage.length).toBe(0);
+  });
+});
+
+describe('🔴 sentence two names something that is actually on the page', () => {
+  /**
+   * ⚠️ **The overlay renders *"over whichever composition resolved"*, and this
+   * sentence said *"connect a CRM below"* on all four.** ⛔ **A seller whose
+   * workspace was already connected was pointed at a card the composition
+   * filters out** — the false-claim class [§2](../../../CLAUDE.md) refuses, and
+   * one no type or lint could have seen.
+   */
+  it('⛔ never tells a data composition to connect a CRM', () => {
+    usePreferences.mockReturnValue({ data: { first_run_dismissed: false } });
+    for (const composition of ['seller', 'executive', 'revenue_operations'] as const) {
+      const { unmount } = render(<FirstRunOverlay composition={composition} />);
+      expect(screen.queryByText(/connecting a CRM/i)).not.toBeInTheDocument();
+      unmount();
+    }
+  });
+
+  it('✅ keeps the design-derived sentence on activation', () => {
+    usePreferences.mockReturnValue({ data: { first_run_dismissed: false } });
+    render(<FirstRunOverlay composition="activation" />);
+
+    expect(screen.getByText(/Start by connecting a CRM below/)).toBeInTheDocument();
+  });
+
+  it('📁 stays at two sentences on every composition', () => {
+    // 📁 *"One sentence on what this is, one on what to do."* ⛔ The count is
+    // the specification — a third would make this the tour rule 20 refuses.
+    usePreferences.mockReturnValue({ data: { first_run_dismissed: false } });
+    for (const composition of ['activation', 'seller', 'executive', 'revenue_operations'] as const) {
+      const { container, unmount } = render(<FirstRunOverlay composition={composition} />);
+      expect(container.querySelectorAll('h2, p')).toHaveLength(2);
+      unmount();
+    }
   });
 });

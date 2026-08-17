@@ -23,7 +23,10 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, status
 
 from apps.api.composition.scores import BuyingScoreRead
-from modules.buying_score_engine.interface.schemas import AccountScoreResponse
+from modules.buying_score_engine.interface.schemas import (
+    AccountScoreResponse,
+    ScoringModelResponse,
+)
 from signora_platform.api import CurrentWorkspace
 from signora_platform.authorization import Action, Resource
 
@@ -68,6 +71,40 @@ async def account_score(
             detail="No score has been computed for this account.",
         )
     return AccountScoreResponse.from_domain(score, now=datetime.now(UTC))
+
+
+@router.get(
+    "/workspaces/{workspace_id}/scoring-model",
+    response_model=ScoringModelResponse,
+    summary="What each kind of finding implies commercially",
+)
+async def scoring_model(
+    context: CurrentWorkspace, queries: BuyingScoreRead
+) -> ScoringModelResponse:
+    """*"Is this good news or bad news?"* — **for a kind of finding, not an
+    account.**
+
+    The per-account read above needs an account. A surface that ranks findings
+    needs to know what each kind *means* before it has one in hand: Home draws
+    attention severity from posture, and severity is wrong on the first paint if
+    it has to wait for a per-account round trip.
+
+    **Posture and nothing else.** Weights are the input to a ranking this module
+    performs; publishing them would let a client compute a second ranking that
+    disagrees with the score. Posture is a closed vocabulary a screen renders as
+    an affordance — the ledger already puts it on the wire per contribution, and
+    this is the same fact one level up.
+
+    **The workspace's model, not the shipped artifact.** `scoring_model`
+    resolves a workspace's tuning over Signora's defaults, so a workspace that
+    has changed nothing still receives a complete answer.
+
+    **No 404.** Every workspace has a model in force, because the artifact is
+    the floor — an absent answer here would be indistinguishable from a
+    workspace whose findings mean nothing.
+    """
+    context.authorize(Resource.ACCOUNT, Action.READ)
+    return ScoringModelResponse.from_domain(await queries.scoring_model(context.workspace_id))
 
 
 __all__ = ["router"]

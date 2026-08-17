@@ -575,6 +575,43 @@ databaseUrl: required(
 
 ---
 
+## C-1531 · Home's first-run overlay has no copy id, and its second sentence was false
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-17, browser-verifying Home's seller composition |
+| **Owner** | 🔴 **Product owner** — **it is product copy**, not an endpoint |
+| **Type** | **A string the design requires and its copy table does not carry** |
+| **Blocks** | ⛔ **Nothing.** ✅ The overlay ships and no longer points at an absent card. |
+| **Status** | **`OPEN`** |
+
+### 🔴 ① The defect, and only a browser could see it
+
+📁 **Rule 20:** *"Home, with the first-run overlay: **one sentence on what this is, one on what to do**, dismissible forever."* 📁 **And Home:** *"adds the first-run overlay **over whichever composition resolved**."*
+
+⛔ **Sentence two was the literal *"Start by connecting a CRM below — everything on this page fills in from there."*** ⚠️ **The CRM card belongs to the activation composition and is filtered out of the other three**, so **a seller whose workspace was already connected was told to start with a card that was not on the page.**
+
+⚡ **No gate could have caught it.** It is a string literal; nothing in the type system knows which cards a composition renders.
+
+### ⚠️ ② The copy table has no id for it
+
+📁 **§10 carries `HM-COPY-01` … `HM-COPY-12`** and every one of them belongs to a *state*. **None is the overlay.** 📁 The Authenticated Entry document states the *shape* — two sentences — **and supplies neither.**
+
+### ✅ ③ What ships, flagged rather than left false
+
+**One sentence per composition, each naming something that is actually rendered:**
+
+| Composition | Sentence two |
+|---|---|
+| **Activation** | ✅ *"Start by connecting a CRM below — everything on this page fills in from there."* — **the design's, unchanged** |
+| **Seller** | ⚠️ *"Start with what needs you today — every item below says why it is there."* |
+| **Executive** | ⚠️ *"Start with the figures below — each one says what it was derived from."* |
+| **Revenue operations** | ⚠️ *"Start with the health of your connections below — each one says what needs a person."* |
+
+⛔ **The three marked ⚠️ are authored by this lane and are what needs ratifying.** ⚡ **They were written rather than omitted because the design requires a second sentence** — and a sentence describing the wrong page does not satisfy it. **`first-run-overlay.test.tsx` now refuses a CRM instruction on any data composition**, so the defect cannot return silently.
+
+---
+
 ## C-1530 · Home's U-02 is undecided, and the implementation had to pick
 
 | | |
@@ -633,9 +670,13 @@ databaseUrl: required(
 
 ### ✅ ④ What ships, and the three ways forward
 
-**Each row states the fact it rests on and how long it has stood** — *"The evidence behind this reading has gone stale. Nothing new in 19 days."* **A reader can check every word of that against the record.**
+⚠️ **Amended 2026-08-17, after the product owner ruled `AccountAttention` out of Home the same day.** ⛔ **§③ above described the row's source and no longer does** — 📁 the card now reads the **open signal queue**, and the reason is the signal's own `rationale`. **The dated analysis above is left standing** ([§2](../CLAUDE.md)) **and this section states what is true now.**
 
-**①** **Accept the fact as the reason** — the shipped behaviour. **Honest, checkable, and less persuasive than the design's prose.**
+✅ **The reason improved, and the gap did not close.** 📁 `rationale` is authored *"per signal, not per type"*, **where the reasoning happened** — *"An acquisition may force systems and budgets to be consolidated. Your profile treats this as a supporting indicator. Based on: Announced the acquisition of Ardenway Clinical."* ⚡ **That is a reason with its grounds attached**, which is more than the elapsed-time sentence it replaces.
+
+⛔ **The *cost of ignoring* is still absent.** **No comparable-deal population exists**, so *"in 412 comparable deals this pattern cost 23 days"* remains unproducible — **and the three options below are unchanged by the source moving.**
+
+**①** **Accept the reason as it stands** — the shipped behaviour: a hypothesis, its relevance, and the event it rests on. **Honest, checkable, and it states no cost.**
 **②** **Build the comparable-deal population** so a cost in days can be derived. 🔴 **A real capability**, and it must not become a forecast — [C-1528](#c-1528--onboardings-completion-screen-is-built-on-a-forecast-and-the-domain-refuses-to-produce-one) is the boundary it would run into.
 **③** **Let the Decision Package's reasoning write the row.** ⚡ `decision-package` already produces cited statements per account; **it is per-account and expensive**, and Home wants five at once.
 

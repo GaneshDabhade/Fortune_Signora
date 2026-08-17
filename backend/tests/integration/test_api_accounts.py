@@ -2867,3 +2867,178 @@ class TestTheConclusionCanBeRead:
         )
 
         assert response.status_code == 404
+
+
+class TestWhatAKindOfFindingMeans:
+    """`GET /workspaces/{id}/scoring-model` — posture per hypothesis type.
+
+    **Built because Home renders attention severity from it.** The design's
+    attention rows carry a left rule, a tag word and a tint together, and
+    severity has to be right on the first paint — which a per-account round trip
+    cannot do, because the card has five accounts and no score in hand.
+
+    **The read that already existed and had no route.**
+    `BuyingScoreQueries.scoring_model` has resolved a workspace's tuning over
+    Signora's artifact since the module shipped; only the path is new.
+    """
+
+    async def test_every_type_the_model_weighs_states_its_posture(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        user = uuid4()
+        workspace = await _workspace(client, key_pair, user)
+
+        response = await client.get(
+            f"/workspaces/{workspace}/scoring-model", headers=_auth(key_pair, user)
+        )
+
+        assert response.status_code == 200, response.text
+        body = response.json()
+        assert body["version"] > 0
+        assert body["types"], "a model that weighs nothing cannot score anything"
+        for entry in body["types"]:
+            assert entry["key"], "a posture with no type is an affordance nothing can attach to"
+            assert entry["posture"] in {"expansionary", "contractionary", "neutral"}
+
+    async def test_the_weighting_is_not_published(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """**A client that could read the weights could rank accounts itself**,
+        and a second ranking is a ranking that disagrees with the score."""
+        user = uuid4()
+        workspace = await _workspace(client, key_pair, user)
+
+        body = (
+            await client.get(
+                f"/workspaces/{workspace}/scoring-model", headers=_auth(key_pair, user)
+            )
+        ).json()
+
+        assert all(set(entry) == {"key", "posture"} for entry in body["types"])
+        assert "ceiling" not in body and "age_bands" not in body
+
+    async def test_a_workspace_that_has_never_scored_still_gets_a_model(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """**No 404.** The artifact is the floor, so every workspace has a model
+        in force — and an absent answer would be indistinguishable from a
+        workspace whose findings mean nothing."""
+        user = uuid4()
+        workspace = await _workspace(client, key_pair, user)
+
+        response = await client.get(
+            f"/workspaces/{workspace}/scoring-model", headers=_auth(key_pair, user)
+        )
+
+        assert response.status_code == 200
+
+    async def test_a_non_member_cannot_read_it(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        owner = uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+
+        response = await client.get(
+            f"/workspaces/{workspace}/scoring-model", headers=_auth(key_pair, uuid4())
+        )
+
+        assert response.status_code == 404
+
+
+class TestCommercialFactsAreBatchedByIdToo:
+    """`GET /workspaces/{id}/account-commercials` — the sibling of the identity
+    batch, and built for the same reason.
+
+    **A surface that does not start from a browse page still needs the facts.**
+    Home's attention card starts from the signal queue: it holds five account
+    ids and paging `/accounts-list` until they appear would read the whole book
+    to find five rows.
+    """
+
+    async def test_a_real_account_comes_back_with_its_commercial_object(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        response = await client.get(
+            f"/workspaces/{workspace_id}/account-commercials",
+            params={"ids": [str(entity_id)]},
+            headers=_auth(key_pair, user_id),
+        )
+
+        assert response.status_code == 200, response.text
+        (row,) = response.json()
+        assert UUID(row["account_id"]) == entity_id
+        assert set(row["commercial"]) == {"open_acv", "renewal_date", "stage"}
+
+    async def test_every_requested_id_comes_back_even_with_nothing_said(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**Absence is never inferred, defaulted or zero-filled** (ADR-0409
+        §5). A missing row and three nulls are different answers, and only one
+        of them tells a caller Signora looked."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        unknown = uuid4()
+
+        response = await client.get(
+            f"/workspaces/{workspace_id}/account-commercials",
+            params={"ids": [str(entity_id), str(unknown)]},
+            headers=_auth(key_pair, user_id),
+        )
+
+        assert response.status_code == 200, response.text
+        rows = {UUID(row["account_id"]): row["commercial"] for row in response.json()}
+        assert set(rows) == {entity_id, unknown}
+        assert rows[unknown] == {"open_acv": None, "renewal_date": None, "stage": None}
+
+    async def test_a_non_member_cannot_read_it(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        workspace_id, _, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        response = await client.get(
+            f"/workspaces/{workspace_id}/account-commercials",
+            params={"ids": [str(entity_id)]},
+            headers=_auth(key_pair, uuid4()),
+        )
+
+        assert response.status_code == 404
+
+    async def test_an_unbounded_request_is_refused(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**Bounded by the same ceiling a page is.** A request naming more
+        accounts than a page can hold is either a mistake or a scrape."""
+        workspace_id, user_id, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        response = await client.get(
+            f"/workspaces/{workspace_id}/account-commercials",
+            params={"ids": [str(uuid4()) for _ in range(201)]},
+            headers=_auth(key_pair, user_id),
+        )
+
+        assert response.status_code == 422

@@ -173,6 +173,12 @@ export const queryKeys = {
   signalCatalog: (workspaceId: string) =>
     ['workspace', workspaceId, 'signal-catalog'] as const,
 
+  /** Lane A (Buying Score Engine). What each kind of finding implies
+   * commercially. A reviewed artifact resolved over the workspace's tuning, so
+   * it changes about as often as a release — not with any account. */
+  scoringModel: (workspaceId: string) =>
+    ['workspace', workspaceId, 'scoring-model'] as const,
+
   /** Lane A (Signal Engine). The Signal Center's queue, across the workspace.
    * The state filter is part of the key: *open* and *everything* are two
    * cached lists rather than one the browser re-filters, because the server
@@ -187,6 +193,11 @@ export const queryKeys = {
    * however the caller happened to order them. */
   identities: (workspaceId: string, accountIds: readonly string[]) =>
     ['workspace', workspaceId, 'identities', [...accountIds].sort().join(',')] as const,
+
+  /** Lane A (Knowledge Graph). What a set of accounts is worth. Keyed by the
+   * *sorted* ids for the same reason the identity batch is. */
+  commercials: (workspaceId: string, accountIds: readonly string[]) =>
+    ['workspace', workspaceId, 'commercials', [...accountIds].sort().join(',')] as const,
 
   /** Keyed by the search text, so each distinct query is its own cache entry
    * and returning to one the customer already typed is instant. */

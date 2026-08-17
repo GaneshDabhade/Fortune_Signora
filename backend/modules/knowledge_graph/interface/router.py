@@ -25,6 +25,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from apps.api.composition.accounts import GraphRead
 from modules.knowledge_graph.interface.schemas import (
+    AccountCommercialEntryResponse,
+    AccountCommercialResponse,
     AccountIdentityResponse,
     ListedAccountResponse,
     SearchGroupResponse,
@@ -78,6 +80,47 @@ async def account_identities(
     context.authorize(Resource.ACCOUNT, Action.READ)
     identities = await queries.identities(context.workspace_id, tuple(ids))
     return [AccountIdentityResponse.from_domain(identity) for identity in identities.values()]
+
+
+@router.get(
+    "/workspaces/{workspace_id}/account-commercials",
+    response_model=list[AccountCommercialEntryResponse],
+    summary="What these accounts are worth, and where they stand",
+)
+async def account_commercials(
+    context: CurrentWorkspace, queries: GraphRead, ids: IdsParam
+) -> list[AccountCommercialEntryResponse]:
+    """Resolve commercial facts for a set of accounts the caller already holds.
+
+    **The sibling of `/account-identities`, and for the same reason.** A surface
+    that starts from something other than a browse page — Home's attention card
+    starts from the signal queue — has ids and needs facts about them. Paging
+    `/accounts-list` until the right rows appear would read the whole book to
+    find five accounts.
+
+    **Not a parameter on `/account-identities`.** That endpoint answers *"name
+    these ids"*; adding a commercial payload to it would charge three claim
+    reads to every caller who wanted a name, and the identity surface is the one
+    every screen already uses.
+
+    **Every requested id comes back**, carrying an all-null object when nothing
+    has been said. Absence is never inferred, defaulted or zero-filled
+    (ADR-0409 §5), and an id the workspace does not own is simply not among the
+    ids the query resolves.
+
+    **Not a page.** A plain list in no particular order, joined by `account_id`
+    — the same contract as the identity batch, so a caller composes both the
+    same way.
+    """
+    context.authorize(Resource.ACCOUNT, Action.READ)
+    commercial = await queries.commercial(context.workspace_id, tuple(ids))
+    return [
+        AccountCommercialEntryResponse(
+            account_id=account_id,
+            commercial=AccountCommercialResponse.from_domain(facts),
+        )
+        for account_id, facts in commercial.items()
+    ]
 
 
 #: Two characters, because one matches most of an alphabet and a customer who

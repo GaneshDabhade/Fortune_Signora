@@ -247,6 +247,34 @@ export const REGISTRY: readonly CardContract[] = [
     module: 'opportunity_engine',
     requires: null,
   },
+  /**
+   * 🔴 **The seller composition's answer card, and it had a renderer and no
+   * contract.**
+   *
+   * ⚠️ **Found in a browser, not by a gate.** `AttentionCard` has been in
+   * `RENDERERS` since Home was written and `needs-you-today` was never in this
+   * registry — so `cardsFor` filtered it out and **the seller composition
+   * rendered zero cards on every visit.** ⛔ **`tsc` cannot see it**: the
+   * renderer map is `Partial`, the registry is a list, and neither knows about
+   * the other. **The composition switched to `seller` and the grid was empty.**
+   *
+   * ✅ **Registered now because its producers exist** — 📁 the design's
+   * dependency is *"signals + deals"*, and the open signal queue, the catalog,
+   * the scoring model, the identity batch and the commercial batch all ship.
+   *
+   * 📁 **`module` is `signal_engine`** and that is the row's source of truth:
+   * an attention item **is** an open signal with its rationale. ⛔ **Not
+   * `opportunity_engine`** — the product owner ruled `AccountAttention` out of
+   * Home on 2026-08-17, and naming that module here would re-assert the
+   * dependency the ruling removed.
+   */
+  {
+    id: 'needs-you-today',
+    // 📁 The design's own words for `card.attention`.
+    title: 'Needs you today',
+    module: 'signal_engine',
+    requires: null,
+  },
 ];
 
 /**

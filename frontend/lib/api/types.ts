@@ -256,6 +256,22 @@ export interface AccountCommercial {
   stage: CommercialStage | null;
 }
 
+/**
+ * **One row of the commercial batch** — `GET /workspaces/{id}/account-commercials`.
+ *
+ * ⚡ **The sibling of the identity batch**, for a surface that does not start
+ * from a browse page. 📁 Home's attention card starts from the signal queue: it
+ * holds five ids, and paging `/accounts-list` until they appeared would read a
+ * whole book to find five rows.
+ *
+ * ⛔ **Joined by `account_id`, never by position** — a plain list in no
+ * particular order, exactly like `AccountIdentity[]`.
+ */
+export interface AccountCommercialEntry {
+  account_id: string;
+  commercial: AccountCommercial;
+}
+
 /** ⛔ **Never a bare number** — 📁 ADR-0409 §3: *"a figure without its currency
  * is not a fact."* ⚠️ **`amount` is in the source system's own minor units,
  * uninterpreted**, and Signora never converts: a rate is applied at a moment,
@@ -356,6 +372,32 @@ export type Posture = 'expansionary' | 'contractionary' | 'neutral';
 /** How central a hypothesis is to this workspace's ideal customer profile.
  * Declared, never measured. */
 export type Relevance = 'primary' | 'supporting' | 'contextual' | 'ignored';
+
+/**
+ * **What one kind of finding implies** — `GET /workspaces/{id}/scoring-model`.
+ *
+ * 📁 Home's attention rows carry severity as *"the left rule, the tag word and
+ * the tint together"*, and severity has to be right on the first paint. ⛔ **A
+ * per-account score read cannot supply it** — the card holds five accounts and
+ * no scores — **and a posture table in the browser would be the second
+ * vocabulary the signal catalog exists to prevent.**
+ *
+ * ⚠️ **`key` and `posture`, and deliberately nothing else.** The weights are
+ * the input to a ranking the Buying Score Engine performs; a client able to
+ * read them could compute a second ranking that disagrees with the score.
+ */
+export interface TypePosture {
+  key: string;
+  posture: Posture;
+}
+
+export interface ScoringModel {
+  /** ⚡ **A posture that moved between two reads is a model change, not news
+   * about a company** — which is the difference this field exists to make
+   * visible. */
+  version: number;
+  types: TypePosture[];
+}
 
 /**
  * One line of a score's explanation — a single business event's contribution.

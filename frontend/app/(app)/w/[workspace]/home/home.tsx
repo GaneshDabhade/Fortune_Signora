@@ -20,9 +20,9 @@ import { HM_COPY_11 } from '@/lib/home/copy';
 import { cardsFor, type CardContract } from '@/lib/home/cards';
 import { resolveComposition } from '@/lib/home/composition';
 import { useSession } from '@/lib/auth/client';
-import { useAccounts } from '@/lib/query/hooks';
 import { useStatedRole } from '@/lib/query/hooks/home';
 import { useIntegrations } from '@/lib/query/hooks/integrations';
+import { useWorkspaceTriage } from '@/lib/query/hooks/triage';
 import { usePreferences } from '@/lib/query/hooks/preferences';
 import { useViewerRole } from '@/lib/query/hooks/team';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
@@ -112,8 +112,15 @@ export function Home() {
    * The greeting's scope line is *"a count of what needs attention"* — hierarchy
    * 3 — **so Home needs the number before any card resolves.** ⛔ One query key,
    * one request: React Query serves both readers from the same cache entry.
+   *
+   * ⚠️ **This was `useAccounts` — the Opportunity Engine's `AccountAttention`
+   * list — until the product owner ruled it out of Home on 2026-08-17.** 📁 The
+   * registry's dependency for `card.attention` is *"signals + deals"*, and the
+   * open signal queue is the signals half. ⛔ **The count and the card must read
+   * the SAME list**, or the scope line would promise a number the card below it
+   * does not show.
    */
-  const attention = useAccounts(workspaceId);
+  const attention = useWorkspaceTriage(workspaceId, 'open');
 
   /**
    * ♿ **Focus lands on the h1, not the search field** — 📁 §10's keyboard table
@@ -203,7 +210,7 @@ export function Home() {
 
       {/* 🔴 **Over whichever composition resolved, never instead of one** — 📁
           Entry rule 20 and Home's own words. ⛔ It is not a fifth composition. */}
-      <FirstRunOverlay />
+      <FirstRunOverlay composition={composition} />
 
       {/* 📁 Hierarchy 3 — *"name, date, and a count of what needs attention"*,
           and the greeting is never skeletonised. */}

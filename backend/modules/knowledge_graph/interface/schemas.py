@@ -288,7 +288,26 @@ class ListedAccountResponse(BaseModel):
         )
 
 
+class AccountCommercialEntryResponse(BaseModel):
+    """What one requested account is worth, with the id it answers.
+
+    **The id is on the row rather than implied by position.** This read is a
+    plain list joined by `account_id`, exactly like `/account-identities`, and
+    a caller relying on order would be relying on something the contract does
+    not promise.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    account_id: UUID = Field(description="Which account this answers for.")
+    commercial: AccountCommercialResponse = Field(
+        description="Always present as an object; its fields are null until a source "
+        "states them, which is how a caller tells *nothing said* from *not asked*."
+    )
+
+
 __all__ = [
+    "AccountCommercialEntryResponse",
     "AccountCommercialResponse",
     "AccountIdentityResponse",
     "SearchGroupResponse",

@@ -53,8 +53,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from modules.buying_score_engine.domain.ledger import Contribution
 from modules.buying_score_engine.domain.score import BuyingScore, ScoreTrigger, Trend
-from modules.buying_score_engine.domain.scoring_model import Posture
-from modules.signal_engine.public import Relevance
+from modules.buying_score_engine.domain.scoring_model import Posture, ScoringModel
+from modules.signal_engine.public import Relevance, SignalType
 
 
 class ContributionResponse(BaseModel):
@@ -253,4 +253,74 @@ class AccountScoreResponse(BaseModel):
         )
 
 
-__all__ = ["AccountScoreResponse", "ContributionResponse"]
+class TypePostureResponse(BaseModel):
+    """What one kind of hypothesis implies commercially.
+
+    **The weighting is deliberately not here.** How many points a type earns is
+    an input to the score, and a client that could read it could rank accounts
+    itself — a second ranking, disagreeing with the one this module computes.
+    Posture is different: it is a closed vocabulary a screen renders as an
+    affordance, exactly as the ledger's own `posture` field already is.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    key: SignalType = Field(
+        description=(
+            "The hypothesis type. **A key, not a name** — the Signal Engine's catalog is "
+            "the one place a type is named, and a second title here would be a second "
+            "vocabulary."
+        )
+    )
+    posture: Posture = Field(
+        description=(
+            "expansionary, contractionary or neutral. **Signora's, never the customer's** "
+            "— a workspace tunes weights and cannot redefine what a contraction means."
+        )
+    )
+
+
+class ScoringModelResponse(BaseModel):
+    """What each kind of hypothesis implies, in the version actually in force.
+
+    **A property of the model, not of any account.** The per-account read above
+    answers *why is this one scored where it is*; this answers *what does this
+    kind of finding mean*, which a surface needs before it has an account in
+    hand — the Home attention card renders severity from it, and severity has to
+    be right on the first paint.
+
+    **Resolved rather than shipped.** The response is the workspace's values
+    over Signora's artifact, so a workspace that has tuned nothing still gets a
+    complete answer and one that has cannot see a weight it did not set.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    version: int = Field(
+        description=(
+            "The model version in force. Present so a client can tell a changed meaning "
+            "from a changed account — a posture that moved between two reads is a model "
+            "change, not news about a company."
+        )
+    )
+    types: tuple[TypePostureResponse, ...] = Field(
+        description="Every type the model weights, in the artifact's own order."
+    )
+
+    @classmethod
+    def from_domain(cls, model: ScoringModel) -> "ScoringModelResponse":
+        return cls(
+            version=model.version,
+            types=tuple(
+                TypePostureResponse(key=weight.key, posture=weight.posture)
+                for weight in model.types
+            ),
+        )
+
+
+__all__ = [
+    "AccountScoreResponse",
+    "ContributionResponse",
+    "ScoringModelResponse",
+    "TypePostureResponse",
+]

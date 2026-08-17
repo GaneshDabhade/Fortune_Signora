@@ -39,10 +39,59 @@ test('⛔ it draws no card the platform has not published', async ({ page }) => 
     .click();
   await expect(page.getByTestId('home')).toBeVisible();
 
-  // ⛔ **The catalogue names twenty-three cards and the registry is empty** —
-  // 📁 [§20c](../../../CLAUDE.md), a screen with no module behind it ships a
-  // designed empty state rather than invented cards.
-  await expect(page.locator('[data-card]')).toHaveCount(0);
-  await expect(page.getByText(/nothing to put on your home yet/i)).toBeVisible();
+  /**
+   * ⚠️ **This asserted `toHaveCount(0)` and the registry is no longer empty.**
+   * ⛔ **The property was never *"no cards"*** — it is 📁 [§20c](../../../CLAUDE.md)'s
+   * *"a screen with no module behind it ships a designed empty state rather
+   * than invented cards"*, **and the way to keep asserting that as cards arrive
+   * is to check that every rendered card is one a module registered.**
+   */
+  const drawn = await page
+    .locator('[data-card]')
+    .evaluateAll((els) => els.map((e) => e.getAttribute('data-card')));
+  const registered = new Set([
+    'connect-a-crm',
+    'connect-calls',
+    'invite-the-team',
+    'pipeline-health',
+    'needs-you-today',
+  ]);
+  expect(drawn.every((id) => id !== null && registered.has(id))).toBe(true);
+
+  // ⛔ **Never a placeholder for a card nobody has built** — 📁 the design's own
+  // non-goal: *"sample or synthetic data to make an empty Home look populated."*
   await expect(page.getByText(/coming soon/i)).toHaveCount(0);
+});
+
+test('📁 the attention card reads signals, not the attention list', async ({ page }) => {
+  /**
+   * 🔴 **The product owner ruled `AccountAttention` out of Home on 2026-08-17.**
+   * ⚡ **Only a browser can assert which requests a page actually makes**, and
+   * the whole point of the ruling is a dependency rather than a rendering.
+   */
+  await page.goto('/');
+  await page
+    .getByRole('navigation', { name: 'Primary' })
+    .getByRole('link', { name: 'Home' })
+    .click();
+  await expect(page.getByTestId('home')).toBeVisible();
+
+  /**
+   * ⛔ **Recorded from a RELOAD, not from the click.** `/` is the Attention
+   * screen and it reads `/accounts` legitimately; recording across the
+   * navigation would attribute its request to Home and the assertion below
+   * would fail on a page that is behaving correctly.
+   */
+  const asked: string[] = [];
+  page.on('request', (r) => asked.push(new URL(r.url()).pathname + new URL(r.url()).search));
+  await page.reload();
+  await expect(page.getByTestId('home')).toBeVisible();
+  await page.waitForTimeout(1200);
+
+  const home = asked.filter((p) => p.includes('/api/proxy/workspaces/'));
+  expect(home.some((p) => /\/triage(\?|$)/.test(p))).toBe(true);
+  // ⛔ **`/accounts` is the Opportunity Engine's ranked open work.** It remains
+  // authoritative for Companies, Account 360 and Triage — **Home simply must
+  // not ask for it.**
+  expect(home.filter((p) => /\/accounts(\?|$)/.test(p))).toEqual([]);
 });

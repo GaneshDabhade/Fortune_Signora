@@ -17,6 +17,26 @@
  * screen from the one they return to, which is the opposite of what an
  * orientation is for.
  *
+ * ## 🔴 Sentence two must be true of the composition it sits over
+ *
+ * ⚠️ **It read *"Start by connecting a CRM below"* on every composition**, and
+ * 📁 the overlay renders *"over whichever composition resolved"* — **so a seller
+ * whose workspace was already connected was told to start with a card that was
+ * not on the page.** ⛔ **A first screen that points at something absent is
+ * worse than one that says nothing**, and it is the same false-claim class
+ * [§2](../../../CLAUDE.md) refuses.
+ *
+ * ⚠️ **Found in a browser and by nothing else.** The sentence is a string
+ * literal; no type, no test and no lint can know that the card it names is
+ * filtered out of three of the four compositions.
+ *
+ * ⚠️ **📁 The copy table has no id for this sentence.** HM-COPY-01…12 cover the
+ * states and none covers the overlay, so **the three non-activation sentences
+ * below are authored rather than quoted** — 📁 [C-1531](../../../docs/LANE_COORDINATION.md)
+ * carries them for ratification. ⛔ **Flagged rather than left false**: the
+ * design's own instruction is *"one sentence on what to do"*, and a sentence
+ * describing the wrong page does not satisfy it.
+ *
  * ## ⛔ Two sentences, and the count is the specification
  *
  * 📁 ***"One sentence on what this is, one on what to do."*** ⚡ **Not a tour,
@@ -37,10 +57,26 @@
 
 import { X } from 'lucide-react';
 
+import type { Composition } from '@/lib/home/composition';
 import { useDismissFirstRun, usePreferences } from '@/lib/query/hooks/preferences';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
-export function FirstRunOverlay() {
+/**
+ * 📁 **Sentence two — *"what to do"*, per composition.**
+ *
+ * ⚡ **Activation's is the design's**, drawn from its own first step. ⚠️ **The
+ * other three are authored** and are [C-1531](../../../docs/LANE_COORDINATION.md);
+ * each names something that is actually on that composition's page.
+ */
+const WHAT_TO_DO: Readonly<Record<Composition, string>> = Object.freeze({
+  activation: 'Start by connecting a CRM below — everything on this page fills in from there.',
+  seller: 'Start with what needs you today — every item below says why it is there.',
+  executive: 'Start with the figures below — each one says what it was derived from.',
+  revenue_operations:
+    'Start with the health of your connections below — each one says what needs a person.',
+});
+
+export function FirstRunOverlay({ composition }: { composition: Composition }) {
   const { activeWorkspace } = useWorkspaceContext();
   const workspaceId = activeWorkspace?.id ?? null;
   const preferences = usePreferences(workspaceId);
@@ -76,8 +112,9 @@ export function FirstRunOverlay() {
         </h2>
         <p className="text-sm leading-6 text-content-muted">
           {/* 📁 **Sentence two — what to do.** ⛔ It names the step below rather
-              than repeating it: the activation cards are the checklist. */}
-          Start by connecting a CRM below — everything on this page fills in from there.
+              than repeating it: the activation cards are the checklist. ⚠️ **And
+              it names the step that is actually there** — see the header. */}
+          {WHAT_TO_DO[composition]}
         </p>
       </div>
 

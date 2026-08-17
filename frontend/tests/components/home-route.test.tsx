@@ -20,7 +20,14 @@ const workspace = vi.hoisted(() => vi.fn());
 const viewerRole = vi.hoisted(() => vi.fn());
 const cardsFor = vi.hoisted(() => vi.fn());
 const integrations = vi.hoisted(() => vi.fn());
-const accounts = vi.hoisted(() => vi.fn());
+/**
+ * ⚠️ **`accounts` is gone and that is deliberate.** 🔴 Home's scope line used to
+ * count `AccountAttention` rows; the product owner ruled that read out of Home
+ * on 2026-08-17, and 📁 the registry's dependency for `card.attention` is
+ * *"signals + deals"*. **The open signal queue is the signals half, and the
+ * scope line and the card now read the same list.**
+ */
+const triage = vi.hoisted(() => vi.fn());
 const statedRole = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/state/workspace-provider', () => ({ useWorkspaceContext: workspace }));
@@ -41,7 +48,7 @@ vi.mock('@/lib/auth/client', () => ({
 // that is the test doing its job: it renders the REAL Home against mocked
 // boundaries, **so a new dependency cannot arrive silently.**
 vi.mock('@/lib/query/hooks/integrations', () => ({ useIntegrations: integrations }));
-vi.mock('@/lib/query/hooks', () => ({ useAccounts: accounts }));
+vi.mock('@/lib/query/hooks/triage', () => ({ useWorkspaceTriage: triage }));
 vi.mock('@/lib/query/hooks/home', () => ({ useStatedRole: statedRole }));
 vi.mock('@/lib/query/hooks/preferences', () => ({
   usePreferences: () => ({ data: { first_run_dismissed: true, invite_hidden: false } }),
@@ -78,7 +85,7 @@ beforeEach(() => {
   workspace.mockReset();
   integrations.mockReset();
   viewerRole.mockReturnValue({ role: 'owner', resolved: true });
-  accounts.mockReturnValue({ data: { items: [] }, isPending: false, isError: false, refetch: () => {} });
+  triage.mockReturnValue({ data: { items: [] }, isPending: false, isError: false, refetch: () => {} });
   // 📁 **Rule 5's case by default** — *"anything else… the default and the most
   // common outcome"*. Individual tests state a role where that is the subject.
   statedRole.mockReturnValue({ data: null });
