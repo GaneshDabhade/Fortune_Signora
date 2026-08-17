@@ -359,6 +359,34 @@ workstation:
 validate:
 	@cd backend && uv run python ../infra/validate.py $(ARGS)
 
+## **The files that decide whether a commit may be promoted, type-checked.**
+#
+# ⛔ **[B-435](docs/BUGS.md): `infra/` is outside every gate.** `mypy` runs from
+# `backend/`, so the promotion guard, the state check, the coordination
+# generator and the release preflight — the tools that decide what ships — were
+# read by nothing. **For `infra/`, `mypy` is not a supplementary check; it is
+# the whole net**, because these files have no test suite behind them either.
+#
+# ⚡ **What it caught on the day it was written**, none of which any other gate
+# could see: `sys.stderr` with no `import sys`, in an error branch that only
+# runs when the tool has something to report · `holders` bound twice in one
+# function in `release-preflight.py`, `list[Holder]` and `list[str]`, working
+# only because the branch that rebinds it always returns · `BY_NAME` bound
+# three times in `environments.py`, one dead and one a no-op · `named` bound
+# twice in `state-check.py`.
+#
+# ⚠️ **Deliberately a NAMED LIST rather than `infra/`.** Twenty-six files carry
+# twenty-three further errors, and gating all of them today would mean either
+# fixing them in one unreviewable change or adding ignores that make the gate
+# decorative. **This list is what is clean AND load-bearing, so it can only
+# grow** — and a file joining it is a file somebody made pass.
+INFRA_TYPED = certification-guard.py state-check.py coordination.py \
+              release-preflight.py environment-lease.py environments.py \
+              decision-queue.py
+
+types-infra:
+	@cd backend && uv run mypy --strict $(addprefix ../infra/,$(INFRA_TYPED))
+
 ## **Does the platform emit an event the contract does not name?**
 #
 # Repository Health · Documentation Synchronization. The third sibling of

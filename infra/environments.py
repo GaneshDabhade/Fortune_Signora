@@ -190,9 +190,6 @@ class Environment:
         return f"signora-{self.name}"
 
 
-#: Name → environment, for `SIGNORA_ENVIRONMENT` and for `--check`.
-BY_NAME: Final[dict[str, "Environment"]] = {}
-
 #: **The registry.** Adding an environment is a row here, not a table edit in a
 #: document — and a row is three facts rather than eight columns somebody keeps
 #: consistent by hand.
@@ -261,10 +258,17 @@ UNSLOTTED: Final = {
     "prod-local": "binds 3100/8100 — its own compose project; nothing else is shared",
 }
 
-BY_NAME: Final = {environment.name: environment for environment in ENVIRONMENTS}
-
-
-BY_NAME.update({e.name: e for e in ENVIRONMENTS})
+#: Name → environment, for `SIGNORA_ENVIRONMENT` and for `--check`.
+#:
+#: ⚠️ **[B-435](../docs/BUGS.md) — this name was bound THREE times.** An empty
+#: `Final[dict[str, "Environment"]] = {}` seventy lines above, this
+#: comprehension, and then a `.update()` with byte-identical contents. **The
+#: first was dead the moment this line ran; the third was a no-op.** ⛔ `mypy`
+#: reported the middle one as *"cannot redefine an existing name as final"* and
+#: nothing else could see it, because `infra/` is outside every gate that types.
+BY_NAME: Final[dict[str, "Environment"]] = {
+    environment.name: environment for environment in ENVIRONMENTS
+}
 
 
 def current() -> Environment | None:

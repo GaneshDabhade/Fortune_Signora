@@ -290,13 +290,27 @@ def main() -> int:
             f"    working tree {'dirty — certify will refuse it' if _tree_dirty() else 'clean'}",
         ]
         if (pressure := _memory_pressure()) is not None:
-            available, swap_ratio, holders = pressure
+            # ⚠️ **`memory_holders`, not `holders`** — [B-435](../docs/BUGS.md).
+            # `holders` already means `list[Holder]` ten lines above, bound at
+            # `_listeners()` and iterated at the bottom of this function for
+            # `.is_review_stack`. `_memory_pressure()` returns `list[str]`.
+            #
+            # ⛔ **It works today ONLY because this branch always returns 0.**
+            # Remove that return, or move this block below the port checks, and
+            # the bottom of the function iterates STRINGS looking for an
+            # attribute — an `AttributeError` inside the certification preflight.
+            #
+            # ⚡ Second instance of one shape in one day: `state-check.py` bound
+            # `named` twice in one function and worked only because the second
+            # binding preceded the second use. **`mypy` is what noticed both,
+            # and `infra/` is outside every gate that runs it.**
+            available, swap_ratio, memory_holders = pressure
             lines += [
                 "",
                 "  ⚠️  MEMORY PRESSURE — certification will be slow, and may be killed",
                 "",
                 f"    {available:.1f} GB available · swap {swap_ratio:.0%} consumed",
-                *(f"    {holder}" for holder in holders),
+                *(f"    {holder}" for holder in memory_holders),
                 "",
                 "  Ports are isolated per environment; the machine is not. A lane's dev",
                 "  server holding memory is invisible to every other gate, and this is",
@@ -332,12 +346,19 @@ def main() -> int:
         return 3
 
     # `ss` reports a listener per address family, so one holder appears twice.
+    # ⚡ **An explicit loop rather than `and not seen.add(...)`** — the
+    # comprehension worked, because `set.add` returns `None` and `not None` is
+    # `True`, but it reads as a bug to everybody who has not met the idiom.
+    # 📁 [§6](../CLAUDE.md): *correctness and clarity outrank cleverness*, and
+    # this is the version somebody can check at a glance.
     seen: set[tuple[int, str]] = set()
-    unique = [
-        h
-        for h in other + review
-        if (h.port, h.process) not in seen and not seen.add((h.port, h.process))
-    ]
+    unique: list[Holder] = []
+    for h in other + review:
+        key = (h.port, h.process)
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(h)
     say(
         "",
         "  BLOCKED — the review ports are held",

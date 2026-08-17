@@ -173,7 +173,11 @@ def _read() -> dict[str, Any] | None:
     if not lease.exists():
         return None
     try:
-        return json.loads(lease.read_text())
+        # ⚡ **Narrowed rather than trusted.** `json.loads` returns `Any`, and
+        # the signature promises a mapping — a lease file containing `[]` or
+        # `"x"` would satisfy the type checker and fail at the first `.get`.
+        parsed = json.loads(lease.read_text())
+        return parsed if isinstance(parsed, dict) else None
     except json.JSONDecodeError:
         # A partial write from a process killed mid-acquire. Treat as absent
         # rather than as a permanent block.
