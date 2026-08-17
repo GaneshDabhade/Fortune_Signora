@@ -107,13 +107,25 @@ def bug_rows(text: str) -> list[BugRow]:
 #: because a shared file is a conflict surface between the two lanes it exists
 #: to coordinate.
 #:
-#: **The full trailer, and the exactness is the point.** `pipeline-dashboard.py`
-#: counted every commit on the current branch and called the total *"planning
-#: not on integration"* — five `infra/` bug fixes reported as a 🔴 against the
-#: Product Office ([B-440](../docs/BUGS.md)). Matching on the bare word
-#: `Planning-Sync` is no better: this file's own repair commit says it in prose
-#: while carrying no trailer, and a bare grep counts it.
+#: **A TRAILER, which means anchored to the start of a line.**
+#:
+#: ⛔ **Two weaker readings were tried and both are wrong, and the second one
+#: was wrong for eight minutes before its own commit proved it**
+#: ([B-440](../docs/BUGS.md), [B-442](../docs/BUGS.md)):
+#:
+#:   · the bare word `Planning-Sync` — matches any commit *discussing* the
+#:     convention, including the ones that repair it;
+#:   · the full string anywhere in the message — matches prose that quotes it,
+#:     which is exactly what B-440's fix commit does: *"D-136 defines a planning
+#:     correction as a commit carrying `Planning-Sync: required`"*. **It tripped
+#:     `state-check` within minutes of being written.**
+#:
+#: **A git trailer is `Key: value` at the start of a line.** Anchoring there
+#: distinguishes *using* the convention from *writing about* it — and a
+#: repository whose commits explain their own conventions will always contain
+#: both.
 PLANNING_SYNC_TRAILER = "Planning-Sync: required"
+_PLANNING_SYNC = re.compile(rf"^{re.escape(PLANNING_SYNC_TRAILER)}\s*$", re.MULTILINE)
 
 
 def planning_sync_commits(log: str) -> int:
@@ -123,7 +135,7 @@ def planning_sync_commits(log: str) -> int:
     owns the range — **which range is the right one is a governance question,
     not a parsing one**, and this file parses and never judges.
     """
-    return log.count(PLANNING_SYNC_TRAILER)
+    return len(_PLANNING_SYNC.findall(log))
 
 
 CONFLICT_MARKERS = ("<<<<<<< ", "=======", ">>>>>>> ")

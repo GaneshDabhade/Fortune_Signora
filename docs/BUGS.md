@@ -887,6 +887,61 @@ for _lane, _spec in sorted(_notice_health(rows).items()):
 ### ✅ The fix, and why it is not a checker
 
 **The board is reconciled and the stamp corrected.** ⛔ **No new check is added.** A checker for *"did Closeout run all eleven activities?"* would be a fourth place recording what the eleven are, and **the copy is never wrong when written; it is wrong the first time the list grows.** ⚡ **What actually failed already had an instrument — `state-check` printed the finding.** **The repair is that QE reads findings, not exit codes**, and the evidence for whether it holds is the next cycle's board stamp rather than a green tick.
+### B-442 · 🟠 The `Planning-Sync` matcher counts prose that QUOTES the trailer — and it was caught by the commit that introduced it, eight minutes later
+
+| | |
+|---|---|
+| **Module** | **Platform Foundation** — `infra/registers.py` ([D-022](DECISION_REGISTER.md)). ⚠️ **`infra/state-check.py:434` carries the same defect and is QE's** |
+| **Current assignee** | **Lane C** — for `registers.py`. **QE** — for `state-check.py` |
+| **Severity** | 🟠 — **a false finding in a gate, naming a real commit and a real lane** |
+| **Status** | ✅ **`FIXED` in `registers.py` — Lane C, 2026-08-17.** ⚠️ **`state-check.py` NOT touched — §20e names it among QE's gates. Reported to QE with the shared fix already available to import** |
+| 🔴 **What happened, and the timing is the whole row** | **[B-440](#b-440) rejected matching the bare word `Planning-Sync`, and matched the FULL STRING anywhere in the message instead.** ⛔ **B-440's own commit quotes it while explaining D-136** — *"a planning correction as a commit carrying `Planning-Sync: required`"* — **so `state-check` reported that commit as an unsynchronized planning correction.** ⚡ **Eight minutes after it was written, on the next run** |
+| ⚠️ **Third time in one session that a fix reproduced the thing it explained** | 📁 **[B-436](#b-436)**: a test asserting how the code was written, for a row about Decorative Logic. **[B-439](#b-439)**: made `doc-drift` depend on `origin/integration` and did not refresh it — **[B-441](#b-441), one hour later.** **This one: rejected one substring reading and shipped another.** ⛔ **The pattern is not carelessness — it is that the SECOND-most-obvious reading looks like the answer once the first is eliminated** |
+| ✅ **The fix** | **A git trailer is `Key: value` at the start of a line, so the match is anchored there.** ⚡ **That is what separates *using* a convention from *writing about* one** — 📁 **and a repository whose commits explain their own conventions will always contain both** |
+| ✅ **Verified in both directions, on real data** | **A constructed real trailer → `1`.** **The actual `6811751b` → `0`, where it was `1`.** **Seven tests, two of them the observed shapes: prose quoting the trailer mid-sentence, and an indented code-block quotation** |
+| **Found** | **`state-check` reporting `1 planning correction(s) are not on integration ... Commits: 6811751b`** — my own commit, minutes old |
+
+**Steps to reproduce.**
+
+```bash
+git log -1 6811751b --format=%B | grep -c "Planning-Sync: required"     # 2 — both prose
+git log -1 6811751b --format=%B | grep -cE "^Planning-Sync: required$"  # 0 — not a trailer
+python3 infra/state-check.py | grep "planning correction"                # names it anyway
+```
+
+**Expected.** ⚡ **Commits that CARRY the trailer.**
+
+**Actual.** 📁 **Commits that mention it, including the ones repairing the matcher.**
+
+### B-441 · 🟠 One tool of four refreshed the ref it measured, and the fix had been sitting in that one tool for two weeks
+
+| | |
+|---|---|
+| **Module** | **Platform Foundation** — `infra/` ([D-022](DECISION_REGISTER.md)) |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟠 — **every figure in three tools could be plausible and wrong, and the reader could not tell** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-17**, with six regression tests against a real remote |
+| 🔴 **The measurement** | **Four tools read `origin/integration`. One refreshed it first.** `repository-dashboard.py` ✅ · `pipeline-dashboard.py` ⛔ · `production-readiness.py` ⛔ · `doc-drift.py` ⛔ |
+| ⚠️ **And `doc-drift.py` is the sharp one** | 🔴 **[B-439](#b-439) made it depend on `origin/integration` ONE HOUR EARLIER, and did not give it the refresh.** ⛔ **Fixing *the wrong ref* while leaving *the stale ref* is half a repair, and the half that shipped was the visible half** |
+| ⛔ **Four occurrences, four shapes, one defect** | **Four Lane C reports on 2026-08-04 reported idleness at lanes that were shipping** · **Lane C reported a branch fast-forwardable twice, against refs it had measured but not pushed or not fetched** · **[B-439](#b-439)** · **QE was one step from replying *"your export is not there"* after grepping an `origin/lane-c-sync` older than the one it had been told about.** ⚡ **The last three all happened on 2026-08-17, in one exchange between two lanes who were both being careful** |
+| ✅ **The fix already existed and nothing had adopted it** | ⛔ **`repository-dashboard.py` solved it for itself and stopped there** — 📁 **its own comment records the 2026-08-04 cost.** ⚡ **A local fix to a repository-wide failure is how the same defect gets found four times.** **The behaviour now lives once in [`refs.py`](../infra/refs.py)** (§2, *behaviour exists exactly once*); **the dashboard's logic is unchanged, only its home** |
+| ⛔ **`FETCH_HEAD`'s timestamp was rejected, and measured before rejecting** | **`git fetch origin coordination` bumps `FETCH_HEAD` without touching `origin/integration`** — **verified, one second apart.** ⚠️ **So it would report *"fetched seconds ago"* while the measured ref is a day old.** 🔴 **A false reassurance is WORSE than no signal: silence leaves the reader's own caution intact, and a green tick removes it** |
+| ✅ **Fire-tested in both failure directions** | **Rewinding `origin/integration` by three makes all three previously-silent tools announce it.** **Mutating the notice away kills one test; removing the actual `fetch` kills two** — ⚡ **because *reporting staleness while leaving the ref stale* is the worse defect, and a mocked fetch could never have caught it.** ✅ **`--no-fetch` verified to genuinely skip, by checking the REF rather than the return value** |
+| ✅ **Behaviour preserved** | **All three tools' stdout byte-identical before and after.** **The notice goes to `stderr`, so nothing that parses these tools' output is affected** |
+| **Found** | QE reporting the third instance of the class in one exchange — **and then discovering, while looking for somewhere to add the fix, that it was already written in a neighbouring file** |
+
+**Steps to reproduce.**
+
+```bash
+git update-ref refs/remotes/origin/integration "$(git rev-parse origin/integration)~3"
+python3 infra/pipeline-dashboard.py     # every figure three commits old, silently
+python3 infra/repository-dashboard.py   # says so
+```
+
+**Expected.** ⚡ **A tool that names `origin/integration` as its source refreshes it, or says it did not.**
+
+**Actual.** 📁 **Three of the four measured whatever this clone last happened to fetch.**
+
 ### B-440 · 🟠 The "planning not on integration" counter counted every commit on the branch, and reported 🔴 against the Product Office for five bug fixes
 
 | | |

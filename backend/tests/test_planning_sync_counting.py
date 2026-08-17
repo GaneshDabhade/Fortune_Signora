@@ -61,6 +61,27 @@ Same reasoning §20e already applies to Planning-Sync: a check that fails on
 something its own lane cannot fix teaches people to ignore it.
 """
 
+# 🔴 **The case a FULL-STRING substring match gets wrong — measured, not
+# imagined.** This is B-440's own fix commit, and `state-check` reported it as
+# an unsynchronized planning correction eight minutes after it was written
+# ([B-442](../../docs/BUGS.md)). **A repository whose commits explain their own
+# conventions will always contain prose that quotes them.**
+QUOTES_THE_TRAILER = """B-440 — the planning counter counted every commit on the branch
+
+D-136 defines a planning correction as a commit carrying `Planning-Sync:
+required`, and state-check.py matches exactly that.
+
+Budget: green infra/pipeline-dashboard.py
+"""
+
+# ⚠️ **Indented, because a quoted trailer is usually quoted in a code block.**
+INDENTED_QUOTE = """Notes on the convention
+
+    Planning-Sync: required
+
+is what a planning correction carries.
+"""
+
 
 class TestOnlyTheTrailerCounts:
     def test_an_ordinary_commit_is_not_a_planning_correction(self) -> None:
@@ -81,9 +102,31 @@ class TestOnlyTheTrailerCounts:
         """
         assert registers.planning_sync_commits(PROSE_ONLY) == 0
 
+    def test_prose_QUOTING_the_full_trailer_is_not_counted(self) -> None:
+        """🔴 **The one that shipped, and it was caught by its own commit.**
+
+        ⛔ **Rejecting the bare word was not enough.** B-440's fix matched the
+        full string *anywhere in the message*, and B-440's own commit quotes it
+        while explaining D-136 — so `state-check` reported that commit as an
+        unsynchronized planning correction **eight minutes after it was
+        written** ([B-442](../../docs/BUGS.md)).
+
+        ⚡ **A git trailer is `Key: value` at the START OF A LINE**, and
+        anchoring there is what separates *using* a convention from *writing
+        about* one. 📁 **A repository whose commits explain their own
+        conventions will always contain both.**
+        """
+        assert registers.planning_sync_commits(QUOTES_THE_TRAILER) == 0
+
+    def test_an_indented_quotation_is_not_counted(self) -> None:
+        """⚠️ **The shape a quoted trailer usually takes** — a code block."""
+        assert registers.planning_sync_commits(INDENTED_QUOTE) == 0
+
     def test_a_mixed_log_counts_only_the_planning_ones(self) -> None:
         """⚡ **The realistic input**: `git log --format=%B` over a range."""
-        log = "\n".join([ORDINARY, PLANNING, PROSE_ONLY, PLANNING])
+        log = "\n".join(
+            [ORDINARY, PLANNING, PROSE_ONLY, QUOTES_THE_TRAILER, PLANNING]
+        )
 
         assert registers.planning_sync_commits(log) == 2
 

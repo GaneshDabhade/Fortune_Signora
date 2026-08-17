@@ -38,6 +38,7 @@ import tomllib
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from refs import refresh  # noqa: E402
 from registers import planning_sync_commits  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -221,7 +222,14 @@ def counts() -> dict[str, int]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--toml", action="store_true", help="emit counts for embedding")
+    parser.add_argument("--no-fetch", action="store_true",
+                        help="skip the freshness fetch (offline; the reading may be stale)")
     args = parser.parse_args()
+    # **Every figure below is read from `origin/integration`** — what is
+    # executable, what is prepared but unsynchronized, what is awaiting QE.
+    # A stale ref makes all of them plausible and wrong ([B-441](../docs/BUGS.md)).
+    if (notice := refresh("origin/integration", ROOT, skip=args.no_fetch)) is not None:
+        print(f"pipeline-dashboard: {notice}", file=sys.stderr)
     c = counts()
 
     if args.toml:

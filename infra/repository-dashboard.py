@@ -35,6 +35,9 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from refs import refresh  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
 J = "«judgement»"
 
@@ -720,20 +723,12 @@ def main() -> int:
     if not sh("git", "rev-parse", "--verify", args.ref).strip():
         print(f"repository-dashboard: ref {args.ref!r} not found", file=sys.stderr)
         return 1
-    if not args.no_fetch and args.ref.startswith("origin/"):
-        # **The defect this exists to prevent, and it happened.** A remote ref
-        # is only as fresh as the last `git fetch`, and a dashboard reading a
-        # stale one reports idleness at lanes that are shipping. Four Lane C
-        # reports on 2026-08-04 did exactly that. **Fetch before measuring, or
-        # say plainly that the figure may be stale** — never report a number
-        # whose age is unknown to the reader.
-        before = sh("git", "rev-parse", args.ref).strip()
-        sh("git", "fetch", "--quiet", args.ref.split("/", 1)[0], args.ref.split("/", 1)[1])
-        after = sh("git", "rev-parse", args.ref).strip()
-        if before != after:
-            n = sh("git", "rev-list", "--count", f"{before}..{after}").strip() or "?"
-            print(f"repository-dashboard: {args.ref} advanced {n} commit(s) on fetch "
-                  f"({before[:8]} -> {after[:8]}). The previous reading was stale.", file=sys.stderr)
+    # **This tool solved it first, for itself, and nothing else adopted it.**
+    # Three other tools reading `origin/integration` had no refresh at all
+    # ([B-441](../docs/BUGS.md)), so the behaviour moved to `refs.py` and lives
+    # once. The logic here is unchanged; only its home is.
+    if (notice := refresh(args.ref, ROOT, skip=args.no_fetch)) is not None:
+        print(f"repository-dashboard: {notice}", file=sys.stderr)
     print(build(args.ref, args.since))
     return 0
 

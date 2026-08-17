@@ -47,6 +47,9 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from refs import refresh  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
 
 OK, WARN, GAP, JUDGE = "✅", "⚠️", "🔴", "· "
@@ -206,8 +209,15 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--ref", default="origin/integration",
                         help="ref to measure (default: origin/integration — what is shipped)")
+    parser.add_argument("--no-fetch", action="store_true",
+                        help="skip the freshness fetch (offline; the reading may be stale)")
     args = parser.parse_args()
     ref = args.ref
+    # **It asks what is SHIPPED, so it must ask a current ref** — the existing
+    # `cannot read {ref} — is it fetched?` catches an absent one and says
+    # nothing about a stale one ([B-441](../docs/BUGS.md)).
+    if (notice := refresh(ref, ROOT, skip=args.no_fetch)) is not None:
+        print(f"production-readiness: {notice}", file=sys.stderr)
 
     files = {f for f in _ls(ref) if f}
     if not files:

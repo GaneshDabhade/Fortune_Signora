@@ -43,6 +43,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from refs import refresh  # noqa: E402
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # A module's documentation of record. Kept explicit rather than derived from a
@@ -109,10 +112,20 @@ def main() -> int:
         action="store_true",
         help="exit 1 when anything is found (default: advisory, always exit 0)",
     )
+    parser.add_argument(
+        "--no-fetch",
+        action="store_true",
+        help="skip the freshness fetch (offline; the reading may be stale)",
+    )
     args = parser.parse_args()
 
     rev_range: str | None = args.rev_range
     if rev_range is None:
+        # **B-439 made this depend on `origin/integration`; B-441 is the half
+        # that was missed.** A remote ref resolving is not the same as it being
+        # current, and this tool's whole job is to say what a slice changed.
+        if (notice := refresh(DEFAULT_BASE, REPO_ROOT, skip=args.no_fetch)) is not None:
+            print(f"doc-drift: {notice}", file=sys.stderr)
         # **No silent fallback to the local branch.** That fallback is the bug:
         # it produces a plausible answer about the wrong tree, and a plausible
         # wrong answer is the one nobody checks.
