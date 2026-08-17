@@ -887,6 +887,33 @@ for _lane, _spec in sorted(_notice_health(rows).items()):
 ### ✅ The fix, and why it is not a checker
 
 **The board is reconciled and the stamp corrected.** ⛔ **No new check is added.** A checker for *"did Closeout run all eleven activities?"* would be a fourth place recording what the eleven are, and **the copy is never wrong when written; it is wrong the first time the list grows.** ⚡ **What actually failed already had an instrument — `state-check` printed the finding.** **The repair is that QE reads findings, not exit codes**, and the evidence for whether it holds is the next cycle's board stamp rather than a green tick.
+### B-440 · 🟠 The "planning not on integration" counter counted every commit on the branch, and reported 🔴 against the Product Office for five bug fixes
+
+| | |
+|---|---|
+| **Module** | **Platform Foundation** — `infra/pipeline-dashboard.py` ([D-022](DECISION_REGISTER.md)) |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟠 — **wrong behaviour, and it points at a lane.** ⛔ **A red mark naming the Product Office, computed from something that is not planning** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-17**, with five regression tests |
+| 🔴 **What it did** | ⛔ **`git rev-list --count origin/integration..HEAD`, rendered under the heading *"Planning not on integration"* with a target of `0`.** **It counted every commit on whatever branch happened to be checked out.** 📁 **Five `infra/` bug fixes therefore read as `5 🔴 — PRODUCT OFFICE's`** |
+| ⚠️ **Both errors at once** | ⛔ **Over-reports** work that is not planning — the observed case. ⛔ **Under-reports** planning that is not on this branch: **standing on `integration` would have printed `0` however much was waiting on somebody's lane branch.** ⚡ **The metric measured the branch you were standing on, which is the exact failure this office was corrected on when it reported `lane-c-sync` ff-able against a ref it had never pushed** |
+| ✅ **The answer already existed** | **[D-136](DECISION_REGISTER.md) defines a planning correction as a commit carrying `Planning-Sync: required`, and `state-check.py` matches exactly that.** ⛔ **The dashboard had invented a SECOND meaning for the same words** — 📁 **which is what [`registers.py`](../infra/registers.py) exists to prevent, in its own docstring: *"`state-check.py` and `kpi.py` both need to answer 'is this bug blocking?', and they answered it differently."*** **Same file, same principle, one metric later** |
+| 🔴 **A bare-word grep would have been no better** | ⚠️ **`git log --grep="Planning-Sync"` matches the commit that FIXED this**, because it explains the convention it was getting wrong. **`B-439`'s commit matched too, on one prose sentence.** ✅ **So the shared constant is the FULL trailer, and a test asserts the prose case rather than a comment claiming it** |
+| ⚠️ **What is tested, and what is not** | ✅ **The counting is tested behaviourally — five cases, and mutating the constant to the bare word kills two.** ⛔ **The dashboard's CALL SITE is not**: it needs a fixture repository carrying `BACKLOG.md` and `workflows.toml`, which is a lot of scaffolding for one metric. 📁 **Verified by running it and by mutation instead — `5 🔴` with the old computation, `0 ✅` with the fix. Stated rather than implied** |
+| ⚠️ **`state-check.py:434` holds the other copy** | ⛔ **Not touched: §20e names it among QE's gates.** ✅ **The shared home now exists in `registers.py`, so adopting it is a one-line change in QE's file whenever they choose.** **Reported to QE rather than done for them** |
+| **Found** | Reading `pipeline-dashboard`'s own output after QE reported the cycle-244 coverage failure — it printed `5` and `1` for what read like one question |
+
+**Steps to reproduce.**
+
+```bash
+git log --oneline origin/integration..HEAD     # five commits, none of them planning
+python3 infra/pipeline-dashboard.py | grep "Planning not on"
+```
+
+**Expected.** ⚡ **The number of planning corrections QE has not yet synchronized.**
+
+**Actual.** 📁 **The number of commits on this branch.**
+
 ### B-439 · 🟠 `doc-drift` measured from the LOCAL `integration`, so it blamed a lane for another lane's promoted work
 
 | | |

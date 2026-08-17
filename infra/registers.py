@@ -100,6 +100,32 @@ def bug_rows(text: str) -> list[BugRow]:
     return rows
 
 
+#: **The `Planning-Sync` trailer — [D-136](../docs/DECISION_REGISTER.md).**
+#:
+#: A planning correction carries this as a commit trailer so QE can treat it as
+#: high-priority synchronization. It is a commit message rather than a file
+#: because a shared file is a conflict surface between the two lanes it exists
+#: to coordinate.
+#:
+#: **The full trailer, and the exactness is the point.** `pipeline-dashboard.py`
+#: counted every commit on the current branch and called the total *"planning
+#: not on integration"* — five `infra/` bug fixes reported as a 🔴 against the
+#: Product Office ([B-440](../docs/BUGS.md)). Matching on the bare word
+#: `Planning-Sync` is no better: this file's own repair commit says it in prose
+#: while carrying no trailer, and a bare grep counts it.
+PLANNING_SYNC_TRAILER = "Planning-Sync: required"
+
+
+def planning_sync_commits(log: str) -> int:
+    """How many commits in `log` are planning corrections.
+
+    Takes `git log --format=%B` output rather than running git, so the caller
+    owns the range — **which range is the right one is a governance question,
+    not a parsing one**, and this file parses and never judges.
+    """
+    return log.count(PLANNING_SYNC_TRAILER)
+
+
 CONFLICT_MARKERS = ("<<<<<<< ", "=======", ">>>>>>> ")
 
 

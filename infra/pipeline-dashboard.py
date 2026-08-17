@@ -37,6 +37,9 @@ import sys
 import tomllib
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from registers import planning_sync_commits  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
 BACKLOG = ROOT / "docs" / "BACKLOG.md"
 WORKFLOWS = ROOT / "docs" / "coordination" / "workflows.toml"
@@ -174,8 +177,21 @@ def counts() -> dict[str, int]:
     #: A row at `IN VALIDATION` is finished work the lane cannot touch and the
     #: board still counts.
     in_validation = len([r for r in rows if r[1] == "IN VALIDATION"])
-    unsynced = _sp.run(["git", "rev-list", "--count", "origin/integration..HEAD"],
-                       cwd=ROOT, capture_output=True, text=True).stdout.strip() or "0"
+    #: **Planning corrections awaiting synchronization — [D-136](../docs/DECISION_REGISTER.md).**
+    #:
+    #: ⛔ **This counted `git rev-list --count origin/integration..HEAD`** — every
+    #: commit on whatever branch happened to be checked out — **and labelled the
+    #: total *"Planning not on integration"* with a target of zero.** Five
+    #: `infra/` bug fixes therefore reported as a 🔴 against the Product Office,
+    #: and standing on `integration` would have reported zero however much
+    #: planning was waiting elsewhere ([B-440](../docs/BUGS.md)).
+    #:
+    #: **The trailer is what makes a commit a planning correction**, so the
+    #: trailer is what is counted, from the one place that defines it.
+    unsynced = planning_sync_commits(
+        _sp.run(["git", "log", "--format=%B", "origin/integration..HEAD"],
+                cwd=ROOT, capture_output=True, text=True).stdout
+    )
 
     executable = [t for t in backlog if t in on_int]
     return {
@@ -193,7 +209,7 @@ def counts() -> dict[str, int]:
         "design_clarifications": clarifications,
         "qe_decisions": qe_open,
         "awaiting_qe": in_validation,
-        "planning_unsynced": int(unsynced),
+        "planning_unsynced": unsynced,
         "prepared": len(prepared),
         "partial": len(partial),
         "undecomposed_workflows": len(undecomposed),
