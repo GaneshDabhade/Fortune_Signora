@@ -1794,8 +1794,13 @@ def main() -> int:
     promoted = [task for task, state in _backlog_states(backlog).items() if state == "PROMOTED"]
     if promoted:
         handoffs = _git("log", "main", "--grep=Slice-Handoff", "--format=%b")
-        named = set(re.findall(r"Milestone:.*?(TASK-\d+)", handoffs))
-        orphaned = sorted(set(promoted) - named)
+        # ⚠️ **`handoff_tasks`, not `named`** — [B-435](../docs/BUGS.md). `named`
+        # already means a COMMIT SHA seventy lines above, in this same function.
+        # It works today only because the second binding precedes the second
+        # use; an early return or a reorder between them makes one name answer
+        # two questions, and `mypy` is what noticed.
+        handoff_tasks = set(re.findall(r"Milestone:.*?(TASK-\d+)", handoffs))
+        orphaned = sorted(set(promoted) - handoff_tasks)
         if orphaned:
             # ⛔ **Reported as a baseline, never as something to drive to zero.**
             # A promoted commit's message is immutable, so the 48 that shipped

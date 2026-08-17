@@ -30,6 +30,7 @@ governance decision rather than a script's.
 from __future__ import annotations
 
 import argparse
+import sys
 import re
 import tomllib
 from pathlib import Path
