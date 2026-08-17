@@ -7,8 +7,9 @@ import { Button, ChoiceCards, Input } from '@/components/ui';
 import { describePerson } from '@/lib/api/onboarding';
 
 import { OnboardingShell } from '../onboarding-shell';
+import { OnboardingRail } from './rail';
 import { OnboardingSkeleton } from './company-form';
-import { RAIL_STEPS, ROLES } from './steps';
+import { COUNTED_STEPS, COUNTED_TOTAL, ROLES, positionOf } from './steps';
 import { SkipSetup } from './skip-setup';
 import { useOnboarding } from './use-onboarding';
 
@@ -78,13 +79,18 @@ export function YouForm() {
 
   return (
     <OnboardingShell
-      steps={RAIL_STEPS}
-      currentId="you"
-      completedIds={run?.completed_steps ?? []}
-      railFooter={
+      rail={
+        <OnboardingRail
+          steps={COUNTED_STEPS}
+          currentId="you"
+          completedIds={[...(run?.completed_steps ?? []), 'workspace']}
+          progress={{ step: positionOf('you'), of: COUNTED_TOTAL }}
+          footer={
         <SkipSetup
           completedIds={run?.completed_steps ?? []}
           industry={run?.industry?.value ?? null}
+        />
+      }
         />
       }
       title="What do you do here?"

@@ -6,9 +6,10 @@ import { Button, MultiChoiceCards } from '@/components/ui';
 import { chooseGoals, finishOnboarding, type Goal } from '@/lib/api/onboarding';
 
 import { OnboardingShell } from '../onboarding-shell';
+import { OnboardingRail } from './rail';
 import { OnboardingSkeleton } from './company-form';
 import { useOnboardingExit } from './exit';
-import { GOALS, MAX_GOALS, RAIL_STEPS, isGoal } from './steps';
+import { GOALS, MAX_GOALS, COUNTED_STEPS, COUNTED_TOTAL, isGoal, positionOf } from './steps';
 import { SkipSetup } from './skip-setup';
 import { useOnboarding } from './use-onboarding';
 
@@ -74,13 +75,18 @@ export function GoalsForm() {
 
   return (
     <OnboardingShell
-      steps={RAIL_STEPS}
-      currentId="goals"
-      completedIds={run?.completed_steps ?? []}
-      railFooter={
+      rail={
+        <OnboardingRail
+          steps={COUNTED_STEPS}
+          currentId="goals"
+          completedIds={[...(run?.completed_steps ?? []), 'workspace']}
+          progress={{ step: positionOf('goals'), of: COUNTED_TOTAL }}
+          footer={
         <SkipSetup
           completedIds={run?.completed_steps ?? []}
           industry={run?.industry?.value ?? null}
+        />
+      }
         />
       }
       title="What are you trying to fix?"

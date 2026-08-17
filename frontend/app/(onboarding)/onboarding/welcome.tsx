@@ -2,113 +2,159 @@
 
 import Link from 'next/link';
 
-import { OnboardingShell } from '../onboarding-shell';
+import { OnboardingShell, StepFooter, StepHeading } from '../onboarding-shell';
+import { OnboardingRail, RailNote } from './rail';
 import { RAIL_STEPS } from './steps';
 
 /**
- * **Screens `01 Welcome` and `02 Product introduction`** —
- * [TASK-469](../../../../docs/BACKLOG.md), Workflow 8, against
- * `docs/design-snapshot/screens/Fortune Signora Onboarding.dc.html`.
+ * **Screen `01 · Welcome`** — 📁 `docs/design-snapshot/screens/Fortune Signora Onboarding.dc.html`.
  *
- * ### ⚡ One screen, because the design draws one
+ * ## ⛔ It asks nothing
  *
- * The row lists `01` and `02` separately and **the design's flow table has a
- * single step 1**: *"Welcome · Skippable · 10s · **Nothing.** States what the
- * product does and what the next 90 seconds will cover."* The four capability
- * cards are what *"states what the product does"* means, so they are this
- * screen's body rather than a second screen with its own advance.
+ * 📁 *"Welcome · Skippable · 10s · **Nothing.** States what the product does
+ * and what the next 90 seconds will cover."* ♿ WCAG 3.3.7 — *"nothing already
+ * known is asked again"* — **so the first name is greeted rather than
+ * requested**, and when the account has none the greeting is impersonal rather
+ * than blank.
  *
- * ⚠️ **Recorded rather than reconciled quietly** ([D-138](../../../../docs/DECISION_REGISTER.md)
- * makes the snapshot the authority): a second screen would add a click to a
- * flow whose stated selling point is ninety seconds.
+ * ## ⚡ The verified badge is a fact, not decoration
  *
- * ### ⛔ It asks nothing
+ * 📁 The design draws *Email verified* above the greeting. ⛔ **It renders only
+ * when the session says the address IS verified.** A badge that always appeared
+ * would be a claim about a security state nobody checked — and this flow
+ * arrives directly from Authentication, where that check is the whole screen.
  *
- * *"Nothing already known is asked again: name, email, domain and region come
- * from the account and are shown as read-only context"* (WCAG 3.3.7). **The
- * first name is the only inferred value on this screen and it is greeted, not
- * requested.**
+ * ## 📁 The four cards, verbatim
+ *
+ * ⚠️ **The fourth must not be softened**: *"Read-only to start. Nothing is
+ * written without your approval."* It is a commitment about what the product
+ * will do to a customer's CRM, and screen `07` repeats it beside the actual
+ * consent — **two places, one sentence, and neither is the place to improve
+ * the wording.**
  */
-export function OnboardingWelcome({ firstName }: { firstName: string | null }) {
+export function OnboardingWelcome({
+  firstName,
+  emailVerified,
+}: {
+  firstName: string | null;
+  emailVerified: boolean;
+}) {
   return (
     <OnboardingShell
-      steps={RAIL_STEPS}
-      currentId="welcome"
-      // ⚠️ **The organization step reads as done, and that is not a shortcut.**
-      // Onboarding runs *on* a workspace — `workspace_id` is what the run is
-      // keyed by — so by the time anybody sees this screen the organization
-      // exists. **The design creates it at step 2 because it draws the flow
-      // starting before there is one**; here the flow starts after, and a rail
-      // offering to create what already exists would be the false step.
-      // TASK-468's screen `03` is where that half is built, and this row
-      // routes past it rather than rebuilding it.
-      completedIds={['workspace']}
-      title={firstName ? `Welcome, ${firstName}` : 'Welcome to Signora'}
-      description="Four questions, about ninety seconds. Everything is saved as you go, so you can leave at any point and pick it up where you left it."
-      actions={
-        <>
-          {/* A link rather than a `Button`, because it navigates. `Button`
-              renders a `<button>` and has no `asChild`; wrapping one around a
-              link would give a control two roles, and only one of them is
-              what a keyboard would do with it. */}
-          <Link
-            href="/onboarding/company"
-            className="inline-flex h-control-md items-center justify-center rounded bg-accent px-4 text-sm font-medium text-accent-contrast transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-          >
-            Get started
-          </Link>
-          {/* ⛔ **Skip is offered here and is not a dark pattern.** The design
-              makes every step but the workspace skippable, and hiding the exit
-              on the first screen would be the *"second ask"* it forbids one
-              screen later. */}
-          <Link
-            href="/onboarding/company"
-            className="text-sm text-content-muted underline underline-offset-4 hover:text-content"
-          >
-            Skip the tour
-          </Link>
-        </>
+      roomy
+      rail={
+        <OnboardingRail
+          steps={RAIL_STEPS}
+          currentId="welcome"
+          completedIds={[]}
+          footer={
+            <RailNote>
+              About 90 seconds. You can leave at any point — everything is saved as you go.
+            </RailNote>
+          }
+        />
       }
     >
-      <ul className="flex flex-col gap-3">
+      {emailVerified ? (
+        <span className="mb-4 inline-flex items-center gap-1.5 rounded-md bg-success-subtle px-2.5 py-0.5 text-[11.5px] font-semibold text-success">
+          Email verified
+        </span>
+      ) : null}
+
+      <StepHeading large title={firstName === null ? 'Welcome to Signora' : `Welcome, ${firstName}`}>
+        Signora reads your CRM, calls and email to tell you which deals are moving, which are
+        stalling, and why. Four questions and it will be reading yours.
+      </StepHeading>
+
+      {/* 📁 *"grid-template-columns:1fr 1fr; gap:12px; margin-top:28px"*, each
+          card `padding:16px; border-radius:12px; background:var(--sunken)`.
+          ⛔ **`--sunken`, not `--surface`** — the cards are recessed into the
+          plane rather than raised off it, which is why they carry no border and
+          no shadow. */}
+      <ul className="mt-7 grid gap-3 smalllaptop:grid-cols-2">
         {CAPABILITIES.map((capability) => (
-          <li
-            key={capability.title}
-            className="flex flex-col gap-1 rounded-md border border-border-soft bg-surface p-4"
-          >
-            <span className="text-sm font-semibold text-content">{capability.title}</span>
-            <span className="text-sm leading-6 text-content-muted">{capability.body}</span>
+          <li key={capability.title} className="rounded-lg bg-surface-sunken p-4">
+            <span className="grid h-[26px] w-[26px] place-items-center rounded-md bg-surface text-accent">
+              {capability.icon}
+            </span>
+            <span className="mt-3 block text-[13px] font-semibold text-content">
+              {capability.title}
+            </span>
+            <span className="mt-1 block text-xs leading-relaxed text-content-muted">
+              {capability.body}
+            </span>
           </li>
         ))}
       </ul>
+
+      <StepFooter>
+        {/* ⛔ **A link rather than a `Button`, because it navigates.** `Button`
+            renders a `<button>` and has no `asChild`; wrapping one around a
+            link would give a control two roles, and only one of them is what a
+            keyboard would do with it. ⚡ 40px is the design's height here and
+            `--control-md` is exactly that. */}
+        <Link
+          href="/onboarding/introduction"
+          className="inline-flex h-control-md items-center justify-center rounded-md bg-accent px-[18px] text-[13.5px] font-semibold text-accent-contrast shadow-sm transition-colors hover:bg-accent-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        >
+          Get started
+        </Link>
+        <Link
+          href="/onboarding/introduction"
+          className="text-[13px] font-semibold text-content-subtle hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        >
+          Take the tour first
+        </Link>
+        {/* 📁 The design's *"↵ to continue"*. ♿ `aria-hidden`: it describes a
+            pointer-free shortcut to sighted readers and would otherwise be
+            announced as a stray glyph. */}
+        <span aria-hidden className="ml-auto text-xs text-content-subtle">
+          ↵ to continue
+        </span>
+      </StepFooter>
     </OnboardingShell>
   );
 }
 
-/**
- * The design's four cards, verbatim.
- *
- * ⚠️ **The fourth is the one that must not be softened**: *"Read-only to
- * start. Nothing is written without your approval."* It is a commitment about
- * what the product will do to a customer's CRM, and screen `07` repeats it
- * beside the actual consent — **two places, one sentence, and neither is the
- * place to improve the wording.**
- */
+function Glyph({ d }: { d: string }) {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d={d} />
+    </svg>
+  );
+}
+
 const CAPABILITIES = [
   {
     title: 'See what moved',
     body: 'Every change since you last looked, ranked by what it costs you.',
+    icon: <Glyph d="M1.5 8h3l2-4.5L9 12l2-4h3.5" />,
   },
   {
     title: 'Evidence, always',
     body: 'Each claim cites the call, email or field change behind it.',
+    icon: <Glyph d="M8 1.5 3 3.5v4c0 3 2.2 5.4 5 6.5 2.8-1.1 5-3.5 5-6.5v-4L8 1.5Z" />,
   },
   {
     title: 'Forecast you can defend',
     body: "The model's number, the rep's number, and the gap explained.",
+    icon: <Glyph d="M3 13V7M8 13V3M13 13V9" />,
   },
   {
     title: 'Reads your CRM',
     body: 'Read-only to start. Nothing is written without your approval.',
+    icon: (
+      <Glyph d="M6.5 9.5 9.5 6.5M6 4.5 7.5 3a2.8 2.8 0 0 1 4 4L10 8.5M6 7.5 4.5 9a2.8 2.8 0 0 0 4 4L10 11.5" />
+    ),
   },
 ] as const;

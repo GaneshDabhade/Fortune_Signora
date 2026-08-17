@@ -19,5 +19,13 @@ export default async function OnboardingPage() {
   const name = session?.user?.name ?? null;
   const firstName = name === null || name.trim() === '' ? null : name.trim().split(/\s+/)[0]!;
 
-  return <OnboardingWelcome firstName={firstName} />;
+  // ⛔ **The design's *Email verified* badge is a claim about a security state,
+  // so it renders only where the session actually carries one.** A badge that
+  // always appeared would assert something nobody checked.
+  return (
+    <OnboardingWelcome
+      firstName={firstName}
+      emailVerified={session?.user?.emailVerified === true}
+    />
+  );
 }
