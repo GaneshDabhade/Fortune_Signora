@@ -90,6 +90,43 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-1010 · 🟡 Two sibling gates ask *"is this built thing reachable?"* and an HTTP endpoint falls between them
+
+| | |
+|---|---|
+| **Module** | **QE gates** — [`infra/reachability.py`](../infra/reachability.py) and [`infra/runtime-composition.py`](../infra/runtime-composition.py) |
+| **Current assignee** | **QE** |
+| **Severity** | 🟡 — ⛔ **nothing is broken and nothing unsafe ships.** ⚠️ **What is absent is coverage of a class this repository already decided was worth automating, in the one dimension neither sibling walks** |
+| **Status** | 🔵 **`OPEN`** — ⛔ **recorded, not built.** ⚠️ **A third gate is a governance-weight decision and [§20e](../CLAUDE.md)'s freeze says an observed problem is required; this row IS the observation, and one instance is not yet a pattern** |
+| **Found** | **2026-08-17** by **Lane A**, who reported it as *"not a defect, so no `B-` row"* — ✅ **and was right about the endpoint and understating the gap** |
+| **Commit found** | **`cbc71c12`** |
+
+### 🔴 The gap, in the gates' own words
+
+📁 **`reachability.py`'s docstring names the class and the pairing:**
+
+> ⚡ ***"The sibling of `runtime-composition.py`, and deliberately the same shape: that one asks 'does the deployed worker consume what this module projects?', this asks 'does any screen lead to this route?'*** ⛔ ***Both answer the same class of question — something is built, correct, tested, and nothing reaches it."***
+>
+> 📁 ***"Timeline shipped complete and inert ([B-301](#b-301)) — the backend half of the same failure, which is why the two checks are siblings."***
+
+| gate | the edge it walks |
+|---|---|
+| `reachability` | **route → screen** |
+| `runtime-composition` | **module projection → worker** |
+| ⛔ **nothing** | **HTTP endpoint → frontend consumer** |
+
+### 📊 The instance
+
+**`GET /workspaces/{id}/accounts/{id}/decision-package`** — ⛔ **no reference anywhere under `frontend/`.** ✅ **Measured, not inferred.** ⚡ **Built, per-account, and nothing calls it**: it is the account drawer's AI block *and* Account 360's, whenever either is built.
+
+### ✅ What this row is NOT
+
+⛔ **Not a defect in the endpoint.** 📁 **[§2](../CLAUDE.md) already names the cost of building ahead of a surface** — *"the pipeline ran nine stages ahead of any user-visible surface and that was a real cost"* — **so an endpoint waiting for its consumer is a known, accepted shape, and Lane A classified it correctly.**
+
+⛔ **Not a criticism of either gate.** ✅ **Both docstrings claim exactly what they do.** ⚠️ **The gap is between them, not inside either.**
+
+⛔ **Not a proposal to build a third gate today.** 📁 **[§20e](../CLAUDE.md)'s governance freeze requires an *observed* execution problem, and this is the first observation.** ⚡ **If a second endpoint ships inert, that is the pattern and this row is the evidence for it.** ⚠️ **Building it now would be the speculative-abstraction move [§6](../CLAUDE.md) forbids, dressed as diligence.**
+
 ### B-1009 · 🟠 QE reported a slice as "never offered to QE" from a ref count, and its content was byte-identical on `main`
 
 | | |
@@ -745,6 +782,18 @@ git merge-base --is-ancestor origin/$b main    # → "has this ref anything main
 > ⚡ ***"A ref with no unpushed work and a ref whose work is invisible to you look identical from where you stand, and only one of them is idle."***
 >
 > ⛔ ***"It cost nothing here because a fast-forward cannot destroy unpushed local commits. It would have cost something under any operation that could — and 'idle' is the word that would have justified one."***
+
+### 🔴 A THIRTEENTH, and it is this row's ORIGINAL failure repeating — a skipped Closeout activity
+
+**Cycle 242's Closeout ran every activity except 9 — the release summary.** ⛔ **`PROJECT_STATUS.md` was updated for figures, `SESSION_HANDOFF.md` and `ACTIVE_ASSIGNMENTS.md` were refreshed, `RUNNING.md` gained three hazards — and no summary was published.**
+
+⚠️ **It surfaced only because cycle 243's summary anchored on *"cycle 242"* and the assertion failed.** ⚡ **Had the anchor been looser, or had QE used `replace_all`, the omission would have been invisible and the record would simply have skipped a cycle.**
+
+📁 **That is this row's FIRST instance repeating**: *"QE skipped a mandatory Closeout activity and reported the cycle clean."* ⛔ **Activity 3 then, activity 9 now.** ✅ **Written late and marked as written late — [§2](../CLAUDE.md): correct a claim about the present, date a record of the past.**
+
+### ⚠️ What actually caught it, and it was not a checklist
+
+**An `assert count == 1` on an anchored replacement.** ⚡ **The discipline of refusing to edit without asserting uniqueness is what turned a silent omission into a failing script** — 📁 **and it is the same technique that caught two stale figures at [B-1008](#b-1008).** ⛔ **`state-check` does not check that a cycle published a summary, and neither does anything else.**
 
 ### 🔴 It recurred within the hour, in the handover that acknowledged it
 

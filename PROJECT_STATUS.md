@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `1aaf9678`, 2026-08-16.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `cbc71c12`, 2026-08-17.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `1aaf9678`, 2026-08-16.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `cbc71c12`, 2026-08-17.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`1aaf9678`** — ⚡ **the certified commit itself**, `promoted == certified`, **verified against the SHA the guard named, not against `integration`'s head**. **Cycle 238** — ⛔ **and `integration` had already moved to `9023b187` when the promotion ran, for the second cycle running** |
+| **`main`** | **`cbc71c12`** — ⚡ **the certified commit itself**, `promoted == certified`, **verified against the SHA the guard named, not against `integration`'s head**. **Cycle 238** — ⛔ **and `integration` had already moved to `9023b187` when the promotion ran, for the second cycle running** |
 | **Release candidate** | `integration` = **`9023b187`** — Lane C's three planning commits, rebased onto the pin and ref-pushed **while the gates were running**, so no lane waited and no gate was disturbed |
-| **Certification** | ✅ [`1aaf967811b1`](certification/reports/1aaf967811b1.md) · migration head **`0059`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** |
-| **Cycle 242 gates** | ⚡ **EIGHT required, all recorded** — `pytest` **5225** · coverage **95.04%** · **668** security invariants · `mypy` strict over **935** files · `import-linter` **37/37** · `tsc` clean · **`frontend-suite` 3330 in 189 files** · **`eslint` clean** · `smoke` **24 stages in 290s** · scenario **baseline@1, 198 assertions** |
+| **Certification** | ✅ [`cbc71c12ebbf`](certification/reports/cbc71c12ebbf.md) · migration head **`0059`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** |
+| **Cycle 243 gates** | ⚡ **EIGHT required, all recorded** — `pytest` **5225** · coverage **95.04%** · **668** security invariants · `mypy` strict over **935** files · `import-linter` **37/37** · `tsc` clean · **`frontend-suite` 3330 in 189 files** · **`eslint` clean** · `smoke` **24 stages in 191s** · scenario **baseline@1, 198 assertions** |
 | ✅ **The coverage fall broke at cycle 240, and the trend row is kept rather than deleted** | **95.06 → 95.05 → 95.04 → 95.05.** ⛔ **The three-cycle monotonic fall did NOT continue.** ⚡ **Reported as a trajectory while it was falling and reported as broken now it is not** — 📁 **a trend row that is quietly removed the moment it stops being alarming teaches a reader that trends are only mentioned when they are bad.** ⚠️ **Five basis points, and still the figure worth watching**: the rise came from a slice that was 19 tests against a small guard, not from anything structural |
 | ⚠️ **`make coverage-debt` cannot answer the question this trend raises** | 📁 **Reported by Lane A**: its reader skips because `coverage json` exits 2 — **the READER failing rather than the run.** ⛔ **So the one instrument that would name WHICH files are pulling the figure down is unavailable exactly as the margin narrows.** ✅ **The certification figure is unaffected and is measured independently** |
 | ✅ **QE verified the guarantee in the database, not in the migration** | 🔴 **The whole slice rests on the PERSON predicate — two colleagues are legitimately the same tenant, so workspace isolation proves nothing here.** ✅ **Read from `pg_policies` on a freshly migrated database**: all three policies (`SELECT`, `INSERT`, `DELETE`) carry **`workspace_id` AND `user_id`**, and `relrowsecurity`/`relforcerowsecurity` are both `t`. ⛔ **No `UPDATE` policy, correctly** — the table is registered in **both** `TENANT_OWNED_TABLES` and `IMMUTABLE_TENANT_TABLES`, and requiring one would weaken immutability to satisfy a test |
@@ -38,7 +38,7 @@
 
 > ⚠️ **`Load more` was replaced rather than kept, and that is the standard being applied rather than a preference.** 📁 **The two are different products**: one accumulates the page under somebody scanning it and makes *"which page am I on"* unanswerable. ✅ **`Previous`/`Next` over the existing keyset cursor, with a page number and NO denominator** — **keyset cannot know how many pages exist without reading them, and a total would be fabricated.**
 
-**Repository health:** **5225 backend tests** · ⚠️ **95.04% coverage** *(floor 95 — **4 basis points**)* · **3330 frontend tests** across **189 files** · **668 Security Invariants** · mypy strict over **935 files** · **60 migrations**, `0000`–`0059` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **290s** · **disaster recovery passing** · **migrations reversible on a clean database** · **20 module directories** · **59 ADRs** · **146 numbered architecture documents**.
+**Repository health:** **5225 backend tests** · ⚠️ **95.04% coverage** *(floor 95 — **4 basis points**)* · **3330 frontend tests** across **189 files** · **668 Security Invariants** · mypy strict over **935 files** · **60 migrations**, `0000`–`0059` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **191s** · **disaster recovery passing** · **migrations reversible on a clean database** · **20 module directories** · **59 ADRs** · **146 numbered architecture documents**.
 
 > ⚠️ **Two figures on that line were mislabelled rather than stale, and the distinction matters because only one of them is a measurement error.** ⛔ **It read *"60 ADRs"* — `ls adr/*.md`, which counts `README.md`** — **and *"148 numbered architecture documents"*, which counted `ARCHITECTURE_VALIDATION_M1_2.md` and `provider-qualification.md`, neither of them numbered. ✅ **59 and 146 are what the words claim.** ⚡ **The number was right for a question nobody asked** — the same shape as everything else this week, and the reason to re-derive a figure rather than re-read it.
 
@@ -114,6 +114,71 @@
 | **28 others** | various | mixed | — | See the register |
 
 **37 items · 5 closed.** ⚠️ **Four items have now waited five cycles or more, and every one of them needs the same person.** [C-024](docs/LANE_COORDINATION.md) is the sharpest: Timeline's backend was proven live this cycle by `runtime-composition`, so **ten lines of routing separate a working capability from a customer.**
+
+---
+
+## 1d · Release summary — 2026-08-17, cycle 243
+
+**Promoted `cbc71c12` from `a93bfe0a`.** Six commits, two lanes. **First attempt, no aborts.**
+
+### ✅ Two `infra/` defects the type gate caught and no test could
+
+⛔ **`decision-queue.py` referenced `sys.stderr` with no `import sys`** — **in the file-not-found branch.** ⚡ **The module loads, every happy path works, and the `NameError` waits for the one run that needed the diagnostic.** 📁 **Lane C's phrasing is better than the register's**: ***the tool works right up to the moment it has something to tell you.***
+
+⛔ **`state-check.py` bound `named` twice in one function, seventy lines apart** — a commit SHA and a set of task ids — **working only because the second binding precedes the second use.** ⚠️ **An early return between them makes one name answer two questions.**
+
+⚡ **Both found by `mypy`, because `infra/` is outside the test suite ([B-435](docs/BUGS.md)).** 🔴 **For `infra/`, the type gate is not a supplementary check — it is the whole net.**
+
+### ✅ A publish-ordering defect, fixed by reordering rather than by adding a check
+
+**`--publish` regenerates before it pushes, so *generate → commit → publish* leaves the published ref permanently one generation ahead of git.** ✅ **The order is now *regenerate → publish → commit whatever the publish produced*, with `--check` confirming tree == ref.**
+
+### 🔴 QE used a word its evidence could not support — twice, an hour apart, each caught by the lane it was about
+
+| | QE said | what the evidence supported |
+|---|---|---|
+| **Lane A's branches** | *"idle"* | *"no pushed work"* — **they held 22 unpushed commits** |
+| **Lane C's branch** | *"clean"* | *"carries no held work"* — **their tree held two uncommitted files** |
+
+⚡ **Lane A's sentence is why it is filed rather than quietly corrected:** ⛔ ***"It cost nothing here because a fast-forward cannot destroy unpushed commits. It would have cost something under any operation that could — and 'idle' is the word that would have justified one."***
+
+📁 **`clean` is the word that would justify a `reset --hard`, and one of those two uncommitted files carried the `NameError` above.** ✅ **The checks are correct and stay; the CLAIMS change** — **and where the stronger claim is needed, QE asks the lane, because `git log origin/<branch>..<branch>` runs only on their machine.**
+
+### ⚠️ [B-1010](docs/BUGS.md) — a gap between two gates built for exactly this class
+
+**`reachability` walks route → screen. `runtime-composition` walks module projection → worker.** ⛔ **Nothing walks HTTP endpoint → frontend consumer**, and `GET …/decision-package` has no reference anywhere under `frontend/`.
+
+✅ **Recorded, not built.** 📁 **[§20e](CLAUDE.md)'s freeze requires an observed problem and this is the first observation; a third gate today would be the speculative abstraction [§6](CLAUDE.md) forbids, wearing diligence.**
+
+---
+
+## 1d · Release summary — 2026-08-16, cycle 242
+
+> 🔴 **WRITTEN LATE, at cycle 243's Closeout on 2026-08-17.** ⛔ **Cycle 242's Closeout skipped activity 9** — every other activity ran, and the summary did not. ⚡ **Found by the anchor for THIS summary failing to match**, which is the only reason it surfaced at all. 📁 **[B-1000](docs/BUGS.md)'s original instance was a skipped Closeout activity too, and the row is where this belongs rather than in a new one.**
+
+**Promoted `1aaf9678` from `7d8e2736`.** One commit, one lane. **Certified on the second attempt — and the first attempt was aborted deliberately.**
+
+### ✅ What changed
+
+**[B-436](docs/BUGS.md)'s `None`/`[]` split made behavioural**: `[]` reclaims silently, **`None` reclaims and states the bound.** ⚡ **The Decorative Logic QE found and the lane repaired rather than deleted** — its own docstring had claimed a distinction the code did not have.
+
+### 🔴 QE aborted its own certification rather than compete for memory with a lane's session
+
+**199 MB free, swap 4.0/4.0 GB consumed, and a `next-server` at 5.94 GB belonging to an active lane.** ⛔ **The OOM killer would have taken QE's pytest or their session.** ✅ **A gate re-runs for free; a session does not.**
+
+⚡ **The deferral found a defect neither party was hunting.** **The lane restarted, recovered 6.8 GB, and discovered a Playwright run that had sat at ZERO BYTES for twenty minutes was thrashing, not slow — the same specs then finished in 46 seconds.** 📁 ***A run producing no bytes is indistinguishable from one producing them slowly.***
+
+✅ **A protocol came out of it rather than a sacrifice, offered by the lane: whoever notices the pressure first says so, and neither side guesses.**
+
+### ⚠️ A waiter on the wrong PID nearly published a false abort
+
+**QE's waiter watched the nohup wrapper rather than `make certify`.** ⛔ **When the wrapper exited, the log held only the preflight and QE was one step from reporting *"certification aborted."*** ⚡ **It had not aborted; it was 85 seconds into pytest.** ✅ **What caught it was reading for an error and finding NONE** — **a genuine abort leaves a reason, and silence was about to be read as evidence.**
+
+### ✅ Three environment hazards recorded in [`RUNNING.md`](docs/RUNNING.md), under one rule
+
+> ⚡ ***Realign before trusting a red.***
+
+**A stamped database above the tree** · **a stale E2E workspace pointer**, where four journeys failed against a screen that was correct · **exhausted swap**, where a slow-looking suite is not the problem. 🔴 **The middle one is the sharpest: the assertion was wrong and the product was right.**
 
 ---
 

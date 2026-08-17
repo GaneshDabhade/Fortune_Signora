@@ -71,7 +71,15 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-16, `1aaf9678`
+## Current — as of 2026-08-17, `cbc71c12`
+
+> ⚡ **Cycle 243 Closeout. Six commits, TWO lanes** — Lane C's two `infra/` defects and publish-ordering fix, plus QE's [B-1000](BUGS.md) and [B-1010](BUGS.md) rows.
+>
+> 🔴 **Cycle 242's Closeout had skipped activity 9** — the release summary. **Written late, marked late, filed as [B-1000](BUGS.md)'s thirteenth.**
+>
+> ⚠️ **QE said *"idle"* and *"clean"* where the evidence supported neither.** ✅ **Both caught by the lanes they were about.**
+
+### Cycle 242 — `1aaf9678`
 
 > ⚡ **Cycle 242 Closeout. One commit, one lane** — [B-436](BUGS.md)'s `None`/`[]` split made behavioural.
 >

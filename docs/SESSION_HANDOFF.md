@@ -1,5 +1,17 @@
 # Session Handoff
 
+> ## Cycle 243 — promoted `cbc71c12`, 2026-08-17 · **two `infra/` defects only the type gate could see**
+>
+> **`main` = `cbc71c12` = the certified commit.** `pytest` **5225** · coverage **95.04%** · **668 Security Invariants** · `mypy` **935** files · `frontend-suite` **3330/189** · `smoke` 24 stages in **191s** · **DR passed** · **reversible** · head **`0059`**. ✅ **Eight gates, first attempt.**
+>
+> ⛔ **`decision-queue.py` used `sys.stderr` with no `import sys`, in the file-not-found branch** — **the module loads, every happy path works, and the `NameError` waits for the one run that needed the diagnostic.** ⚡ **`state-check.py` bound one name to two things seventy lines apart.** 🔴 **Both found by `mypy` because `infra/` is outside the suite ([B-435](BUGS.md)) — for `infra/`, the type gate is the WHOLE net, not a supplement.**
+>
+> 🔴 **[B-1000](BUGS.md) took three more instances, and all three were caught by somebody other than QE.** **QE called a lane's branches *"idle"* when they held 22 unpushed commits, and another lane's *"clean"* when its tree held two uncommitted files** — ⚡ ***"'idle' is the word that would have justified an operation that COULD destroy them."*** ✅ **The checks stay; the claims change to *no pushed work*.**
+>
+> ⚠️ **And the thirteenth is this row's own original failure: cycle 242's Closeout skipped activity 9, the release summary.** ⛔ **Written late and marked as late.** ⚡ **Caught by an `assert count == 1` on an anchored replacement — nothing checks that a cycle published its summary.**
+>
+> ✅ **[B-1010](BUGS.md) filed**: `reachability` walks route → screen, `runtime-composition` walks projection → worker, **and nothing walks endpoint → frontend consumer.** ⛔ **Recorded, not built** — the freeze wants an observed pattern and this is one observation.
+
 > ## Cycle 242 — promoted `1aaf9678`, 2026-08-16 · **a cycle deferred to protect a lane's session, and the deferral found their stall**
 >
 > **`main` = `1aaf9678` = the certified commit.** `pytest` **5225** · coverage **95.04%** · **668 Security Invariants** · `mypy` **935** files · `import-linter` **37/37** · **`frontend-suite` 3330 in 189 files** · `eslint` clean · `smoke` 24 stages in **290s** · **DR passed** · **reversible on a clean database** · head **`0059`**. ✅ **Eight gates, first attempt.**

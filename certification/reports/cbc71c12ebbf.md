@@ -1,0 +1,34 @@
+# Certification — cbc71c12ebbf
+
+**CERTIFIED**  ·  2026-08-17T03:27:17.821714+00:00
+
+## Conditions
+
+- rendering protocol v2
+- migration head `0059`
+- scenario set `e5b92f4872fc`
+- working tree clean
+
+### Prompt releases in force
+
+- `research_planning@2` on `llama3.1:8b` — `bafc9d282d53`
+- `research_synthesis@2` on `llama3.1:8b` — `409a6b2e38a9`
+
+## Gates
+
+- ✅ **eslint** — clean
+- ✅ **frontend-suite** — 3330 passed in 189 files
+- ✅ **import-linter** — 37 kept, 0 broken
+- ✅ **mypy** — strict, clean over 935 files
+- ✅ **pytest** — 5225 passed
+- ✅ **security-invariants** — 668 invariants
+- ✅ **smoke** — 24 stages in 191s, slowest 15. Security Invariants 29s
+- ✅ **tsc** — clean
+
+## Scenarios
+
+- ✅ **baseline@1 research lifecycle** — 198 assertions
+
+Coverage **95.04%**
+
+*Certification measures a system with zero production traffic. It is evidence of discipline, not of field reliability.*
