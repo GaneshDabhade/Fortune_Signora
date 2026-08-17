@@ -67,8 +67,15 @@ export function ProductIntroduction() {
               />
             ))}
           </div>
+          {/* ⚠️ **The path is a literal here and a constant three lines below,
+              and that is not an oversight.** 📁 `infra/reachability.py` reads
+              static route strings: `href={NEXT}` is a link a customer can use
+              and a link the check cannot see, and it reported
+              `/onboarding/company` as having **no entrance at all** the moment
+              this screen became its only door. ⛔ **Making the checker's job
+              possible is cheaper than declaring an exception.** */}
           <Link
-            href={NEXT}
+            href="/onboarding/company"
             className="ml-auto text-[12.5px] font-semibold text-content-subtle hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             Skip introduction
