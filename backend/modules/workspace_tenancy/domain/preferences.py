@@ -66,6 +66,10 @@ from uuid import UUID
 #: ⚠️ **A floor, not a threshold anybody else can lower** — the design says
 #: *"yours can be stricter … never looser"*, and the workspace half of that
 #: does not exist yet ([C-249](../../../../docs/LANE_COORDINATION.md)).
+#: 📁 **Home's four compositions**, as the design names them.
+#: ⛔ **Closed, so a fifth cannot be stored by a client that invents one.**
+HOME_COMPOSITIONS = frozenset({"executive", "seller", "revenue_operations", "activation"})
+
 MIN_CONFIDENCE_FLOOR = 3
 MAX_CONFIDENCE_FLOOR = 5
 
@@ -215,6 +219,19 @@ class PersonPreferences:
     #: workspace AI floor exists**, so the personal floor is stored and the
     #: comparison is not asserted ([C-249](../../../../docs/LANE_COORDINATION.md)).
     confidence_floor: int = MIN_CONFIDENCE_FLOOR
+    #: 📁 **Home's rule 2** — *"Person has set a start-page preference of a
+    #: specific composition… Honoured over role."*
+    #:
+    #: ⛔ **`None` means *not set*, and that is not the same as *seller*.** 📁 The
+    #: resolver falls through to the role rules when it is absent; storing a
+    #: default here would silently pin every person to one composition and make
+    #: rule 3 unreachable.
+    #:
+    #: ⚠️ **Text rather than an enum in the database, exactly as `language` and
+    #: `timezone` are.** ⚡ The four names are the DESIGN's closed set and the
+    #: domain validates against it; a PostgreSQL enum would make adding a fifth
+    #: composition a migration rather than a design decision.
+    home_composition: str | None = None
 
     # ── Language & region ─────────────────────────────────────────────────
     #: ⛔ **Text rather than an enum, and deliberately.** ⚡ The design shows

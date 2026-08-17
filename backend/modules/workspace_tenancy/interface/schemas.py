@@ -13,7 +13,7 @@ from enum import StrEnum
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from modules.workspace_tenancy.application.capability_use_cases import (
     EffectivePermissionsView,
@@ -47,6 +47,7 @@ from modules.workspace_tenancy.domain.onboarding import (
     Provenance,
 )
 from modules.workspace_tenancy.domain.preferences import (
+    HOME_COMPOSITIONS,
     MAX_CONFIDENCE_FLOOR,
     MIN_CONFIDENCE_FLOOR,
     AnswerStyle,
@@ -493,6 +494,9 @@ class PreferencesResponse(BaseModel):
     always_show_citations: bool
     answer_style: AnswerStyle
     confidence_floor: int
+    #: 📁 **Home's rule 2.** `None` means *not set* — the resolver then falls
+    #: through to the role rules.
+    home_composition: str | None
     date_format: str | None
     number_format: str | None
     week_starts_on: str | None
@@ -530,6 +534,7 @@ class PreferencesResponse(BaseModel):
             always_show_citations=prefs.always_show_citations,
             answer_style=prefs.answer_style,
             confidence_floor=prefs.confidence_floor,
+            home_composition=prefs.home_composition,
             date_format=prefs.date_format,
             number_format=prefs.number_format,
             week_starts_on=prefs.week_starts_on,
@@ -576,6 +581,21 @@ class ChangePreferencesRequest(BaseModel):
     confidence_floor: int | None = Field(
         default=None, ge=MIN_CONFIDENCE_FLOOR, le=MAX_CONFIDENCE_FLOOR
     )
+    #: 📁 **Home's rule 2** — a start-page composition. ⛔ **Validated against
+    #: the design's closed four**, so a client cannot store a composition Home
+    #: has no way to render.
+    home_composition: str | None = Field(default=None, max_length=32)
+
+    @field_validator("home_composition")
+    @classmethod
+    def _a_composition_home_can_render(cls, value: str | None) -> str | None:
+        """⛔ **Refused rather than ignored.** A stored composition Home does not
+        know would fall through to the role rules silently, and the person would
+        keep setting a preference that never took effect."""
+        if value is not None and value not in HOME_COMPOSITIONS:
+            raise ValueError(f"home_composition must be one of {sorted(HOME_COMPOSITIONS)}")
+        return value
+
     #: 📁 **Language & region.** ⛔ **No enum**: the design shows one value each
     #: and lists no options, so constraining them here would decide which
     #: formats Signora supports — a product question, not a schema one.

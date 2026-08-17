@@ -575,6 +575,74 @@ databaseUrl: required(
 
 ---
 
+## C-1530 · Home's U-02 is undecided, and the implementation had to pick
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-17, implementing Home §10's composition switcher |
+| **Owner** | 🔴 **Product owner** — 📁 the Home document records it as **U-02** and assigns it there itself |
+| **Type** | **An unresolved item the design names, reaching implementation** |
+| **Blocks** | ⛔ **Nothing.** ✅ The switcher works; this asks whether it should forget. |
+| **Status** | **`OPEN`** |
+
+📁 **The design's own words:** *"Whether a dual-role person switching composition sets that preference permanently or only for the session is undecided."* 📁 **Its interim ruling:** *"switching persists for the session; the profile preference is the only permanent setting."*
+
+### 🔴 The interim ruling is the one option that cannot be built cheaply
+
+⛔ **A session-only switch has nowhere to live.** ⚡ **Home holds no client state store**, 📁 **contract item 8 forbids `localStorage` for Home state** — *"Nothing about activation lives in localStorage"* — and a session store invented for one control is the speculative mechanism [§6](../CLAUDE.md) refuses.
+
+✅ **So the switch writes the profile preference**, which is 📁 **the design's own permanent option** and rule 2's input. ⚠️ **It is reversible from the same control**, so nobody is trapped.
+
+### ⚡ Three ways to close it
+
+**①** **Ratify persistence** — the implemented behaviour becomes the decision. **Cheapest, and it is already reversible.**
+**②** **Session-only** — needs a session store and a rule for what a new tab does. ⛔ **And it makes the switch invisible on the next login**, which a reader who deliberately switched may read as the product forgetting.
+**③** **Both** — a persistent control plus a *"just for now"* modifier. ⚠️ **Two mechanisms for one choice**, and the design draws one control.
+
+⚡ **Lane A's recommendation is ①.** ⛔ **It is a recommendation and not a decision** ([§20e](../CLAUDE.md)).
+
+---
+
+## C-1529 · Home's attention reasons are model prose, and the contract publishes facts
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-17, implementing Home's `card.attention` |
+| **Owner** | 🔴 **Product owner** — **it is a question about what Signora may say**, not about an endpoint |
+| **Type** | **A design requirement the current producers can only partly satisfy** |
+| **Blocks** | ⛔ **Nothing.** ✅ The card ships with a stated fact per row. |
+| **Status** | **`OPEN`** |
+
+### ⚡ ① The requirement is right, and it is the reason the card works
+
+📁 **P-08:** *"Every attention item carries a reason. **And a cost of ignoring it.** A ranked list with no stated reason is a list people learn to scroll past within a fortnight."*
+
+### ⚠️ ② The design's reasons are reasoned, not merely factual
+
+📁 **Its own examples:**
+
+> *"Your champion moved to procurement on 4 August and nobody has been re-engaged. **In 412 comparable deals this pattern cost 23 days when left a week. Day nine.**"*
+
+⛔ **Three things there have no producer:** a comparable-deal population, a derived cost in days, and a named committee change. ⚡ **`AccountAttention` publishes** `score`, `trend`, `score_change`, `signal_type`, `contested`, `evidence`, `stage`, `since` — **facts, and good ones.**
+
+### ⛔ ③ And one of them is refused rather than missing
+
+📁 **`AccountAttention`'s own contract:** *"Signora records workflow decisions and **cannot see a call, an email or a meeting**, so it must not say an account is neglected — it says how long it has been since anything it *can* see happened, and the reader decides what that means."*
+
+⚡ **That is the same rule as [C-1528](#c-1528--onboardings-completion-screen-is-built-on-a-forecast-and-the-domain-refuses-to-produce-one)'s forecast**, one surface over: **the design asks for a judgement and the domain deliberately produces a fact.**
+
+### ✅ ④ What ships, and the three ways forward
+
+**Each row states the fact it rests on and how long it has stood** — *"The evidence behind this reading has gone stale. Nothing new in 19 days."* **A reader can check every word of that against the record.**
+
+**①** **Accept the fact as the reason** — the shipped behaviour. **Honest, checkable, and less persuasive than the design's prose.**
+**②** **Build the comparable-deal population** so a cost in days can be derived. 🔴 **A real capability**, and it must not become a forecast — [C-1528](#c-1528--onboardings-completion-screen-is-built-on-a-forecast-and-the-domain-refuses-to-produce-one) is the boundary it would run into.
+**③** **Let the Decision Package's reasoning write the row.** ⚡ `decision-package` already produces cited statements per account; **it is per-account and expensive**, and Home wants five at once.
+
+⚡ **Lane A's recommendation is ①ing now and ③ when a collection-level read exists.** ⛔ **A recommendation, not a decision.**
+
+---
+
 ## C-1528 · Onboarding's completion screen is built on a forecast, and the domain refuses to produce one
 
 | | |

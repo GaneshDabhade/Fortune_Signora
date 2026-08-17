@@ -195,6 +195,42 @@ export const SHORTCUT_GROUPS: readonly ShortcutGroup[] = [
         state: 'live',
         boundIn: 'components/shell/shortcuts-reference.tsx',
       },
+      {
+        /**
+         * 📁 **Home's composition switcher** — `Fortune Signora Home.dc.html`
+         * §10's keyboard table: *"Switch composition · **V** · From the
+         * composition control in the page header. **Two roles only; single-role
+         * people do not see it.**"*
+         *
+         * ⚡ **Published, because the App Shell's rule is that every shortcut is
+         * listed beside its command** — 📁 *"a cheat sheet nobody opens is not a
+         * feature."*
+         *
+         * ⚠️ **`limit` is load-bearing here.** ⛔ **A single-letter binding that
+         * fired inside a text field would be the shape that makes people
+         * distrust every shortcut**, and this one also does nothing for the
+         * majority of readers by design — **the control is absent when a person
+         * has one composition, and so is the key.**
+         */
+        id: 'switch-composition',
+        /**
+         * ⛔ **`false`, and it is not a demotion.** 📁 This field keeps *"the
+         * design's eighteen countable"* — **the App Shell's eighteen.** ⚡ `V` is
+         * the **Home** document's shortcut, so counting it here would make this
+         * registry disagree with the document the count is about.
+         *
+         * ✅ **It is registered, live and reachable** — which is the other half
+         * of the field's own rule: *"a live shortcut omitted misleads exactly as
+         * much as a dead one listed."*
+         */
+        published: false,
+        what: 'Switch Home composition',
+        keys: 'V',
+        state: 'live',
+        boundIn: 'components/home/composition-switcher.tsx',
+        limit:
+          'Only where a person has more than one composition, and never while you are typing.',
+      },
     ],
   },
   {

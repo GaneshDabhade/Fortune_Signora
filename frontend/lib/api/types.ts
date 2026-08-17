@@ -1376,6 +1376,15 @@ export interface PersonPreferences {
    * Nothing sends without your approval, ever."*
    */
   ai_drafts: boolean;
+  /**
+   * 📁 **Home's resolution rule 2** — *"Person has set a start-page preference of
+   * a specific composition… Honoured over role."*
+   *
+   * ⛔ **`null` means *not set*, and that is not `'seller'`.** The resolver falls
+   * through to the role rules when it is absent, so treating `null` as a value
+   * would make rule 3 unreachable.
+   */
+  home_composition: 'executive' | 'seller' | 'revenue_operations' | 'activation' | null;
 }
 
 /**

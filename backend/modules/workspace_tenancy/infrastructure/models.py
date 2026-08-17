@@ -329,6 +329,9 @@ class PersonPreferencesModel(Base, TimestampMixin, AuditMixin):
     always_show_citations: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     answer_style: Mapped[str] = mapped_column(String(16), nullable=False, default="direct")
     confidence_floor: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
+    #: 📁 **Home's rule 2.** ⛔ **Nullable, because *not set* is a real state** —
+    #: the resolver falls through to the role rules when it is absent.
+    home_composition: Mapped[str | None] = mapped_column(String(32), nullable=True)
 
     # ── The design's Profile, Language & region and Accessibility panels ──
     # 📁 Migration `0060`. ⚡ **Columns on a table that is already

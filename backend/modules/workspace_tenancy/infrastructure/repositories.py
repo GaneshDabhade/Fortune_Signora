@@ -671,6 +671,7 @@ def _preferences_to_domain(model: PersonPreferencesModel) -> PersonPreferences:
         always_show_citations=model.always_show_citations,
         answer_style=AnswerStyle(model.answer_style),
         confidence_floor=model.confidence_floor,
+        home_composition=model.home_composition,
         date_format=model.date_format,
         number_format=model.number_format,
         week_starts_on=model.week_starts_on,
@@ -726,6 +727,7 @@ class SqlAlchemyPersonPreferencesRepository(SqlAlchemyRepository):
             "always_show_citations": preferences.always_show_citations,
             "answer_style": preferences.answer_style.value,
             "confidence_floor": preferences.confidence_floor,
+            "home_composition": preferences.home_composition,
             # ⚡ **Every one round-trips.** ⛔ A column written on the way in and
             # dropped on the way out is a setting that silently forgets itself,
             # which is what TASK-1422 found one field over.

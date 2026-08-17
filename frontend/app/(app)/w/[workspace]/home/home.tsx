@@ -1,254 +1,346 @@
 'use client';
 
 import { Home as HomeIcon } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 
-import type { ReactElement } from 'react';
-
-import { EmptyState, PageHeader } from '@/components/ui';
-import { PipelineHealthCard } from '@/components/home/pipeline-health-card';
+import { StatedAbsence } from '@/components/feedback/stated-absence';
 import {
   ConnectCallsCard,
   ConnectCrmCard,
   InviteTheTeamCard,
 } from '@/components/home/activation-cards';
-import { FirstRunOverlay } from '@/components/home/first-run-overlay';
 import { ActivationProgress } from '@/components/home/activation-progress';
-import { StatedAbsence } from '@/components/feedback/stated-absence';
+import { AttentionCard } from '@/components/home/attention-card';
+import { FirstRunOverlay } from '@/components/home/first-run-overlay';
+import { CompositionSwitcher } from '@/components/home/composition-switcher';
+import { HomeGreeting } from '@/components/home/greeting';
+import { PipelineHealthCard } from '@/components/home/pipeline-health-card';
+import { SourceStrip } from '@/components/home/source-strip';
+import { HM_COPY_11 } from '@/lib/home/copy';
 import { cardsFor, type CardContract } from '@/lib/home/cards';
-import {
-  COMPOSITION_NAME,
-  COMPOSITION_QUESTION,
-  resolveComposition,
-} from '@/lib/home/composition';
+import { resolveComposition } from '@/lib/home/composition';
 import { useSession } from '@/lib/auth/client';
-import { useTargetAccounts } from '@/lib/query/hooks/commercial';
+import { useAccounts } from '@/lib/query/hooks';
+import { useStatedRole } from '@/lib/query/hooks/home';
+import { useIntegrations } from '@/lib/query/hooks/integrations';
+import { usePreferences } from '@/lib/query/hooks/preferences';
 import { useViewerRole } from '@/lib/query/hooks/team';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 import type { WorkspaceRole } from '@/lib/state/permissions';
 
 /**
- * **Home — one route, four compositions** —
- * [TASK-1405](../../../../../../docs/BACKLOG.md), against
- * `docs/design-snapshot/screens/Fortune Signora Authenticated Entry.dc.html`
- * ([D-138](../../../../../../docs/DECISION_REGISTER.md)).
+ * **Home — one route, four compositions** — 📁
+ * `docs/design-snapshot/screens/Fortune Signora Home.dc.html`, the **composition
+ * authority** ([D-138](../../../../../../docs/DECISION_REGISTER.md)).
  *
- * > 📁 ***"Every authenticated person lands on `/w/:workspace/home`. What
- * > renders there is resolved from their role, and the resolution is a
- * > composition of cards from a shared catalogue — not a separate screen with
- * > its own layout, navigation or breadcrumb."***
+ * > 📁 ***"Home tells a person what to do next, using the workspace's own data,
+ * > with a reason attached to every item. It is not a report, not a dashboard for
+ * > its own sake, and not a menu."***
  *
- * ## 🔴 The two halves were built months apart and had never met
+ * ## 📁 The information hierarchy, in the design's fixed order
  *
- * ✅ **[`resolveComposition`](../../../../../lib/home/composition.ts) shipped
- * with this row's first half and [`cardsFor`](../../../../../lib/home/cards.ts)
- * with [TASK-1406](../../../../../../docs/BACKLOG.md)** — ⛔ **and
- * `git grep resolveComposition` returned **zero** callers before this file.**
- * ⚡ **Both were on `main`, correct, tested and unreachable**, which is the same
- * shape [TASK-1460](../../../../../../docs/BACKLOG.md)'s column primitives and
- * [C-291](../../../../../../docs/LANE_COORDINATION.md)'s Saved View store have.
- * ⚠️ **Named rather than spelled**: `library-reachability` counts an identifier
- * in a COMMENT as a caller, so writing it here would have quietly marked an
- * orphan reachable — the same trap [TASK-1461](../../../../../../docs/BACKLOG.md)
- * hit with `MobileNavigation`.
- * **This is the caller.**
+ * | # | What | Here |
+ * |---|---|---|
+ * | 1 | Continuity offer | ⛔ **Session Continuity's, and it has no producer** — recorded below |
+ * | 2 | Workspace confirmation strip | ✅ `SourceStrip` |
+ * | 3 | Greeting and scope line | ✅ `HomeGreeting` |
+ * | 4 | **The answer** | ✅ activation step one · ⛔ the briefing has no producer |
+ * | 5 | **The work** | ✅ `AttentionCard`, five maximum |
+ * | 6 | Context | ⛔ meetings, agent queue and recents have no producers |
  *
- * ## ⛔ The route rendered the attention list, and that was correct until now
+ * ## 🔴 Home always renders Home
  *
- * 📁 **[TASK-1438](../../../../../../docs/BACKLOG.md) made this path
- * `export { default } from '../../../page'`** so the entry engine's **eight
- * rules — including 24, the default** — stopped answering 404. ⚠️ **Its own
- * comment named the successor**: *"Home's COMPOSITION is TASK-1405's resolver…
- * inventing a composition here would be a third answer to what Home shows."*
- * ✅ **So this replaces a placeholder that said it was one.**
+ * 📁 §03, and it is absolute: ***"An empty Home that redirects to the Attention
+ * list, the account table, or any other surface produces an alternate Home that
+ * no document describes, no test covers, and no person can predict."***
  *
- * ## 🔴 What renders today, honestly
+ * ⛔ **There is no `router.push` in this file and there must never be one.**
+ * ⚡ Contract item 3 asks a reviewer to grep for exactly that, and
+ * `home-route.test.tsx` does it in a test so the grep is not a habit.
  *
- * ⚡ **`primaryRole` is `null` on every session the platform can produce** — the
- * design resolves a composition from *"the person's primary role"* and
- * `Membership.role` is `owner | member` — **so every reader resolves to
- * `activation`**, which is the one composition that is honest about knowing
- * nothing. ⛔ **That is the resolver's decision, not this file's**, and it is
- * why nothing here branches on a role.
+ * ## ⚠️ Nine of the design's sixteen cards have no producer, and none is faked
  *
- * ⚠️ **`REGISTRY` held NOTHING when this file was written and holds TWO now** —
- * `connect-calls` and `pipeline-health`, contributed by
- * [TASK-1425](../../../../../../docs/BACKLOG.md). 🔴 **This line said *"`REGISTRY`
- * is empty"* until 2026-08-16 and it was read as current**: it nearly cost Lane
- * C a verification, because **this is the file somebody opens to decide whether
- * Home can replace `/`.** ⛔ **A doc-comment that was true when written and
- * asserts a state the code has left is the [B-252](../../../../../../docs/BUGS.md)
- * class**, and an enumeration is the shape most likely to go stale.
+ * **Measured against every API path the backend publishes, not inferred:**
  *
- * ✅ **The reasoning below is unchanged and still governs**: **where the
- * resolver's composition contributes no renderable card, Home renders its
- * question and says what is missing** — 📁 the row's own words,
- * *"an empty Home is a designed state, not a failure"* — and
- * [§20c](../../../../../../CLAUDE.md): **a screen with no shipped module behind
- * it ships a designed empty state, never invented cards.**
+ * | Card | Dependency | Producer |
+ * |---|---|---|
+ * | `card.attention` · `card.pipeline` · `card.inthealth` · `card.activation.*` | signals · pipeline-health · integrations · members | ✅ **shipped** |
+ * | `card.briefing` · `card.execsummary` | `ai.briefing.v1` · `ai.execsummary` | ⛔ **no workspace-level AI endpoint** |
+ * | `card.meetings` · `card.recents` | `calendar.events` · `activity.mine` | ⛔ **no endpoint** |
+ * | `card.agentqueue` · `card.agentruns` | `agents.runs` | ⛔ **no list endpoint** |
+ * | `card.dataquality` · `card.requests` | `quality.summary` · `access.requests` | ⛔ **no endpoint** |
+ * | `card.forecast` | `forecast.committed` | 🔴 **refused by domain law** — [C-1528](../../../../../../docs/LANE_COORDINATION.md) |
  *
- * > 🔴 **This is a REGRESSION for the default landing destination and it is
- * > reported rather than absorbed** — [C-295](../../../../../../docs/LANE_COORDINATION.md).
- * > **The attention list was a better screen than an empty Home**, and the cause
- * > is an empty registry rather than anything in this row. ⚡ **Three of
- * > `activation`'s five cards — `connect-a-crm`, `invite-the-team`,
- * > `connect-calls` — are ALREADY BUILT** as §18's checklist from
- * > [TASK-1463](../../../../../../docs/BACKLOG.md), **and registering them is a
- * > follow-up row rather than this one's to take.**
+ * ⚡ **The absent cards are absent, not stubbed.** 📁 [§20c](../../../../../../CLAUDE.md)
+ * and the design's own non-goal: *"Sample or synthetic data to make an empty Home
+ * look populated."* ⛔ **`card.forecast` is the one that can never arrive** —
+ * `buying_score_engine` states *"it does not forecast a purchase"* in two files.
+ *
+ * ## ✅ The composition resolves fully now, and [C-268](../../../../../../docs/LANE_COORDINATION.md) is why it did not
+ *
+ * ⚠️ **This file said *"every reader resolves to `activation`"*** because no
+ * primary role existed. ⚡ **Onboarding screen `05` collects it** — *"Role sets
+ * the home page"* — so rules 3, 4 and 5 all reach their compositions.
  */
-
-/**
- * 🔴 **The seam a card needs and `CardContract` does not carry.**
- *
- * 📁 **The contract is deliberately metadata only** — *"a contract carrying
- * layout, width or position would be the module deciding something Home owns"*
- * — ⛔ **so it publishes no component, and something must map an id to what
- * renders.**
- *
- * ⚡ **That map belongs to HOME rather than to the contract**, which is the same
- * boundary the design draws: 📁 *"Home owns the composition; the module owns
- * the card's content."* **A `component` field on `CardContract` would let a
- * module hand Home a node and decide its own placement.**
- *
- * ⛔ **Empty, and it stays empty until a module ships a card.** ⚠️ **A renderer
- * registered here for a card absent from `REGISTRY` would never be reached**,
- * and one registered for a card that has no component is exactly the
- * placeholder [TASK-1433](../../../../../../docs/BACKLOG.md) refused.
- */
-/**
- * ⚠️ **`ReactElement | null`, and the `null` is the design's rather than a
- * convenience** — [TASK-1424](../../../../../../docs/BACKLOG.md).
- *
- * ⛔ **Most cards must NEVER return nothing**: 📁 *"cards degrade individually…
- * the composition never changes shape because one card has nothing"*, so an
- * empty read is an empty STATE and not an absent card.
- *
- * ✅ **Exactly one case is different, and the design names it**: *"non-blocking
- * cards can be skipped, which HIDES them for 30 days."* ⚡ **A skipped card is
- * gone, not empty** — that is what skipping means — **so the type has to allow
- * it, and the comment has to say which case it is for.**
- */
-const RENDERERS: Readonly<Partial<Record<CardContract['id'], () => ReactElement | null>>> =
-  /**
-   * 🔴 **This was `Object.freeze({})`** — [TASK-1425](../../../../../../docs/BACKLOG.md).
-   * ⚡ **With both it and `REGISTRY` empty, `cardsFor` returned nothing and
-   * every visit fell through to the empty state**, which is the measurement
-   * this row was sequenced on.
-   *
-   * ⛔ **A card appears here only when it can be RENDERED**, which is why the
-   * filter below exists: 📁 the catalogue is deliberately written ahead of the
-   * cards, and a registered card with no renderer must not draw a hole.
-   */
-  Object.freeze({
-    'pipeline-health': PipelineHealthCard,
-    'connect-a-crm': ConnectCrmCard,
-    'connect-calls': ConnectCallsCard,
-    'invite-the-team': InviteTheTeamCard,
-  });
-
 export function Home() {
   const { activeWorkspace, isLoading, error } = useWorkspaceContext();
   const workspaceId = activeWorkspace?.id ?? null;
 
-  /**
-   * 🔴 **Presentational only, and the card contract says so** — 📁 *"`requires`
-   * is presentational. `null` means every member may see it. **This is not an
-   * authorization decision**."* ⛔ **Casbin on the server decides what a person
-   * may read; this only decides what it is useful to draw** ([§20c](../../../../../../CLAUDE.md)).
-   *
-   * ⚡ **The same hook the shell already holds**, so this costs no request.
-   */
   const { data: session } = useSession();
+  /**
+   * 🔴 **Presentational only.** 📁 The card contract: *"`requires` is
+   * presentational… **This is not an authorization decision**"* — Casbin on the
+   * server decides what may be read ([§20c](../../../../../../CLAUDE.md)).
+   */
   const viewer = useViewerRole(workspaceId, session?.user.id ?? null);
   const role: WorkspaceRole | null = viewer.role;
 
   /**
-   * ⚡ **The one signal that genuinely decides a composition today** — 📁 the
-   * design's qualifier for Activation is *"Any role, empty workspace"*, and
-   * `CompositionInput.workspaceIsEmpty` is the field that carries it.
+   * 📁 **Rule 1's signal** — *"No integration has ever completed a sync."*
    *
-   * ⛔ **A workspace that has never declared a target account is the same
-   * signal `/` already uses to tell an empty INPUT from an empty RESULT** — one
-   * question, one read, one answer ([§2](../../../../../../CLAUDE.md)).
+   * ⚠️ **This used to read the target-account version and that was the wrong
+   * question.** ⛔ A workspace can declare no target accounts and be fully
+   * connected; the design's test is about *connection*. 📁 Content emptiness is
+   * state `05`, which renders a role composition — **so conflating them sent a
+   * set-up customer back to setup.**
    */
-  const targets = useTargetAccounts(workspaceId);
+  const integrations = useIntegrations(workspaceId);
+  const preferences = usePreferences(workspaceId);
+  const statedRole = useStatedRole(workspaceId);
+  /**
+   * ⚡ **Read here as well as inside the attention card, and deliberately.** 📁
+   * The greeting's scope line is *"a count of what needs attention"* — hierarchy
+   * 3 — **so Home needs the number before any card resolves.** ⛔ One query key,
+   * one request: React Query serves both readers from the same cache entry.
+   */
+  const attention = useAccounts(workspaceId);
 
   /**
-   * 🔴 **[P-A](../../../../../../docs/DOMAIN_DISCOVERY_REGISTER.md): a failed
-   * read must never render as an empty result.**
-   *
-   * ⛔ **Here the empty result is *"your workspace holds nothing"***, which
-   * resolves the ACTIVATION composition — **so a failed read would not merely
-   * show less, it would show a customer the wrong Home.**
+   * ♿ **Focus lands on the h1, not the search field** — 📁 §10's keyboard table
+   * and contract item 19. ⛔ **Once per mount**, so a card resolving later does
+   * not steal focus from somebody already reading.
    */
-  if (error !== null || targets.isError) {
+  const heading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    heading.current?.focus();
+  }, []);
+
+  /**
+   * 🔴 **[P-A](../../../../../../docs/DOMAIN_DISCOVERY_REGISTER.md): a failed read
+   * must never render as an empty result.**
+   *
+   * ⛔ **Here an empty result would resolve a DIFFERENT COMPOSITION** — the
+   * integrations read decides rule 1 — **so a failure does not merely show less,
+   * it would show a customer the wrong Home.** ⚡ **Only the composition-deciding
+   * reads gate the page**; every other card degrades inside its own footprint,
+   * which is §08's whole point.
+   */
+  if (error !== null || integrations.isError) {
     return <StatedAbsence as="page" icon={HomeIcon} subject="your home" />;
   }
 
   /**
-   * ⚠️ **`workspaceIsEmpty` is only knowable once the read lands.** ⛔ **Guessing
-   * `true` while it is in flight would flash Activation at an established
-   * customer**, and guessing `false` would flash an executive shell at a new
-   * one. ✅ **So the composition is not resolved until it can be resolved.**
+   * 📁 **State 07 — *"the greeting and scope line render immediately from session
+   * data; only cards skeleton."***
+   *
+   * ⛔ **So this does NOT return early with a page-level placeholder.** ⚠️ The
+   * previous version rendered *"Resolving your home…"* over the whole page, which
+   * is the full-screen spinner the design refuses. ✅ **The frame paints and the
+   * cards carry their own skeletons at their declared footprints.**
    */
-  if (isLoading || targets.isPending) {
-    return <PageHeader title="Home" description="Resolving your home…" />;
-  }
+  const resolving = isLoading || integrations.isPending;
 
-  const workspaceIsEmpty = (targets.data?.version ?? 0) === 0;
+  /**
+   * ⚡ **`working` is *"at least one connection Signora can currently use"*.**
+   * 📁 Rule 1 asks whether one has ever *completed a sync*, and a working
+   * connection is the closest fact the contract publishes — ⚠️ **recorded because
+   * they are not identical**: a connection that worked yesterday and is now
+   * revoked is state `10`, not state `01`, and `SourceStrip` is what tells them
+   * apart.
+   */
+  const systems = integrations.data ?? [];
+  const everConnected = systems.some((s) => s.working || s.connections.length > 0);
+  const neverSynced = !resolving && !everConnected;
 
-  // ⛔ **`primaryRole` is `null` and the type says so** — nothing here invents
-  // one, which is what [D-167](../../../../../../docs/DECISION_REGISTER.md) §4
-  // forbids and what the resolver's own fallback exists for.
-  const composition = resolveComposition({ workspaceIsEmpty, primaryRole: null });
+  const composition = resolveComposition({
+    neverSynced,
+    preference: preferences.data?.home_composition ?? null,
+    statedRole: statedRole.data ?? null,
+  });
+
   const cards = cardsFor(composition, role);
   const rendered = cards.filter((card) => RENDERERS[card.id] !== undefined);
 
+  /**
+   * 📁 **State 12 — *"the activation registry returned zero cards."*** ⛔ **The
+   * design is explicit about what must NOT happen**: *"Never a progress bar at 0
+   * of 0, and never an empty activation composition."*
+   */
+  const registryEmpty = composition === 'activation' && rendered.length === 0 && !resolving;
+
+  /**
+   * ⚠️ **A data composition that could compose nothing at all.**
+   *
+   * 📁 **§03 is absolute — *"Home always renders Home"*** — so this is a designed
+   * state rather than a blank region. ⛔ **It cannot happen in production today**
+   * (every data composition contains a card with a renderer), **and it is drawn
+   * anyway**: 📁 the design bans *"any empty state that does not name what was
+   * checked"*, and a composition that silently produced no DOM would be the
+   * alternate Home §03 exists to forbid.
+   */
+  const nothingComposed = composition !== 'activation' && rendered.length === 0 && !resolving;
+
   return (
-    <div className="flex flex-col gap-6" data-testid="home" data-composition={composition}>
-      {/* 🔴 **Over whichever composition resolved, never instead of one** —
-          [TASK-1424](../../../../../../docs/BACKLOG.md). 📁 Rule 20: *"Home,
-          with the first-run overlay"*, and Home's own words: *"adds the
-          first-run overlay **over whichever composition resolved**."* ⛔ **It is
-          not a fifth composition**, and the cards below it are unchanged — a
-          new person's Home must be the same screen they come back to. */}
+    /**
+     * 📁 **Content capped at 1360px at every viewport above it, and no third
+     * column at any breakpoint** — §09's responsive laws and contract item 21.
+     * ⚡ *"Surplus width becomes margin, not a third column."*
+     */
+    <main className="mx-auto flex w-full max-w-[85rem] flex-col gap-4" data-testid="home" data-composition={composition}>
+      {/* 📁 Hierarchy 1 and 2. ⚠️ The continuity offer is Session Continuity's
+          and has no producer; the source strip is states 10 and 11. */}
+      <SourceStrip systems={systems} loading={resolving} />
+
+      {/* 🔴 **Over whichever composition resolved, never instead of one** — 📁
+          Entry rule 20 and Home's own words. ⛔ It is not a fifth composition. */}
       <FirstRunOverlay />
 
-      {/* 📁 ***"Progress counts blocking cards only"***, and 📁 ***"skipping is
-          reversible from the PROGRESS LINE"*** — [TASK-1424](../../../../../../docs/BACKLOG.md).
-          ⛔ **Only in the activation composition**: the other three are not a
-          setup sequence, and a *step 1 of 2* over an executive dashboard would
-          be counting something nobody is doing. */}
-      {composition === 'activation' ? <ActivationProgress /> : null}
-      {/* 📁 *"not a separate screen with its own layout, navigation or
-          breadcrumb"* — ⛔ **so this states the composition and nothing more.**
-          ⚡ The question is the design's own for each of the four. */}
-      <PageHeader
-        title="Home"
-        description={`${COMPOSITION_NAME[composition]} · ${COMPOSITION_QUESTION[composition]}`}
-      />
-
-      {rendered.length === 0 ? (
-        <EmptyState
-          icon={HomeIcon}
-          title="Signora has nothing to put on your home yet"
-          /* ⛔ **Never *"coming soon"***, and never a count of cards that do not
-             exist. ⚡ **It says what would fill this and where the work is
-             today**, so somebody who wants a home reads an instruction rather
-             than an apology. */
-          description="Home is composed from what each part of Signora publishes, and none of them publishes a card yet. Your accounts, signals and settings all work — this surface is the one that gathers them."
+      {/* 📁 Hierarchy 3 — *"name, date, and a count of what needs attention"*,
+          and the greeting is never skeletonised. */}
+      <div className="flex flex-wrap items-end gap-3.5">
+        <HomeGreeting
+          ref={heading}
+          name={session?.user.name ?? null}
+          workspace={activeWorkspace?.name ?? null}
+          composition={composition}
+          attention={attention.data?.items.length ?? null}
+          attentionFailed={attention.isError}
+          meetings={null}
         />
+        <CompositionSwitcher
+          className="ml-auto"
+          current={composition}
+          statedRole={statedRole.data ?? null}
+          workspaceId={workspaceId}
+        />
+      </div>
+
+      {/* 📁 ***"Progress counts blocking cards only"***, activation only. */}
+      {composition === 'activation' && !registryEmpty ? <ActivationProgress /> : null}
+
+      {nothingComposed ? (
+        <section
+          aria-label="Your home"
+          className="rounded-lg border border-border-soft bg-surface p-5 shadow-sm"
+        >
+          <p className="text-sm font-semibold text-content">
+            Signora has nothing to put on your home yet
+          </p>
+          {/* ⛔ **Names what was checked**, which is the design's own credibility
+              test for an empty state — and never *"coming soon"*. */}
+          <p className="mt-1.5 text-xs leading-[1.5] text-content-muted">
+            Home is composed from what each part of Signora publishes, and nothing it checked has a
+            card for you today. Your accounts, signals and settings all work.
+          </p>
+        </section>
+      ) : registryEmpty ? (
+        /* 📁 State 12's copy, verbatim, with a retry and no progress bar. */
+        <section
+          aria-label="Setup steps"
+          className="rounded-lg border border-border-soft bg-surface p-5 shadow-sm"
+        >
+          <p className="text-sm font-semibold text-content">{HM_COPY_11}</p>
+          <button
+            type="button"
+            onClick={() => void integrations.refetch()}
+            className="mt-3 inline-flex h-control-sm items-center rounded-md border border-border px-3 text-xs font-semibold text-content transition-colors hover:border-accent hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            Try again
+          </button>
+        </section>
       ) : (
-        <div className="grid grid-cols-1 gap-4 laptop:grid-cols-2">
+        /**
+         * 📁 **Two columns, `1.45fr / 1fr`, 14px gap at the reference viewport**
+         * — §09. ⛔ **One column below `laptop`**, which is where the design drops
+         * the split rather than compressing it.
+         */
+        <div className="grid grid-cols-1 gap-3.5 laptop:grid-cols-[1.45fr_1fr] laptop:items-start">
           {rendered.map((card) => {
             const Card = RENDERERS[card.id];
-            return Card === undefined ? null : (
-              <section key={card.id} data-card={card.id} aria-label={card.title}>
+            if (Card === undefined) return null;
+            return (
+              /**
+               * ♿ **Each card is a `<section>` with its own heading** — 📁 1.3.1
+               * and contract item 19. ⚡ **DOM order is visual order**, which is
+               * why the grid places rather than reorders.
+               */
+              <section
+                key={card.id}
+                data-card={card.id}
+                aria-label={card.title}
+                className={
+                  FULL.has(card.id)
+                    ? 'laptop:col-span-2'
+                    : WIDE.has(card.id)
+                      ? 'laptop:col-start-1'
+                      : 'laptop:col-start-2'
+                }
+              >
                 <Card />
               </section>
             );
           })}
         </div>
       )}
-    </div>
+    </main>
   );
 }
+
+/**
+ * 📁 **The design's footprints, reduced to which column a card takes.**
+ *
+ * ⚡ `card.attention` is *"1.45fr × auto"* and `card.pipeline` *"1fr × 320px"* —
+ * ⛔ **so the wide column is not a preference, it is the registry's own
+ * `footprint` field.** ⚠️ **A card absent from this set takes the narrow
+ * column**, which is the design's default for everything in the right-hand
+ * stack.
+ */
+const WIDE: ReadonlySet<CardContract['id']> = new Set([
+  'needs-you-today',
+]);
+
+/**
+ * 📁 **The registry's `full × auto` footprint.**
+ *
+ * 🔴 **Found in a screenshot, not by a gate.** ⛔ The activation cards were
+ * placed in the `1.45fr` column and rendered against a column of empty space —
+ * 📁 **the registry gives every activation card and both AI summaries `full ×
+ * auto`**, and *"full"* is the content region rather than the wide column.
+ */
+const FULL: ReadonlySet<CardContract['id']> = new Set([
+  'connect-a-crm',
+  'connect-calls',
+  'invite-the-team',
+  'daily-briefing',
+  'ai-executive-summary',
+]);
+
+/**
+ * 🔴 **The seam a card needs and `CardContract` does not carry.**
+ *
+ * 📁 The contract is metadata only — *"a contract carrying layout, width or
+ * position would be the module deciding something Home owns"* — ⛔ so it
+ * publishes no component, and this map belongs to **Home**.
+ *
+ * ⚠️ **A card appears here only when it can be RENDERED.** The catalogue is
+ * written ahead of the cards, and a registered card with no renderer would draw
+ * a hole — which is why `Home` filters on this map rather than on `REGISTRY`.
+ */
+const RENDERERS: Readonly<Partial<Record<CardContract['id'], () => React.ReactElement | null>>> =
+  Object.freeze({
+    'needs-you-today': AttentionCard,
+    'pipeline-health': PipelineHealthCard,
+    'connect-a-crm': ConnectCrmCard,
+    'connect-calls': ConnectCallsCard,
+    'invite-the-team': InviteTheTeamCard,
+  });

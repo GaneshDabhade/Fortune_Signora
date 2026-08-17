@@ -11,18 +11,27 @@ import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const workspace = vi.hoisted(() => vi.fn());
-const targets = vi.hoisted(() => vi.fn());
+/**
+ * ⚠️ **`targets` is gone and that is the point of this rewrite.** 🔴 Home used to
+ * decide rule 1 from the target-account version; 📁 the Home document's rule 1 is
+ * *"no integration has ever completed a sync"*, **which is a different question**
+ * — a workspace can declare no target accounts and be fully connected.
+ */
 const viewerRole = vi.hoisted(() => vi.fn());
 const cardsFor = vi.hoisted(() => vi.fn());
+const integrations = vi.hoisted(() => vi.fn());
+const accounts = vi.hoisted(() => vi.fn());
+const statedRole = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/state/workspace-provider', () => ({ useWorkspaceContext: workspace }));
-vi.mock('@/lib/query/hooks/commercial', () => ({ useTargetAccounts: targets }));
 vi.mock('@/lib/query/hooks/team', () => ({ useViewerRole: viewerRole }));
 vi.mock('@/lib/home/cards', async () => {
   const actual = await vi.importActual<Record<string, unknown>>('@/lib/home/cards');
   return { ...actual, cardsFor };
 });
-vi.mock('@/lib/auth/client', () => ({ useSession: () => ({ data: { user: { id: 'u1' } } }) }));
+vi.mock('@/lib/auth/client', () => ({
+  useSession: () => ({ data: { user: { id: 'u1', name: 'Aurélie Fontaine' } } }),
+}));
 // ⚡ **The first-run overlay reads a preference** — [TASK-1424]. ⛔ Mocked at the
 // same boundary this file already mocks the other reads at, **and returning
 // *dismissed* keeps these tests about the COMPOSITION**: an overlay in the
@@ -31,35 +40,48 @@ vi.mock('@/lib/auth/client', () => ({ useSession: () => ({ data: { user: { id: '
 // ⚠️ **Third time this file has needed a new mock as Home grew a read**, and
 // that is the test doing its job: it renders the REAL Home against mocked
 // boundaries, **so a new dependency cannot arrive silently.**
-vi.mock('@/lib/query/hooks/integrations', () => ({
-  useIntegrations: () => ({ data: [] }),
-}));
+vi.mock('@/lib/query/hooks/integrations', () => ({ useIntegrations: integrations }));
+vi.mock('@/lib/query/hooks', () => ({ useAccounts: accounts }));
+vi.mock('@/lib/query/hooks/home', () => ({ useStatedRole: statedRole }));
 vi.mock('@/lib/query/hooks/preferences', () => ({
   usePreferences: () => ({ data: { first_run_dismissed: true, invite_hidden: false } }),
   useDismissFirstRun: () => ({ mutate: () => {}, isPending: false }),
   useSkipInvite: () => ({ mutate: () => {}, isPending: false }),
+  // ⚡ **The switcher writes this** — 📁 rule 2's input, and [C-1530](../../../docs/LANE_COORDINATION.md).
+  useChangePreferences: () => ({ mutate: () => {}, isPending: false }),
 }));
 
 import { Home } from '@/app/(app)/w/[workspace]/home/home';
 
-function ready(version: number) {
+/**
+ * ⚡ **`connected` is rule 1's input** — 📁 *"no integration has ever completed a
+ * sync."* **`false` resolves activation; `true` falls through to rules 2–5.**
+ */
+function ready(connected: boolean) {
   workspace.mockReturnValue({
     activeWorkspace: { id: 'w1', name: 'Northwind' },
     workspaces: [{ id: 'w1', name: 'Northwind' }],
     isLoading: false,
     error: null,
   });
-  targets.mockReturnValue({
-    data: { version, accounts: [], updated_at: null, updated_by: null },
+  integrations.mockReturnValue({
+    data: connected
+      ? [{ integration: 'salesforce', capabilities: [], connectable: true, working: true, needs_attention: false, connections: [{ id: 'c1', connected_at: null }] }]
+      : [],
     isPending: false,
     isError: false,
+    refetch: () => {},
   });
 }
 
 beforeEach(() => {
   workspace.mockReset();
-  targets.mockReset();
+  integrations.mockReset();
   viewerRole.mockReturnValue({ role: 'owner', resolved: true });
+  accounts.mockReturnValue({ data: { items: [] }, isPending: false, isError: false, refetch: () => {} });
+  // 📁 **Rule 5's case by default** — *"anything else… the default and the most
+  // common outcome"*. Individual tests state a role where that is the subject.
+  statedRole.mockReturnValue({ data: null });
   // ⚡ **The real registry is empty**, which is what ships; individual tests
   // stub a contribution where the point is what Home does with one.
   cardsFor.mockReturnValue([]);
@@ -67,32 +89,81 @@ beforeEach(() => {
 
 describe('🔴 Home always renders', () => {
   it('✅ a workspace that has declared nothing gets Activation', () => {
-    ready(0);
+    ready(false);
 
     render(<Home />);
 
     // 📁 *"Any role, empty workspace"* — ⚡ **emptiness wins over role**, which
     // is the resolver's own ordering and not this screen's.
     expect(screen.getByTestId('home')).toHaveAttribute('data-composition', 'activation');
-    expect(screen.getByText(/How do I begin\?/)).toBeInTheDocument();
+    // ⚠️ **The question moved.** 📁 Home's greeting is *"name, date, and a count"*
+    // — the composition is NAMED on the scope line, and *"How do I begin?"* is the
+    // question the design asks in its own prose rather than on the screen.
+    expect(screen.getByText(/Activation/)).toBeInTheDocument();
   });
 
   /**
-   * 🔴 **Every session resolves to Activation today, and that is honest rather
-   * than a bug.**
+   * 🔴 **This asserted `activation` and the Home document reversed it.**
    *
-   * 📁 The design resolves a composition from *"the person's primary role"* and
-   * ⛔ **`Membership.role` is `owner | member`** — the platform publishes no
-   * primary role at all. ⚡ **So a workspace WITH data still resolves to
-   * Activation**, because picking one of the other three would be inventing
-   * what a person is.
+   * ⚠️ **The old reasoning was sound when written**: no primary role existed, so
+   * picking one of the other three would have been inventing what a person is.
+   * ⛔ **But 📁 rule 5 makes SELLER the default** — *"anything else… the default
+   * and the most common outcome"* — **and state 04 forbids a fully activated
+   * workspace rendering a setup sequence.**
+   *
+   * ✅ **And the role now exists**: onboarding screen `05` collects it.
    */
-  it('🔴 and a workspace with data still does, because no role is published', () => {
-    ready(3);
+  it('🔴 a connected workspace with no stated role gets SELLER, not activation', () => {
+    ready(true);
+
+    render(<Home />);
+
+    expect(screen.getByTestId('home')).toHaveAttribute('data-composition', 'seller');
+  });
+
+  it('📁 rule 3 · a revenue leader gets the executive composition', () => {
+    ready(true);
+    statedRole.mockReturnValue({ data: 'revenue_leader' });
+
+    render(<Home />);
+
+    expect(screen.getByTestId('home')).toHaveAttribute('data-composition', 'executive');
+  });
+
+  it('🔴 rule 1 outranks rule 3 — P-01, and an executive still gets activation', () => {
+    // 📁 *"Rendering an empty executive dashboard to an executive is the worst
+    // first impression available."*
+    ready(false);
+    statedRole.mockReturnValue({ data: 'revenue_leader' });
 
     render(<Home />);
 
     expect(screen.getByTestId('home')).toHaveAttribute('data-composition', 'activation');
+  });
+
+  /**
+   * 📁 **State 07 — *"the greeting and scope line render immediately from session
+   * data… Never skeletonised."***
+   *
+   * ⛔ **Home used to return a page-level *"Resolving your home…"***, which is the
+   * full-page placeholder the design refuses.
+   */
+  it('✅ the greeting is real while the reads are still in flight', () => {
+    workspace.mockReturnValue({
+      activeWorkspace: { id: 'w1', name: 'Northwind' },
+      workspaces: [],
+      isLoading: false,
+      error: null,
+    });
+    integrations.mockReturnValue({ data: undefined, isPending: true, isError: false, refetch: () => {} });
+
+    render(<Home />);
+
+    // ⚡ **The name is there before any card can be.**
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Aurélie/);
+    // ⛔ **And the count is absent rather than zero** — 📁 *"never shown as 0
+    // while loading."*
+    expect(screen.queryByText(/0 things need you/)).not.toBeInTheDocument();
   });
 
   /**
@@ -110,7 +181,7 @@ describe('🔴 Home always renders', () => {
       isLoading: false,
       error: null,
     });
-    targets.mockReturnValue({ data: undefined, isPending: false, isError: true });
+    integrations.mockReturnValue({ data: undefined, isPending: false, isError: true, refetch: () => {} });
 
     render(<Home />);
 
@@ -120,23 +191,30 @@ describe('🔴 Home always renders', () => {
     expect(screen.queryByTestId('home')).not.toBeInTheDocument();
   });
 
-  it('⛔ and nothing is resolved while the read is still in flight', () => {
-    workspace.mockReturnValue({
-      activeWorkspace: { id: 'w1', name: 'Northwind' },
-      workspaces: [],
-      isLoading: false,
-      error: null,
-    });
-    targets.mockReturnValue({ data: undefined, isPending: true, isError: false });
+  /**
+   * 📁 **State 12 — *"the activation registry returned zero cards."***
+   *
+   * ⛔ **The design says what must NOT happen**: *"Never a progress bar at 0 of 0,
+   * and never an empty activation composition."*
+   */
+  it('📁 an activation composition with no cards renders HM-COPY-11 and no progress bar', () => {
+    ready(false);
+    cardsFor.mockReturnValue([]);
 
     render(<Home />);
 
-    // ⚠️ **Guessing either way would flash the wrong Home at somebody.**
-    expect(screen.queryByTestId('home')).not.toBeInTheDocument();
+    expect(screen.getByText('Setup steps could not be loaded.')).toBeInTheDocument();
+    // ⛔ **No progress bar**, which is the half a reader would misread as *nothing
+    // to do* rather than *we could not ask*.
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    expect(screen.queryByText(/0 of 0/)).not.toBeInTheDocument();
   });
 });
 
 describe('⛔ it renders no card the platform has not published', () => {
+  // ⚡ **A connected workspace**, so the composition is a data one and the
+  // *nothing composed* branch is the one under test rather than state 12.
+  beforeEach(() => ready(true));
   /**
    * 🔴 **The registry is empty and Home says so in the customer's words.**
    *
@@ -145,7 +223,7 @@ describe('⛔ it renders no card the platform has not published', () => {
    * count of cards that do not exist, never *coming soon*.**
    */
   it('✅ a designed empty state, naming what would fill it', () => {
-    ready(0);
+    ready(true);
 
     render(<Home />);
 
@@ -182,7 +260,6 @@ describe('⛔ it renders no card the platform has not published', () => {
      * *"ranked risks with the population each was derived from"* has no read,
      * measured in [TASK-1425](../../../docs/BACKLOG.md).
      */
-    ready(0);
     cardsFor.mockReturnValue([
       { id: 'top-risks', title: 'Top risks', module: 'signal_engine', requires: null },
     ]);
@@ -202,7 +279,7 @@ describe('⛔ it renders no card the platform has not published', () => {
    * here would make Home a destination rather than a slot.
    */
   it('⛔ it is a slot, not a screen — no navigation of its own', () => {
-    ready(0);
+    ready(false);
 
     render(<Home />);
 
