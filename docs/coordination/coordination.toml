@@ -9,7 +9,7 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "1aaf967"
+generated_from = "a93bfe0"
 task_count     = 56
 
 [lane.Lane_A]
@@ -207,7 +207,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane C, 2026-08-09, on [C-1410](LANE_COORDINATION.md).** ✅ **THE ONE"
 waiting_for    = "— Lane C, 2026-08-09, on [C-1410](LANE_COORDINATION.md).** ✅ **THE ONE ROW OF THE FOUR THAT IS GENUINELY DEPENDENT**, and [D-208](DECISION_REGISTER.md"
-blocked_days   = 0.4
+blocked_days   = 0.5
 on_integration = true
 
 [[task]]
@@ -223,7 +223,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane A, 2026-08-11, [C-287](LANE_COORDINATION.md). Claim released.**"
 waiting_for    = "— Lane A, 2026-08-11, [C-287](LANE_COORDINATION.md). Claim released.** 🔴 **[ADR-0408](architecture/adr/0408-inbound-rate-limiting.md) specifies the li"
-blocked_days   = 0.4
+blocked_days   = 0.5
 on_integration = true
 
 [[task]]
@@ -431,7 +431,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane A, 2026-08-16, on [C-1525](LANE_COORDINATION.md), raised as an "
 waiting_for    = "— Lane A, 2026-08-16, on [C-1525](LANE_COORDINATION.md), raised as an ARCHITECTURAL blocker with [§20e](../CLAUDE.md)'s six things.** ⚠️ **Claimed, au"
-blocked_days   = 0.4
+blocked_days   = 0.5
 on_integration = true
 
 [[task]]
@@ -783,7 +783,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane A, 2026-08-10, on TWO things, and the second is not a lane's to"
 waiting_for    = "— Lane A, 2026-08-10, on TWO things, and the second is not a lane's to settle.** ⛔ **① The same deferral as [TASK-495](#task-495--notification-deliver"
-blocked_days   = 0.4
+blocked_days   = 0.5
 on_integration = true
 
 [[task]]
