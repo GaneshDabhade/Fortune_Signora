@@ -97,7 +97,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | [`docs/BACKLOG.md`](BACKLOG.md) — the authoritative work queue |
 | **Current assignee** | **Lane C** — the rows are Lane C's claims, written in `19149dc6` |
 | **Severity** | 🟡 · ⛔ **Not a Blocking Quality Defect** — no gate is failing, and the *current* status is correct and comes first in both cells |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` — Lane C, `c05023cc`. `VERIFIED` — QE, 2026-08-18, from the commit rather than the report.** ⚠️ **Two of this row's own assertions were wrong; see the correction below** |
 | **Found** | **2026-08-18**, by QE, polling `origin/integration` at `19149dc6` — reading the claim commit's diff before deciding whether it warranted a cycle |
 
 **Steps to reproduce.**
@@ -137,12 +137,107 @@ git show 19149dc6:docs/BACKLOG.md | grep -c '|) make that permanent'      # → 
 
 - ✅ **The claim itself is valid.** `--audit-claims` passes it: `ACTIVE_ASSIGNMENTS.md` and `BACKLOG.md`, nothing else — **the one thing a lane may push to `integration`.**
 - ✅ **The current status in both cells is correct** and precedes the orphan.
-- ✅ **No content was lost** — the orphan is a *duplicate* tail, not a deletion. `git show 19149dc6 --stat` is `+6 −3` across two files.
-- ⚠️ **`state-check` reports *"TASK-1430 is claimed by Lane A and Lane C at once"* and the same for TASK-202. ⛔ That is this defect seen through an instrument, not a second one** — the checker reads the orphaned cell's `Lane A` as a live claim. **Do not resolve it as a Task Claim Protocol violation; there is one claimant.**
+- 🔴 ~~**No content was lost** — the orphan is a *duplicate* tail, not a deletion.~~ ⛔ **WRONG, and load-bearing — corrected below.** ✅ **Nothing was lost *in `19149dc6`*** (`+6 −3`, nothing removed) — ⛔ **but the orphan was the cell's genuine, unique tail, not a copy.**
+- ⚠️ **`state-check` reports *"TASK-1430 is claimed by Lane A and Lane C at once"* and the same for TASK-202. 🔴 ~~That is this defect seen through an instrument, not a second one — the checker reads the orphaned cell's `Lane A` as a live claim.~~ ⛔ **WRONG — it is a SECOND defect, [B-1013](#b-1013), and it is QE's.** ✅ **The instruction stands and was right: there is one claimant, so do not resolve it as a Task Claim Protocol violation.**
 
 ### The repair
 
 **Delete from the spurious `|` to the end of the line, on both.** ⛔ **Nothing else** — the `Was:` history that remains inside the correct cell is deliberate and stays.
+
+
+
+### ⚠️ FIXED — Lane C, `c05023cc`. **And two of the four things this row asserted were wrong** — QE, 2026-08-18
+
+**Repair verified by QE from the commit, not from the report:** `+2 −2`, both orphans absent, both rows back to **3 pipes**, and the republished `origin/coordination` (`c9727154`) carries the repaired file.
+
+**Lane C recovered the pre-claim cells from `19149dc6^` before deleting, and checked the six other rows in the file with 4+ pipes — every one has a pipe inside inline code.** ✅ **The count of two was right.**
+
+#### ⛔ ① *"the orphan is a duplicate tail"* — **wrong, and it was load-bearing**
+
+**Measured against `19149dc6^` after Lane C challenged it.** The new TASK-1430 cell is 493 characters and contains **none** of the orphan's substance:
+
+```
+'make that permanent'   in the current cell?  False
+'credential-stuffing'   in the current cell?  False
+'Skipped twice'         in the current cell?  False
+'B-241'                 in the current cell?  False
+```
+
+**The orphan was the genuine, unique tail of the cell that was replaced.** ⚠️ **What I actually checked was *"did the diff remove lines?"*** — `+6 −3`, nothing deleted — **and reported the answer as *"the orphan is a duplicate"*. Those are different questions**, and the second does not follow from the first.
+
+> 🔴 **It was load-bearing because it was the stated reason the repair was safe.** **A lane trusting it would have deleted unique content believing a copy survived.**
+>
+> ✅ **Lane C deleted it anyway, on a reason that actually holds and is theirs:** *a mid-token fragment is not readable history, the substantive fact survives in the current cell, and the full prior state is in git.* **Right answer, arrived at without my reasoning.**
+
+#### ⛔ ② *"`state-check` is reading the orphaned cell's `Lane A`"* — **wrong, and the repair disproved it**
+
+**Both dual-claim findings still report, unchanged, with the orphans gone.**
+
+📁 **`state-check.py:1890` calls `_board_claims(assignments)` — [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md). It never reads `BACKLOG.md` for this check at all.** **The real cause is four rows on the board and it is [B-1013](#b-1013), which is QE's.**
+
+✅ **The instruction I gave both lanes — *there is one claimant, do not resolve it as a Claim Protocol violation* — was correct.** ⛔ **The reason I gave for it was not.**
+
+
+### B-1013 · 🟡 A claim released in prose is still a claim to every machine that reads the board
+
+| | |
+|---|---|
+| **Module** | [`docs/ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) — the execution board. ⛔ **NOT `infra/state-check.py`; see the correction below** |
+| **Current assignee** | **QE** — [§20e](../CLAUDE.md): QE reconciles the board, *"and no stale assignment is left behind"* |
+| **Severity** | 🟡 · ⛔ **Not a Blocking Quality Defect** — `state-check` is advisory and refuses nothing |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-18.** ⚠️ **Reported by Lane C with a mechanism that does not hold; the underlying finding is real and the mechanism is measured here** |
+
+**Steps to reproduce.**
+
+```bash
+python3 infra/state-check.py
+→ TASK-1430 is claimed by Lane A and Lane C at once.
+→ TASK-202  is claimed by Lane A and Lane C at once.
+```
+
+**Expected.** One claimant each.
+
+**Actual.** Two, and the second one's own `Status` cell retracts it:
+
+| Line | Lane | Task | Its own Status cell |
+|---|---|---|---|
+| 298 · 299 | **Lane C** | TASK-1430 · TASK-202 | 🔵 `CLAIMED` — **live** |
+| **310** | Lane A | TASK-202 | ⏸️ **`BLOCKED`** — on C-334 |
+| **312** | Lane A | TASK-1430 | ⏸️ **`BLOCKED` — claim released** |
+| **314** | Lane A | TASK-489 | ⏸️ **`BLOCKED` — claim released** |
+
+### The mechanism
+
+📁 **`_board_claims` reads the `Lane` and `Task` cells and deliberately reads no others** — its docstring says why: *"a `Next action` may reference a blocker's id without claiming it."* ⛔ **It never reads `Status`.**
+
+**So a row saying *claim released* in cell 7 is indistinguishable, to the checker, from a live claim.** ✅ **The retraction is real, is written down, and is invisible to every machine** — which is [§2](../CLAUDE.md)'s *behaviour exists exactly once* from the reporting end: **the board's authoritative state is the row's existence, and a second state was encoded in prose beside it.**
+
+### ✅ The repair is on the board, not on the checker
+
+**A released claim is removed, not annotated.** 📁 [§20e](../CLAUDE.md) already requires it — *"Completed assignments marked `COMPLETE`, then removed… no stale assignment is left behind"* — and a released claim is that class exactly.
+
+⛔ **Do not teach the checker to parse `claim released` out of prose.** **That is a second representation of the same fact, and the next release will be worded differently.**
+
+---
+
+### 🔴 CORRECTION — this row asserted a `state-check` parsing bug, and there is none. QE, 2026-08-18
+
+**Reported by Lane C as:** *"all four sit under `### Cycle 238 — superseded`; the checker counts an archived section as live claims."* **Measured before implementing the fix it implied:**
+
+```
+headings in ## Current:   ### Cycle 243 · 242 · 241 · 240 · 239 · 238   (lines 84–132)
+table header underlines:  exactly ONE, at line 297
+between 132 and 297:      81 blockquote lines, 4 table lines
+```
+
+⚡ **The `### Cycle nnn` blocks are *narrative Closeout notes*, not sections containing rows. There is exactly one table in `## Current`, it sits below all of them, and every one of the four rows is in it.** ✅ **`_board_claims`' scoping is doing precisely what it documents.**
+
+> 🔴 **The fix I had drafted — split at the first `###` after `## Current` — would have excluded the entire live table.** ⛔ **Every real dual claim would have gone unreported**, which is the *duplicate implementation* the Task Claim Protocol exists to prevent. **A false positive traded for a false negative, in the check whose false negative is the expensive one.**
+>
+> ✅ **It was caught by verifying a colleague's structural claim instead of accepting it** — the same discipline [B-1000](#b-1000)'s note had asked for one commit earlier, applied to a report that was *right about the finding* and wrong about why.
+
+⚠️ **Both parties were wrong about the mechanism and right that something was wrong.** **QE first said the checker was reading `BACKLOG.md`'s orphaned cell; Lane C disproved that and substituted an archived-section reading; the board itself was the answer both times.**
 
 
 ### B-1011 · 🔴 Coverage crossed the floor at cycle 244 — 94.98% against 95.0, and certification refused
@@ -1008,6 +1103,26 @@ for _lane, _spec in sorted(_notice_health(rows).items()):
 ### ✅ The fix, and why it is not a checker
 
 **The board is reconciled and the stamp corrected.** ⛔ **No new check is added.** A checker for *"did Closeout run all eleven activities?"* would be a fourth place recording what the eleven are, and **the copy is never wrong when written; it is wrong the first time the list grows.** ⚡ **What actually failed already had an instrument — `state-check` printed the finding.** **The repair is that QE reads findings, not exit codes**, and the evidence for whether it holds is the next cycle's board stamp rather than a green tick.
+
+### ⚠️ A neighbouring failure mode, and it is more durable than the one this row names — QE, 2026-08-18
+
+**Three times now, this lane has been right about a conclusion and wrong about the reason** — and in all three the wrong reason was published while the right conclusion made it unexaminable.
+
+| | Conclusion | Reason given | Actually |
+|---|---|---|---|
+| **[B-443](#b-443)** | *"`coverage-debt` worked for me"* — retracted | The retraction blamed the wrong mechanism | **Lane C found it**: `round(94.98, 0) = 95.0`, so cycle 244 never triggered it |
+| **[B-1011](#b-1011)** | *"the coverage gap is here"* | `handlers.py`, 30 missing lines | **`claims.py`**, 8 missing at 78% — `coverage-debt` ranks by missing lines and says so nowhere |
+| **[B-1012](#b-1012)** | *"one claimant; not a Protocol violation"* ✅ | *"`state-check` reads the orphaned cell"* | **It reads [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) and never `BACKLOG.md`** — [B-1013](#b-1013) |
+
+> ⛔ **This row's family is *the instrument answered a narrower question than the one asked*.** **This one is different and worse-behaved: the answer was right, so nothing ever re-opened the reasoning.**
+>
+> ⚡ **A wrong conclusion gets found — something downstream fails.** **A wrong reason attached to a right conclusion has no downstream**, and it survives until somebody acts on the reason rather than on the conclusion. **B-1012 was found only because Lane C went to repair the thing and the finding did not go away.**
+
+**What it costs, concretely.** ⛔ **B-1012's wrong reason was the stated justification that a delete was safe.** **Lane C deleted the right thing on a reason they derived themselves**; had they trusted mine, they would have deleted unique content believing a copy survived.
+
+✅ **The habit this asks for is small and it is not "check harder".** **When reporting a conclusion and a reason, say which one was measured.** **In all three cases the conclusion was measured and the reason was inferred** — and nothing in the report distinguished them.
+
+
 ### B-443 · 🔴 `coverage-debt` refuses to run when coverage is below the floor — the only situation it exists for
 
 | | |
