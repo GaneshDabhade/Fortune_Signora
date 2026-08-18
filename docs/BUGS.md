@@ -188,6 +188,58 @@ git show 19149dc6:docs/BACKLOG.md | grep -c '|) make that permanent'      # → 
 ✅ **The instruction I gave both lanes — *there is one claimant, do not resolve it as a Claim Protocol violation* — was correct.** ⛔ **The reason I gave for it was not.**
 
 
+### B-1016 · 🟠 Migration `0048`'s downgrade cannot run on a database that used the feature `0048` added
+
+| | |
+|---|---|
+| **Module** | `action_batch` — `backend/migrations/versions/0048_action_batch_dispatch.py` |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — `action_batch`, **Lane A** |
+| **Severity** | 🟠 · ⛔ **PRE-EXISTING BASELINE ISSUE, not a regression.** **`0048` long predates the candidate that found it, and that candidate adds no migration** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-18 by QE**, running migration reversibility during the certification of `6eba78bf925d` — **against a database that had been used**, which is why it had never appeared |
+
+**Steps to reproduce.** Against a database carrying **any `action_batch_transition` row with `transition = 'dispatched'` and a null `actor_id`**:
+
+```bash
+alembic downgrade base
+→ sqlalchemy.exc.IntegrityError: CheckViolationError:
+  check constraint "ck_action_batch_transition_only_application_is_unattributed"
+  of relation "action_batch_transition" is violated by some row
+  [SQL: ALTER TABLE action_batch_transition ADD CONSTRAINT ...
+        CHECK (actor_id IS NOT NULL OR transition IN ('applied'))]
+```
+
+**Measured on this workstation's `signora` at 5632:**
+
+| `transition` | `actor_id IS NULL` | rows |
+|---|---|---|
+| approved | f | 22 |
+| **dispatched** | **t** | **8** ⛔ |
+| reversed | f | 3 |
+| applied | t | 3 |
+
+### The shape of it
+
+**`0048` RELAXED the constraint** so a `dispatched` transition may be unattributed — **correct, and it is the system rather than a person that dispatches.** ⛔ **Its `downgrade` re-adds the strict form verbatim**, which every row the feature has since produced violates.
+
+> ⚡ **So the down-migration is reversible only on a database that never used the feature it added** — **which is exactly the database a reversibility gate runs against.**
+
+### ✅ Why the gate was not wrong to pass
+
+**Re-run on a clean disposable database at the same commit: `base → head → base → head → base → head`, every step exit 0, head `0060`.** ✅ **That is a true statement about the migrations and it is the question the gate asks.**
+
+⛔ **It is not the question a rollback asks.** **A production rollback runs against data**, and this one would abort partway — leaving the schema between two revisions with no recorded state for it.
+
+> ⚠️ **[B-1000](#b-1000)'s family, and an unusually clean instance: the instrument answers *"do these migrations compose?"* and is read as *"can we roll back?"*** **Both readings are reasonable and only one is measured.**
+
+### What the fix is NOT
+
+⛔ **Do not delete the constraint from the downgrade.** A downgrade that silently drops an invariant is worse than one that refuses.
+
+⛔ **Do not weaken the *upgrade* to make the *downgrade* pass.** The relaxed constraint is correct; `0048` was right.
+
+✅ **A downgrade that must discard data says so** — either by refusing with a diagnostic naming the rows, or by an explicit, documented data step. ⚡ **Which of those is a decision for the module's assignee, not for QE.**
+
 ### B-1015 · 🟠 After a host restart the prod stack returns as three app containers crash-looping against a dead database, holding a gate's port
 
 | | |

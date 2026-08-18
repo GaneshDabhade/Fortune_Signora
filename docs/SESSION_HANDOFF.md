@@ -1,6 +1,14 @@
 # Session Handoff
 
-> ## Cycles 244–246 — promoted `0281e08b`, 2026-08-17 · **three attempts, two correct refusals, and a lane's measurement that overruled QE's**
+> ## Cycle 247 — promoted `6eba78bf`, 2026-08-18 · **QE's own seven commits, and the standard now exceeds what the gates measure**
+>
+> **`main` = `6eba78bf` = the certified commit.** `pytest` **5287** · coverage **95.08%** · **668 Security Invariants** · `mypy` **940** files · `import-linter` **37/37** · `tsc` clean · `frontend-suite` **3405/192** · `eslint` clean · `smoke` 24/207s · **DR passed** · **reversible on a clean database** · head **`0060`**. **7 commits, one lane.**
+>
+> ⛔ **Two things the next session must not misread.** ⓐ **This cycle certified QE's own work and no independent review existed** — the two-lane model leaves QE the only author and the only certifier of certification infrastructure. ⓑ **The certification standard ratified 2026-08-18 names fourteen conditions and the gates measure seven.** **Playwright, browser verification, design conformance and regression-vs-baseline have no gate at all** ([B-131](BUGS.md)).
+>
+> **Open and mine:** [B-1013](BUGS.md) `FIXED` awaiting independent verification · [B-1014](BUGS.md) same · [B-1015](BUGS.md) the prod stack's restart asymmetry · [B-1016](BUGS.md) `0048`'s downgrade, **pre-existing and Lane A's by module**.
+>
+> ### Previously — cycles 244–246, promoted `0281e08b`, 2026-08-17 · **three attempts, two correct refusals, and a lane's measurement that overruled QE's**
 >
 > **`main` = `0281e08b` = the certified commit.** `pytest` **5280** · coverage **95.08%** · **668 Security Invariants** · `mypy` **939** files · `frontend-suite` **3405/192** · `smoke` 24/162s · **DR passed** · **reversible** · head **`0060`**. **41 commits, three lanes.**
 >

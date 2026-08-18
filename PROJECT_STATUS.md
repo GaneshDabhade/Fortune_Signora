@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `0281e08b`, 2026-08-17.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `6eba78bf`, 2026-08-18.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,13 +12,17 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `0281e08b`, 2026-08-17.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `6eba78bf`, 2026-08-18.** Every figure is read from the repository, never carried forward.
+
+> ⚠️ **Cycle 247 is QE's own work, and it is labelled as such.** **All seven commits are QE's** — a defect register, a governance reconciliation and one certification-infrastructure fix. ⛔ **Under the two-lane model QE is the only lane that can write certification infrastructure and the only lane that can certify it, so the independent-review property is ABSENT for this cycle.** **The gates are deterministic and they passed; the second pair of eyes did not exist.** **Reported rather than resolved.**
 
 | | |
 |---|---|
-| **`main`** | **`0281e08b`** — ⚡ **the certified commit itself**, `promoted == certified`, **verified against the SHA the guard named, not against `integration`'s head**. **Cycle 238** — ⛔ **and `integration` had already moved to `9023b187` when the promotion ran, for the second cycle running** |
+| **`main`** | **`6eba78bf`** — ⚡ **cycle 247**, `promoted == certified`, verified from the remote after the push. **7 commits, one lane (QE), one certification attempt.** **Was `0281e08b`:** — ⚡ **the certified commit itself**, `promoted == certified`, **verified against the SHA the guard named, not against `integration`'s head**. **Cycle 238** — ⛔ **and `integration` had already moved to `9023b187` when the promotion ran, for the second cycle running** |
 | **Release candidate** | `integration` = **`9023b187`** — Lane C's three planning commits, rebased onto the pin and ref-pushed **while the gates were running**, so no lane waited and no gate was disturbed |
-| **Certification** | ✅ [`0281e08be27d`](certification/reports/0281e08be27d.md) · migration head **`0060`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** |
+| **Certification** | ✅ [`6eba78bf925d`](certification/reports/6eba78bf925d.md) · migration head **`0060`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a CLEAN database** — ⛔ **and NOT on a used one, which is [B-1016](docs/BUGS.md)**. **Was [`0281e08be27d`](certification/reports/0281e08be27d.md):** · migration head **`0060`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** |
+| **Cycle 247 gates** | ⚡ **EIGHT required, all recorded, first attempt** — `pytest` **5287** *(+7)* · coverage **95.08%** · **668** security invariants · `mypy` strict over **940** files *(+1)* · `import-linter` **37/37** · `tsc` clean · `frontend-suite` **3405 in 192 files** · `eslint` clean · `smoke` **24 stages in 207s** · scenario **baseline@1, 198 assertions** |
+| 🔴 **What certification did NOT measure, against the standard ratified 2026-08-18** | ⛔ **7 of 14 items measured, 1 partial, 6 with NO GATE AT ALL.** **Absent: Playwright · browser/screenshot verification · approved-design conformance · removal of obsolete implementation · frontend-functional · no-regression-vs-baseline.** ⚠️ **Partial: migration reversibility — run by QE, not recorded** ([B-131](docs/BUGS.md)). ⚡ **This cycle is therefore NOT full certification against the current standard, and is not reported as one** |
 | **Cycle 246 gates** | ⚡ **EIGHT required, all recorded** — `pytest` **5280** · coverage **95.08%** · **668** security invariants · `mypy` strict over **939** files · `import-linter` **37/37** · `tsc` clean · **`frontend-suite` 3330 in 189 files** · **`eslint` clean** · `smoke` **24 stages in 162s** · scenario **baseline@1, 198 assertions** |
 | ✅ **The coverage fall broke at cycle 240, and the trend row is kept rather than deleted** | **95.06 → 95.05 → 95.04 → 95.05.** ⛔ **The three-cycle monotonic fall did NOT continue.** ⚡ **Reported as a trajectory while it was falling and reported as broken now it is not** — 📁 **a trend row that is quietly removed the moment it stops being alarming teaches a reader that trends are only mentioned when they are bad.** ⚠️ **Five basis points, and still the figure worth watching**: the rise came from a slice that was 19 tests against a small guard, not from anything structural |
 | ⚠️ **`make coverage-debt` cannot answer the question this trend raises** | 📁 **Reported by Lane A**: its reader skips because `coverage json` exits 2 — **the READER failing rather than the run.** ⛔ **So the one instrument that would name WHICH files are pulling the figure down is unavailable exactly as the margin narrows.** ✅ **The certification figure is unaffected and is measured independently** |
@@ -118,6 +122,35 @@
 ---
 
 ## 1d · Release summary — 2026-08-17, cycles 244–246
+
+### Cycle 247 — release summary
+
+**Promoted `6eba78bf` from `2d26cca3`. Seven commits, one lane, one certification attempt, no refusals.**
+
+⚠️ **Every commit is QE's.** ⛔ **No feature reached a customer in this cycle** — it is a defect register, a governance reconciliation and one certification-infrastructure fix.
+
+| | |
+|---|---|
+| **Features delivered** | ⛔ **None.** This cycle ships no customer-visible change |
+| **Defects fixed** | **[B-1013](docs/BUGS.md)** — the board carried three claims its own prose had released · **[B-1014](docs/BUGS.md)** 🔴 — the browser suite ran against port 80 on a detached head |
+| **Defects opened** | **[B-1012](docs/BUGS.md)** *(fixed, Lane C)* · **[B-1013](docs/BUGS.md)** · **[B-1014](docs/BUGS.md)** · **[B-1015](docs/BUGS.md)** — the prod stack returns from a reboot without its database · **[B-1016](docs/BUGS.md)** — `0048`'s downgrade fails on a used database |
+| **Coordination closed** | **[C-108](docs/LANE_COORDINATION.md)** — settled by the two-lane ruling; the registry says *who implements*, [§20a](CLAUDE.md) says *what authority a change needs*, and they were never the same question |
+| **Governance** | **Lane C retired; Lane A sole implementation owner; QE certification and promotion only.** `modules.toml` reconciled, 8 stale board rows removed, 5 backlog claims cleared to `UNASSIGNED` **without reassigning scope** |
+| **ADRs accepted** | None |
+| **Migrations** | None. Head unchanged at **`0060`** |
+| **Metrics** | `pytest` **5287** *(+7)* · coverage **95.08%** · **668** invariants · `mypy` **940** files *(+1)* · `frontend-suite` **3405/192** · **37/37** contracts · `smoke` **24/207s** · **288** bug rows · **60** ADRs · **148** architecture documents · **20** modules |
+
+#### 🔴 Remaining blockers, and the honest shape of this certification
+
+**① The standard exceeds the gates.** **7 of 14 conditions measured, 1 partial, 6 with no gate.** ⛔ **Playwright, browser/screenshot verification, design conformance, obsolete-implementation removal, frontend-functional and regression-vs-baseline were NOT measured.** **This is [B-131](docs/BUGS.md), open since 2026-08-06, now load-bearing.**
+
+**② No independent review existed.** **QE authored and certified its own certification infrastructure.** ⚡ **The gates are deterministic and they passed — that part is not weakened by authorship.** ⛔ **What is absent is the second reading, and the two-lane model has nowhere to get one.**
+
+**③ [B-1016](docs/BUGS.md) is pre-existing and was found by this cycle, not caused by it.** **Reversibility passes on a clean database and fails on a used one** — two different questions, and only one is asked by the gate.
+
+#### ✅ Recommended next work
+
+**Build the browser gate** — [B-1014](docs/BUGS.md) removed the trap that would have made it lie, and **Lane A's [B-279](docs/BUGS.md)/[B-280](docs/BUGS.md)/[B-281](docs/BUGS.md) are the baseline to build it against.** ⚡ **A baseline with no passing control is a red screen, not a measurement** — Lane A's phrase, and the reason their `content-width` 18 and `navigation-bands` 17 passes matter more than their failures.
 
 **Promoted `0281e08b` from `25765808`.** ⚡ **41 commits, THREE lanes, and it took three certification attempts.** 🔴 **Two of the three were refused, both correctly.**
 
