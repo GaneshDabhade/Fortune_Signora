@@ -13,7 +13,7 @@ generated_from = "19149dc"
 task_count     = 55
 
 [lane.Lane_A]
-notice             = "Cycle 244 did not certify: coverage 94.98% against a 95.0 floor, every other gate green. Under §20e a blocking quality defect outranks feature work, so it comes before User Profile — and two other lanes' finished work is held behind it, ff-able and waiting. QE has the per-file gaps. User Profile remains next and is completable; its multi-session blocker was cleared on 2026-08-10."
+notice             = "WITHDRAWN 2026-08-18: the coverage breach this notice told you to clear first has been cleared. It described cycle 244 (94.98% against a 95.0 floor) and stood for eight days after cycle 246 certified at 95.08% — so it was instructing you to prioritise work that was already done, and it named two lanes' work as held when it was not. That is this office's defect, not QE's: the notice lives in […TRUNCATED — 601 of 994 characters (60%) WERE DISCARDED, and they are the NEWEST: this field is one current line, REPLACED, never appended to. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
 backlog            = ["TASK-421", "TASK-1416", "TASK-1424", "TASK-1478", "TASK-1484"]
 assigned_total     = 47
 claimable          = 5
