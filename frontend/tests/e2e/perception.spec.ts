@@ -107,11 +107,15 @@ test.describe('opening the product', () => {
 
   test('@journey the account brief, which composes six read models', async ({
     page,
-    accounts,
+    home,
     brief,
   }) => {
-    await accounts.open();
-    const href = await accounts.accountLinks.first().getAttribute('href');
+    // ⚠️ **Measured on a SCORED brief, from Home's ranked card** — 📁 `B-1022`.
+    // ⛔ Companies' first row is whichever account sorts first, and the
+    // Playground's is one no provider has named: **an unscored brief composes
+    // far less and would report a figure that flatters the product.**
+    await home.open();
+    const href = await home.rankedAccounts.first().getAttribute('href');
 
     const perception = await measure(page, href ?? '/', async () => {
       await brief.waitForScore();

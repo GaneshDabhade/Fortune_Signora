@@ -161,12 +161,14 @@ test.describe('the layout settles', () => {
 
 test.describe('dialogs behave like dialogs', () => {
   test('@regression an open dialog does not leave the page scrolling behind it', async ({
-    accounts,
+    home,
     brief,
     page,
   }) => {
-    await accounts.open();
-    await accounts.openFirstAccount();
+    // ⚡ **Home's ranked card** — 📁 `B-1022`: an unscored brief has no
+    // citations, so there is no dialog to hold the page still behind.
+    await home.open();
+    await home.openFirstRankedAccount();
     await brief.waitForScore();
     await brief.openFirstCitation();
 
@@ -191,12 +193,14 @@ test.describe('dialogs behave like dialogs', () => {
   });
 
   test('@regression only one dialog is ever open', async ({
-    accounts,
+    home,
     brief,
     page,
   }) => {
-    await accounts.open();
-    await accounts.openFirstAccount();
+    // ⚡ **Home's ranked card** — 📁 `B-1022`: an unscored brief has no
+    // citations, so there is no dialog to hold the page still behind.
+    await home.open();
+    await home.openFirstRankedAccount();
     await brief.waitForScore();
 
     // Two citations in quick succession — a customer comparing two lines.

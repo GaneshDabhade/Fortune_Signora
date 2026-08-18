@@ -74,18 +74,26 @@ test.describe('reaching the product without a mouse', () => {
     await accounts.accountLinks.first().focus();
     await page.keyboard.press('Enter');
     await page.waitForURL(/\/accounts\/[0-9a-f-]{36}/);
-    await brief.waitForScore();
+    // ⚠️ **Not `waitForScore()`** — 📁 `B-1022`: Companies is the whole book in
+    // the book's own order and *"a Signora score is not on this list yet"*, so
+    // its first row is whichever account sorts first and the Playground's is
+    // one no provider has named. ⛔ That is a designed state, not a failure.
+    // 📁 The claim is *an account can be opened with the keyboard alone*, so
+    // what must be on screen is the brief.
+    await expect(brief.backToList).toBeVisible({ timeout: 20_000 });
   });
 });
 
 test.describe('dialogs', () => {
   test('@a11y the evidence drawer is a dialog, is labelled, and takes focus', async ({
-    accounts,
+    home,
     brief,
     page,
   }) => {
-    await accounts.open();
-    await accounts.openFirstAccount();
+    // ⚡ **Home's ranked card, because an unscored account has no citations**
+    // and therefore no evidence drawer to inspect — `B-1022`.
+    await home.open();
+    await home.openFirstRankedAccount();
     await brief.waitForScore();
     await brief.openFirstCitation();
 
@@ -103,12 +111,12 @@ test.describe('dialogs', () => {
   });
 
   test('@a11y closing a dialog returns focus to what opened it', async ({
-    accounts,
+    home,
     brief,
     page,
   }) => {
-    await accounts.open();
-    await accounts.openFirstAccount();
+    await home.open();
+    await home.openFirstRankedAccount();
     await brief.waitForScore();
 
     const citation = brief.citations.first();

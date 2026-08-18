@@ -21,7 +21,14 @@
 
 import { expect, test } from './fixtures/signora';
 
-test.describe('what a customer sees before anything is connected', () => {
+/**
+ * ⚠️ **Renamed from *"what a customer sees before anything is connected"*.**
+ * 📁 `B-1022` gave the Playground the CRM its twelve accounts arrived through,
+ * so *before anything is connected* stopped describing this environment — and
+ * a describe block that misnames its own fixture is the defect §2 warns about,
+ * read by whoever next wonders why a Disconnect button is on the page.
+ */
+test.describe('what a customer sees in the connection centre', () => {
   test('@smoke the connection centre opens and lists the systems Signora reads from', async ({
     page,
   }) => {
@@ -94,10 +101,31 @@ test.describe('what a customer sees before anything is connected', () => {
     });
 
     await expect(page.getByText('Not connected').first()).toBeVisible({ timeout: 20_000 });
-    // Nothing is connected in this environment, so no disconnect control may
-    // exist. A control for a connection nobody made is the clearest possible
-    // version of the product claiming something untrue.
-    await expect(page.getByRole('button', { name: /^Disconnect / })).toHaveCount(0);
+
+    /**
+     * 🔴 **This asserted `Disconnect` appeared ZERO times**, on the stated
+     * premise that *"nothing is connected in this environment"*. ⛔ **That
+     * premise was a defect rather than a fact** — `B-1022`: the Playground ran
+     * nine pipeline stages and recorded no connection, so a workspace holding
+     * twelve accounts had none. **The seeder now connects the CRM those
+     * accounts arrived through**, and the old assertion would fail on a fixture
+     * that had been corrected.
+     *
+     * ⚡ **The claim is unchanged and the new assertion is stronger.** *A
+     * control for a connection nobody made* is still the failure; what it takes
+     * to catch it is now checked **per system** rather than by a total that
+     * only held while the total was zero. ⛔ A count of zero says nothing about
+     * whether the control is attached to the right row.
+     */
+    const systems = page.locator('main ul > li').filter({ hasText: /Not connected/ });
+    const unconnected = await systems.count();
+    expect(unconnected, 'no system reads "Not connected"').toBeGreaterThan(0);
+    for (let index = 0; index < unconnected; index += 1) {
+      await expect(
+        systems.nth(index).getByRole('button', { name: /^Disconnect / }),
+        'a system reading "Not connected" offered a way to disconnect it',
+      ).toHaveCount(0);
+    }
   });
 });
 

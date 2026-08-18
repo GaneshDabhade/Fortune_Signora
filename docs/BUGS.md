@@ -100,6 +100,48 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-285 · 🟠 `make dr` proved nothing about three of its four recovery checks, and would have passed while doing it
+
+| | |
+|---|---|
+| **Module** | `platform_foundation` — [`infra/disaster-recovery.sh`](../infra/disaster-recovery.sh) |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — `platform_foundation`, **Lane A** |
+| **Severity** | 🟠 · ⛔ **A gate that cannot fail.** 📁 §2, *"a guard that cannot fail is documentation pretending to be code"* |
+| **Status** | ✅ **`FIXED` — Lane A, this candidate.** ⛔ **Not `VERIFIED`; only QE sets that** |
+| **Found** | **2026-08-18 by Lane A**, fixing **B-1024** — QE reported the same defect in `smoke.sh`, and the search for other callers found four more |
+
+**The defect.** Three of the four recovery checks create a workspace, **discard the response**, and then assert the outbox drained:
+
+```bash
+curl -s -o /dev/null -X POST "$API/workspaces" … -d '{"name":"DR after pg restart"}'
+sleep 5
+[[ "$($PSQL 'SELECT count(*) FROM outbox_event WHERE relayed_at IS NULL')" == "0" ]] \
+  || fail "relay did not resume after the database came back"
+```
+
+⚡ **A refused POST publishes no event.** The count is then zero **because nothing was ever written**, and the check reports that the relay resumed. ⛔ **The three assertions it protects — relay resumption after a database restart, pipeline recovery after Redis, workers resuming after a restart — pass on a request the API rejected with 422.**
+
+**What made it reachable.** 🔴 [B-1024](#b-1024): this candidate makes `slug` required on `POST /workspaces` and `infra/` was not updated with it. ⚠️ **`smoke.sh` failed loudly** — it reads the response and needs the id. **`disaster-recovery.sh` would have gone green.** ⚡ **The same contract change, two gates, opposite reports** — and the quiet one is the gate that certifies disaster recovery.
+
+⚠️ **This is older than the contract change.** The `-o /dev/null` is what makes the check vacuous; **any** cause of a failed create — a rejected token, an unhealthy API, a network refusal — produces the same false pass. **`slug` is what revealed it, not what caused it.**
+
+**Fixed.** A `dr_workspace` helper sends the slug, and every call **checks that an id came back** before the assertion that depends on it:
+
+```bash
+dr_workspace 'DR after pg restart' 'dr-after-pg-restart' \
+  | python3 -c 'import sys,json; sys.exit(0 if json.load(sys.stdin).get("id") else 1)' \
+  || fail "could not create a workspace after the restart — nothing was published, so the check below would pass vacuously"
+```
+
+**The slug is derived per run**, and the two gates differ:
+
+| Gate | Database between runs | A fixed slug |
+|---|---|---|
+| `make smoke` | ⚡ **Empty** — `smoke.sh:135` runs `down -v --remove-orphans` before `up -d --wait` | Would work |
+| `make dr` | ⛔ **Persists** — it `restart`s services on a stack that is already up and never brings volumes down | **Fails on the second run** with `WorkspaceSlugTakenError` |
+
+✅ **`$$` in both**, so the habit does not depend on remembering which gate has which lifecycle.
+
 ### B-284 · 🟠 An owner of a workspace with more than 50 members is told they are not one, and the product locks them out of Settings
 
 | | |

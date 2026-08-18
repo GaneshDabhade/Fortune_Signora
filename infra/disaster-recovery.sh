@@ -60,10 +60,26 @@ wait_for_api
 TOKEN="$(mint_token)"
 [[ -n "$TOKEN" ]] || fail "could not mint a token"
 
+# ⛔ **`slug` is required and these four calls did not send it** — B-1024's
+# second half, the same defect as `smoke.sh:319` and four times worse here.
+#
+# ⚠️ **Three of the four discard the response and then assert the outbox
+# drained.** ⚡ **A rejected POST publishes no event, so the count is zero and
+# the assertion PASSES** — `make dr` would have gone green while proving
+# nothing about recovery from a database, Redis or worker restart. 📁 §2,
+# *"a guard that cannot fail is documentation pretending to be code."*
+#
+# ⚡ **Derived per run**: a slug is unique across the installation, and `$$`
+# needs no clock. **Each call needs its own** — four workspaces, four slugs.
+dr_workspace() {
+  curl -s -X POST "$API/workspaces" \
+    -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+    -d "{\"name\":\"$1\",\"slug\":\"$2-$$\"}"
+}
+
 BEFORE="$(outbox_counts)"
-WORKSPACE="$(curl -s -X POST "$API/workspaces" \
-  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
-  -d '{"name":"DR baseline"}' | python3 -c 'import sys,json; print(json.load(sys.stdin)["id"])')"
+WORKSPACE="$(dr_workspace 'DR baseline' 'dr-baseline' \
+  | python3 -c 'import sys,json; print(json.load(sys.stdin)["id"])')"
 [[ -n "$WORKSPACE" ]] || fail "could not create a baseline workspace"
 pass "stack healthy, workspace created ($WORKSPACE)"
 
@@ -99,8 +115,11 @@ pass "idempotency ledger survived"
 
 # The relay reconnects on its own — it must not need a restart to resume.
 TOKEN="$(mint_token)"
-curl -s -o /dev/null -X POST "$API/workspaces" -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -d '{"name":"DR after pg restart"}'
+# ⚠️ **Checked rather than discarded.** ⛔ This was `-o /dev/null`, so a
+# refused request left the outbox empty and the assertion below passed on a
+# workspace that was never created — B-1024.
+dr_workspace 'DR after pg restart' 'dr-after-pg-restart' | python3 -c 'import sys,json; sys.exit(0 if json.load(sys.stdin).get("id") else 1)' \
+  || fail "could not create a workspace after the restart — nothing was published, so the check below would pass vacuously"
 sleep 5
 [[ "$($PSQL 'SELECT count(*) FROM outbox_event WHERE relayed_at IS NULL')" == "0" ]] \
   || fail "relay did not resume after the database came back"
@@ -124,8 +143,11 @@ wait_for_api
 pass "outbox unaffected by transport loss"
 
 TOKEN="$(mint_token)"
-curl -s -o /dev/null -X POST "$API/workspaces" -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -d '{"name":"DR after redis restart"}'
+# ⚠️ **Checked rather than discarded.** ⛔ This was `-o /dev/null`, so a
+# refused request left the outbox empty and the assertion below passed on a
+# workspace that was never created — B-1024.
+dr_workspace 'DR after redis restart' 'dr-after-redis-restart' | python3 -c 'import sys,json; sys.exit(0 if json.load(sys.stdin).get("id") else 1)' \
+  || fail "could not create a workspace after the restart — nothing was published, so the check below would pass vacuously"
 sleep 5
 [[ "$($PSQL 'SELECT count(*) FROM outbox_event WHERE relayed_at IS NULL')" == "0" ]] \
   || fail "pipeline did not recover after Redis restart"
@@ -170,8 +192,11 @@ sleep 8
 pass "idempotency ledger intact — no claim consumed without work"
 
 TOKEN="$(mint_token)"
-curl -s -o /dev/null -X POST "$API/workspaces" -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -d '{"name":"DR after worker restart"}'
+# ⚠️ **Checked rather than discarded.** ⛔ This was `-o /dev/null`, so a
+# refused request left the outbox empty and the assertion below passed on a
+# workspace that was never created — B-1024.
+dr_workspace 'DR after worker restart' 'dr-after-worker-restart' | python3 -c 'import sys,json; sys.exit(0 if json.load(sys.stdin).get("id") else 1)' \
+  || fail "could not create a workspace after the restart — nothing was published, so the check below would pass vacuously"
 sleep 6
 [[ "$($PSQL 'SELECT count(*) FROM outbox_event WHERE relayed_at IS NULL')" == "0" ]] \
   || fail "workers did not resume consuming after restart"

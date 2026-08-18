@@ -301,8 +301,27 @@ pass "malformed token rejected"
 
 stage "10. Demo flow, authorization, and tenant isolation"
 
+# ⛔ **`slug` is required and this script did not send it** — B-1024, found by
+# QE running this gate against a candidate that had added the field. **The API
+# changed underneath its caller**, and this is the only gate that exercises the
+# real API over HTTP, which is why every type check and unit suite stayed green.
+#
+# ⚠️ **Not fixed by defaulting the field.** 📁 A slug is *"permanent once
+# created"* (screen `03`) and the API deliberately refuses to invent one: *"the
+# client suggests, a person edits, and the value stored is the one they
+# accepted."* ✅ **This script sends one, as a browser would.**
+#
+# ⚡ **Derived per run, and a fixed value would also work HERE** — measured:
+# `smoke.sh:135` runs `down -v --remove-orphans` before `up -d --wait`, so every
+# run starts on an empty volume. ⛔ **`disaster-recovery.sh` does not** — it
+# restarts services against a stack that is already up, so its database persists
+# and a fixed slug fails with `WorkspaceSlugTakenError` on the second run.
+# ✅ **One habit across both gates**, rather than remembering which lifecycle
+# each has. `$$` is the shell's own pid and needs no clock.
+SMOKE_SLUG="smoke-test-workspace-$$"
 CREATED="$(curl -s -X POST $API/workspaces -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -d '{"name":"Smoke Test Workspace"}')"
+  -H 'Content-Type: application/json' \
+  -d "{\"name\":\"Smoke Test Workspace\",\"slug\":\"$SMOKE_SLUG\"}")"
 WS_ID="$(printf '%s' "$CREATED" | python3 -c 'import sys,json; print(json.load(sys.stdin).get("id",""))')"
 [[ -n "$WS_ID" ]] || fail "workspace creation failed: $CREATED"
 pass "workspace created through the real API ($WS_ID)"
