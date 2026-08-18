@@ -22,13 +22,15 @@ import { RecentsCard } from '@/components/home/recents-card';
 import { TopOpportunitiesCard, TopRisksCard } from '@/components/home/posture-cards';
 import { CardOutcomesProvider, useCardOutcomes } from '@/components/home/card-outcomes';
 import { CustomiseButton, useCustomise } from '@/components/home/customise';
+import { ForbiddenCard } from '@/components/home/forbidden-card';
 import { CustomiseDrawer } from '@/components/home/customise-drawer';
 import { NoDataStrip } from '@/components/home/no-data-strip';
 import { SetupCompleteStrip } from '@/components/home/setup-complete-strip';
 import { SourceStrip } from '@/components/home/source-strip';
 import { WorkspaceStrip } from '@/components/home/workspace-strip';
 import { HM_COPY_11 } from '@/lib/home/copy';
-import { applyLayout, cardsFor, type CardContract } from '@/lib/home/cards';
+import { applyLayout, cardsFor, forbidden, type CardContract } from '@/lib/home/cards';
+import { PERMISSION_NAME } from '@/lib/state/permissions';
 import { resolveComposition } from '@/lib/home/composition';
 import { useSession } from '@/lib/auth/client';
 import { useAccountsCount } from '@/lib/query/hooks/accounts-count';
@@ -584,6 +586,18 @@ function HomeContent() {
           {resolving ? null : rendered.map((card) => {
             const Card = RENDERERS[card.id];
             if (Card === undefined) return null;
+            /**
+             * 📁 **State 09** — *"the card is replaced IN PLACE by a
+             * same-footprint panel naming the missing permission and the
+             * approvers. **Never hidden.**"*
+             *
+             * ⚠️ **`requires` used to remove the card from this list**, on the
+             * rail's rule that a link nobody can follow is not rendered. ⛔ P-11
+             * says the opposite for a card, and gives the reason: *"hidden
+             * capability is the most common cause of 'the product does not do X'
+             * when it does."*
+             */
+            const barred = forbidden(card, role);
             return (
               /**
                * ♿ **Each card is a `<section>` with its own heading** — 📁 1.3.1
@@ -624,7 +638,16 @@ function HomeContent() {
                         : undefined
                 }
               >
-                <Card />
+                {barred ? (
+                  <ForbiddenCard
+                    card={card.title}
+                    permission={PERMISSION_NAME[card.requires!]}
+                    workspaceId={workspaceId}
+                    testId={`${card.id}-forbidden`}
+                  />
+                ) : (
+                  <Card />
+                )}
               </section>
             );
           })}

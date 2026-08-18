@@ -47,7 +47,11 @@ const recordEntry = vi.hoisted(() => vi.fn());
 const chooseLayout = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/state/workspace-provider', () => ({ useWorkspaceContext: workspace }));
-vi.mock('@/lib/query/hooks/team', () => ({ useViewerRole: viewerRole }));
+vi.mock('@/lib/query/hooks/team', () => ({
+  useViewerRole: viewerRole,
+  // ⚡ **State 09's panel names the approvers** — the workspace's owners.
+  useWorkspaceMembers: () => ({ data: { items: [] } }),
+}));
 vi.mock('@/lib/home/cards', async () => {
   const actual = await vi.importActual<Record<string, unknown>>('@/lib/home/cards');
   return { ...actual, cardsFor };
@@ -293,6 +297,67 @@ describe('🔴 Home always renders', () => {
     // to do* rather than *we could not ask*.
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     expect(screen.queryByText(/0 of 0/)).not.toBeInTheDocument();
+  });
+});
+
+describe('📁 state 09 — the forbidden card', () => {
+  /**
+   * 📁 *"The card is **replaced in place** by a same-footprint panel naming the
+   * missing permission and the approvers. **Never hidden** — hiding it makes
+   * people think the capability is absent."*
+   *
+   * ⚡ **The design's example is `card.requests` and an analyst**, which has no
+   * producer. 📁 **`policy.csv` grants `member:add` to `owner` alone**, so a
+   * member who meets the activation composition is the same rule reaching the
+   * card that does exist.
+   */
+  it('🔴 a member sees the panel where the card would be, not a gap', () => {
+    ready(false);
+    viewerRole.mockReturnValue({ role: 'member', resolved: true });
+    cardsFor.mockReturnValue([
+      { id: 'invite-the-team', title: 'Invite the team', module: 'x', requires: 'member:add' },
+    ]);
+
+    render(<Home />);
+
+    // ⛔ **The card's own slot is still there** — `AC-H11`'s *"the same footprint
+    // as the card it replaces"*.
+    expect(screen.getByTestId('home').querySelector('[data-card="invite-the-team"]')).not.toBeNull();
+    expect(screen.getByTestId('invite-the-team-forbidden')).toBeVisible();
+  });
+
+  /**
+   * ⛔ **It names the permission and never the withheld data** — 📁 the design's
+   * own rule for this panel, and `HM-COPY-08`'s shape.
+   */
+  it('🔴 names the permission in the customer\'s words, not a slug', () => {
+    ready(false);
+    viewerRole.mockReturnValue({ role: 'member', resolved: true });
+    cardsFor.mockReturnValue([
+      { id: 'invite-the-team', title: 'Invite the team', module: 'x', requires: 'member:add' },
+    ]);
+
+    render(<Home />);
+
+    // ⚡ **Twice by design** — the panel's title names the permission and
+    // `HM-COPY-08` repeats it in the sentence that also names the approvers.
+    expect(screen.getAllByText(/Invite members permission/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Approvers:/)).toBeVisible();
+    // ⛔ **`member:add` is engineering's word** — ADR-0034 puts the translation
+    // at the frontend edge.
+    expect(screen.queryByText(/member:add/)).not.toBeInTheDocument();
+  });
+
+  it('⛔ and an owner sees the card itself', () => {
+    ready(false);
+    viewerRole.mockReturnValue({ role: 'owner', resolved: true });
+    cardsFor.mockReturnValue([
+      { id: 'invite-the-team', title: 'Invite the team', module: 'x', requires: 'member:add' },
+    ]);
+
+    render(<Home />);
+
+    expect(screen.queryByTestId('invite-the-team-forbidden')).not.toBeInTheDocument();
   });
 });
 

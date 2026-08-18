@@ -42,13 +42,27 @@
  * ## 🔴 Presentational, never authorization
  *
  * ⛔ **[§20c](../../../CLAUDE.md), and the row names this as its own risk.**
- * **`requires` hides a card the caller could not use. It decides nothing.**
+ * **`requires` marks a card the caller could not act on. It decides nothing.**
  * 📁 **Casbin on the server is the authorization decision (ADR-0010)** and a
  * card whose data the caller may not read is refused there whether or not it
- * was rendered. ⚡ **The registry's filter exists so a member is not offered a
- * card that will come back empty** — 📁 the rule
- * [`navigation.tsx`](../../components/shell/navigation.tsx) already applies:
- * *"a link the caller cannot follow is not rendered."*
+ * was rendered.
+ *
+ * ## 🔴 It MARKS the card; it does not remove it — state 09
+ *
+ * ⚠️ **This filtered the card out**, on the rail's rule that *"a link the caller
+ * cannot follow is not rendered."* ⛔ **Home's design says the opposite, by
+ * name.**
+ *
+ * 📁 **State 09**: *"The card is replaced in place by a same-footprint panel
+ * naming the missing permission and the approvers. **Never hidden — hiding it
+ * makes people think the capability is absent.**"* 📁 **P-11**: *"Forbidden cards
+ * stay visible. Named permission, named approvers, same footprint. **Hidden
+ * capability is the most common cause of 'the product does not do X' when it
+ * does.**"*
+ *
+ * ⚡ **A rail item and a card are different objects.** A link that goes nowhere
+ * wastes a click; **a card that is absent teaches somebody the product cannot do
+ * a thing it does** — and Home is where they would have learned it could.
  *
  * ## ⚠️ The registry is EMPTY today, and that is the honest state
  *
@@ -222,7 +236,28 @@ export const REGISTRY: readonly CardContract[] = [
    * the 30-day skip had nowhere to live, **because a *Skip for now* that
    * forgot at the next sign-in is a control that lies.**
    */
-  { id: 'invite-the-team', title: 'Invite the team', module: 'workspace_tenancy', requires: null },
+  {
+    id: 'invite-the-team',
+    title: 'Invite the team',
+    module: 'workspace_tenancy',
+    /**
+     * 🔴 **State 09's only reachable case today** — 📁 *"the person's role
+     * excludes a card in their composition."*
+     *
+     * ⚡ **`policy.csv` grants `member:add` to `owner` alone**, so a member in a
+     * new workspace meets the activation composition, sees *Invite the team*,
+     * and **the server refuses the invitation they were offered.**
+     *
+     * ⛔ **`requires` does not hide it** — 📁 P-11: *"forbidden cards stay
+     * visible… hidden capability is the most common cause of 'the product does
+     * not do X' when it does."* ✅ **It renders the design's same-footprint panel
+     * naming the permission and the approvers.**
+     *
+     * ⚠️ **The design's own example is `card.requests` and an analyst**, which
+     * has no producer. **This is the same rule reaching the card that does.**
+     */
+    requires: 'member:add',
+  },
   {
     id: 'pipeline-health',
     // 📁 The design's own words, not a paraphrase — the contract requires it.
@@ -340,8 +375,19 @@ export function cardsFor(
 
   return COMPOSITION_CARDS[composition]
     .map((id) => contributed.get(id))
-    .filter((card): card is CardContract => card !== undefined)
-    .filter((card) => card.requires === null || can(role, card.requires));
+    .filter((card): card is CardContract => card !== undefined);
+}
+
+/**
+ * 🔴 **Whether this person may act on this card** — 📁 state 09's entry
+ * condition: *"the person's role excludes a card in their composition."*
+ *
+ * ⛔ **Presentational, never authorization.** 📁 Casbin on the server decides;
+ * this decides whether the card draws its content or the design's forbidden
+ * panel in the same footprint.
+ */
+export function forbidden(card: CardContract, role: WorkspaceRole | null): boolean {
+  return card.requires !== null && !can(role, card.requires);
 }
 
 /**

@@ -6,6 +6,7 @@ import {
   COMPOSITION_CARDS,
   REGISTRY,
   cardsFor,
+  forbidden,
   type CardContract,
 } from '@/lib/home/cards';
 
@@ -168,25 +169,53 @@ describe('📁 a composition is a filtered, ordered read of the registry', () =>
   });
 });
 
-describe('🔴 the filter is presentational, and it fails closed', () => {
-  it('⛔ a card requiring a capability is hidden from a role without it', () => {
+describe('🔴 a card the caller cannot act on is MARKED, never removed', () => {
+  /**
+   * 🔴 **This asserted the opposite and the design says so by name.**
+   *
+   * 📁 **State 09**: *"the card is replaced in place by a same-footprint panel
+   * naming the missing permission and the approvers. **Never hidden — hiding it
+   * makes people think the capability is absent.**"* 📁 **P-11**: *"hidden
+   * capability is the most common cause of 'the product does not do X' when it
+   * does."*
+   *
+   * ⚡ **The old assertion was the RAIL's rule** — *"a link the caller cannot
+   * follow is not rendered"* — **applied to a card, which is a different
+   * object**: a dead link wastes a click, and an absent card teaches somebody
+   * the product cannot do something it can.
+   */
+  it('🔴 the composition keeps a card whatever the role', () => {
     const owner = cardsFor('seller', 'owner', FIXTURE).map((c) => c.id);
     const member = cardsFor('seller', 'member', FIXTURE).map((c) => c.id);
 
+    expect(member).toEqual(owner);
+    expect(member).toContain('needs-you-today');
+  });
+
+  it('⚡ and says which one is barred', () => {
+    const card = FIXTURE.find((entry) => entry.id === 'needs-you-today')!;
+
     // ⚡ **Vacuity guard.** If `needs-you-today` stopped requiring anything,
-    // both lists would match and this test would assert nothing.
-    expect(owner).toContain('needs-you-today');
-    expect(member).not.toContain('needs-you-today');
-    expect(member).toContain('daily-briefing');
+    // both answers would be `false` and this would assert nothing.
+    expect(card.requires).not.toBeNull();
+    expect(forbidden(card, 'owner')).toBe(false);
+    expect(forbidden(card, 'member')).toBe(true);
   });
 
-  it('⛔ an unresolved role sees only what needs no capability', () => {
+  it('⛔ a card needing nothing is barred from nobody', () => {
+    const card = FIXTURE.find((entry) => entry.id === 'daily-briefing')!;
+
+    expect(forbidden(card, 'member')).toBe(false);
+    expect(forbidden(card, null)).toBe(false);
+  });
+
+  it('⛔ and an unresolved role fails closed', () => {
     // 📁 `can(null, …)` is false by construction — *"fail closed: showing a
-    // control and then removing it reads as a bug."* ⚡ A card with
-    // `requires: null` is still shown, because null means *every member*, and
-    // withholding it would blank Home during every page load.
-    const unresolved = cardsFor('seller', null, FIXTURE).map((c) => c.id);
-    expect(unresolved).toEqual(['daily-briefing', 'meetings']);
-  });
+    // control and then removing it reads as a bug."* ⚡ **The card still
+    // renders**; what it renders is the forbidden panel until the role lands.
+    const card = FIXTURE.find((entry) => entry.id === 'needs-you-today')!;
 
+    expect(cardsFor('seller', null, FIXTURE).map((c) => c.id)).toContain('needs-you-today');
+    expect(forbidden(card, null)).toBe(true);
+  });
 });

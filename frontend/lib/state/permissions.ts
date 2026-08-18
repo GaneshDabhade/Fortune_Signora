@@ -24,6 +24,22 @@ const ROLE_CAPABILITIES: Record<WorkspaceRole, readonly Capability[]> = {
   member: ['workspace:read'],
 };
 
+/**
+ * 🔴 **A capability in the customer's words** — 📁 Home state 09's panel *"names
+ * the missing permission"*, and `HM-COPY-08` puts it in a sentence a person
+ * reads: *"Pending requests needs the **Access admin** permission."*
+ *
+ * ⛔ **`member:add` is engineering's word.** 📁 [ADR-0034](../../../docs/architecture/adr/0034-ubiquitous-language.md)
+ * puts the translation at the frontend edge, and a slug in a sentence is the
+ * *"explaining Row-Level Security in a dialog"* failure that ADR names.
+ */
+export const PERMISSION_NAME: Readonly<Record<Capability, string>> = Object.freeze({
+  'workspace:read': 'Read this organization',
+  'workspace:update': 'Organization admin',
+  'member:add': 'Invite members',
+  'member:remove': 'Remove members',
+});
+
 export function can(role: WorkspaceRole | null, capability: Capability): boolean {
   // No role means no membership resolved yet. Fail closed: showing a
   // control and then removing it reads as a bug, and showing one the
