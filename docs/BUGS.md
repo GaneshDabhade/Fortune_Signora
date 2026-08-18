@@ -301,6 +301,72 @@ git show 19149dc6:docs/BACKLOG.md | grep -c '|) make that permanent'      # → 
 ✅ **The instruction I gave both lanes — *there is one claimant, do not resolve it as a Claim Protocol violation* — was correct.** ⛔ **The reason I gave for it was not.**
 
 
+### B-1017 · 🔴 A spec creates a workspace, it becomes the persona's active one, and every later spec sees an empty product
+
+| | |
+|---|---|
+| **Module** | `frontend/tests/e2e/**` — **the repository-wide browser suite** |
+| **Current assignee** | **QE** — 📁 [§20e](../CLAUDE.md): *"QE creates, maintains, extends and retires repository-wide automated tests"* |
+| **Severity** | 🔴 · ⛔ **It blocks the browser gate.** **Wired in as it stands, certification would report ~39 failures per cycle, most of them about nothing** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-18 by QE**, taking the first complete browser baseline from this lane, at `954291ec` |
+
+**Steps to reproduce.** Seed the Playground, run the whole suite, then read the memberships:
+
+```sql
+select w.name, m.role, m.created_at from membership m join workspace w on w.id=m.workspace_id
+ where m.user_id in (select id from auth."user" where email='dana.reyes@northwind.example');
+
+→ Playground              | owner | 10:44:05     ← the seed
+→ E2E Org 1787050307980   | owner | 10:51:48     ← created DURING the run
+```
+
+**Expected.** A spec that needs the seeded Playground sees the seeded Playground.
+
+**Actual.** **A registration/onboarding spec creates a new organization, it becomes the persona's ACTIVE workspace, and every spec after it sees an empty product.**
+
+### The proof is the isolation re-run, not the theory
+
+| Spec | In the full suite | **Alone, after a re-seed** |
+|---|---|---|
+| `workflow` | **0 passed, 5 failed** | ✅ pass |
+| `utility-panel` | **0 passed, 3 failed** | ✅ pass |
+| `visual` | 11 passed, **5 failed** | ✅ pass |
+| `resilience` | 4 passed, **4 failed** | ✅ pass |
+| `perception` | 1 passed, **2 failed** | ✅ pass |
+| `confidence` | 5 passed, **1 failed** | ✅ pass |
+| `account-360` | 3 passed | ✅ pass |
+
+**Two isolated runs: 75 passed / 0 failed, and 49 passed / 3 skipped / 0 failed.** ⚡ **15 of the full run's 39 failures are contamination, measured rather than inferred.**
+
+### ⛔ The failures are not lying about the page — the page is right
+
+**Probed with the browser rather than reasoned about.** `/` renders exactly what it should:
+
+```
+H1: ["Attention"]
+MAIN TEXT: … Welcome to E2E Org 1787050307980 | Signora needs three things
+           before it can score anything. | 0 of 3 | Connect your CRM …
+```
+
+✅ **A correct, designed empty state for a workspace with no accounts.** **`main a[href^="/accounts/"]` finds nothing because there is nothing — which is the right answer to the wrong question.**
+
+> ⚠️ **This is [B-1014](#b-1014) one layer up, and the same family as [B-1000](#b-1000).** **B-1014 was a suite pointed at a port nothing served. This is a suite pointed at a workspace nothing filled.** ⛔ **Both produce a screen of red that is indistinguishable from a broken product**, and both are found only by asking what the failure was actually looking at.
+
+### ⚡ It probably explains [B-279](#b-279), and that is Lane A's row to decide
+
+**Lane A filed six specs failing through `main a[href^="/accounts/"]` and deliberately did not guess the cause** — *"whether it is the seed, the attention query or the list itself is unmeasured."* ✅ **Their restraint was right and this is the measurement.** **Five of their six are in the table above and all five pass in isolation.**
+
+⛔ **QE does not close another lane's row.** **The evidence is theirs to weigh** — their run was on a different tree and a different stack, so this explains the shape without proving it is the same instance.
+
+### The repair, and what it must not be
+
+⛔ **Not "run the affected specs first".** **Ordering that happens to work is not isolation, and the next spec added breaks it silently.**
+
+✅ **The persona's active workspace must be a declared precondition of every spec that depends on seeded data** — asserted at the start, not inherited from whatever ran before. **A spec that legitimately creates an organization (registration IS a journey and must keep creating one) then costs nothing.**
+
+⚠️ **Until this is fixed the browser gate cannot be wired into certification.** 📁 **[§2](../CLAUDE.md): *a guard that cannot fail is not protection*** — **and a gate that fails about nothing is worse, because somebody will read it as the product.**
+
 ### B-1016 · 🟠 Migration `0048`'s downgrade cannot run on a database that used the feature `0048` added
 
 | | |
