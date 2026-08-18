@@ -124,7 +124,9 @@
 
 > ⚠️ **CORRECTED 2026-08-18, before this page was ruled on.** 🔴 **This paragraph claimed retirement would *"redistribute three state responsibilities that currently sit together"* — `ActivationChecklist`, `NoWorkspace` and `StatedAbsence`. ⛔ That was wrong, and it inflated the cost of ①.**
 >
-> ✅ **Measured after Lane A ran the negative case this office had not:** **`NoWorkspace` has nine other consumers and `StatedAbsence` eleven.** ⚡ **They are standard page furniture on almost every screen — not responsibilities the Attention screen holds.** **Only `ActivationChecklist` is near-exclusive, with one other consumer (`lib/entry/observed.ts`).**
+> ✅ **Measured after Lane A ran the negative case this office had not:** **`NoWorkspace` appears in ten files and `StatedAbsence` in thirty.**
+
+> ⚠️ **`StatedAbsence` was published here as *eleven* and is thirty.** ⛔ **The grep that produced it ended in `head -12`, and the bound was read as the count** — 📁 **the identical mistake this office made on [C-1405](#-c-1405--commission-four-design-documents--the-entry-coverage-reviews-own-priority-order) with `head -3`, where a truncated listing nearly deleted a live decision.** ✅ **Corrected on Lane A's measurement, re-counted here unbounded, and the error runs in the direction that STRENGTHENS the correction: `StatedAbsence` is closer to universal than *eleven* suggested.** ⚡ **They are standard page furniture on almost every screen — not responsibilities the Attention screen holds.** **Only `ActivationChecklist` is near-exclusive, with one other consumer (`lib/entry/observed.ts`).**
 >
 > ✅ **What survives is the gap itself, and it is enough:** **a workspace with no CRM sees Home's ACTIVATION composition — connection steps, no account list — so any option assuming Home covers Attention's job must say what that workspace sees.**
 
