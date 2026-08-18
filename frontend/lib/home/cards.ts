@@ -71,33 +71,24 @@ import { can, type Capability, type WorkspaceRole } from '@/lib/state/permission
  * than resolving to nothing at runtime.
  */
 export const CARD_IDS = [
-  // ── Executive · 📁 "How are we doing?" ──────────────────────────────────
-  'ai-executive-summary',
-  'forecast-vs-plan',
-  'pipeline-health',
-  'top-risks',
-  'top-opportunities',
-  'deal-movement',
-  // ── Seller · 📁 "What do I do today?" ───────────────────────────────────
-  'daily-briefing',
-  'needs-you-today',
-  'signals-on-my-accounts',
-  'meetings',
-  'ai-drafts-awaiting-approval',
-  'recent-work',
-  // ── Revenue operations · 📁 "Is the system healthy?" ────────────────────
-  'integration-health',
-  'agent-runs',
-  'data-quality',
-  'pending-requests',
-  'workflow-failures',
-  'seat-usage',
-  // ── Activation · 📁 "How do I begin?" ───────────────────────────────────
-  'connect-a-crm',
-  'invite-the-team',
-  'connect-calls',
-  'what-signora-will-do',
-  'sample-of-one-real-account',
+  // ── 📁 The registry's own order, §04 ────────────────────────────────────
+  'daily-briefing', //          card.briefing          SE · EX
+  'needs-you-today', //         card.attention         SE
+  'meetings', //                card.meetings          SE
+  'agent-queue', //             card.agentqueue        SE · OP
+  'recents', //                 card.recents           SE · OP · EX
+  'ai-executive-summary', //    card.execsummary       EX
+  'forecast-vs-plan', //        card.forecast          EX
+  'pipeline-health', //         card.pipeline          EX
+  'top-risks', //               card.risks             EX
+  'top-opportunities', //       card.opps              EX
+  'integration-health', //      card.inthealth         OP · EX
+  'agent-runs', //              card.agentruns         OP
+  'data-quality', //            card.dataquality       OP
+  'pending-requests', //        card.requests          OP
+  'connect-a-crm', //           card.activation.*      AC
+  'connect-calls', //           card.activation.*      AC
+  'invite-the-team', //         card.activation.invite AC
 ] as const;
 
 export type CardId = (typeof CARD_IDS)[number];
@@ -141,52 +132,44 @@ export interface CardContract {
  */
 export const COMPOSITION_CARDS: Readonly<Record<Composition, readonly CardId[]>> =
   Object.freeze({
+    /**
+     * 📁 ***"How are we doing?"*** — every registry row carrying `EX`.
+     */
     executive: [
       'ai-executive-summary',
       'forecast-vs-plan',
       'pipeline-health',
       'top-risks',
       'top-opportunities',
-      'deal-movement',
-    ],
-    seller: [
+      'integration-health',
       'daily-briefing',
-      'needs-you-today',
-      'signals-on-my-accounts',
-      'meetings',
-      'ai-drafts-awaiting-approval',
-      'recent-work',
+      'recents',
     ],
+    /** 📁 ***"What do I do today?"*** — every registry row carrying `SE`. */
+    seller: ['daily-briefing', 'needs-you-today', 'meetings', 'agent-queue', 'recents'],
+    /** 📁 ***"Is the system healthy?"*** — every registry row carrying `OP`. */
     revenue_operations: [
       'integration-health',
       'agent-runs',
       'data-quality',
       'pending-requests',
-      'workflow-failures',
-      'seat-usage',
+      'agent-queue',
+      'recents',
     ],
-    activation: [
-      /**
-       * 🔴 **Corrected to the design's declared priority** —
-       * [TASK-1424](../../../docs/BACKLOG.md). ⛔ This read
-       * `connect-a-crm, invite-the-team, connect-calls`, **and the design says
-       * `CRM 100 · calls 200 · invite 300. Lower is earlier.`** ⚡ **So the
-       * optional step rendered ahead of a blocking one**, which inverts the
-       * whole point of an ordered activation list.
-       *
-       * ⚠️ **Found because the ordering law had no caller.** 📁
-       * [`activationOrder`](./activation.ts) sorts by priority and **nothing
-       * invoked it** — Home renders in this array's order — **so the rule was
-       * written, tested, and not in force.** ✅ **The guard is now on THIS
-       * array** (`home-activation.test.ts`), which is what the product
-       * actually reads.
-       */
-      'connect-a-crm',
-      'connect-calls',
-      'invite-the-team',
-      'what-signora-will-do',
-      'sample-of-one-real-account',
-    ],
+    /**
+     * 📁 ***"How do I begin?"*** — `card.activation.*` and
+     * `card.activation.invite`, and **nothing else.**
+     *
+     * ⛔ **`what-signora-will-do` is NOT here and must never be.** 📁 **P-04**:
+     * *"'What Signora will do' is a footer line, **not a card**. As a card it
+     * competed with the three steps for attention and was routinely skipped."*
+     * ✅ It renders as the footer of the incomplete step.
+     *
+     * ⛔ **`sample-of-one-real-account` is not here either** — 📁 the
+     * Authenticated Entry document lists it, **but Home is the composition
+     * authority** and its registry does not name it.
+     */
+    activation: ['connect-a-crm', 'connect-calls', 'invite-the-team'],
   });
 
 /**

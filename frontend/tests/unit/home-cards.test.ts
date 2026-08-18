@@ -150,9 +150,20 @@ describe('📁 a composition is a filtered, ordered read of the registry', () =>
   });
 
   it('⛔ a card the composition names but nobody contributed is SKIPPED, not rendered empty', () => {
-    // 📁 The seller composition names six cards; the fixture contributes three
-    // of them. ⚡ The other three are absent rather than present-and-blank.
-    expect(COMPOSITION_CARDS.seller).toHaveLength(6);
+    /**
+     * 📁 **The seller composition names FIVE cards**, and this asserted six.
+     *
+     * ⚠️ **Six was the Authenticated Entry document's list** — *"Daily
+     * briefing, Needs you today, **Signals on my accounts**, Meetings, AI
+     * drafts awaiting approval, Recent work"*. ⛔ **Home is the composition
+     * authority**, and its registry carries `SE` on exactly five rows:
+     * `card.briefing`, `card.attention`, `card.meetings`, `card.agentqueue`,
+     * `card.recents`. **`Signals on my accounts` is not one of them.**
+     *
+     * ⚡ The fixture contributes three; the other two are absent rather than
+     * present-and-blank, which is the property this test exists for.
+     */
+    expect(COMPOSITION_CARDS.seller).toHaveLength(5);
     expect(cardsFor('seller', 'owner', FIXTURE)).toHaveLength(3);
   });
 });
