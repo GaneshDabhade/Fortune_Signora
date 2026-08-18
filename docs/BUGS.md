@@ -90,6 +90,61 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-1012 · 🟡 A claim commit's replacement kept the tail of the cell it replaced, and two superseded blockers now read as live
+
+| | |
+|---|---|
+| **Module** | [`docs/BACKLOG.md`](BACKLOG.md) — the authoritative work queue |
+| **Current assignee** | **Lane C** — the rows are Lane C's claims, written in `19149dc6` |
+| **Severity** | 🟡 · ⛔ **Not a Blocking Quality Defect** — no gate is failing, and the *current* status is correct and comes first in both cells |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-18**, by QE, polling `origin/integration` at `19149dc6` — reading the claim commit's diff before deciding whether it warranted a cycle |
+
+**Steps to reproduce.**
+
+```bash
+git show 19149dc6:docs/BACKLOG.md | awk 'NR==560'  | tr -cd '|' | wc -c   # → 4
+git show 19149dc6:docs/BACKLOG.md | grep -c '|sk Claim Protocol'          # → 1
+git show 19149dc6:docs/BACKLOG.md | grep -c '|) make that permanent'      # → 1
+```
+
+**Expected.** A two-column row has **three** pipes: `| **Status** | … |`.
+
+**Actual.** **Four.** Two rows carry a spurious third cell whose content begins mid-word:
+
+| Line | Row | The orphan begins |
+|---|---|---|
+| **560** | **TASK-202** | `sk Claim Protocol.` — the tail of *"…by the Ta**sk Claim Protocol**."* |
+| **1912** | **TASK-1430** | `) make that permanent.` — the tail of *"…[ADR-0026](…**) make that permanent**."* |
+
+### The mechanism, and it is the one the product owner named
+
+**The replacement was anchored on a *prefix* of the old cell.** The new text was written, its closing `|` was emitted, **and everything of the old cell past the anchor survived after it.** Both seams fall mid-token, which is the signature: a boundary chosen by string position rather than by a delimiter.
+
+> ⛔ ***"Never perform broad replacements when an anchored replacement can assert uniqueness."*** **An anchored replacement that also asserts the cell's closing `|` cannot produce this**, because there is no remainder left to survive.
+
+### Why it is a defect and not cosmetic
+
+**The orphaned prose is Lane A's *superseded* blocking reasoning, now detached from the `Was:` that framed it as history.**
+
+📁 **TASK-1430's orphan asserts** *"nothing stands between a credential-stuffing script and Better Auth"* and *"[§13](../CLAUDE.md) and [ADR-0026](architecture/adr/0026-jwt-boundary-architecture.md) make that permanent"* — **in a cell of its own, with nothing marking it as the state the product owner's 2026-08-17 ruling replaced.**
+
+> ⚡ **[§2](../CLAUDE.md), both halves at once.** **A record of what was true then must not be rewritten to match now** — and it has not been; it has been *un-dated*, which is the same damage from the other direction. **A reader meets a live-looking assertion that a ruling has already overtaken.**
+>
+> ⛔ **And this is the register a lane reads to decide what to build.** **`BACKLOG.md`'s order *is* the priority** ([§20e](../CLAUDE.md)); a row that renders three columns where every other renders two is the kind of thing a lane skims past, and the thing it skims past says the work is blocked.
+
+### ✅ What is NOT wrong here, checked before filing
+
+- ✅ **The claim itself is valid.** `--audit-claims` passes it: `ACTIVE_ASSIGNMENTS.md` and `BACKLOG.md`, nothing else — **the one thing a lane may push to `integration`.**
+- ✅ **The current status in both cells is correct** and precedes the orphan.
+- ✅ **No content was lost** — the orphan is a *duplicate* tail, not a deletion. `git show 19149dc6 --stat` is `+6 −3` across two files.
+- ⚠️ **`state-check` reports *"TASK-1430 is claimed by Lane A and Lane C at once"* and the same for TASK-202. ⛔ That is this defect seen through an instrument, not a second one** — the checker reads the orphaned cell's `Lane A` as a live claim. **Do not resolve it as a Task Claim Protocol violation; there is one claimant.**
+
+### The repair
+
+**Delete from the spurious `|` to the end of the line, on both.** ⛔ **Nothing else** — the `Was:` history that remains inside the correct cell is deliberate and stays.
+
+
 ### B-1011 · 🔴 Coverage crossed the floor at cycle 244 — 94.98% against 95.0, and certification refused
 
 | | |
@@ -9518,6 +9573,34 @@ runtime-composition · state-check
 ⚠️ **QE's own note on it is the reusable half:** ***"correct about a fact and wrong about whether the fact was a problem — *40 unsatisfied runs are on `main`* is true and means nothing without the date `tsc` was added."***
 
 > ⚠️ **Recorded here rather than raised as a coordination item.** **This office opened `C-1435` for the gate set and withdrew it within the hour: [§20e](../CLAUDE.md) — *a defect is not a dependency* — and this row has existed and been QE's since 2026-08-06.** ⛔ **The `sixteen` in this row's own title is also the number this office "corrected" a lane on, having not read it.**
+
+
+
+### ⚡ The cost, measured — QE, 2026-08-18, cycle 247 poll
+
+**This row said the ten unrecorded gates leave *no trace*. Here is what that buys, dated to the commit, and it is sharper than "a gate nobody can audit".**
+
+**Reported by Lane C as [B-1400](#b-1400) — two tests on one ref disagreeing about the search landmark's name, "reading as in-flight breakage".** ⛔ **It is not in-flight. It has been false on `main` for six days and 502 commits**, and the mechanism is this row.
+
+| | | |
+|---|---|---|
+| **2026-08-10** | `125d3056` · TASK-1444 | `top-bar.tsx` renders `aria-label="Search Fortune Signora"` |
+| **2026-08-11** | `ca5139ef` · M12.6 | `top-bar-search.spec.ts` asserts `Search Fortune Signora`. ✅ **Correct when written** |
+| **2026-08-12** | `aa1d4819` · TASK-1466 | The label becomes `Search Signora`, per [§4](../CLAUDE.md)'s naming rule — the running application says `Signora` alone |
+
+**`aa1d4819` changed exactly two files: `top-bar.tsx` and `shell-a11y.test.tsx`.**
+
+> ⚡ **`shell-a11y.test.tsx` is vitest — inside `frontend-suite`, a required gate. `top-bar-search.spec.ts` is Playwright — inside this row's ten.**
+>
+> ⛔ **The change updated every test that could have failed the build, and missed the one that could not.** **That is not carelessness; it is the feedback loop selecting for it** — and a lane cannot be asked to be more careful than its instruments.
+
+**The naming rule decides which side is wrong, so this is not a coin flip between two tests:** the search landmark is inside the running application, `Signora` alone is correct, **`top-bar.tsx` is right and the spec is wrong.** ⛔ **Two lines, in the spec, never in the component.**
+
+**Assigned by the registry, not by inference:** `modules.toml` `[product_surface]`, `paths = ["frontend/"]`, `current_owner = "Lane A"` — and `aa1d4819` is Lane A's slice. ✅ **QE reports; the owning lane fixes** ([§20e](../CLAUDE.md)).
+
+> ⚠️ **What this instance adds to the row.** The row's case was *auditability* — a passing gate and a skipped one leave the same evidence. **This is the stronger case: an unrecorded gate does not merely go unaudited, it goes unmaintained.** ⚡ **A test no gate runs decays toward false, and the first reader to meet it spends the cost of diagnosing it** — which Lane C just did, and reported as breakage.
+>
+> ⛔ **It also lands inside [B-1000](#b-1000)'s family from the other end.** Every prior instance was *an instrument answering a narrower question than the one asked*. **Here the instrument was never asked** — and the failure mode is the same, because a lane reading a green `frontend-suite` reads it as *the frontend is consistent*.
 
 
 ### B-130 · D-107 removed `UI_WAVE_TASKS` and left its test referencing it
