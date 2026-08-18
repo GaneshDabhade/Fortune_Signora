@@ -1480,6 +1480,15 @@ export interface PersonPreferences {
    */
   setup_complete_seen: boolean;
   /**
+   * 🔴 **Home §10's *Customise* arrangement, per composition** — 📁 `3.2.3`'s
+   * *"card order within a composition is stable across visits."*
+   *
+   * ⛔ **An absent key is *never customised***, which renders the registry's own
+   * order. ⚡ Not the same as *customised to nothing*, which would be an empty
+   * Home and is a thing a person can actually ask for.
+   */
+  home_layout: Record<string, { order: string[]; hidden: string[] }>;
+  /**
    * 📁 **Screen `07`'s first consent** — *"Surface insights I did not ask for ·
    * Ranked findings on your home page. Off means Signora only answers
    * questions."*

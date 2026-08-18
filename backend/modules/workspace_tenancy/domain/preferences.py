@@ -57,11 +57,14 @@ database, where a token edit could not reach it.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+from collections.abc import Mapping
+from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime, timedelta, tzinfo
 from enum import StrEnum
 from uuid import UUID
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
+from modules.workspace_tenancy.domain.exceptions import InvalidHomeCompositionError
 
 #: The design's segmented control offers `3 · 4 · 5`, and `3` is where it sits.
 #: ⚠️ **A floor, not a threshold anybody else can lower** — the design says
@@ -130,6 +133,55 @@ class ScreenReaderVerbosity(StrEnum):
 
     CONCISE = "concise"
     DETAILED = "detailed"
+
+
+#: ⚡ **How many compositions a layout may cover**, and it is not a guess: 📁 Home
+#: has exactly four, and {@link HOME_COMPOSITIONS} is the set. **A bound at the
+#: boundary rather than a validation of membership** — see {@link HomeCardLayout}.
+MAX_LAID_OUT_COMPOSITIONS = len(HOME_COMPOSITIONS)
+#: ⚡ **A generous ceiling on one composition's cards.** 📁 Home's registry holds
+#: sixteen; **this is input hygiene rather than a second copy of that number**,
+#: which is why it is not sixteen.
+MAX_LAID_OUT_CARDS = 64
+#: A card id is a slug. ⛔ **Bounded so a client cannot store prose here.**
+MAX_CARD_ID_LENGTH = 64
+
+
+@dataclass(frozen=True, slots=True)
+class HomeCardLayout:
+    """One composition's arrangement, as a person left it.
+
+    🔴 **Home's *Customise* control** — 📁 `Fortune Signora Home.dc.html` §10:
+    *"opens the card-order panel as a drawer"*, and **`U-05`'s interim ruling**:
+    *"**reorder and remove only.** Adding cross-composition cards is out of scope
+    for the first implementation."* 📁 `3.2.3`: *"**card order within a
+    composition is stable across visits**."*
+
+    ## ⛔ Two lists, because one cannot tell *removed* from *new*
+
+    ⚡ **`order` holds every card this person has arranged; `hidden` names the
+    subset they took away.** ⛔ **A single list of kept cards would make a card's
+    absence ambiguous** — removed, or added to the registry after they last
+    customised? — **and the product would silently suppress every card it ships
+    from then on.**
+
+    ✅ **A card in neither list is new**, and Home draws it at its registry
+    position. ✅ **A removed card keeps its place in `order`**, so restoring it
+    puts it back where it was rather than at the end — 📁 the same instinct
+    `P-05` states for activation: *"reordering shifts the list under the cursor."*
+
+    ## ⛔ Card ids are not validated here, and that is deliberate
+
+    📁 **Home is the composition authority** and its registry is the frontend's.
+    ⚡ **This module validates SHAPE and BOUNDS, never membership** — a card
+    catalogue in two places is the duplication [§2](../../../../CLAUDE.md)
+    forbids, and it would reject a card the moment Home shipped one.
+    """
+
+    #: Every card this person has arranged, in the order they left it.
+    order: tuple[str, ...] = ()
+    #: The subset they removed. ⛔ **Not deleted from `order`** — see above.
+    hidden: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -247,6 +299,14 @@ class PersonPreferences:
     #: domain validates against it; a PostgreSQL enum would make adding a fifth
     #: composition a migration rather than a design decision.
     home_composition: str | None = None
+    #: 🔴 **Home's *Customise* panel, per composition** — 📁 §10 and `3.2.3`'s
+    #: *"card order within a composition is stable across visits."*
+    #:
+    #: ⛔ **Keyed by composition**, because the design scopes the control *"within
+    #: a composition"*. ⚡ **An absent key is *never customised***, which is not
+    #: the same as *customised to nothing*: the first renders the registry's own
+    #: order, the second would render an empty Home.
+    home_layout: Mapping[str, HomeCardLayout] = field(default_factory=dict)
 
     # ── Language & region ─────────────────────────────────────────────────
     #: ⛔ **Text rather than an enum, and deliberately.** ⚡ The design shows
@@ -359,6 +419,23 @@ class PersonPreferences:
             # entry.** ⛔ The strip is a courtesy; failing the whole entry over an
             # unrecognised IANA string would make it a blocker.
             return UTC
+
+    def choose_home_layout(
+        self, composition: str, layout: HomeCardLayout
+    ) -> PersonPreferences:
+        """Record how this person arranged one composition's cards.
+
+        📁 Home §10's *Customise* drawer, and `U-05`'s interim: **reorder and
+        remove only**.
+
+        ⛔ **One composition at a time.** ⚡ Replacing the whole map would let a
+        panel that only ever shows the current composition wipe the arrangement
+        of a composition the person is not looking at — which they would meet the
+        next time they switched, with no way to know what happened.
+        """
+        if composition not in HOME_COMPOSITIONS:
+            raise InvalidHomeCompositionError(composition)
+        return replace(self, home_layout={**self.home_layout, composition: layout})
 
     def saw_setup_complete(self, at: datetime) -> PersonPreferences:
         """Record that this person has been told setup is finished.

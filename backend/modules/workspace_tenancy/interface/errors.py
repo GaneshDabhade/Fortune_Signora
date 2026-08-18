@@ -20,6 +20,7 @@ from modules.workspace_tenancy.domain.capability import (
 from modules.workspace_tenancy.domain.entities import LastOwnerCannotLeaveError
 from modules.workspace_tenancy.domain.exceptions import (
     DuplicateMembershipError,
+    InvalidHomeCompositionError,
     EmptyDeclarationError,
     InvalidSavedViewNameError,
     InvalidWorkspaceNameError,
@@ -79,6 +80,13 @@ ERROR_MAPPING: ErrorMapping = {
     DuplicateMembershipError: (status.HTTP_409_CONFLICT, "membership_already_exists"),
     InvalidWorkspaceNameError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "invalid_workspace_name"),
     InvalidWorkspaceSlugError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "invalid_workspace_slug"),
+    # ⚡ **`422`** — the request is well-formed and names a composition Home has no
+    # way to render. ⛔ **Refused rather than stored**: an arrangement filed under
+    # an unknown name is one nobody would ever see.
+    InvalidHomeCompositionError: (
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "invalid_home_composition",
+    ),
     # ⚡ **`409`, not `422`.** 📁 The text is well-formed and somebody else has
     # it — *"That URL was taken while you were typing"* — and a client cannot
     # tell those apart from one status. **The screen shows different things.**

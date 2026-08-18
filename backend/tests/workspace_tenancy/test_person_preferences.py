@@ -11,7 +11,10 @@ from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
-from modules.workspace_tenancy.domain.preferences import PersonPreferences
+import pytest
+
+from modules.workspace_tenancy.domain.exceptions import InvalidHomeCompositionError
+from modules.workspace_tenancy.domain.preferences import HomeCardLayout, PersonPreferences
 
 TOLD_AT = datetime(2026, 8, 18, 9, 0, tzinfo=UTC)
 
@@ -121,3 +124,61 @@ class TestBeingToldSetupIsComplete:
 
         assert told.first_run_dismissed_at is None
         assert told.invite_skipped_at is None
+
+
+class TestArrangingHomesCards:
+    """🔴 **Home §10's *Customise* panel** — 📁 `3.2.3`: *"card order within a
+    composition is **stable across visits**."* 📁 `U-05`'s interim: *"**reorder and
+    remove only.**"*
+    """
+
+    def test_nobody_has_arranged_anything_to_begin_with(self) -> None:
+        """⛔ **An empty map is *never customised***, which renders the registry's
+        own order — not *customised to nothing*, which would be an empty Home."""
+        assert _fresh().home_layout == {}
+
+    def test_an_arrangement_is_kept(self) -> None:
+        layout = HomeCardLayout(order=("recents", "needs-you-today"), hidden=("meetings",))
+
+        chosen = _fresh().choose_home_layout("seller", layout)
+
+        assert chosen.home_layout["seller"] == layout
+
+    def test_one_composition_at_a_time(self) -> None:
+        """🔴 **The rule the use case depends on.**
+
+        ⚡ The panel shows the composition the person is looking at. ⛔ **A write
+        that replaced the whole map would wipe an arrangement they cannot see**,
+        which they would meet the next time they switched with no way to know
+        what happened.
+        """
+        seller = HomeCardLayout(order=("recents",))
+        executive = HomeCardLayout(order=("top-risks",))
+
+        both = _fresh().choose_home_layout("seller", seller).choose_home_layout(
+            "executive", executive
+        )
+
+        assert both.home_layout["seller"] == seller
+        assert both.home_layout["executive"] == executive
+
+    def test_arranging_again_replaces_that_composition(self) -> None:
+        first = HomeCardLayout(order=("recents", "meetings"))
+        second = HomeCardLayout(order=("meetings", "recents"))
+
+        chosen = _fresh().choose_home_layout("seller", first).choose_home_layout("seller", second)
+
+        assert chosen.home_layout["seller"] == second
+
+    def test_a_composition_home_cannot_render_is_refused(self) -> None:
+        """⛔ **Refused rather than stored.** ⚡ An arrangement filed under a name
+        Home does not know is one nobody would ever see, and the person would go
+        on customising a screen that never changes."""
+        with pytest.raises(InvalidHomeCompositionError):
+            _fresh().choose_home_layout("dashboard", HomeCardLayout())
+
+    def test_it_does_not_disturb_its_neighbours(self) -> None:
+        chosen = _fresh().choose_home_layout("seller", HomeCardLayout(order=("recents",)))
+
+        assert chosen.home_composition is None
+        assert chosen.setup_complete_seen_at is None

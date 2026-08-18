@@ -21,19 +21,21 @@ import { PipelineHealthCard } from '@/components/home/pipeline-health-card';
 import { RecentsCard } from '@/components/home/recents-card';
 import { TopOpportunitiesCard, TopRisksCard } from '@/components/home/posture-cards';
 import { CardOutcomesProvider, useCardOutcomes } from '@/components/home/card-outcomes';
+import { CustomiseButton, useCustomise } from '@/components/home/customise';
+import { CustomiseDrawer } from '@/components/home/customise-drawer';
 import { NoDataStrip } from '@/components/home/no-data-strip';
 import { SetupCompleteStrip } from '@/components/home/setup-complete-strip';
 import { SourceStrip } from '@/components/home/source-strip';
 import { WorkspaceStrip } from '@/components/home/workspace-strip';
 import { HM_COPY_11 } from '@/lib/home/copy';
-import { cardsFor, type CardContract } from '@/lib/home/cards';
+import { applyLayout, cardsFor, type CardContract } from '@/lib/home/cards';
 import { resolveComposition } from '@/lib/home/composition';
 import { useSession } from '@/lib/auth/client';
 import { useAccountsCount } from '@/lib/query/hooks/accounts-count';
 import { useActivationState, useStatedRole } from '@/lib/query/hooks/home';
 import { useIntegrations } from '@/lib/query/hooks/integrations';
 import { useWorkspaceTriage } from '@/lib/query/hooks/triage';
-import { usePreferences } from '@/lib/query/hooks/preferences';
+import { useChooseHomeLayout, usePreferences } from '@/lib/query/hooks/preferences';
 import { useViewerRole } from '@/lib/query/hooks/team';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 import type { WorkspaceRole } from '@/lib/state/permissions';
@@ -212,6 +214,7 @@ function HomeContent() {
    */
   const outcomes = useCardOutcomes();
 
+
   /**
    * ⚡ **`working` is *"at least one connection Signora can currently use"*.**
    * 📁 Rule 1 asks whether one has ever *completed a sync*, and a working
@@ -230,7 +233,30 @@ function HomeContent() {
     statedRole: statedRole.data ?? null,
   });
 
-  const cards = cardsFor(composition, role);
+  /**
+   * 🔴 **§10's *Customise* arrangement, applied** — 📁 `3.2.3`: *"card order
+   * within a composition is stable across visits."*
+   *
+   * ⛔ **Applied here rather than inside `cardsFor`.** ⚡ `cardsFor` answers
+   * *which cards does this composition have*, which is the design's; **this
+   * answers *how did this person leave them*, which is theirs** — and the second
+   * must never be able to introduce a card the first did not name (`U-05`).
+   */
+  const cards = applyLayout(
+    cardsFor(composition, role),
+    preferences.data?.home_layout?.[composition],
+  );
+  /**
+   * 📁 **§10's *Customise* drawer.** ⛔ **Never on activation** — its three steps
+   * are *"ordered, dependent, non-dismissible"*, and `U-05` scopes the control to
+   * *"reorder and remove"*, both of which activation forbids by name. ⚡ Offering
+   * it there would offer a way to hide setup from somebody who still has to do it,
+   * which is the same rule that makes the composition unswitchable.
+   */
+  const customisable = composition !== 'activation' && !resolving;
+  const customise = useCustomise(customisable);
+  const saveLayout = useChooseHomeLayout(workspaceId);
+
   /** 📁 Whether any rendered card claims the design's wide column. */
   const hasWide = cards.some((card) => WIDE.has(card.id));
   const rendered = cards.filter((card) => RENDERERS[card.id] !== undefined);
@@ -380,12 +406,23 @@ function HomeContent() {
               : null
           }
         />
-        <CompositionSwitcher
-          className="ml-auto"
-          current={composition}
-          statedRole={statedRole.data ?? null}
-          workspaceId={workspaceId}
-        />
+        <div className="ml-auto flex items-center gap-2">
+          <CompositionSwitcher
+            current={composition}
+            statedRole={statedRole.data ?? null}
+            workspaceId={workspaceId}
+          />
+          {/* ⛔ **Never on activation** — 📁 its three steps are *"ordered,
+              dependent, non-dismissible"*, and offering a way to reorder or
+              remove them would offer a way to hide setup from somebody who still
+              has to do it. */}
+          {customisable ? (
+            <CustomiseButton
+              controls={customise}
+              className="inline-flex h-control-sm items-center gap-1.5 rounded-md border border-border px-3 text-2xs font-semibold text-content-muted transition-colors hover:border-accent hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            />
+          ) : null}
+        </div>
       </div>
 
       {/* 📁 ***"Progress counts blocking cards only"***, activation only. */}
@@ -400,6 +437,28 @@ function HomeContent() {
         * nothing rendered is state 12 or the designed empty state, not a failure,
         * and `0 === 0` would have claimed otherwise.
         */}
+      {/* 📁 **The drawer, placed by Home rather than by the button** — `Drawer`
+          *"renders in the flow its parent gives it"*, so a panel mounted inside
+          the header row would be a 420px flex item beside the switcher. */}
+      {customisable ? (
+        <CustomiseDrawer
+          open={customise.open}
+          onClose={customise.close}
+          composition={composition}
+          cards={cards}
+          layout={preferences.data?.home_layout?.[composition]}
+          saving={saveLayout.isPending}
+          onSave={(layout) =>
+            saveLayout.mutate(
+              { composition, layout },
+              // ⚡ **Closed only once the server has it**, so the page never
+              // reorders under a save that failed — and focus still returns.
+              { onSuccess: customise.close },
+            )
+          }
+        />
+      ) : null}
+
       {everyCardFailed ? (
         <div
           role="status"

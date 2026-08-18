@@ -43,6 +43,8 @@ const accountsCount = vi.hoisted(() => vi.fn());
 const outcomes = vi.hoisted(() => vi.fn());
 /** ⚡ **Hierarchy 2** — what `POST /workspaces/{id}/entry` answered. */
 const recordEntry = vi.hoisted(() => vi.fn());
+/** ⚡ **§10** — what the Customise drawer saved. */
+const chooseLayout = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/state/workspace-provider', () => ({ useWorkspaceContext: workspace }));
 vi.mock('@/lib/query/hooks/team', () => ({ useViewerRole: viewerRole }));
@@ -77,7 +79,14 @@ vi.mock('@/lib/query/hooks/preferences', () => ({
   // is silent until the preference is READ, so omitting the field here would
   // hide it for a reason that has nothing to do with the state under test.
   usePreferences: () => ({
-    data: { first_run_dismissed: true, invite_hidden: false, setup_complete_seen: false },
+    data: {
+      first_run_dismissed: true,
+      invite_hidden: false,
+      setup_complete_seen: false,
+      // ⚡ **Never customised by default** — 📁 an absent key renders the
+      // registry's own order, which is what every other test here assumes.
+      home_layout: {},
+    },
   }),
   useDismissFirstRun: () => ({ mutate: () => {}, isPending: false }),
   useSkipInvite: () => ({ mutate: () => {}, isPending: false }),
@@ -90,6 +99,8 @@ vi.mock('@/lib/query/hooks/preferences', () => ({
    * account for a four-second courtesy appearing above the greeting.
    */
   useRecordEntry: () => ({ mutateAsync: recordEntry, isPending: false }),
+  /** ⚡ **§10's *Customise* drawer writes one composition's arrangement.** */
+  useChooseHomeLayout: () => ({ mutate: chooseLayout, isPending: false }),
   // ⚡ **The switcher writes this** — 📁 rule 2's input, and [C-1530](../../../docs/LANE_COORDINATION.md).
   useChangePreferences: () => ({ mutate: () => {}, isPending: false }),
 }));
@@ -158,6 +169,7 @@ beforeEach(() => {
   outcomes.mockReturnValue({ failed: 0, retryAll: () => {}, report: () => {}, forget: () => {} });
   recordEntry.mockReset();
   recordEntry.mockResolvedValue({ first_entry_today: false });
+  chooseLayout.mockReset();
 });
 
 describe('🔴 Home always renders', () => {

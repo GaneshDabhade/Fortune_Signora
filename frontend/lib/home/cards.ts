@@ -345,6 +345,76 @@ export function cardsFor(
 }
 
 /**
+ * 🔴 **One person's arrangement of one composition** — 📁 Home §10's *Customise*
+ * drawer, and `3.2.3`: *"**card order within a composition is stable across
+ * visits.**"*
+ *
+ * ⛔ **Two lists, because one cannot tell *removed* from *added since*.** ⚡ A
+ * single list of kept cards would make a card's absence ambiguous, and a person
+ * who customised in August would silently never see a card shipped in September.
+ */
+export interface HomeCardLayout {
+  /** Every card this person arranged, in the order they left it. */
+  readonly order: readonly string[];
+  /** The subset they removed. ⛔ **Still present in `order`.** */
+  readonly hidden: readonly string[];
+}
+
+/**
+ * 🔴 **Apply an arrangement to a composition's cards.**
+ *
+ * 📁 `U-05`'s interim ruling bounds this to **reorder and remove only** —
+ * *"adding cross-composition cards is out of scope for the first
+ * implementation"* — which is why nothing here can introduce a card the
+ * composition does not already name.
+ *
+ * ## ⚡ Three rules, and each answers a question the design asked
+ *
+ * **① A card the person ordered keeps their position.** 📁 *"Stable across
+ * visits."*
+ *
+ * **② A card in neither list is NEW**, and it lands at its registry position
+ * rather than at the end. ⛔ **Appending would put every future card below the
+ * one the person cared least about**, and the registry's order is the design's
+ * own recommendation about what to read first.
+ *
+ * **③ A hidden card is removed from the render and KEPT in the order.** 📁 So
+ * restoring it puts it back where it was — the same instinct `P-05` states for
+ * activation: *"reordering shifts the list under the cursor."*
+ *
+ * ⚠️ **An arrangement naming a card the composition does not have is ignored,
+ * not an error.** ⚡ Compositions change as Signora ships; a stored id that no
+ * longer belongs is a stale preference rather than a fault, and refusing to
+ * render Home over one would be the wrong trade every time.
+ */
+export function applyLayout(
+  cards: readonly CardContract[],
+  layout: HomeCardLayout | undefined,
+): readonly CardContract[] {
+  if (layout === undefined) return cards;
+
+  const hidden = new Set(layout.hidden);
+  const placed = new Map(layout.order.map((id, index) => [id, index]));
+
+  return cards
+    .filter((card) => !hidden.has(card.id))
+    .map((card, index) => ({ card, index }))
+    .sort((left, right) => {
+      const a = placed.get(left.card.id);
+      const b = placed.get(right.card.id);
+      // ⚡ **Neither arranged** — the registry's order decides, which is what
+      // `index` preserves.
+      if (a === undefined && b === undefined) return left.index - right.index;
+      // ⛔ **An arranged card outranks a new one**, so a person's arrangement is
+      // not disturbed by something Signora shipped this week.
+      if (a === undefined) return 1;
+      if (b === undefined) return -1;
+      return a - b;
+    })
+    .map(({ card }) => card);
+}
+
+/**
  * ## ⛔ There is no `unplacedCards()`, and removing it is the honest half of this row
  *
  * ⚠️ **One was written here, exported, and tested**: it returned registered

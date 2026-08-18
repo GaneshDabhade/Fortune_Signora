@@ -83,6 +83,19 @@ export interface Shortcut {
    * eighteen countable.**
    */
   readonly published: boolean;
+  /**
+   * ⚡ **WHICH design publishes it**, and the field exists because a second one
+   * now does.
+   *
+   * 📁 Home §10's keyboard table names `⌘⇧H`, so {@link Shortcut.published} is
+   * honestly `true` for it — ⛔ **but it is not one of the App Shell's eighteen**,
+   * and folding it into that count would make a fixed design artifact grow every
+   * time another screen published a key.
+   *
+   * ⚠️ **Absent means the App Shell**, which is what every entry that predates
+   * this field is — so nothing had to be restated to add the second source.
+   */
+  readonly publishedIn?: 'app-shell' | 'home';
   /** 📁 The design's own words for the command, or the product's where it has none. */
   readonly what: string;
   /** 📁 The design's own notation — ⛔ Apple glyphs, translated by {@link keysFor}. */
@@ -164,6 +177,25 @@ export const SHORTCUT_GROUPS: readonly ShortcutGroup[] = [
         keys: '⌘.',
         state: 'live',
         boundIn: 'components/shell/utility-panel.tsx',
+      },
+      {
+        /**
+         * 📁 **Home §10's keyboard table** — *"**Customise** — opens the
+         * card-order panel as a drawer. Escape closes and returns focus to the
+         * trigger."*
+         *
+         * ⚡ **Published, because a design document names it to a customer.**
+         * ⛔ It is bound on Home only — the panel arranges Home's cards and no
+         * other surface has any — **and that is a scope rather than an
+         * omission**: the binding is installed by Home's own control.
+         */
+        id: 'customise-home',
+        published: true,
+        publishedIn: 'home',
+        what: 'Customise your home',
+        keys: '⌘⇧H',
+        state: 'live',
+        boundIn: 'components/home/customise.tsx',
       },
       {
         /**
@@ -350,7 +382,17 @@ export function allShortcuts(): readonly Shortcut[] {
  * without one.** **Conflating the two loses the ability to say which is which.**
  */
 export function publishedByTheDesign(): readonly Shortcut[] {
-  return allShortcuts().filter((shortcut) => shortcut.published);
+  return allShortcuts().filter(
+    // ⚠️ **`?? 'app-shell'` rather than a required field** — every entry that
+    // predates a second publishing design is the App Shell's, and restating that
+    // eighteen times would be eighteen chances to get one wrong.
+    (shortcut) => shortcut.published && (shortcut.publishedIn ?? 'app-shell') === 'app-shell',
+  );
+}
+
+/** 📁 **What Home's own design publishes** — §10's keyboard table. */
+export function publishedByHome(): readonly Shortcut[] {
+  return allShortcuts().filter((shortcut) => shortcut.publishedIn === 'home');
 }
 
 /** ✅ What a customer can press right now and have something happen. */

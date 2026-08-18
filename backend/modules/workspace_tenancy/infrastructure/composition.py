@@ -55,6 +55,7 @@ from modules.workspace_tenancy.application.use_cases.onboarding import (
 from modules.workspace_tenancy.application.use_cases.preferences import (
     ChangePreferencesUseCase,
     AcknowledgeSetupCompleteUseCase,
+    ChooseHomeLayoutUseCase,
     DismissFirstRunUseCase,
     GetPreferencesUseCase,
     SkipInviteUseCase,
@@ -135,6 +136,8 @@ class WorkspaceTenancyUseCases:
     get_preferences: GetPreferencesUseCase
     change_preferences: ChangePreferencesUseCase
     acknowledge_setup_complete: AcknowledgeSetupCompleteUseCase
+    #: 🔴 **Home §10's *Customise* drawer** — one composition's arrangement.
+    choose_home_layout: ChooseHomeLayoutUseCase
     #: 🔴 **D-196's mechanism finally has a caller** — Home hierarchy 2, Entry rule 12.
     record_entry: RecordWorkspaceEntry
     dismiss_first_run: DismissFirstRunUseCase
@@ -247,6 +250,7 @@ def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
         acknowledge_setup_complete=AcknowledgeSetupCompleteUseCase(
             preferences=preferences_repository
         ),
+        choose_home_layout=ChooseHomeLayoutUseCase(preferences=preferences_repository),
         dismiss_first_run=DismissFirstRunUseCase(preferences=preferences_repository),
         skip_invite=SkipInviteUseCase(preferences=preferences_repository),
         record_view=RecordViewUseCase(recently_viewed=recently_viewed_repository),

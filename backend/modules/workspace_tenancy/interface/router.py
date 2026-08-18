@@ -89,6 +89,7 @@ from modules.workspace_tenancy.interface.schemas import (
     NotificationFeedResponse,
     NotificationResponse,
     MembershipResponse,
+    HomeCardLayoutPayload,
     ViewerRoleResponse,
     WorkspaceEntryResponse,
     OnboardingRunResponse,
@@ -1041,6 +1042,45 @@ async def dismiss_first_run(context: CurrentWorkspace) -> PreferencesResponse:
         context.workspace_id,
         context.principal.user_id,
         now=datetime.now(UTC),
+    )
+    return PreferencesResponse.from_domain(prefs, now=datetime.now(UTC))
+
+
+@router.put(
+    "/workspaces/{workspace_id}/preferences/home-layout/{composition}",
+    response_model=PreferencesResponse,
+    summary="How this person arranged Home's cards in one composition",
+)
+async def choose_home_layout(
+    context: CurrentWorkspace,
+    composition: str,
+    body: HomeCardLayoutPayload,
+) -> PreferencesResponse:
+    """📁 **Home §10's *Customise* drawer** — *"opens the card-order panel"*, and
+    `3.2.3`: *"**card order within a composition is stable across visits.**"*
+
+    ⚡ **`PUT`, because it replaces one composition's arrangement whole.** ⛔ Not a
+    field on `PATCH /preferences`: that endpoint is the profile panel's, where each
+    field is one control a person can move back, and **an arrangement is a list
+    whose meaning is its order** — a partial merge of two orders is not a thing.
+
+    ⛔ **One composition per call.** ⚡ The panel shows the composition the person
+    is looking at, and 📁 the design scopes the control *"within a composition"* —
+    **so a call that replaced the whole map could wipe an arrangement they cannot
+    see**, which they would meet the next time they switched.
+
+    ⚠️ **`U-05`'s interim is what bounds this**: *"reorder and remove only. Adding
+    cross-composition cards is out of scope for the first implementation."* ⛔ The
+    server does not enforce that, because **it does not know which cards belong to
+    which composition** — 📁 Home is the composition authority and its registry is
+    the frontend's. **What the server enforces is that the composition exists.**
+    """
+    context.authorize(Resource.PREFERENCES, Action.UPDATE)
+    prefs = await build_use_cases(context.session).choose_home_layout.execute(
+        context.workspace_id,
+        context.principal.user_id,
+        composition=composition,
+        layout=body.to_domain(),
     )
     return PreferencesResponse.from_domain(prefs, now=datetime.now(UTC))
 

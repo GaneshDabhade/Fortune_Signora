@@ -23,6 +23,7 @@ from modules.workspace_tenancy.application.ports import PersonPreferencesReposit
 from modules.workspace_tenancy.domain.preferences import (
     AnswerStyle,
     Density,
+    HomeCardLayout,
     PersonPreferences,
     ScreenReaderVerbosity,
     TextSize,
@@ -182,6 +183,39 @@ class DismissFirstRunUseCase:
         if dismissed is not current:
             await self._preferences.save(dismissed)
         return dismissed
+
+
+class ChooseHomeLayoutUseCase:
+    """How this person arranged one composition's cards — Home §10's *Customise*.
+
+    📁 `3.2.3`: *"card order within a composition is **stable across visits**."*
+    📁 `U-05`'s interim: *"**reorder and remove only.**"*
+
+    ⚡ **One composition per call**, matching the panel: it shows the composition
+    the person is looking at, and 📁 the design scopes the control *"within a
+    composition"*. ⛔ **Replacing the whole map would let that panel wipe an
+    arrangement the person cannot see**, which they would meet the next time they
+    switched with no way to know what happened.
+    """
+
+    def __init__(self, *, preferences: PersonPreferencesRepository) -> None:
+        self._preferences = preferences
+
+    async def execute(
+        self,
+        workspace_id: UUID,
+        person_id: UUID,
+        *,
+        composition: str,
+        layout: HomeCardLayout,
+    ) -> PersonPreferences:
+        current = await self._preferences.get(workspace_id, person_id)
+        chosen = current.choose_home_layout(composition, layout)
+        # ⛔ **Only when something changed**, the rule every neighbour here
+        # follows: a write that stores no new fact is a row created for nothing.
+        if chosen != current:
+            await self._preferences.save(chosen)
+        return chosen
 
 
 class AcknowledgeSetupCompleteUseCase:

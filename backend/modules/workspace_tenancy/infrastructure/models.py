@@ -332,6 +332,14 @@ class PersonPreferencesModel(Base, TimestampMixin, AuditMixin):
     #: 📁 **Home's rule 2.** ⛔ **Nullable, because *not set* is a real state** —
     #: the resolver falls through to the role rules when it is absent.
     home_composition: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    # 🔴 **Home's *Customise* panel** — 📁 §10, and `3.2.3`'s *"card order within a
+    # composition is stable across visits."*
+    #
+    # ⛔ **`JSONB` and this module never reads INSIDE it.** ⚡ The shape is
+    # `{composition: {"order": [...], "hidden": [...]}}`, and **the card ids are
+    # Home's registry rather than this module's** — a catalogue here would be a
+    # second copy that rejects every card Home ships after it.
+    home_layout: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
 
     # ── The design's Profile, Language & region and Accessibility panels ──
     # 📁 Migration `0060`. ⚡ **Columns on a table that is already

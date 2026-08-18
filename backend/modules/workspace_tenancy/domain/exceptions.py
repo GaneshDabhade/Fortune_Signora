@@ -59,6 +59,15 @@ class DuplicateMembershipError(WorkspaceTenancyError):
         self.user_id = user_id
 
 
+class InvalidHomeCompositionError(WorkspaceTenancyError):
+    """A composition Home has no way to render.
+
+    🔴 **Refused rather than stored.** ⛔ An arrangement filed under a name Home
+    does not know is an arrangement nobody will ever see, and the person would go
+    on customising a screen that never changes.
+    """
+
+
 class InvalidSavedViewNameError(WorkspaceTenancyError):
     """The name is the customer's own words, so it has to be some words."""
 

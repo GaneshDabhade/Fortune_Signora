@@ -49,6 +49,9 @@ from modules.workspace_tenancy.domain.onboarding import (
 from modules.workspace_tenancy.domain.recently_viewed import ViewedKind, ViewedRecord
 from modules.workspace_tenancy.domain.preferences import (
     HOME_COMPOSITIONS,
+    MAX_CARD_ID_LENGTH,
+    MAX_LAID_OUT_CARDS,
+    HomeCardLayout,
     MAX_CONFIDENCE_FLOOR,
     MIN_CONFIDENCE_FLOOR,
     AnswerStyle,
@@ -154,6 +157,40 @@ class MembershipResponse(BaseModel):
             created_at=membership.created_at,
             ended_at=membership.ended_at,
         )
+
+
+class HomeCardLayoutPayload(BaseModel):
+    """One composition's arrangement, over the wire.
+
+    🔴 **Home §10's *Customise* drawer**, and `U-05`'s interim: *"reorder and
+    remove only."*
+
+    ⛔ **Card ids are bounded, never enumerated.** 📁 Home is the composition
+    authority and its registry is the frontend's — **a catalogue here would be a
+    second copy that rejects every card Signora ships after it**
+    ([§2](../../../../CLAUDE.md)). ✅ **What this validates is shape and size**,
+    which is the boundary's own job.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    #: Every card this person arranged, in the order they left it.
+    order: list[str] = Field(default_factory=list, max_length=MAX_LAID_OUT_CARDS)
+    #: The subset they removed. ⛔ **Still present in `order`**, so restoring one
+    #: puts it back where it was rather than at the end.
+    hidden: list[str] = Field(default_factory=list, max_length=MAX_LAID_OUT_CARDS)
+
+    @field_validator("order", "hidden")
+    @classmethod
+    def _card_ids_are_slugs(cls, value: list[str]) -> list[str]:
+        """⛔ **Bounded so a client cannot store prose in a preference.**"""
+        for card in value:
+            if not card or len(card) > MAX_CARD_ID_LENGTH:
+                raise ValueError(f"a card id must be 1–{MAX_CARD_ID_LENGTH} characters")
+        return value
+
+    def to_domain(self) -> HomeCardLayout:
+        return HomeCardLayout(order=tuple(self.order), hidden=tuple(self.hidden))
 
 
 class WorkspaceEntryResponse(BaseModel):
@@ -570,6 +607,12 @@ class PreferencesResponse(BaseModel):
     #: above: a client renders on *has this been shown*, and a timestamp it does
     #: not need is a timestamp it could display wrongly.
     setup_complete_seen: bool
+    #: 🔴 **Home §10's *Customise* arrangement, per composition** — 📁 `3.2.3`'s
+    #: *"card order within a composition is stable across visits."*
+    #: ⛔ **An absent key is *never customised***, which renders the registry's own
+    #: order — not the same as *customised to nothing*, which would render an
+    #: empty Home.
+    home_layout: dict[str, HomeCardLayoutPayload]
 
     @classmethod
     def from_domain(cls, prefs: PersonPreferences, *, now: datetime) -> PreferencesResponse:
@@ -599,6 +642,10 @@ class PreferencesResponse(BaseModel):
             first_run_dismissed=prefs.first_run_dismissed_at is not None,
             invite_hidden=prefs.invite_is_hidden(now),
             setup_complete_seen=prefs.setup_complete_seen_at is not None,
+            home_layout={
+                name: HomeCardLayoutPayload(order=list(layout.order), hidden=list(layout.hidden))
+                for name, layout in prefs.home_layout.items()
+            },
         )
 
 

@@ -54,6 +54,42 @@ export function useDismissFirstRun(workspaceId: string | null) {
 }
 
 /**
+ * 🔴 **Home §10's *Customise* drawer** — 📁 `3.2.3`: *"card order within a
+ * composition is **stable across visits**."*
+ *
+ * ⚡ **`PUT`, and one composition per call.** ⛔ The panel shows the composition
+ * the person is looking at, so a call that replaced the whole map could wipe an
+ * arrangement they cannot see — which they would meet the next time they
+ * switched, with no way to know what happened.
+ */
+export function useChooseHomeLayout(workspaceId: string | null) {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      composition,
+      layout,
+    }: {
+      composition: string;
+      layout: { order: readonly string[]; hidden: readonly string[] };
+    }) =>
+      apiRequest<PersonPreferences>(
+        `/workspaces/${workspaceId}/preferences/home-layout/${composition}`,
+        {
+          method: 'PUT',
+          body: { order: [...layout.order], hidden: [...layout.hidden] },
+          workspaceId: workspaceId ?? undefined,
+        },
+      ),
+    // ✅ **Set from what the server returned**, so the page reorders once rather
+    // than reordering optimistically and again on the re-read.
+    onSuccess: (preferences) => {
+      client.setQueryData(queryKeys.preferences(workspaceId ?? ''), preferences);
+    },
+  });
+}
+
+/**
  * 🔴 **Home hierarchy 2 and state 13** — the workspace confirmation strip.
  *
  * 📁 Entry rule 12: *"Enter the last used. **The workspace strip confirms which

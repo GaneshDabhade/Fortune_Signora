@@ -10,6 +10,7 @@ import {
   coverage,
   keysFor,
   pressable,
+  publishedByHome,
   publishedByTheDesign,
 } from '@/lib/shell/shortcuts';
 
@@ -108,6 +109,26 @@ describe('the shortcut registry describes the product', () => {
       'Work',
     ]);
     expect(publishedByTheDesign()).toHaveLength(18);
+  });
+
+  /**
+   * 🔴 **A second design now publishes a shortcut**, and the count above must not
+   * absorb it.
+   *
+   * 📁 Home §10's keyboard table names `⌘⇧H` — *"**Customise** — opens the
+   * card-order panel as a drawer"*. ⛔ **The App Shell's list is a fixed
+   * artifact**, and folding another screen's key into it would make a design
+   * document appear to have grown.
+   */
+  it('🔴 keeps Home\'s own published shortcut out of the App Shell\'s eighteen', () => {
+    const home = publishedByHome();
+
+    expect(home.map((shortcut) => shortcut.keys)).toEqual(['⌘⇧H']);
+    expect(publishedByTheDesign().map((shortcut) => shortcut.id)).not.toContain('customise-home');
+    // ⚡ **And it is still in the registry**, because a customer can press it —
+    // 📁 B-239's rule: a live shortcut omitted misleads as much as a dead one
+    // listed.
+    expect(allShortcuts().map((shortcut) => shortcut.id)).toContain('customise-home');
   });
 
   /**

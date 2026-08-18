@@ -40,6 +40,7 @@ from modules.workspace_tenancy.domain.onboarding import (
 from modules.workspace_tenancy.domain.preferences import (
     AnswerStyle,
     Density,
+    HomeCardLayout,
     PersonPreferences,
     ScreenReaderVerbosity,
     TextSize,
@@ -687,6 +688,17 @@ def _preferences_to_domain(model: PersonPreferencesModel) -> PersonPreferences:
         first_run_dismissed_at=model.first_run_dismissed_at,
         invite_skipped_at=model.invite_skipped_at,
         setup_complete_seen_at=model.setup_complete_seen_at,
+        # ⚡ **Rehydrated into the domain's own type**, so nothing above this line
+        # handles a raw JSON blob. ⛔ A malformed row reads as *not customised*
+        # rather than failing a page: 📁 the layout is a courtesy, not a gate.
+        home_layout={
+            name: HomeCardLayout(
+                order=tuple(str(card) for card in (value or {}).get("order", ())),
+                hidden=tuple(str(card) for card in (value or {}).get("hidden", ())),
+            )
+            for name, value in (model.home_layout or {}).items()
+            if isinstance(value, dict)
+        },
     )
 
 
@@ -751,6 +763,10 @@ class SqlAlchemyPersonPreferencesRepository(SqlAlchemyRepository):
             "first_run_dismissed_at": preferences.first_run_dismissed_at,
             "invite_skipped_at": preferences.invite_skipped_at,
             "setup_complete_seen_at": preferences.setup_complete_seen_at,
+            "home_layout": {
+                name: {"order": list(layout.order), "hidden": list(layout.hidden)}
+                for name, layout in preferences.home_layout.items()
+            },
         }
         if model is None:
             self._session.add(
