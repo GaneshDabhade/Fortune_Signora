@@ -348,6 +348,49 @@ run 5: 0 failed                     20 passed
 
 ⛔ **This spec was the intended control for the browser gate.** 📁 **Lane A: *"a control that is clean on one stack and not another is not a control"*** — **and the sharper form this row proves: it is not clean on the SAME stack twice.** **A gate whose control is intermittent cannot distinguish a regression from a re-run.**
 
+### B-1024 · 🔴 `slug` became required and `smoke.sh` was not told — `make smoke` fails, and it is a required gate
+
+| | |
+|---|---|
+| **Module** | `backend/modules/workspace_tenancy/interface/schemas.py` + `infra/smoke.sh` |
+| **Current assignee** | **Lane A** — **they changed the contract, and updating its callers is part of the slice.** `infra/` also joins to them through `platform_foundation` |
+| **Severity** | 🔴 · ⛔ **CERTIFICATION BLOCKER.** `make smoke` is one of the eight required gates |
+| **Status** | **`OPEN`** — reported to Lane A **before** their push, so it can land in the same one |
+| **Found** | **2026-08-18 by QE**, certifying `lane-a-product-surface-r2` at `2e758310` |
+
+**Steps to reproduce.** `make certify` on the candidate:
+
+```
+10. Demo flow, authorization, and tenant isolation
+  ✗ workspace creation failed: {"code":"validation_error",
+     "details":[{"field":"slug","message":"Field required"}]}
+
+SMOKE FAILED at: 10. Demo flow, authorization, and tenant isolation
+```
+
+**Measured on both refs:**
+
+| | `CreateWorkspaceRequest` |
+|---|---|
+| `origin/main` | `name` only |
+| **`2e758310`** | 🔴 **`name` + `slug`, required, no default** |
+
+📁 **`infra/smoke.sh:304`** posts `{"name":"Smoke Test Workspace"}` — **no slug** — and ⛔ **`git diff origin/main 2e758310 -- infra/` is EMPTY.** The contract moved; its caller did not.
+
+### ⛔ Not a gate defect
+
+**`smoke.sh` is correct and doing exactly its job.** ⚡ **It is the only required gate that exercises the real API over HTTP**, which is why `mypy` (948 files), `tsc`, `eslint`, the frontend suite (3324) and the lane's backend subsets all passed while this was broken. 📁 [§20e](../CLAUDE.md) classes *fixing a gate* as a slice; **this is not that — it is completing the slice that changed the contract.**
+
+### ⛔ What the fix must not be
+
+**Do not make `slug` optional or defaulted to make the gate pass.** 📁 **The candidate's own comment is the argument against it**: *"the client suggests, a person edits, and the value stored is the one they accepted. Deriving it a second time in this layer would be two producers of one permanent identifier"* ([§2](../CLAUDE.md)). 📁 **Screen `03`: *"Permanent once created."*** ✅ **Required is right.**
+
+✅ **`smoke.sh` sends a slug, as a browser would.** ⚠️ **And it may need to be unique per run** — the script can meet a database that already holds one, and `WorkspaceSlugTakenError` is then the next failure. 📁 **[B-1022](#b-1022) hit exactly that**, and derived the slug per run rather than fixing it.
+
+### ✅ What this does NOT invalidate
+
+**Everything else on the candidate held**: `mypy` **948** · `lint-imports` **37/37** · `tsc` · `eslint` · frontend **3324/192** · migrations `0062`–`0064` **reversible** base→head→base→head→base on a clean database · the `/attention` retirement verified in a browser · `AccountAttention` intact.
+
 ### B-1023 · 🟠 Twenty-two journeys assume a ranked entry list, and the re-aimed entry is the whole book
 
 | | |
