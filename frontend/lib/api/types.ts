@@ -14,6 +14,21 @@ export interface Workspace {
   updated_at: string;
 }
 
+/**
+ * The signed-in person's own standing in a workspace.
+ *
+ * 🔴 **[B-284](../../docs/BUGS.md).** Deliberately not `Membership`: that type
+ * answers *"who is in this workspace?"* and is served a page at a time, and
+ * reading a page to find yourself is what locked an owner out of their own
+ * Settings. **This is the answer to a different question**, and the endpoint
+ * behind it can only ever answer it about the caller.
+ */
+export interface ViewerRoleResponse {
+  workspace_id: string;
+  user_id: string;
+  role: 'owner' | 'member';
+}
+
 export interface Membership {
   id: string;
   workspace_id: string;

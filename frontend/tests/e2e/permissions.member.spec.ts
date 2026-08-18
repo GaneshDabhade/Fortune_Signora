@@ -33,11 +33,18 @@ test.describe('a member of the organization', () => {
     // the shell renders the address TWICE by design, a desktop link and a
     // mobile span, and Playwright's strict mode counts matches in the DOM
     // rather than visible ones. The duplicate render is correct; the query
-    // was wrong. Same repair as the shell's second wordmark in
-    // `app-shell-rail.test.tsx`, and it asserts something stronger than
-    // before: not that the address appears somewhere, but that it is the
-    // link to their own profile.
-    await expect(page.getByRole('link', { name: MEMBER.email })).toBeVisible();
+    // was wrong.
+    //
+    // 🔴 **And then the anatomy moved again.** 📁 `B-429` gave the address to
+    // `AccountMenu` — a **button** that opens a menu, `components/shell/account-menu.tsx`
+    // — so the bare profile link this asserted no longer exists and the spec
+    // had been red since. ⛔ **The claim is unchanged**: *the product tells a
+    // member who it thinks they are.* ✅ **Only the control carrying it
+    // changed**, so the assertion follows it rather than describing a shell
+    // the design has replaced.
+    await expect(
+      page.getByRole('button', { name: `Account menu for ${MEMBER.email}` }),
+    ).toBeVisible();
   });
 
   test('@journey sees Settings as restricted rather than absent', async ({ page }) => {

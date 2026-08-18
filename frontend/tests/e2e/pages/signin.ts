@@ -13,9 +13,39 @@
  * harness reuse the page objects instead of growing its own.
  */
 
-import { type Locator, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
 import { PASSWORD, type Persona } from '../fixtures/personas';
+
+/**
+ * Get past *"Choose an organization"* the way a person does.
+ *
+ * 📁 **Rule 12 — *"enter the last used"*** — so a browser that has chosen once
+ * is never asked again, and a fresh one always is. ⚡ **Whether it is asked at
+ * all is a property of the DATABASE, not of the test**: dana belongs to the
+ * Playground *and* to whatever `organization-setup.spec.ts` last created, so
+ * the chooser appears on any workstation where that spec has run.
+ *
+ * ⛔ **The Playground by name, never the first row.** *"E2E Org …"* sorts ahead
+ * of it, and choosing blindly captures the session into an empty organization
+ * where every later assertion looks for data that is in the other one.
+ *
+ * ⚠️ **Extracted from `auth.setup.ts`, which had this and was the only caller
+ * that did.** 🔴 A fresh sign-in anywhere else — `resilience`'s sign-out
+ * journey is one — landed on the chooser and reported *"Home did not render"*,
+ * which is true and is not what the journey is about.
+ */
+export async function chooseOrganization(page: Page): Promise<void> {
+  await page.waitForURL(/\/workspaces$|\/w\/[0-9a-f-]+\/home$/, { timeout: 20_000 });
+  if (new URL(page.url()).pathname !== '/workspaces') return;
+
+  await expect(page.getByRole('heading', { name: 'Choose an organization' })).toBeVisible();
+  const list = page.getByRole('list', { name: 'Your organizations' });
+  const playground = list.getByRole('button', { name: /Playground/ });
+  await ((await playground.count()) > 0 ? playground.first() : list.getByRole('button').first())
+    .click();
+  await page.waitForURL(/\/w\/[0-9a-f-]+\/home$/, { timeout: 20_000 });
+}
 
 export class SignInPage {
   constructor(private readonly page: Page) {}

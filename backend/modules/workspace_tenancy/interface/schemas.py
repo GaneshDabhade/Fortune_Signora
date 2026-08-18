@@ -156,6 +156,30 @@ class MembershipResponse(BaseModel):
         )
 
 
+class ViewerRoleResponse(BaseModel):
+    """The signed-in person's own standing in this workspace.
+
+    🔴 **[B-284](../../../../docs/BUGS.md).** The shell used to answer *"what am
+    I here?"* by fetching the member list and searching it — and the list is a
+    **page**. `DEFAULT_PAGE_LIMIT` is 50 and the ordering is newest-first, so
+    the 51st-oldest member fell off the end and their own role resolved to
+    *"not a member"*. **An owner was shown a locked Settings.**
+
+    **Deliberately not `MembershipResponse`.** That type answers *"who is in
+    this workspace?"* and carries the membership row's id, its creation date
+    and the member's email address — 📁 facts the members list already
+    publishes to somebody entitled to read it. **This answers a different
+    question, for the person who is the subject of it**, and the smallest
+    honest answer is the role itself.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    workspace_id: UUID
+    user_id: UUID
+    role: WorkspaceRole
+
+
 class InviteMemberRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
 

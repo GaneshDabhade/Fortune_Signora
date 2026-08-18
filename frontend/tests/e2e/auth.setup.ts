@@ -14,7 +14,7 @@
 import { expect, test as setup } from '@playwright/test';
 
 import { MEMBER, OWNER, storageStatePath, type Persona } from './fixtures/personas';
-import { SignInPage } from './pages/signin';
+import { chooseOrganization, SignInPage } from './pages/signin';
 
 async function signIn(page: import('@playwright/test').Page, persona: Persona) {
   // **The destination is the assertion**, and it lives in the page object.
@@ -41,21 +41,10 @@ async function signIn(page: import('@playwright/test').Page, persona: Persona) {
    * records the last-used — so every later entry in the suite takes 📁 rule 12
    * (*"enter the last used"*) rather than the chooser again.
    */
-  await page.waitForURL(/\/workspaces$|\/w\/[0-9a-f-]+\/home$/);
-  if (new URL(page.url()).pathname === '/workspaces') {
-    await expect(page.getByRole('heading', { name: 'Choose an organization' })).toBeVisible();
-    /**
-     * ⛔ **The Playground by name, never the first row.** Other specs create
-     * organizations — `business-setup` makes an *"E2E Org …"* on every run —
-     * and they sort ahead of it. **Choosing blindly would capture the session
-     * into an empty organization** and every downstream spec would fail
-     * looking for data that is in the other one.
-     */
-    const list = page.getByRole('list', { name: 'Your organizations' });
-    const playground = list.getByRole('button', { name: /Playground/ });
-    await ((await playground.count()) > 0 ? playground.first() : list.getByRole('button').first())
-      .click();
-  }
+  // ⚠️ **Extracted to `chooseOrganization` — it was needed in a second place.**
+  // 📁 A fresh sign-in anywhere in the suite meets the same chooser, and
+  // `resilience`'s sign-out journey was failing on it.
+  await chooseOrganization(page);
 
   // 📁 **Rule 24's destination**, however the ladder reached it.
   await page.waitForURL(/\/w\/[0-9a-f-]+\/home$/);

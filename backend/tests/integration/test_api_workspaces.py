@@ -17,6 +17,7 @@ from httpx import ASGITransport, AsyncClient
 
 from apps.api.main import create_app
 from signora_platform.observability import JsonFormatter
+from signora_platform.pagination import DEFAULT_PAGE_LIMIT
 from signora_platform.settings import Settings
 from signora_platform.tests.keys import (
     TEST_AUDIENCE,
@@ -243,6 +244,101 @@ class TestAuthorization:
 
         assert response.status_code == 201
         assert response.json()["user_id"] == str(invitee)
+
+
+class TestTheViewerCanAlwaysLearnTheirOwnRole:
+    """B-284 — *"what am I here?"* must not depend on how many colleagues.
+
+    The shell used to answer it by reading the member list and searching the
+    page it got back. A page is 50 rows ordered newest-first, so the oldest
+    member of a large workspace could not find themselves, resolved to *"not a
+    member"*, and was shown a locked Settings they owned.
+    """
+
+    async def test_an_owner_reads_owner(self, client: AsyncClient, key_pair: KeyPair) -> None:
+        owner = uuid4()
+        workspace = await _create_workspace(client, key_pair, owner)
+
+        response = await client.get(
+            f"/workspaces/{workspace['id']}/members/me", headers=_auth(key_pair, owner)
+        )
+
+        assert response.status_code == 200, response.text
+        assert response.json()["role"] == "owner"
+        # The answer is about the person asking, and says so.
+        assert response.json()["user_id"] == str(owner)
+        assert response.json()["workspace_id"] == workspace["id"]
+
+    async def test_a_member_reads_member(self, client: AsyncClient, key_pair: KeyPair) -> None:
+        owner, member = uuid4(), uuid4()
+        workspace = await _create_workspace(client, key_pair, owner)
+        await client.post(
+            f"/workspaces/{workspace['id']}/members",
+            json={"user_id": str(member), "role": "member"},
+            headers=_auth(key_pair, owner),
+        )
+
+        response = await client.get(
+            f"/workspaces/{workspace['id']}/members/me", headers=_auth(key_pair, member)
+        )
+
+        assert response.status_code == 200, response.text
+        assert response.json()["role"] == "member"
+        assert response.json()["user_id"] == str(member)
+
+    async def test_an_owner_past_the_first_page_still_reads_owner(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """**The defect, stated as a test.**
+
+        The workspace's creator is its oldest membership, and the listing is
+        newest-first — so filling one page pushes them off it. Asserted both
+        ways: the page genuinely does not contain them, *and* they still learn
+        what they are. Without the first assertion this passes on a workspace
+        that never crossed the boundary and proves nothing.
+        """
+        owner = uuid4()
+        workspace = await _create_workspace(client, key_pair, owner)
+        for _ in range(DEFAULT_PAGE_LIMIT):
+            added = await client.post(
+                f"/workspaces/{workspace['id']}/members",
+                json={"user_id": str(uuid4()), "role": "member"},
+                headers=_auth(key_pair, owner),
+            )
+            assert added.status_code == 201, added.text
+
+        page = await client.get(
+            f"/workspaces/{workspace['id']}/members", headers=_auth(key_pair, owner)
+        )
+        assert page.status_code == 200, page.text
+        assert len(page.json()["items"]) == DEFAULT_PAGE_LIMIT
+        assert str(owner) not in {item["user_id"] for item in page.json()["items"]}, (
+            "the owner is expected to have fallen off the first page — "
+            "if they have not, this test is no longer measuring B-284"
+        )
+
+        response = await client.get(
+            f"/workspaces/{workspace['id']}/members/me", headers=_auth(key_pair, owner)
+        )
+
+        assert response.status_code == 200, response.text
+        assert response.json()["role"] == "owner"
+
+    async def test_a_stranger_is_refused_rather_than_told_nothing(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """A non-member gets the workspace boundary's own refusal, which is
+        what every workspace-scoped route gives them. **Not an empty role** —
+        that would be the endpoint answering a question it must not."""
+        owner, stranger = uuid4(), uuid4()
+        workspace = await _create_workspace(client, key_pair, owner)
+
+        response = await client.get(
+            f"/workspaces/{workspace['id']}/members/me", headers=_auth(key_pair, stranger)
+        )
+
+        assert response.status_code in {403, 404}
+        assert "role" not in response.text
 
 
 class TestErrorContract:

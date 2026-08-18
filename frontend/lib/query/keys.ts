@@ -34,6 +34,10 @@ export const queryKeys = {
   researchRuns: (workspaceId: string) => ['research-runs', workspaceId] as const,
 
   members: (workspaceId: string) => ['workspace', workspaceId, 'members'] as const,
+  /** 🔴 **[B-284](../../../docs/BUGS.md)** — the viewer's OWN role, which is not
+   * a slice of the members list and must not share its key: the list is a page
+   * and this is a fact about one person. */
+  viewerRole: (workspaceId: string) => ['workspace', workspaceId, 'viewer-role'] as const,
 
   /** 📁 [TASK-1479](../../../docs/BACKLOG.md) ⓸ — Settings' *Roles & permissions*. */
   capabilityRoles: (workspaceId: string) =>

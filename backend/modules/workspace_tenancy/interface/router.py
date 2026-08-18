@@ -51,6 +51,7 @@ from modules.workspace_tenancy.application.use_cases.transfer_ownership import (
     TransferOwnershipCommand,
 )
 from modules.workspace_tenancy.domain.capability import NotAWorkspaceMemberError
+from modules.workspace_tenancy.domain.entities import WorkspaceRole
 from modules.workspace_tenancy.domain.exceptions import SavedViewNotFoundError
 from modules.workspace_tenancy.domain.onboarding import Answer, CompanySizeBand, Role
 from modules.workspace_tenancy.infrastructure.acceptance import accepting_workspace
@@ -88,6 +89,7 @@ from modules.workspace_tenancy.interface.schemas import (
     NotificationFeedResponse,
     NotificationResponse,
     MembershipResponse,
+    ViewerRoleResponse,
     OnboardingRunResponse,
     PreferencesResponse,
     RemoveMemberRequest,
@@ -248,6 +250,47 @@ async def list_members(
     items = [MembershipResponse.from_domain(m) for m in result.members]
     return CursorPage(
         items=items, next_cursor=_next_cursor(items, result.has_more), has_more=result.has_more
+    )
+
+
+@router.get(
+    "/workspaces/{workspace_id}/members/me",
+    response_model=ViewerRoleResponse,
+    summary="The caller's own role in this workspace",
+)
+async def get_my_role(context: CurrentWorkspace) -> ViewerRoleResponse:
+    """What the caller is here, without reading a page of who else is.
+
+    🔴 **[B-284](../../../../docs/BUGS.md).** The shell asked this question of
+    `GET .../members` and searched the first page for itself. **A page is 50
+    rows, ordered newest-first**, so in a workspace with 51 members the oldest
+    one could not find themselves — and the rail, which locks only on a
+    *resolved* denial, told an owner that Settings *"requires an owner."*
+
+    ✅ **Authorized like every other route** — 📁 §7, *"authorization for every
+    endpoint is a Casbin policy check"*, **and [46](../../../../docs/architecture/46-team-management.md)
+    §9 already refused the carve-out this endpoint would otherwise want.**
+    ⚡ **`member:read` is the right grant rather than a convenient one**: both
+    roles hold it, and *reading your own standing* is the narrowest case of
+    reading membership rather than a different permission.
+
+    ⚠️ **It is a self-directed operation, which [C-207](../../../../docs/LANE_COORDINATION.md)
+    showed Casbin cannot express** — the tuple carries the caller's *role*, not
+    their identity. ⛔ **That does not bite here.** C-207's problem was a grant
+    that would have had to *overstate* (*"members may remove members"* to allow
+    *"a member may remove themselves"*). **`member:read` overstates nothing**:
+    a member may already read the roster, so being allowed to read one row of
+    it grants no capability they did not have.
+
+    ✅ **`/me` and not `/{user_id}`**, so no caller can spell another person's
+    id into it — which is what keeps the grant honest. The question this
+    endpoint answers is only ever about the person asking it.
+    """
+    context.authorize(Resource.MEMBER, Action.READ)
+    return ViewerRoleResponse(
+        workspace_id=context.workspace_id,
+        user_id=context.principal.user_id,
+        role=WorkspaceRole(context.role),
     )
 
 

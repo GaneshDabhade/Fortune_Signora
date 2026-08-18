@@ -3,9 +3,17 @@
  *
  * **A `TODO(M2.1)` hardcoded `owner` for everybody, for four milestones.** Its
  * stated reason — that resolving a real role needed a `GET /workspaces/{id}/me`
- * that does not exist — was **not true**: `Membership` already carries
- * `user_id` and `role`, the members endpoint already returns them, and the
- * session already carries the signed-in user's id.
+ * that does not exist — was **not true of the data**: `Membership` already
+ * carries `user_id` and `role`, so the hook read the members list and searched
+ * it for the viewer.
+ *
+ * 🔴 **[B-284](../../docs/BUGS.md) — and that is where the real premise was
+ * wrong.** The members list is a **page**: 50 rows, newest-first. **The
+ * 51st-oldest member is not on it**, and searching a page you are not on
+ * resolves to *"not a member"* — so an owner of a 51-person workspace was shown
+ * *"Settings — restricted. Requires an owner."* and redirected off their own
+ * screens. **The `/me` endpoint the TODO asked for was the right answer after
+ * all**; what was wrong was the reason given for skipping it.
  *
  * **These assert presentation, never authorization.** Casbin on the server is
  * the decision (§20c); what is tested here is that the product stops offering a
@@ -27,24 +35,10 @@ import { useViewerRole } from '@/lib/query/hooks/team';
 
 const WORKSPACE = 'aaaaaaaa-1111-4111-8111-111111111111';
 const ME = 'user-me';
-const SOMEBODY_ELSE = 'user-other';
 
-function wrapper({ children }: { children: ReactNode }) {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
-}
-
-function members(...rows: { user_id: string; role: 'owner' | 'member' }[]) {
-  return {
-    items: rows.map((row, index) => ({
-      id: `m${index}`,
-      workspace_id: WORKSPACE,
-      created_at: '2026-08-01T09:00:00Z',
-      ...row,
-    })),
-    next_cursor: null,
-    has_more: false,
-  };
+/** What `GET /workspaces/{id}/members/me` answers. */
+function standing(role: 'owner' | 'member') {
+  return { workspace_id: WORKSPACE, user_id: ME, role };
 }
 
 beforeEach(() => {
@@ -53,7 +47,7 @@ beforeEach(() => {
 
 describe('the signed-in role is read, not assumed', () => {
   it('resolves an owner as an owner', async () => {
-    apiRequest.mockResolvedValue(members({ user_id: ME, role: 'owner' }));
+    apiRequest.mockResolvedValue(standing('owner'));
 
     const { result } = renderHook(() => useViewerRole(WORKSPACE, ME), { wrapper });
 
@@ -64,9 +58,7 @@ describe('the signed-in role is read, not assumed', () => {
   it('resolves a member as a member, which is the whole point', async () => {
     // The hardcoded value was `owner`, so this is the case that was wrong for
     // every non-owner in the product.
-    apiRequest.mockResolvedValue(
-      members({ user_id: SOMEBODY_ELSE, role: 'owner' }, { user_id: ME, role: 'member' }),
-    );
+    apiRequest.mockResolvedValue(standing('member'));
 
     const { result } = renderHook(() => useViewerRole(WORKSPACE, ME), { wrapper });
 
@@ -74,19 +66,28 @@ describe('the signed-in role is read, not assumed', () => {
     expect(result.current.role).toBe('member');
   });
 
-  it('finds the viewer among many, not the first row', async () => {
-    apiRequest.mockResolvedValue(
-      members(
-        { user_id: 'a', role: 'owner' },
-        { user_id: 'b', role: 'owner' },
-        { user_id: ME, role: 'member' },
-      ),
-    );
+  it('asks for its own standing, never for the roster — B-284', async () => {
+    /**
+     * **The regression, stated as the request that is made.**
+     *
+     * A role read out of `GET .../members` is a role read out of *one page* of
+     * it, and no assertion about the answer can distinguish a workspace of
+     * three from a workspace of fifty-one. **What can be asserted is which
+     * question was asked**, and the only question whose answer does not depend
+     * on how many colleagues somebody has is this one.
+     */
+    apiRequest.mockResolvedValue(standing('owner'));
 
     const { result } = renderHook(() => useViewerRole(WORKSPACE, ME), { wrapper });
-
     await waitFor(() => expect(result.current.resolved).toBe(true));
-    expect(result.current.role).toBe('member');
+
+    expect(apiRequest).toHaveBeenCalledTimes(1);
+    expect(apiRequest.mock.calls[0]?.[0]).toBe(`/workspaces/${WORKSPACE}/members/me`);
+    // ⛔ Not the roster, under any query string. A hook that fetched both would
+    // pass every assertion above and still page.
+    expect(
+      apiRequest.mock.calls.some((call) => String(call[0]).endsWith('/members')),
+    ).toBe(false);
   });
 });
 
@@ -125,7 +126,9 @@ describe('unknown is distinct from none', () => {
   });
 
   it('resolves to no role for somebody who is not a member', async () => {
-    apiRequest.mockResolvedValue(members({ user_id: SOMEBODY_ELSE, role: 'owner' }));
+    // The workspace boundary refuses a stranger before the handler runs, so
+    // what reaches this hook is a rejection rather than an empty answer.
+    apiRequest.mockRejectedValue(new Error('forbidden'));
 
     const { result } = renderHook(() => useViewerRole(WORKSPACE, ME), { wrapper });
 
@@ -133,3 +136,8 @@ describe('unknown is distinct from none', () => {
     expect(result.current.role).toBeNull();
   });
 });
+
+function wrapper({ children }: { children: ReactNode }) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+}

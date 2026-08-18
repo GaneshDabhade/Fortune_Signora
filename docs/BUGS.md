@@ -107,7 +107,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | `workspace_tenancy` — `frontend/lib/query/hooks/team.ts:80` (`useViewerRole`), against `GET /workspaces/{id}/members` |
 | **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — `workspace_tenancy`, **Lane A** |
 | **Severity** | 🟠 · ⛔ **Not a regression from the current candidate.** `useViewerRole` has read one page since it was written; **what changed is that a workspace crossed 50 members** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` — Lane A, this candidate.** ⛔ **Not `VERIFIED`; only QE sets that** |
 | **Found** | **2026-08-18 by Lane A**, verifying **B-1022**'s fix in a browser — two `resilience` journeys failed on a screen that had nothing to do with the fix. ⚠️ **B-1022 is QE's row and is not on this branch yet**, so it is named rather than linked |
 
 **The defect.** `useViewerRole` answers *"what is the signed-in person's role here?"* by fetching the members list and searching it:
@@ -158,6 +158,16 @@ WHERE u.email LIKE 'dana%';
 | `confidence` | `@regression two tabs never disagree about who is signed in` |
 
 ⚡ **Three of them never mention Settings.** They open *"Your business"*, which is `/settings/products` — 📁 the customer's own words for a screen the shell files under the restricted prefix. **That is why this reads as five unrelated failures rather than one cause.**
+
+**Fixed — `GET /workspaces/{workspace_id}/members/me`.**
+
+| | |
+|---|---|
+| **Backend** | A route returning `ViewerRoleResponse{workspace_id, user_id, role}` from `WorkspaceContext.role` — **the membership the request dependency already read from the database.** No new use case, no new repository method, no migration |
+| **Authorization** | `context.authorize(Resource.MEMBER, Action.READ)` — 📁 §7 admits no carve-out, and [46](../architecture/46-team-management.md) §9 refused this exact one. ⚡ **Both roles hold the grant**, and it overstates nothing: a member may already read the roster, so reading one row of it is no new capability. ⛔ **Unlike [C-207](LANE_COORDINATION.md)'s case**, where the grant would have had to claim *"members may remove members"* |
+| **Frontend** | `useViewerRole` fetches that endpoint under its own query key. **The roster and the viewer's standing were one query and are now two**, so `useChangeRole`, `useTransferOwnership` and `useRemoveMember` invalidate both — otherwise an owner who demoted themselves keeps the owner rail for five minutes |
+| **Tests** | 4 API tests, including one that **first asserts the owner has fallen off page 1** and then that they still read `owner` — ⛔ without that half it passes on a small workspace and measures nothing. `viewer-role.test.tsx` rewritten to assert **which request is made**, since no assertion about the answer can tell a workspace of three from a workspace of fifty-one |
+| **Browser** | ✅ **All five journeys pass** against the Playground's 57-member workspace |
 
 **Suggested shape, not a decision.** The viewer's own role is a fact about **one** membership and should not be read out of a page of others. Either a scoped read (`GET /workspaces/{id}/members/me`, RLS- and Casbin-scoped exactly as the list is) or the role carried on the workspace the shell has already resolved. ⛔ **Paging until found is not a fix** — it makes the shell's first paint depend on how many colleagues a customer has.
 

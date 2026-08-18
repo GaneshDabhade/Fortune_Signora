@@ -193,8 +193,18 @@ test.describe('two tabs, one customer', () => {
     const second = await context.newPage();
     await second.goto('/settings');
 
-    await expect(page.getByText(OWNER.email)).toBeVisible();
-    await expect(second.getByText(OWNER.email)).toBeVisible();
+    // 🔴 **`getByText` was matching a HIDDEN password label**, not the shell.
+    // 📁 `B-429` moved the address into `AccountMenu`'s accessible name, so
+    // the address is no longer bare text anywhere on a signed-in page — and
+    // the loosest locator in the file then resolved to
+    // *"Password for dana.reyes@…"* on a form that was not visible.
+    // ⛔ **A test that passes by finding the wrong element is worse than one
+    // that fails**: this one would have gone green again the moment any
+    // hidden form mentioned the address.
+    const identity = (target: typeof page) =>
+      target.getByRole('button', { name: `Account menu for ${OWNER.email}` });
+    await expect(identity(page)).toBeVisible();
+    await expect(identity(second)).toBeVisible();
     await second.close();
   });
 });

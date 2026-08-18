@@ -10,6 +10,7 @@
 
 import { expect, test } from './fixtures/signora';
 import { OWNER } from './fixtures/personas';
+import { chooseOrganization } from './pages/signin';
 
 test.describe('the browser, used the way people use it', () => {
   test('@regression refreshing the list keeps the same accounts in the same order', async ({
@@ -103,6 +104,14 @@ test.describe('signing out', () => {
     signIn,
   }) => {
     await signIn(OWNER);
+    // ⚠️ **A fresh sign-in meets the organization chooser, and only
+    // `auth.setup.ts` used to know that.** 📁 Rule 12 remembers a choice per
+    // device, so a context with no storage state is always asked — and dana
+    // belongs to the Playground *and* to whatever `organization-setup.spec.ts`
+    // last created. ⛔ Without this the second tab landed on *"Choose an
+    // organization"* and the journey reported *"Home did not render"*, which
+    // was true and was not what it is about.
+    await chooseOrganization(page);
 
     const second = await context.newPage();
     await second.goto('/');

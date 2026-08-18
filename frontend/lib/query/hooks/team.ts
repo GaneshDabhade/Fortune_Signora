@@ -19,7 +19,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { apiRequest } from '@/lib/api/client';
-import type { CursorPage, HistoryEntry, Invitation, Membership } from '@/lib/api/types';
+import type {
+  CursorPage,
+  HistoryEntry,
+  Invitation,
+  Membership,
+  ViewerRoleResponse,
+} from '@/lib/api/types';
 import { queryKeys } from '@/lib/query/keys';
 import type { WorkspaceRole } from '@/lib/state/permissions';
 
@@ -65,20 +71,50 @@ export interface ViewerRole {
 /**
  * The signed-in person's role in this workspace.
  *
- * **Resolved from the members list, not from a `/me` endpoint.** The shell has
- * carried a `TODO(M2.1)` since M2 saying this needed `GET /workspaces/{id}/me`
- * and that adding one was an API change rather than a frontend decision — so it
- * hardcoded `owner` for everybody. **The premise was wrong**: `MembershipResponse`
- * already carries `user_id` and `role`, and the session already carries the
- * signed-in user's id. The answer was reachable the whole time.
+ * 🔴 **[B-284](../../../docs/BUGS.md) — this used to search the members list
+ * for itself, and a list is a PAGE.**
+ *
+ * ⚠️ **The reasoning that put it there was sound and incomplete.** The shell
+ * had carried a `TODO(M2.1)` since M2 saying a role needed `GET
+ * /workspaces/{id}/me` and that adding one was an API change rather than a
+ * frontend decision — so it hardcoded `owner` for everybody. **That premise
+ * was wrong**: `MembershipResponse` carries `user_id` and `role`, and the
+ * answer was reachable from the list. ⛔ **What went unmeasured is that the
+ * list answers a different question.** 📁 `DEFAULT_PAGE_LIMIT` is 50 and the
+ * ordering is `created_at DESC`, so **the 51st-oldest member is not on the
+ * page** — and `useViewerRole` read their absence as *resolved, not a member*.
+ *
+ * ⚡ **What it cost**: an owner of a workspace with 51 members was shown
+ * *"Settings — restricted. Requires an owner."* and `RouteGuard` sent them to
+ * Home. **The server would have allowed every request it refused.**
+ *
+ * ✅ **`GET /workspaces/{id}/members/me` now answers it** — one membership,
+ * the caller's own, resolved server-side by the same dependency that already
+ * verifies membership on every workspace-scoped request. **A workspace's size
+ * cannot change the answer.**
  *
  * **Presentation only, and that does not change here.** Casbin on the server is
  * the authorization decision (§20c, ADR-0010). Getting this right stops the
  * product offering a member controls the server will refuse — a control that
  * goes nowhere costs more trust than an absent one.
+ *
+ * ⚠️ **`viewerId` is still taken and still used**, for the one thing the
+ * endpoint cannot do: 📁 a signed-in person with no session identity has
+ * nothing to resolve, and asking the server would be asking on nobody's behalf.
  */
 export function useViewerRole(workspaceId: string | null, viewerId: string | null): ViewerRole {
-  const { data, isError } = useWorkspaceMembers(workspaceId);
+  const { data, isError } = useQuery({
+    queryKey: queryKeys.viewerRole(workspaceId ?? ''),
+    queryFn: () =>
+      apiRequest<ViewerRoleResponse>(`/workspaces/${workspaceId}/members/me`, {
+        workspaceId: workspaceId ?? undefined,
+      }),
+    enabled: workspaceId !== null && viewerId !== null,
+    // The same five minutes the members list holds, and for the same reason:
+    // a role changes rarely, and the mutation that changes it invalidates
+    // this key rather than waiting the window out.
+    staleTime: 5 * 60_000,
+  });
 
   // **No workspace means nothing to have a role in**, and that is an answer
   // rather than a pending one — otherwise a signed-in person with no
@@ -86,12 +122,13 @@ export function useViewerRole(workspaceId: string | null, viewerId: string | nul
   if (workspaceId === null || viewerId === null) return { role: null, resolved: true };
 
   // **A failed request resolves to no role.** Fail closed: the alternative is
-  // showing controls on the strength of a request that did not happen.
+  // showing controls on the strength of a request that did not happen. ⚡ **A
+  // non-member reaches here**: the workspace boundary refuses them 403, which
+  // is the same answer this hook needs.
   if (isError) return { role: null, resolved: true };
   if (data === undefined) return { role: null, resolved: false };
 
-  const mine = data.items.find((member) => member.user_id === viewerId);
-  return { role: mine?.role ?? null, resolved: true };
+  return { role: data.role, resolved: true };
 }
 
 /**
@@ -172,6 +209,24 @@ export function useResendInvitation(workspaceId: string | null) {
 }
 
 /** Remove somebody from this organization. The record survives; access does not. */
+/**
+ * Everything that changes when somebody's standing changes.
+ *
+ * 🔴 **Two keys since [B-284](../../../docs/BUGS.md), and both must go.** The
+ * roster and the viewer's own role used to be one query, so invalidating the
+ * list refreshed the shell's idea of what the reader may do. ⛔ Splitting them
+ * silently split that too — **an owner who demoted themselves would keep the
+ * owner rail until the five-minute window expired**, and every control on it
+ * would be refused by the server.
+ */
+function invalidateStanding(
+  client: ReturnType<typeof useQueryClient>,
+  workspaceId: string | null,
+): void {
+  void client.invalidateQueries({ queryKey: queryKeys.members(workspaceId ?? '') });
+  void client.invalidateQueries({ queryKey: queryKeys.viewerRole(workspaceId ?? '') });
+}
+
 export function useRemoveMember(workspaceId: string | null) {
   const client = useQueryClient();
   return useMutation({
@@ -184,8 +239,7 @@ export function useRemoveMember(workspaceId: string | null) {
           workspaceId: workspaceId ?? undefined,
         },
       ),
-    onSuccess: () =>
-      client.invalidateQueries({ queryKey: queryKeys.members(workspaceId ?? '') }),
+    onSuccess: () => invalidateStanding(client, workspaceId),
   });
 }
 
@@ -204,8 +258,7 @@ export function useChangeRole(workspaceId: string | null) {
         `/workspaces/${workspaceId}/members/${input.membershipId}/role`,
         { method: 'POST', body: { role: input.role }, workspaceId: workspaceId ?? undefined },
       ),
-    onSuccess: () =>
-      client.invalidateQueries({ queryKey: queryKeys.members(workspaceId ?? '') }),
+    onSuccess: () => invalidateStanding(client, workspaceId),
   });
 }
 
@@ -227,8 +280,7 @@ export function useTransferOwnership(workspaceId: string | null) {
         },
         workspaceId: workspaceId ?? undefined,
       }),
-    onSuccess: () =>
-      client.invalidateQueries({ queryKey: queryKeys.members(workspaceId ?? '') }),
+    onSuccess: () => invalidateStanding(client, workspaceId),
   });
 }
 
