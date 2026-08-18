@@ -348,6 +348,52 @@ run 5: 0 failed                     20 passed
 
 ⛔ **This spec was the intended control for the browser gate.** 📁 **Lane A: *"a control that is clean on one stack and not another is not a control"*** — **and the sharper form this row proves: it is not clean on the SAME stack twice.** **A gate whose control is intermittent cannot distinguish a regression from a re-run.**
 
+### B-1023 · 🟡 Six `daily-usage` journeys assume a ranked entry list, and the re-aimed entry is the whole book
+
+| | |
+|---|---|
+| **Module** | `frontend/tests/e2e/daily-usage.spec.ts` — **certification coverage** |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — `product_surface`, **Lane A** |
+| **Severity** | 🟡 · ⛔ **STALE CERTIFICATION COVERAGE, not a product regression.** **The brief is correct for the account it is given** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-18 by QE**, validating `2e758310` **after** [B-1022](#b-1022)'s fixture fix made these six reachable for the first time |
+
+**The six**, all under *"from the list to the account"*: `opening an account explains its score` · `the score can be traced to the evidence behind it` · `the account carries a history of what has happened` · `back returns to the list with the list intact` · `a brief opened by its address alone works` · `reloading a brief does not lose it`.
+
+**They fail on `expect(getByText(/Attention score \d+ out of 100/)).toBeVisible()`.**
+
+### ⛔ The product is right, and here is the account they open
+
+```
+accounts.open()  →  /accounts        ← Companies, the whole book
+accounts.openFirstAccount()          ← the FIRST row, which is:
+
+  FIRST_NAME  "0e74de53 — no source has named this account yet"
+  TOTAL_LINKS 15
+```
+
+**An unnamed, unscored account** — and the brief correctly shows no attention score for one. ✅ **Verified the opposite case in the same session**: opening a *scored* account renders `Attention score 53 out of 100, from 64 of 120 points`, present and visible.
+
+⚡ **The entry point changed from a RANKED list to the whole book.** **The Attention screen only ever listed scored accounts; Companies lists all of them**, in an order that has no reason to put a scored one first.
+
+> 📁 **Lane A reasoned to exactly this conclusion while doing the retirement** — *"Companies is the whole book, so an account with no open opportunity has no neighbours"*, and *"`accounts/page.tsx` says in the page that 'a Signora score is not on this list yet.'"* ✅ **They reconciled four assertions and removed two `consistency.spec.ts` tests for this reason.**
+>
+> ⛔ **These six were UNREACHABLE when that work was done** — [B-1022](#b-1022) stopped every journey at Home's activation composition — **so the reconciliation could not reach them.** **They are the same class, found later because a fixture stopped hiding them.**
+
+### ⛔ What the fix must not be
+
+**Do not assert the score against an arbitrary first row.** ⛔ **Do not relax the assertion to make Companies pass** — that deletes the only coverage the brief's score has. ⛔ **Do not add a score to every seeded account** — the unnamed, unscored account is a real state the product must render, and it is [P-A](DOMAIN_DISCOVERY_REGISTER.md)'s neighbourhood.
+
+✅ **The journey needs an entry that is ranked** — Home's `card.attention` is one — **or an account chosen by having a score rather than by position.**
+
+### 📊 What this cost certification, stated as three separate things
+
+| | |
+|---|---|
+| ✅ **PASSED** | `account-360` · `account-360-states` · `account-360-research` · `consistency` · `signal-triage` — **all previously unvalidated, all now executed and green** |
+| 🟡 **FAILED** | **These six, and they are stale coverage rather than defects** |
+| ⛔ **UNVALIDATED** | **None remaining in this set** |
+
 ### B-1022 · 🟠 The Playground seeds a workspace that has never synced, so Home's seller composition cannot be exercised by any journey
 
 | | |
