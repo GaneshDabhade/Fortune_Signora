@@ -2746,6 +2746,20 @@ SIGNORA_ENVIRONMENT=lane-a make e2e-quick ARGS="tests/e2e/account-360.spec.ts \
 
 ✅ **`content-width` and `navigation-bands` are the control**: they ran in the same session against the same tree and passed, **so the environment was working and the run was real.** ⛔ **Their failures on Lane A's branch WERE Lane A's, and were fixed in `f46e5da8`.**
 
+> ⚠️ **2026-08-18, later — `content-width` is now known to be INTERMITTENT at
+> 1280** (QE, five runs on one tree and one seed: 1, 2, 1, 0, 0 failures).
+> 🔴 **So it is half a control, and the half it keeps is the half this row
+> used.**
+>
+> | | |
+> |---|---|
+> | **As a POSITIVE control** | ✅ **Still sound.** It PASSED here, and a pass cannot be produced by a stack that failed to build, authenticate or render. **That is the whole claim this row made of it** |
+> | **As a regression detector** | ⛔ **Worthless.** A failure from an intermittent spec proves nothing, and reading one as a regression is what cost QE six days on B-1018 |
+>
+> ⚡ **`navigation-bands` is the sturdier half of the control** and carries the
+> claim on its own; `content-width` is retained above because removing evidence
+> that was true when measured would be rewriting a dated record ([§2](../CLAUDE.md)).
+
 ⚠️ **`visual.spec.ts` and `resilience.spec.ts` use the same locator and were not reached** — the baseline was stopped at 89 of 132. **Named here so the sixth and seventh are not rediscovered as new.**
 
 #### ⛔ The cause is NOT diagnosed, and is deliberately not guessed
