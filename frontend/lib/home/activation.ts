@@ -28,6 +28,19 @@ export const ACTIVATION_PRIORITY = {
 export type ActivationCardId = keyof typeof ACTIVATION_PRIORITY;
 
 /**
+ * 📁 **The activation composition's whole set**, in the registry's order.
+ *
+ * ⚠️ **Two components each held a private copy of this array** and a third was
+ * about to. ⛔ A set that must agree with {@link ACTIVATION_PRIORITY}'s keys and
+ * is written out by hand beside it is the duplication §2 names.
+ */
+export const ACTIVATION_CARDS: readonly ActivationCardId[] = Object.freeze([
+  'connect-a-crm',
+  'connect-calls',
+  'invite-the-team',
+]);
+
+/**
  * 🔴 **Ordering, and the rule that makes it safe.**
  *
  * 📁 ***"By the registry's declared priority integer, ascending. Ties broken by

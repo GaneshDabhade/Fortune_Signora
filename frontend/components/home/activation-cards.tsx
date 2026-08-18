@@ -35,12 +35,8 @@ import { Check } from 'lucide-react';
 import { Card, CardBody, SkeletonText } from '@/components/ui';
 import { CardFailure } from '@/components/home/card-failure';
 import { cn } from '@/lib/design/cn';
-import {
-  DEPENDENCY_REASON,
-  hasWorkingCapability,
-  primaryEnabled,
-  type ActivationCardId,
-} from '@/lib/home/activation';
+import { DEPENDENCY_REASON, primaryEnabled } from '@/lib/home/activation';
+import { useActivationState } from '@/lib/query/hooks/home';
 import { useIntegrations } from '@/lib/query/hooks/integrations';
 import { usePreferences, useSkipInvite } from '@/lib/query/hooks/preferences';
 import { useWorkspaceMembers } from '@/lib/query/hooks/team';
@@ -68,19 +64,20 @@ const COPY: Record<
   },
 };
 
+/**
+ * ⚠️ **Derived in `useActivationState` now** — 📁 §2. This held one copy of
+ * *"CRM complete means a working `crm_activity`"*, the progress line held
+ * another, and the greeting would have been a third.
+ *
+ * ⚡ **`query` is kept** because the cards need the read's own loading and error
+ * state, which a boolean cannot carry.
+ */
 function useActivation() {
   const { activeWorkspace } = useWorkspaceContext();
-  const systems = useIntegrations(activeWorkspace?.id ?? null);
-
+  const workspaceId = activeWorkspace?.id ?? null;
   return {
-    query: systems,
-    complete: {
-      'connect-a-crm': hasWorkingCapability(systems.data, 'crm_activity'),
-      'connect-calls': hasWorkingCapability(systems.data, 'meetings'),
-      // ⛔ **Not this component's card**, and it is present only so the
-      // dependency and progress helpers see the whole set.
-      'invite-the-team': false,
-    } satisfies Record<ActivationCardId, boolean>,
+    query: useIntegrations(workspaceId),
+    complete: useActivationState(workspaceId).complete,
   };
 }
 

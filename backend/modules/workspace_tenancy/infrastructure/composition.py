@@ -51,6 +51,7 @@ from modules.workspace_tenancy.application.use_cases.onboarding import (
 )
 from modules.workspace_tenancy.application.use_cases.preferences import (
     ChangePreferencesUseCase,
+    AcknowledgeSetupCompleteUseCase,
     DismissFirstRunUseCase,
     GetPreferencesUseCase,
     SkipInviteUseCase,
@@ -130,6 +131,7 @@ class WorkspaceTenancyUseCases:
     skip_onboarding: SkipOnboardingUseCase
     get_preferences: GetPreferencesUseCase
     change_preferences: ChangePreferencesUseCase
+    acknowledge_setup_complete: AcknowledgeSetupCompleteUseCase
     dismiss_first_run: DismissFirstRunUseCase
     skip_invite: SkipInviteUseCase
     record_view: RecordViewUseCase
@@ -236,6 +238,9 @@ def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
         skip_onboarding=SkipOnboardingUseCase(runs=onboarding_repository),
         get_preferences=GetPreferencesUseCase(preferences=preferences_repository),
         change_preferences=ChangePreferencesUseCase(preferences=preferences_repository),
+        acknowledge_setup_complete=AcknowledgeSetupCompleteUseCase(
+            preferences=preferences_repository
+        ),
         dismiss_first_run=DismissFirstRunUseCase(preferences=preferences_repository),
         skip_invite=SkipInviteUseCase(preferences=preferences_repository),
         record_view=RecordViewUseCase(recently_viewed=recently_viewed_repository),

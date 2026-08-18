@@ -543,6 +543,11 @@ class PreferencesResponse(BaseModel):
     #: computed it from a timestamp would answer differently on a device whose
     #: clock is wrong.**
     invite_hidden: bool
+    #: 🔴 **Home state 04 — whether this person has already been told setup
+    #: finished.** ⛔ **The fact, not the moment**, matching `first_run_dismissed`
+    #: above: a client renders on *has this been shown*, and a timestamp it does
+    #: not need is a timestamp it could display wrongly.
+    setup_complete_seen: bool
 
     @classmethod
     def from_domain(cls, prefs: PersonPreferences, *, now: datetime) -> PreferencesResponse:
@@ -571,6 +576,7 @@ class PreferencesResponse(BaseModel):
             screen_reader_verbosity=prefs.screen_reader_verbosity,
             first_run_dismissed=prefs.first_run_dismissed_at is not None,
             invite_hidden=prefs.invite_is_hidden(now),
+            setup_complete_seen=prefs.setup_complete_seen_at is not None,
         )
 
 

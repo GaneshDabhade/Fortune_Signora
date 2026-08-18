@@ -686,6 +686,7 @@ def _preferences_to_domain(model: PersonPreferencesModel) -> PersonPreferences:
         last_entered_at=model.last_entered_at,
         first_run_dismissed_at=model.first_run_dismissed_at,
         invite_skipped_at=model.invite_skipped_at,
+        setup_complete_seen_at=model.setup_complete_seen_at,
     )
 
 
@@ -749,6 +750,7 @@ class SqlAlchemyPersonPreferencesRepository(SqlAlchemyRepository):
             "last_entered_at": preferences.last_entered_at,
             "first_run_dismissed_at": preferences.first_run_dismissed_at,
             "invite_skipped_at": preferences.invite_skipped_at,
+            "setup_complete_seen_at": preferences.setup_complete_seen_at,
         }
         if model is None:
             self._session.add(

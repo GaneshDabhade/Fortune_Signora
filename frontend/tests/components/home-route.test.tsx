@@ -29,6 +29,15 @@ const integrations = vi.hoisted(() => vi.fn());
  */
 const triage = vi.hoisted(() => vi.fn());
 const statedRole = vi.hoisted(() => vi.fn());
+/**
+ * ⚡ **Home's activation state** — 📁 states 01, 03, 04 and 14 all read it.
+ * ⚠️ **Fourth time this file has needed a new mock as Home grew a read**, which
+ * is the test doing its job: it renders the REAL Home against mocked
+ * boundaries, so a new dependency cannot arrive silently.
+ */
+const activationState = vi.hoisted(() => vi.fn());
+/** ⚡ **State 05's second half** — 📁 *"record count is zero"*. */
+const accountsCount = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/state/workspace-provider', () => ({ useWorkspaceContext: workspace }));
 vi.mock('@/lib/query/hooks/team', () => ({ useViewerRole: viewerRole }));
@@ -49,11 +58,22 @@ vi.mock('@/lib/auth/client', () => ({
 // boundaries, **so a new dependency cannot arrive silently.**
 vi.mock('@/lib/query/hooks/integrations', () => ({ useIntegrations: integrations }));
 vi.mock('@/lib/query/hooks/triage', () => ({ useWorkspaceTriage: triage }));
-vi.mock('@/lib/query/hooks/home', () => ({ useStatedRole: statedRole }));
+vi.mock('@/lib/query/hooks/home', () => ({
+  useStatedRole: statedRole,
+  useActivationState: activationState,
+}));
+vi.mock('@/lib/query/hooks/accounts-count', () => ({ useAccountsCount: accountsCount }));
 vi.mock('@/lib/query/hooks/preferences', () => ({
-  usePreferences: () => ({ data: { first_run_dismissed: true, invite_hidden: false } }),
+  // ⚡ **`setup_complete_seen: false` is *told nobody yet*** — 📁 state 04's strip
+  // is silent until the preference is READ, so omitting the field here would
+  // hide it for a reason that has nothing to do with the state under test.
+  usePreferences: () => ({
+    data: { first_run_dismissed: true, invite_hidden: false, setup_complete_seen: false },
+  }),
   useDismissFirstRun: () => ({ mutate: () => {}, isPending: false }),
   useSkipInvite: () => ({ mutate: () => {}, isPending: false }),
+  // ⚡ **State 04's strip records that it was shown** — 📁 *"exactly once"*.
+  useAcknowledgeSetupComplete: () => ({ mutate: () => {}, isPending: false }),
   // ⚡ **The switcher writes this** — 📁 rule 2's input, and [C-1530](../../../docs/LANE_COORDINATION.md).
   useChangePreferences: () => ({ mutate: () => {}, isPending: false }),
 }));
@@ -81,6 +101,25 @@ function ready(connected: boolean) {
   });
 }
 
+/**
+ * 📁 **What activation reports**, for the states that read it.
+ *
+ * ⚡ **`done`/`total` count BLOCKING cards only**, which is the design's own
+ * rule — so `2 of 2` is state 04 and `0 of 2` is state 01.
+ */
+function activation({ done, total = 2 }: { done: number; total?: number }) {
+  activationState.mockReturnValue({
+    resolved: true,
+    complete: {
+      'connect-a-crm': done >= 1,
+      'connect-calls': done >= 2,
+      'invite-the-team': false,
+    },
+    progress: { done, total, optional: 1 },
+    inviteHidden: false,
+  });
+}
+
 beforeEach(() => {
   workspace.mockReset();
   integrations.mockReset();
@@ -92,6 +131,12 @@ beforeEach(() => {
   // ⚡ **The real registry is empty**, which is what ships; individual tests
   // stub a contribution where the point is what Home does with one.
   cardsFor.mockReturnValue([]);
+  // ⚡ **Nothing connected by default**, matching `ready(false)` — individual
+  // tests state a completion where that is the subject.
+  activation({ done: 0 });
+  // ⚡ **A book with records by default**, so state 05's strip is absent unless a
+  // test asks for it. ⛔ `0` is a real answer and is the subject of its own test.
+  accountsCount.mockReturnValue({ data: { total: 41 } });
 });
 
 describe('🔴 Home always renders', () => {
@@ -215,6 +260,233 @@ describe('🔴 Home always renders', () => {
     // to do* rather than *we could not ask*.
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     expect(screen.queryByText(/0 of 0/)).not.toBeInTheDocument();
+  });
+});
+
+describe('⛔ no composition is drawn before it is resolved', () => {
+  /**
+   * 🔴 **Found in a browser, on a workspace created through the product.**
+   *
+   * 📁 Rule 1's input is a READ — *"has any integration ever completed a sync"* —
+   * so until it lands the resolver falls through to rule 5. ⛔ **A brand-new
+   * workspace's first paint was therefore the SELLER composition's cards,
+   * replaced a moment later by the three activation steps.**
+   *
+   * 📁 **Two rules forbid it**: the prohibition table's *"no composition
+   * substitution"*, and §09's *"each skeleton uses the card's declared height, so
+   * **nothing reflows when data lands**"*.
+   */
+  it('🔴 draws no card while the activation read is in flight', () => {
+    ready(false);
+    integrations.mockReturnValue({
+      data: undefined,
+      isPending: true,
+      isError: false,
+      refetch: () => {},
+    });
+    cardsFor.mockReturnValue([{ id: 'recents', title: 'Pick up where you left off' }]);
+
+    render(<Home />);
+
+    expect(screen.getByTestId('home-resolving')).toBeInTheDocument();
+    expect(screen.queryByTestId('home')?.querySelector('[data-card]')).toBeNull();
+  });
+
+  /**
+   * ⛔ **And the scope line does not name a composition it does not know.** ⚡ Same
+   * class of claim as rendering `0` for a count that has not arrived — 📁 *"never
+   * shown as 0 while loading"*.
+   */
+  it('⛔ and names no composition until one is resolved', () => {
+    ready(false);
+    integrations.mockReturnValue({
+      data: undefined,
+      isPending: true,
+      isError: false,
+      refetch: () => {},
+    });
+
+    render(<Home />);
+
+    expect(screen.getByText(/Northwind/)).toBeVisible();
+    expect(screen.queryByText(/Seller|Activation|Executive|Operations/)).not.toBeInTheDocument();
+  });
+});
+
+describe('📁 the activation greeting — states 01 and 03', () => {
+  /**
+   * 🔴 **The design ties the sentence to what is COMPLETE, not to the clock.**
+   *
+   * 📁 State 01 renders: *"Three activation cards, none complete, progress at 0
+   * of 2. **Greeting reads 'Let us get Northwind Global connected'**."*
+   *
+   * ⛔ **A brand-new workspace was getting *"Good afternoon, Aurélie"***, which
+   * is the data compositions' greeting and says nothing about what to do.
+   */
+  it('🔴 state 01 · nothing complete opens with the connection sentence, not the clock', () => {
+    ready(false);
+    activation({ done: 0 });
+
+    render(<Home />);
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: /Let us get Northwind connected/i }),
+    ).toBeVisible();
+    // ⛔ **The greeting is REPLACED, never appended to** — two openings in one
+    // sentence is what the design's single line rules out.
+    expect(screen.queryByText(/Good morning|Good afternoon|Good evening/)).not.toBeInTheDocument();
+  });
+
+  /**
+   * 📁 **The estimate is omitted rather than invented.** ⛔ The activation rules
+   * say it *"comes from measured p50 completion time, **not a guess**"*, and
+   * nothing measures one — so a constant would be the guess the design forbids,
+   * carrying the copy table's authority.
+   */
+  it('⛔ and states no time estimate, because nothing measures one', () => {
+    ready(false);
+    activation({ done: 0 });
+
+    render(<Home />);
+
+    expect(screen.queryByText(/about \d+ minutes/i)).not.toBeInTheDocument();
+  });
+
+  /**
+   * 📁 State 03 — *"at least one blocking card complete, at least one
+   * incomplete"* → `HM-COPY-03`, *"is nearly ready. Step 2 of 2"*.
+   */
+  it('📁 state 03 · one blocking step done reads "nearly ready"', () => {
+    ready(false);
+    activation({ done: 1 });
+
+    render(<Home />);
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: /Northwind is nearly ready\. Step 2 of 2/i }),
+    ).toBeVisible();
+  });
+
+  /**
+   * ⛔ **Every data composition greets by the clock.** ⚡ The activation sentence
+   * belongs to the activation composition and nowhere else — a seller who
+   * finished setup last March must not be told *"let us get you connected"*.
+   */
+  it('⛔ and a data composition is never given the activation sentence', () => {
+    ready(true);
+    activation({ done: 2 });
+
+    render(<Home />);
+
+    expect(screen.queryByText(/Let us get|nearly ready/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/Good morning|Good afternoon|Good evening/)).toBeVisible();
+  });
+});
+
+describe('📁 state 04 — the setup-complete strip', () => {
+  /**
+   * 📁 *"A one-time strip states that setup is finished and what changed."*
+   * **`AC-H03`** — *"the next render is the role composition, with the strip
+   * shown exactly once."*
+   */
+  it('✅ appears on the role composition once every blocking step is done', () => {
+    ready(true);
+    activation({ done: 2 });
+
+    render(<Home />);
+
+    expect(screen.getByTestId('setup-complete')).toBeVisible();
+    expect(
+      screen.getByText(/Setup is complete\. Home now shows your accounts, deals and signals\./),
+    ).toBeVisible();
+  });
+
+  /**
+   * ⛔ **Never on the activation composition.** 📁 State 04's own render is
+   * *"composition switches to SELLER, OPERATIONS or EXECUTIVE"* — a strip drawn
+   * beside the steps would announce completion next to the work it completed.
+   */
+  it('⛔ and never beside the steps it completed', () => {
+    ready(false);
+    activation({ done: 2 });
+
+    render(<Home />);
+
+    expect(screen.queryByTestId('setup-complete')).not.toBeInTheDocument();
+  });
+
+  it('⛔ and not while blocking work remains', () => {
+    ready(true);
+    activation({ done: 1 });
+
+    render(<Home />);
+
+    expect(screen.queryByTestId('setup-complete')).not.toBeInTheDocument();
+  });
+});
+
+describe('📁 state 05 — no meaningful business data', () => {
+  /**
+   * 📁 *"Sync succeeded AND record count is zero. **Distinct from state 06b.**"*
+   *
+   * ⛔ **Contract item 4 makes sharing one component a violation**, and **P-02**
+   * gives the reason: conflating them *"sends someone to review a pipeline that
+   * does not exist"*.
+   */
+  it('🔴 names the source that returned nothing', () => {
+    ready(true);
+    activation({ done: 2 });
+    accountsCount.mockReturnValue({ data: { total: 0 } });
+
+    render(<Home />);
+
+    expect(screen.getByText(/Salesforce is connected/i)).toBeVisible();
+    expect(screen.getByText(/Signora needs records to work from/i)).toBeVisible();
+    // ⛔ **`AC-H04`** — *"HM-COPY-06 does not appear anywhere in the DOM."*
+    expect(screen.queryByText(/Nothing needs you this morning/i)).not.toBeInTheDocument();
+  });
+
+  /**
+   * ⛔ **A workspace with records is state 06**, however thin it looks. ⚡ The
+   * design's test is *zero exactly*.
+   */
+  it('⛔ and says nothing once the workspace holds a single record', () => {
+    ready(true);
+    activation({ done: 2 });
+    accountsCount.mockReturnValue({ data: { total: 1 } });
+
+    render(<Home />);
+
+    expect(screen.queryByText(/Signora needs records to work from/i)).not.toBeInTheDocument();
+  });
+
+  /**
+   * ⛔ **Silent while the count is unknown.** ⚡ Accusing a working integration of
+   * emptiness on a slow connection is the one thing this strip must not do — it
+   * is the strip a person acts on by opening their CRM.
+   */
+  it('⛔ and stays silent while the count is unread', () => {
+    ready(true);
+    activation({ done: 2 });
+    accountsCount.mockReturnValue({ data: undefined });
+
+    render(<Home />);
+
+    expect(screen.queryByText(/Signora needs records to work from/i)).not.toBeInTheDocument();
+  });
+
+  /**
+   * ⛔ **Not on activation**, which the design excludes by name — *"setup is
+   * complete"*. ⚡ A workspace that has connected nothing has no source to name.
+   */
+  it('⛔ and never on the activation composition', () => {
+    ready(false);
+    activation({ done: 0 });
+    accountsCount.mockReturnValue({ data: { total: 0 } });
+
+    render(<Home />);
+
+    expect(screen.queryByText(/Signora needs records to work from/i)).not.toBeInTheDocument();
   });
 });
 

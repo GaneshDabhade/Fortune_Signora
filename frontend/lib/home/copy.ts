@@ -26,9 +26,24 @@
  * is clear of that list**, which is what keeps a future edit honest.
  */
 
-/** 📁 `HM-COPY-01` — state 01, first-time workspace. */
-export const HM_COPY_01 = (workspace: string, steps: number, minutes: number): string =>
-  `Let us get ${workspace} connected. ${wordFor(steps)} steps, about ${minutes} minutes.`;
+/**
+ * 📁 `HM-COPY-01` — state 01, first-time workspace.
+ *
+ * ⚠️ **`minutes` is nullable, and that is the design's own rule rather than a
+ * shortcut.** 📁 The activation rules say the estimate *"comes from measured p50
+ * completion time, **not a guess**"* — ⛔ **and no completion telemetry exists**,
+ * so a constant `15` here would be exactly the guess the design forbids, wearing
+ * the copy table's authority.
+ *
+ * ✅ **The clause is omitted rather than fabricated**, which is the pattern this
+ * component already applies to the greeting's *"2 meetings"* — absent producer,
+ * absent clause. **The sentence stays true and stays short.** The parameter is
+ * kept so the clause returns the day a p50 is measured, with no caller changing.
+ */
+export const HM_COPY_01 = (workspace: string, steps: number, minutes: number | null): string =>
+  minutes === null
+    ? `Let us get ${workspace} connected. ${wordFor(steps)} steps.`
+    : `Let us get ${workspace} connected. ${wordFor(steps)} steps, about ${minutes} minutes.`;
 
 /** 📁 `HM-COPY-02` — state 02, a sync in flight. */
 export const HM_COPY_02 = (read: number, ofAbout: number): string =>
@@ -39,8 +54,11 @@ export const HM_COPY_03 = (
   workspace: string,
   step: number,
   of: number,
-  minutes: number,
-): string => `${workspace} is nearly ready. Step ${step} of ${of} · about ${minutes} minutes left.`;
+  minutes: number | null,
+): string =>
+  minutes === null
+    ? `${workspace} is nearly ready. Step ${step} of ${of}.`
+    : `${workspace} is nearly ready. Step ${step} of ${of} · about ${minutes} minutes left.`;
 
 /** 📁 `HM-COPY-04` — state 04, activation just finished. Shown exactly once. */
 export const HM_COPY_04 = 'Setup is complete. Home now shows your accounts, deals and signals.';
@@ -53,8 +71,25 @@ export const HM_COPY_04 = 'Setup is complete. Home now shows your accounts, deal
  * customer has not connected would be a false claim, and it is the one word in
  * this sentence that must come from what actually synced.
  */
-export const HM_COPY_05 = (source: string, syncedAgo: string): string =>
-  `${source} is connected and synced ${syncedAgo}, but it returned no open opportunities. Signora needs records to work from.`;
+export const HM_COPY_05 = (source: string, syncedAgo: string | null): string =>
+  syncedAgo === null
+    ? `${source} is connected, but it returned no open opportunities. Signora needs records to work from.`
+    : `${source} is connected and synced ${syncedAgo}, but it returned no open opportunities. Signora needs records to work from.`;
+
+/**
+ * ⚠️ **`syncedAgo` is nullable for the same reason `HM_COPY_01`'s estimate is.**
+ *
+ * ⛔ **Nothing publishes when a connection last synced.** `Connection` carries
+ * `state`, `health` and `connected_at` — *when the relationship began*, which is
+ * not *when data last arrived*. ⚡ **Printing `connected_at` as a sync time would
+ * be the sentence's most load-bearing word carrying the wrong fact**, and a
+ * reader who connected in March would be told their data is five months old when
+ * it may be five minutes old, or the reverse.
+ *
+ * ✅ **The clause is dropped, and the rest of the sentence still does its whole
+ * job**: it names the source, states that it is connected, and says what Signora
+ * needs. **It arrives with the sync watermark, not before it.**
+ */
 
 /**
  * 📁 `HM-COPY-06` — state 06b, `no-results`. **A success state.**

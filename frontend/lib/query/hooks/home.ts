@@ -10,7 +10,17 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { getOnboarding, type OnboardingRun } from '@/lib/api/onboarding';
+import {
+  ACTIVATION_CARDS,
+  activationProgress,
+  hasWorkingCapability,
+  type ActivationCardId,
+  type ActivationProgress as ActivationProgressCount,
+} from '@/lib/home/activation';
 import type { StatedRole } from '@/lib/home/composition';
+import { useIntegrations } from '@/lib/query/hooks/integrations';
+import { usePreferences } from '@/lib/query/hooks/preferences';
+import { useWorkspaceMembers } from '@/lib/query/hooks/team';
 
 /**
  * 📁 **The person's stated role**, from onboarding screen `05` — *"Role sets the
@@ -47,4 +57,52 @@ export function useStatedRole(workspaceId: string | null) {
       return (run.role?.value ?? null) as StatedRole | null;
     },
   });
+}
+
+/**
+ * 🔴 **Activation's completion, derived once.**
+ *
+ * ⚠️ **Three callers derive this and there were two before the greeting needed
+ * it** — the cards, the progress line and now the greeting. 📁 §2, *"truth has
+ * exactly one authoritative representation; everything else derives from it"*,
+ * and a third copy of *"CRM complete means a working `crm_activity`"* is a third
+ * place that goes wrong when the capability's own contract moves.
+ *
+ * 📁 ***"Completion is derived from the source of truth, never stored on
+ * Home"*** — which is what makes this a hook over two reads rather than state.
+ *
+ * ⛔ **`resolved` is not `isLoading`.** ⚡ Every caller needs the same refusal:
+ * **say nothing until both reads have landed.** A progress line that counted an
+ * unread connection as *not done*, or a greeting that opened with *"let us get
+ * you connected"* to somebody who already had, is worse than a moment's silence.
+ */
+export function useActivationState(workspaceId: string | null): {
+  readonly resolved: boolean;
+  readonly complete: Readonly<Record<ActivationCardId, boolean>>;
+  readonly progress: ActivationProgressCount;
+  /** 📁 Whether the optional step is inside its 30-day skip window. */
+  readonly inviteHidden: boolean;
+} {
+  const systems = useIntegrations(workspaceId);
+  const preferences = usePreferences(workspaceId);
+  const members = useWorkspaceMembers(workspaceId);
+
+  const complete = {
+    'connect-a-crm': hasWorkingCapability(systems.data, 'crm_activity'),
+    'connect-calls': hasWorkingCapability(systems.data, 'meetings'),
+    // ⚡ **The roster IS the source of truth** — 📁 *"invite complete means
+    // members count is greater than one."* ⚠️ **Both earlier derivations passed
+    // `false` here** because neither needed it: the progress helper filters to
+    // blocking cards, and the card component reads the roster itself. ✅ **The
+    // greeting's state 14 needs the real answer**, so it is answered here.
+    'invite-the-team': (members.data?.items.length ?? 0) > 1,
+  } satisfies Record<ActivationCardId, boolean>;
+
+  return {
+    resolved:
+      systems.data !== undefined && preferences.data !== undefined && members.data !== undefined,
+    complete,
+    progress: activationProgress(ACTIVATION_CARDS, complete),
+    inviteHidden: preferences.data?.invite_hidden ?? false,
+  };
 }

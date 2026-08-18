@@ -377,6 +377,14 @@ class PersonPreferencesModel(Base, TimestampMixin, AuditMixin):
         DateTime(timezone=True), nullable=True
     )
 
+    # 🔴 **Home state 04 — when this person was told setup had finished.**
+    # ⛔ **A timestamp, matching its two neighbours**: `NULL` is *not yet told*,
+    # and the column answers *when* without a second migration the first time
+    # somebody asks why a strip appeared twice.
+    setup_complete_seen_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
 
 class RecentlyViewedModel(Base, TimestampMixin, AuditMixin):
     """A record this person opened — 📁 Session Continuity **tier 4**.

@@ -20,12 +20,15 @@ import { IntegrationHealthCard } from '@/components/home/integration-health-card
 import { PipelineHealthCard } from '@/components/home/pipeline-health-card';
 import { RecentsCard } from '@/components/home/recents-card';
 import { TopOpportunitiesCard, TopRisksCard } from '@/components/home/posture-cards';
+import { NoDataStrip } from '@/components/home/no-data-strip';
+import { SetupCompleteStrip } from '@/components/home/setup-complete-strip';
 import { SourceStrip } from '@/components/home/source-strip';
 import { HM_COPY_11 } from '@/lib/home/copy';
 import { cardsFor, type CardContract } from '@/lib/home/cards';
 import { resolveComposition } from '@/lib/home/composition';
 import { useSession } from '@/lib/auth/client';
-import { useStatedRole } from '@/lib/query/hooks/home';
+import { useAccountsCount } from '@/lib/query/hooks/accounts-count';
+import { useActivationState, useStatedRole } from '@/lib/query/hooks/home';
 import { useIntegrations } from '@/lib/query/hooks/integrations';
 import { useWorkspaceTriage } from '@/lib/query/hooks/triage';
 import { usePreferences } from '@/lib/query/hooks/preferences';
@@ -165,6 +168,23 @@ export function Home() {
   const resolving = isLoading || integrations.isPending;
 
   /**
+   * 🔴 **States 01, 03, 04, 05 and 14 all read from here** — 📁 activation's
+   * completion, derived from the source of truth and never stored on Home.
+   *
+   * ⚡ **Read on every composition, not only activation.** ⛔ States 04 and 14
+   * are *data* compositions that need to know what activation did: 04 announces
+   * that setup just finished, and 14 says the optional step is still outstanding.
+   */
+  const activationState = useActivationState(workspaceId);
+
+  /**
+   * 📁 **State 05's second half** — *"record count is zero"*. ⚡ **The
+   * workspace's own count, not the loaded page's**: `accounts-list` is
+   * keyset-paginated, so counting rows measures how much has been fetched.
+   */
+  const accounts = useAccountsCount(workspaceId);
+
+  /**
    * ⚡ **`working` is *"at least one connection Signora can currently use"*.**
    * 📁 Rule 1 asks whether one has ever *completed a sync*, and a working
    * connection is the closest fact the contract publishes — ⚠️ **recorded because
@@ -235,6 +255,29 @@ export function Home() {
           and has no producer; the source strip is states 10 and 11. */}
       <SourceStrip systems={systems} loading={resolving} />
 
+      {/* 📁 **State 04** — *"a one-time strip states that setup is finished and
+          what changed"*. ⛔ **On the ROLE composition, never on activation**:
+          the design's own render for 04 is *"composition switches to SELLER,
+          OPERATIONS or EXECUTIVE"*. */}
+      <SetupCompleteStrip
+        workspaceId={workspaceId}
+        complete={
+          activationState.resolved &&
+          activationState.progress.done === activationState.progress.total
+        }
+        activation={composition === 'activation'}
+      />
+
+      {/* 📁 **State 05** — *"one strip naming which source returned nothing"*.
+          ⛔ **Not on activation**, which the design excludes by name, and ⛔ never
+          the same component as state 06b (contract 4). */}
+      <NoDataStrip
+        systems={systems}
+        accounts={accounts.data?.total ?? null}
+        activation={composition === 'activation'}
+        loading={resolving}
+      />
+
       {/* 🔴 **Over whichever composition resolved, never instead of one** — 📁
           Entry rule 20 and Home's own words. ⛔ It is not a fifth composition. */}
       <FirstRunOverlay composition={composition} />
@@ -247,9 +290,19 @@ export function Home() {
           name={session?.user.name ?? null}
           workspace={activeWorkspace?.name ?? null}
           composition={composition}
+          compositionKnown={!resolving}
           attention={attention.data?.items.length ?? null}
           attentionFailed={attention.isError}
           meetings={null}
+          /* 📁 **States 01 and 03**, and only on the activation composition —
+             ⛔ every other composition greets by the clock. ⚡ **`null` until
+             activation has resolved**, so the sentence never opens with *"let us
+             get you connected"* to somebody who already has. */
+          activation={
+            composition === 'activation' && activationState.resolved
+              ? { done: activationState.progress.done, total: activationState.progress.total }
+              : null
+          }
         />
         <CompositionSwitcher
           className="ml-auto"
@@ -321,7 +374,33 @@ export function Home() {
             hasWide ? 'laptop:grid-cols-[1.45fr_1fr]' : 'laptop:grid-cols-2',
           )}
         >
-          {rendered.map((card) => {
+          {/**
+           * 🔴 **Nothing is drawn until the composition is RESOLVED, and that is
+           * a conformance rule rather than a preference.**
+           *
+           * ⛔ **The prohibition table forbids composition substitution**, and
+           * 📁 §09's loading rule is *"each skeleton uses the card's declared
+           * height… **so nothing reflows when data lands**"*. ⚠️ Rule 1's input
+           * is a read, so until it lands the resolver falls through to rule 5 —
+           * **and a brand-new workspace's first paint was the SELLER
+           * composition's five cards, replaced a moment later by the three
+           * activation steps.** ⚡ **Measured in a browser**, not reasoned about:
+           * the composition attribute read `seller` before the integrations
+           * response arrived.
+           *
+           * ✅ **One placeholder at the answer card's footprint** — 📁 hierarchy
+           * 4, *"one card that states what to do first"*, which every composition
+           * has. ⛔ **Not the default composition's card list**, because that is
+           * the substitution itself.
+           */}
+          {resolving ? (
+            <div
+              aria-hidden
+              data-testid="home-resolving"
+              className="h-[164px] animate-pulse rounded-lg border border-border-soft bg-surface-sunken"
+            />
+          ) : null}
+          {resolving ? null : rendered.map((card) => {
             const Card = RENDERERS[card.id];
             if (Card === undefined) return null;
             return (

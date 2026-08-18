@@ -1458,6 +1458,14 @@ export interface PersonPreferences {
    */
   invite_hidden: boolean;
   /**
+   * 🔴 **Home state 04** — whether this person has already been told setup
+   * finished. 📁 *"A one-time strip"*, and `AC-H03`'s *"shown exactly once"*.
+   *
+   * ⛔ **Not whether setup IS complete.** That is derived from the workspace's
+   * own connections and never stored; this is a fact about a reader.
+   */
+  setup_complete_seen: boolean;
+  /**
    * 📁 **Screen `07`'s first consent** — *"Surface insights I did not ask for ·
    * Ranked findings on your home page. Off means Signora only answers
    * questions."*

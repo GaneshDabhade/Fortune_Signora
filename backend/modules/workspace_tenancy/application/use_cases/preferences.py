@@ -184,6 +184,38 @@ class DismissFirstRunUseCase:
         return dismissed
 
 
+class AcknowledgeSetupCompleteUseCase:
+    """This person has been told that setup finished — Home state 04.
+
+    📁 ***"A one-time strip states that setup is finished and what changed"***,
+    and `AC-H03`'s *"shown **exactly once**"*.
+
+    ⚡ **An event, not a setting** — the same shape as
+    {@link DismissFirstRunUseCase} above, and for the same reason: **there is no
+    control in the design that un-shows it.**
+
+    ⚠️ **It does not decide WHETHER setup is complete.** 📁 Completion is
+    *"derived from the source of truth, never stored on Home"*, and this records
+    only that a reader was told. ⛔ **Calling this on a workspace that has not
+    finished activating would be a client lying to itself** — nothing here can
+    check that, which is why the strip's condition stays where the truth is.
+    """
+
+    def __init__(self, *, preferences: PersonPreferencesRepository) -> None:
+        self._preferences = preferences
+
+    async def execute(
+        self, workspace_id: UUID, person_id: UUID, *, now: datetime
+    ) -> PersonPreferences:
+        current = await self._preferences.get(workspace_id, person_id)
+        seen = current.saw_setup_complete(now)
+        # ⛔ **Only when something changed** — a second acknowledgement writes
+        # nothing, the same rule its two neighbours follow.
+        if seen is not current:
+            await self._preferences.save(seen)
+        return seen
+
+
 class SkipInviteUseCase:
     """Put the invite-the-team activation card away for thirty days.
 

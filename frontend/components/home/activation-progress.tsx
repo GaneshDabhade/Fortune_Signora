@@ -16,34 +16,23 @@
 
 'use client';
 
-import { activationProgress, type ActivationCardId } from '@/lib/home/activation';
-import { hasWorkingCapability } from '@/lib/home/activation';
-import { usePreferences, useSkipInvite } from '@/lib/query/hooks/preferences';
-import { useIntegrations } from '@/lib/query/hooks/integrations';
+import { useActivationState } from '@/lib/query/hooks/home';
+import { useSkipInvite } from '@/lib/query/hooks/preferences';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
-
-const ALL: readonly ActivationCardId[] = ['connect-a-crm', 'connect-calls', 'invite-the-team'];
 
 export function ActivationProgress() {
   const { activeWorkspace } = useWorkspaceContext();
   const workspaceId = activeWorkspace?.id ?? null;
-  const systems = useIntegrations(workspaceId);
-  const preferences = usePreferences(workspaceId);
   const skip = useSkipInvite(workspaceId);
+  // ⚠️ **Derived once, in `useActivationState`.** ⛔ This component held its own
+  // copy of *"CRM complete means a working `crm_activity`"* and so did the
+  // cards; the greeting would have been a third (§2).
+  const { resolved, progress, inviteHidden } = useActivationState(workspaceId);
 
-  // ⛔ **Silent until both answers are known.** ⚡ A progress line that counted
+  // ⛔ **Silent until every answer is known.** ⚡ A progress line that counted
   // an unread connection as *not done* would tell somebody they had made no
   // progress, which is worse than saying nothing for a moment.
-  if (systems.data === undefined || preferences.data === undefined) return null;
-
-  const progress = activationProgress(ALL, {
-    'connect-a-crm': hasWorkingCapability(systems.data, 'crm_activity'),
-    'connect-calls': hasWorkingCapability(systems.data, 'meetings'),
-    // ⚠️ **Irrelevant to the count and passed honestly anyway** — the helper
-    // filters to blocking cards, and lying here to save a read would make the
-    // next caller's answer wrong.
-    'invite-the-team': false,
-  });
+  if (!resolved) return null;
 
   return (
     <p className="flex items-center gap-2 text-2xs text-content-subtle">
@@ -54,7 +43,7 @@ export function ActivationProgress() {
         {progress.optional > 0 ? ` · ${progress.optional} optional` : ''}
       </span>
 
-      {preferences.data.invite_hidden ? (
+      {inviteHidden ? (
         /* 📁 ***"…and is reversible from the progress line."*** ⚡ **The card is
            hidden, so the control to bring it back cannot live on the card** —
            this line is the only place a person can reach it, which is exactly

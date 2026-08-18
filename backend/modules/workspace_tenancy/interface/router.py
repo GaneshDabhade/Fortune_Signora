@@ -1045,6 +1045,41 @@ async def dismiss_first_run(context: CurrentWorkspace) -> PreferencesResponse:
 
 
 @router.post(
+    "/workspaces/{workspace_id}/preferences/setup-complete-acknowledgement",
+    response_model=PreferencesResponse,
+    summary="This person has been told that setup is finished",
+)
+async def acknowledge_setup_complete(context: CurrentWorkspace) -> PreferencesResponse:
+    """⚡ **An event, not a setting** — 📁 Home state 04's strip is *"one-time"*,
+    and `AC-H03` says *"shown **exactly once**"*. **Nothing in the design
+    un-shows it.**
+
+    ⛔ **It does NOT record that setup is complete**, and the path says
+    *acknowledgement* for exactly that reason. 📁 Completion is *"derived from the
+    source of truth, never stored on Home"* — **this records only that a reader
+    was told.** ⚠️ A route named `/setup-complete` would invite the next caller to
+    treat it as the fact, and then two things would answer *"is this workspace
+    activated?"*.
+
+    ⚠️ **Idempotent, and the FIRST moment wins**, the same rule its two
+    neighbours follow: a double render, a retry or a second tab answers the same
+    and writes nothing twice.
+
+    ⛔ **No body, and there could not be one.** The only two facts are *who* and
+    *when*: the first is the caller's verified identity and the second is the
+    server's clock.
+    """
+    context.authorize(Resource.PREFERENCES, Action.UPDATE)
+    now = datetime.now(UTC)
+    prefs = await build_use_cases(context.session).acknowledge_setup_complete.execute(
+        context.workspace_id,
+        context.principal.user_id,
+        now=now,
+    )
+    return PreferencesResponse.from_domain(prefs, now=now)
+
+
+@router.post(
     "/workspaces/{workspace_id}/preferences/invite-skip",
     response_model=PreferencesResponse,
     summary="Hide or restore the invite-the-team activation card",

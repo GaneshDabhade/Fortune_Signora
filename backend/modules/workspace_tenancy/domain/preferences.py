@@ -195,6 +195,20 @@ class PersonPreferences:
     #: is *not skipped*, and the design's window is derived from this moment
     #: rather than stored beside it.
     invite_skipped_at: datetime | None = None
+    #: 🔴 **Home state 04 — when this person was told setup had finished.**
+    #:
+    #: 📁 *"A one-time strip states that setup is finished and what changed"*,
+    #: and `AC-H03`: *"the setup-complete strip shown **exactly once**"*.
+    #:
+    #: ⛔ **The moment, not a `seen` boolean.** ⚡ Same reasoning as
+    #: `first_run_dismissed_at` beside it: *once* is a claim about a specific
+    #: earlier moment, and a bare flag cannot answer *when* — which is the only
+    #: question anybody asks when a strip appears twice.
+    #:
+    #: ⚠️ **Per person, not per workspace.** 📁 The design says *"one-time"* of
+    #: a strip a person reads, and a colleague who joins later has still never
+    #: been told. **Their first entry is their once.**
+    setup_complete_seen_at: datetime | None = None
 
     # ── Screen `04 · AI preferences` ──────────────────────────────────────
     #
@@ -296,6 +310,20 @@ class PersonPreferences:
         if self.first_run_dismissed_at is not None:
             return self
         return replace(self, first_run_dismissed_at=at)
+
+    def saw_setup_complete(self, at: datetime) -> PersonPreferences:
+        """Record that this person has been told setup is finished.
+
+        ⚡ **Idempotent, and the FIRST moment wins** — the same rule
+        {@link dismissed_first_run} follows, and for the same reason: 📁 *"shown
+        exactly once"* is answered by the earliest showing, and overwriting it
+        would lose the only fact the column carries.
+
+        ⛔ **Not `choose_`.** There is no control in the design that un-shows it.
+        """
+        if self.setup_complete_seen_at is not None:
+            return self
+        return replace(self, setup_complete_seen_at=at)
 
     #: 📁 ***"Hides them for 30 days per person."***
     INVITE_SKIP_DAYS = 30

@@ -54,6 +54,32 @@ export function useDismissFirstRun(workspaceId: string | null) {
 }
 
 /**
+ * 🔴 **Home state 04's *"shown exactly once"*** — `AC-H03`.
+ *
+ * ⚡ **Fired by the strip itself, on its first render**, because *once* is a
+ * property of having been shown rather than of having been clicked. ⛔ **A
+ * dismiss button would make it *"shown until dismissed"***, and somebody who
+ * navigated away without clicking would meet it again tomorrow.
+ *
+ * ⛔ **It records only that a reader was told**, never that setup is complete —
+ * 📁 completion is *"derived from the source of truth, never stored on Home."*
+ */
+export function useAcknowledgeSetupComplete(workspaceId: string | null) {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: () =>
+      apiRequest<PersonPreferences>(
+        `/workspaces/${workspaceId}/preferences/setup-complete-acknowledgement`,
+        { method: 'POST', workspaceId: workspaceId ?? undefined },
+      ),
+    onSuccess: (preferences) => {
+      client.setQueryData(queryKeys.preferences(workspaceId ?? ''), preferences);
+    },
+  });
+}
+
+/**
  * 📁 ***"Non-blocking cards can be skipped, which hides them for 30 days per
  * person and is reversible from the progress line."***
  *

@@ -19,6 +19,18 @@ vi.mock('@/lib/query/hooks/preferences', () => ({
 vi.mock('@/lib/state/workspace-provider', () => ({
   useWorkspaceContext: () => ({ activeWorkspace: { id: 'w1' } }),
 }));
+/**
+ * ⚠️ **Mocked because `useActivationState` reads the roster** — 📁 *"invite
+ * complete means members count is greater than one"*.
+ *
+ * ⛔ **`useActivationState` itself is deliberately NOT mocked.** ⚡ The line under
+ * test is *"progress counts blocking cards only"*, and stubbing the hook would
+ * leave nothing here asserting that the count comes from real connections.
+ * ✅ **Three mocked reads, one real derivation.**
+ */
+vi.mock('@/lib/query/hooks/team', () => ({
+  useWorkspaceMembers: () => ({ data: { items: [{ user_id: 'me', role: 'owner' }] } }),
+}));
 
 const { ActivationProgress } = await import('@/components/home/activation-progress');
 
