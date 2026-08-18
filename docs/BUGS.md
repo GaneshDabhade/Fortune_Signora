@@ -2776,9 +2776,9 @@ SIGNORA_ENVIRONMENT=lane-a make e2e-quick ARGS="tests/e2e/account-360.spec.ts \
 | | |
 |---|---|
 | **Module** | **`platform_foundation`** — [`Makefile`](../Makefile) (`test`, `SIGNORA_DB`, `DESTRUCTIVE_DB_ENV`) and [`infra/environments.py`](../infra/environments.py) |
-| **Current assignee** | ⚡ **Lane C**, joined from [`modules.toml`](coordination/modules.toml). ⚠️ **QE proposed Lane A** *"by the registry"* — **the registry says otherwise**: line 436 records the 2026-08-16 correction (D-240 §2, closing C-1519) putting Platform Foundation with Lane C, per [§20e](../CLAUDE.md) D-022 |
+| **Current assignee** | ⚡ **Lane A** — ⚠️ **and I first filed this against Lane C, reading a registry 25 commits old.** 📁 `modules.toml:441` on `origin/main`: *"SUPERSEDED 2026-08-18 — product owner, the two-lane operating model. **Lane C is retired.** … **Lane A is now the sole implementation owner**, owning the entire implementation including required supporting infrastructure."* ⛔ **The 2026-08-16 correction I quoted is real, still in the file, and superseded four lines below it** — QE left it standing as a dated record and wrote the newer ruling above, which is the right shape and is exactly what a stale checkout cannot see |
 | **Severity** | 🟡 — **wrong but survivable.** ⛔ It destroys a reviewable environment rather than customer data, and it fails loudly: an empty Playground is obvious within one screen |
-| **Status** | **`OPEN`** — ⛔ **Lane A reported it and did not fix it.** The `Makefile` and environment tooling are Lane C's |
+| **Status** | **`OPEN`** — **mine to fix.** ⛔ **Not started**: Home is under a standing product-owner directive and this blocks nothing, since the workaround below works and the failure is loud |
 | **Found** | **2026-08-18**, by Lane A running the backend suite on a seeded lane stack. **Reproduced independently by QE from the Makefile.** ⚠️ **Not by any gate** — the gate runs on a clean database, which is the one shape that cannot show it |
 | **Commit found** | `6684477d` |
 
