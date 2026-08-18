@@ -1,6 +1,14 @@
 # Session Handoff
 
-> ## Cycle 247 — promoted `6eba78bf`, 2026-08-18 · **QE's own seven commits, and the standard now exceeds what the gates measure**
+> ## Cycle 248 — promoted `3a18bd96`, 2026-08-18 · **Home implemented, the standalone Attention surface retired, and a gate that had been passing on nothing**
+>
+> **`main` = `3a18bd96` = the certified commit.** `pytest` **5376** · coverage **95.02%** · **676 Security Invariants** · `mypy` **948** · `import-linter` **37/37** · `tsc` · `frontend-suite` **3324/192** · `eslint` · `smoke` 24/216s · **DR passed** · **reversible** · head **`0064`**. **29 commits, Lane A.**
+>
+> ⛔ **Two things the next session must not misread.** ⓐ **The first certification attempt was REFUSED** on a failing `smoke` — [B-1024](BUGS.md), a required `slug` whose caller was never updated — **and the refused record is committed rather than discarded.** ⓑ **[B-285](BUGS.md): four `disaster-recovery.sh` assertions were vacuous**, discarding the response with `-o /dev/null`, so a refused create produced a zero outbox count and the gate reported that the relay had resumed. **This cycle is the first run of `make dr` whose assertions were load-bearing.**
+>
+> ⚠️ **The `/attention` absence guard is on `lane-qe`, NOT in the promoted commit.** **Six of the product owner's seven conditions are satisfied on `main`; the seventh arrives when the guard is promoted.**
+>
+> ### Previously — cycle 247, promoted `6eba78bf` · **QE's own seven commits, and the standard now exceeds what the gates measure**
 >
 > **`main` = `6eba78bf` = the certified commit.** `pytest` **5287** · coverage **95.08%** · **668 Security Invariants** · `mypy` **940** files · `import-linter` **37/37** · `tsc` clean · `frontend-suite` **3405/192** · `eslint` clean · `smoke` 24/207s · **DR passed** · **reversible on a clean database** · head **`0060`**. **7 commits, one lane.**
 >

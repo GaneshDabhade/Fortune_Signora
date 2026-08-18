@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `6eba78bf`, 2026-08-18.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `3a18bd96`, 2026-08-18.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,15 +12,20 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `6eba78bf`, 2026-08-18.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `3a18bd96`, 2026-08-18.** Every figure is read from the repository, never carried forward.
+
+> ⚡ **Cycle 248 is Lane A's Home implementation and the retirement of the standalone Attention surface** — **29 commits, one lane, two certification attempts.** ⛔ **The first was REFUSED on a failing `smoke`**, and the refusal is recorded rather than repaired away.
 
 > ⚠️ **Cycle 247 is QE's own work, and it is labelled as such.** **All seven commits are QE's** — a defect register, a governance reconciliation and one certification-infrastructure fix. ⛔ **Under the two-lane model QE is the only lane that can write certification infrastructure and the only lane that can certify it, so the independent-review property is ABSENT for this cycle.** **The gates are deterministic and they passed; the second pair of eyes did not exist.** **Reported rather than resolved.**
 
 | | |
 |---|---|
-| **`main`** | **`6eba78bf`** — ⚡ **cycle 247**, `promoted == certified`, verified from the remote after the push. **7 commits, one lane (QE), one certification attempt.** **Was `0281e08b`:** — ⚡ **the certified commit itself**, `promoted == certified`, **verified against the SHA the guard named, not against `integration`'s head**. **Cycle 238** — ⛔ **and `integration` had already moved to `9023b187` when the promotion ran, for the second cycle running** |
+| **`main`** | **`3a18bd96`** — ⚡ **cycle 248**, `promoted == certified`, verified from the remote after the push. **29 commits, Lane A.** **Was `6eba78bf`:** — ⚡ **cycle 247**, `promoted == certified`, verified from the remote after the push. **7 commits, one lane (QE), one certification attempt.** **Was `0281e08b`:** — ⚡ **the certified commit itself**, `promoted == certified`, **verified against the SHA the guard named, not against `integration`'s head**. **Cycle 238** — ⛔ **and `integration` had already moved to `9023b187` when the promotion ran, for the second cycle running** |
 | **Release candidate** | `integration` = **`9023b187`** — Lane C's three planning commits, rebased onto the pin and ref-pushed **while the gates were running**, so no lane waited and no gate was disturbed |
-| **Certification** | ✅ [`6eba78bf925d`](certification/reports/6eba78bf925d.md) · migration head **`0060`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a CLEAN database** — ⛔ **and NOT on a used one, which is [B-1016](docs/BUGS.md)**. **Was [`0281e08be27d`](certification/reports/0281e08be27d.md):** · migration head **`0060`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** |
+| **Certification** | ✅ [`3a18bd964bb2`](certification/reports/3a18bd964bb2.md) · migration head **`0064`** · ⚠️ **eight gates on the SECOND attempt** · **DR passed, 676 invariants against the restarted stack** · **reversible base→head→base→head→base→head on a clean database**. **Was [`6eba78bf925d`](certification/reports/6eba78bf925d.md):** · migration head **`0060`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a CLEAN database** — ⛔ **and NOT on a used one, which is [B-1016](docs/BUGS.md)**. **Was [`0281e08be27d`](certification/reports/0281e08be27d.md):** · migration head **`0060`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** |
+| **Cycle 248 gates** | ⚡ **EIGHT required, all recorded** — `pytest` **5376** *(+89)* · coverage **95.02%** · **676** security invariants *(+8)* · `mypy` strict over **948** files · `import-linter` **37/37** · `tsc` clean · `frontend-suite` **3324 in 192 files** · `eslint` clean · `smoke` **24 stages in 216s** · scenario **baseline@1, 208 assertions** |
+| ⚠️ **Coverage is 2 basis points above the floor** | **95.02% against 95.0.** ⛔ **Not a breach and not a blocker** — **recorded because [B-1011](docs/BUGS.md) was this shape four cycles before it crossed**, and the cost of noticing late was a refused certification |
+| 🔴 **The first attempt was REFUSED, and the gate was right** | 📁 **[B-1024](docs/BUGS.md)** — `CreateWorkspaceRequest` gained a required `slug` and `infra/smoke.sh` was not told. **Seven gates passed; `smoke` did not**, because it is the only required gate that drives the real API over HTTP |
 | **Cycle 247 gates** | ⚡ **EIGHT required, all recorded, first attempt** — `pytest` **5287** *(+7)* · coverage **95.08%** · **668** security invariants · `mypy` strict over **940** files *(+1)* · `import-linter` **37/37** · `tsc` clean · `frontend-suite` **3405 in 192 files** · `eslint` clean · `smoke` **24 stages in 207s** · scenario **baseline@1, 198 assertions** |
 | 🔴 **What certification did NOT measure, against the standard ratified 2026-08-18** | ⛔ **7 of 14 items measured, 1 partial, 6 with NO GATE AT ALL.** **Absent: Playwright · browser/screenshot verification · approved-design conformance · removal of obsolete implementation · frontend-functional · no-regression-vs-baseline.** ⚠️ **Partial: migration reversibility — run by QE, not recorded** ([B-131](docs/BUGS.md)). ⚡ **This cycle is therefore NOT full certification against the current standard, and is not reported as one** |
 | **Cycle 246 gates** | ⚡ **EIGHT required, all recorded** — `pytest` **5280** · coverage **95.08%** · **668** security invariants · `mypy` strict over **939** files · `import-linter` **37/37** · `tsc` clean · **`frontend-suite` 3330 in 189 files** · **`eslint` clean** · `smoke` **24 stages in 162s** · scenario **baseline@1, 198 assertions** |
@@ -122,6 +127,41 @@
 ---
 
 ## 1d · Release summary — 2026-08-17, cycles 244–246
+
+### Cycle 248 — release summary
+
+**Promoted `3a18bd96` from `954291ec`. 29 commits, Lane A, two certification attempts — the first refused.**
+
+⚡ **The first customer-visible product cycle in some time: Home is implemented against the design corpus, and the standalone Attention surface is retired.**
+
+| | |
+|---|---|
+| **Features delivered** | **Home, as the design defines it** — composition resolution with four compositions · `card.attention` reading signals · `card.risks`/`card.opps` by published posture · `card.inthealth` per connection · `card.recents` *(migration `0064`, person-scoped RLS)* · `card.agentqueue`/`card.agentruns` · **State 08**, one failure treatment across all eight cards · `/` becomes the shell's **entry resolver** |
+| 🔴 **The obsolete `/attention` surface is gone** | **Route, five component families, two state modules, four orphaned exports, seven test files.** ✅ **`AccountAttention` is untouched** — `opportunity_engine` unchanged at 25 files, Account 360 and Triage green |
+| **Defects fixed** | **[B-284](docs/BUGS.md)** 🔴 — an owner past position 50 read as *not a member* and the rail locked · **[B-285](docs/BUGS.md)** 🔴 — four `make dr` assertions were vacuous · **[B-1022](docs/BUGS.md)** — the Playground never connected anything · **[B-1023](docs/BUGS.md)** — 22 journeys assuming a ranked entry list · **[B-1024](docs/BUGS.md)** 🔴 — `slug` required, caller not told |
+| **Defects opened** | **[B-1022](docs/BUGS.md)** · **[B-1023](docs/BUGS.md)** · **[B-1024](docs/BUGS.md)** · Lane A's **[B-283](docs/BUGS.md)** *(CLS, deliberate red)*, **[B-284](docs/BUGS.md)**, **[B-285](docs/BUGS.md)** |
+| **Migrations** | **`0062` workspace slug · `0063` home composition preference · `0064` recently viewed.** Head `0060` → **`0064`** |
+| **Metrics** | `pytest` **5376** *(+89)* · coverage **95.02%** · **676** invariants *(+8)* · `mypy` **948** · `frontend-suite` **3324/192** · **37/37** · `smoke` **24/216s** · **299** bug rows · **60** ADRs · **148** architecture documents · **20** modules |
+
+#### 🔴 What this cycle proves about the gates, and it is uncomfortable
+
+**One contract change, two gates, opposite reports.** `slug` became required. **`smoke` failed loudly** because it reads the created id back. **`disaster-recovery.sh` would have passed** — its four creates discarded the response with `-o /dev/null`, so a refused POST published nothing, the outbox count was zero, and the check announced that the relay had resumed.
+
+> ⛔ **Relay recovery after PostgreSQL, pipeline recovery after Redis, and workers resuming were each provable only by a request that had already succeeded — and none of them looked.** ⚡ **That half is OLDER than the contract change**: any failed create produced the same false pass. **The slug revealed it; it did not cause it.**
+
+**This is the first `make dr` in the gate's history whose assertions were load-bearing.** It passed.
+
+#### ⚠️ Remaining blockers and known limitations
+
+**① The `/attention` absence guard is on `lane-qe`, not in the promoted commit.** **Six of the seven certification conditions the product owner set are satisfied on `main`; the seventh arrives when the guard is promoted through the ordinary controlled sequence.** ⛔ **Deliberately not bundled into Lane A's implementation.**
+
+**② Coverage 95.02% against a floor of 95.0** — 2 basis points. Not a breach. **[B-1011](docs/BUGS.md) was this shape four cycles before it crossed.**
+
+**③ [B-283](docs/BUGS.md) is a deliberate red** — Companies reflows at 0.277 CLS against a 0.1 boundary, **left failing rather than relaxed**, cause undiagnosed and deliberately not guessed.
+
+#### ✅ Recommended next work
+
+**Promote the `/attention` guard**, closing the seventh condition. Then **[B-283](docs/BUGS.md)**, and **[B-282](docs/BUGS.md)** — `make test` truncates the database the Playground is seeded in, which cost both lanes a working environment more than once this cycle.
 
 ### Cycle 247 — release summary
 
