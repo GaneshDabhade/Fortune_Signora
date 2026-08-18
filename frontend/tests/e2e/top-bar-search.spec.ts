@@ -25,7 +25,23 @@ test.describe('at 1600, where the design gives the field room', () => {
 
   test('🔴 224 at rest, 320 on focus, and 224 again after', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('search', { name: 'Search Fortune Signora' })).toBeVisible();
+    /**
+     * 🔴 **[B-1400](../../../docs/BUGS.md) — this asserted `'Search Fortune
+     * Signora'`, and the shell has rendered `'Search Signora'` since
+     * `aa1d4819`.** 📁 [§4](../../../CLAUDE.md) reserves the combined brand for
+     * branding surfaces; **a search landmark inside the running application is
+     * product speech.**
+     *
+     * ⛔ **The fix belongs HERE and never in `top-bar.tsx`** — `shell-a11y.test.tsx`
+     * asserts the label IS `Search Signora` and is NOT `Search Fortune Signora`,
+     * so changing the shell would satisfy this file by breaking that one and
+     * breaching §4 to do it.
+     *
+     * ⚠️ **`aa1d4819` updated every test that could fail the build and missed
+     * this one, because Playwright is in no certification gate** — the systemic
+     * half is [B-131](../../../docs/BUGS.md) and QE's.
+     */
+    await expect(page.getByRole('search', { name: 'Search Signora' })).toBeVisible();
 
     await expect.poll(() => widthOf(page)).toBe(224);
 
@@ -48,7 +64,7 @@ test.describe('at 1599, one pixel below the threshold', () => {
    */
   test('⛔ focus changes nothing, because there is no room', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('search', { name: 'Search Fortune Signora' })).toBeVisible();
+    await expect(page.getByRole('search', { name: 'Search Signora' })).toBeVisible();
 
     await expect.poll(() => widthOf(page)).toBe(224);
 

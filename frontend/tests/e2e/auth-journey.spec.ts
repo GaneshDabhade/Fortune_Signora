@@ -11,6 +11,32 @@ import { expect, test } from '@playwright/test';
 
 import { OWNER, PASSWORD } from './fixtures/personas';
 
+/**
+ * **Walk the design's ladder to Home, as a customer does** —
+ * 📁 `Fortune Signora Authenticated Entry.dc.html`.
+ *
+ * ⚠️ **`/` used to RENDER the attention list**, so every sign-in test could
+ * assert one heading and stop. ✅ **It resolves now**, and 📁 which rule fires
+ * depends on the person: rule 11 enters a sole organization directly; **rule 13
+ * shows the chooser to somebody with several and no last-used** — *"this is a
+ * first login with multiple memberships and nothing else."*
+ *
+ * ⛔ **Both are correct outcomes**, so this accepts either and finishes where
+ * the ladder finishes: 📁 rule 24's Home.
+ */
+async function reachMorning(page: import('@playwright/test').Page): Promise<void> {
+  await page.waitForURL(/\/workspaces$|\/w\/[0-9a-f-]+\/home$/, { timeout: 30_000 });
+  if (new URL(page.url()).pathname === '/workspaces') {
+    await page
+      .getByRole('list', { name: 'Your organizations' })
+      .getByRole('button')
+      .first()
+      .click();
+  }
+  await page.waitForURL(/\/w\/[0-9a-f-]+\/home$/, { timeout: 30_000 });
+  await expect(page.getByTestId('home')).toBeVisible();
+}
+
 const hasOAuth = Boolean(process.env.GOOGLE_CLIENT_ID ?? process.env.MICROSOFT_CLIENT_ID);
 
 test.describe('unauthenticated access', () => {
@@ -145,8 +171,13 @@ test.describe('signing in', () => {
     // *"That address does not lead anywhere"*. The password form's own
     // `router.push('/')` never fixed it: the vendor navigates to its
     // `callbackURL` and wins.
-    await page.waitForURL((url) => url.pathname === '/', { timeout: 30_000 });
-    await expect(page.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
+    //
+    // ⚠️ **`/` is the shell's entry resolver now**, so it forwards rather than
+    // renders. 📁 **Which rule fires depends on the person's memberships**, and
+    // this persona belongs to more than one organization with nothing recorded
+    // in a fresh browser — **rule 13, the chooser** — so *the morning* is
+    // reached the way a customer reaches it.
+    await reachMorning(page);
   });
 
   test('@regression the wrong password is refused without saying which half was wrong', async ({
@@ -182,7 +213,9 @@ test.describe('signing in', () => {
     await page.getByLabel('Email').fill(OWNER.email);
     await page.getByLabel('Password').fill(PASSWORD);
     await page.getByRole('button', { name: 'Sign in' }).click();
-    await page.waitForURL((url) => url.pathname === '/');
+    // ⚠️ **`/` forwards now** — the shell's entry resolver replaces it with the
+    // resolved workspace's Home, so the root path is never a resting state.
+    await reachMorning(page);
 
     /**
      * 🔴 **[B-249](../../../docs/BUGS.md), third and fourth instances.** ⛔ **The
@@ -218,8 +251,7 @@ test.describe('the OAuth round trip', () => {
       .click();
     // The same destination as a password sign-in, deliberately: the session is
     // identical and the token carries no record of the method (ADR-0033).
-    await page.waitForURL((url) => url.pathname === '/', { timeout: 30_000 });
-    await expect(page.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
+    await reachMorning(page);
   });
 });
 
@@ -440,12 +472,10 @@ test.describe('Registration → Verification → Login', () => {
     await page.getByLabel('Password', { exact: true }).fill(password);
     await page.getByRole('button', { name: 'Sign in' }).click();
 
-    // ⛔ **Never the attention list.** A session before verification would
+    // ⛔ **Never inside the product.** A session before verification would
     // make `requireEmailVerification` decorative.
     await expect(page).toHaveURL(/\/signin/);
-    await expect(
-      page.getByRole('heading', { name: 'Attention', level: 1 }),
-    ).toHaveCount(0);
+    await expect(page.getByTestId('home')).toHaveCount(0);
   });
 });
 

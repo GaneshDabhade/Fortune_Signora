@@ -20,7 +20,7 @@ import { expect, test } from './fixtures/signora';
 test.describe('finding out what the keyboard does', () => {
   test('? opens the reference from wherever you are', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
+    await expect(page.getByTestId('home')).toBeVisible();
 
     await page.keyboard.press('?');
 
@@ -56,7 +56,7 @@ test.describe('finding out what the keyboard does', () => {
 
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toBeHidden();
-    await expect(page.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
+    await expect(page.getByTestId('home')).toBeVisible();
   });
 
   /**

@@ -32,13 +32,35 @@ const BANDS = [
 
 const PRIMARY = 'nav[aria-label="Primary"]';
 
+/**
+ * **Arrive at the entry route and let it settle before touching the shell.**
+ *
+ * ⚠️ **`/` is the shell's entry resolver** — 📁 the Authenticated Entry
+ * document — **and it `replace`s the moment the membership read answers.**
+ *
+ * ⛔ **A click issued before that lands, and then LOSES to the redirect**: the
+ * sheet's Settings link navigates, `replace` fires a beat later, and the URL
+ * assertion sees Home. ⚡ **Four tests in this file opened the sheet without
+ * waiting and only one of them lost the race** — **the other three are the same
+ * defect not yet observed**, which is why this is a helper rather than a fix at
+ * the one call site that failed.
+ *
+ * ✅ **Not a product defect.** 📁 The design's own words are that a person is
+ * *"gone again in one frame"*, and at `/` there is nothing to click but shell
+ * chrome.
+ */
+async function atEntry(page: import('@playwright/test').Page): Promise<void> {
+  await page.goto('/');
+  await expect(page.getByTestId('home')).toBeVisible();
+}
+
 for (const band of BANDS) {
   test.describe(band.name, () => {
     test.use({ viewport: { width: band.width, height: band.height } });
 
     test('🔴 the page carries exactly one Primary navigation', async ({ page }) => {
       await page.goto('/');
-      await expect(page.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
+      await expect(page.getByTestId('home')).toBeVisible();
 
       // ⛔ **`page.locator`, not `getByRole`** — see the note above. **This is
       // the assertion that measured 2 before the row.**
@@ -47,7 +69,7 @@ for (const band of BANDS) {
 
     test('⛔ and nothing is fixed across the bottom of the viewport', async ({ page }) => {
       await page.goto('/');
-      await expect(page.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
+      await expect(page.getByTestId('home')).toBeVisible();
 
       // 📁 **The deleted bar was `position: fixed; bottom: 0` and full width.**
       // ⚡ **Measured rather than matched on a class**, because the defect a
@@ -74,7 +96,7 @@ test.describe('below 1024 the rail is a sheet, opened from the top bar', () => {
     page,
   }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
+    await expect(page.getByTestId('home')).toBeVisible();
 
     // ⛔ **The rail is present in the DOM and NOT visible** — `visibility:
     // hidden` is what keeps it out of the tab order while it is off-canvas.
@@ -89,7 +111,7 @@ test.describe('below 1024 the rail is a sheet, opened from the top bar', () => {
   });
 
   test('✅ the sheet is on screen rather than off its left edge', async ({ page }) => {
-    await page.goto('/');
+    await atEntry(page);
     await page.getByRole('button', { name: 'Open navigation' }).click();
     await expect(page.locator(PRIMARY)).toBeVisible();
 
@@ -115,7 +137,7 @@ test.describe('below 1024 the rail is a sheet, opened from the top bar', () => {
   test('✅ a destination in the sheet navigates, and the sheet closes behind it', async ({
     page,
   }) => {
-    await page.goto('/');
+    await atEntry(page);
     await page.getByRole('button', { name: 'Open navigation' }).click();
 
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Settings' }).click();
@@ -141,7 +163,7 @@ test.describe('below 1024 the rail is a sheet, opened from the top bar', () => {
    * control being added to a surface the design replaced.**
    */
   test('🟢 the rail\'s utilities come with it — B-240', async ({ page }) => {
-    await page.goto('/');
+    await atEntry(page);
     await page.getByRole('button', { name: 'Open navigation' }).click();
 
     const sheet = page.getByRole('navigation', { name: 'Primary' });
@@ -153,7 +175,7 @@ test.describe('below 1024 the rail is a sheet, opened from the top bar', () => {
   });
 
   test('✅ Escape closes it', async ({ page }) => {
-    await page.goto('/');
+    await atEntry(page);
     await page.getByRole('button', { name: 'Open navigation' }).click();
     await expect(page.locator(PRIMARY)).toBeVisible();
 
@@ -163,7 +185,7 @@ test.describe('below 1024 the rail is a sheet, opened from the top bar', () => {
   });
 
   test('✅ the backdrop closes it', async ({ page }) => {
-    await page.goto('/');
+    await atEntry(page);
     await page.getByRole('button', { name: 'Open navigation' }).click();
     await expect(page.locator(PRIMARY)).toBeVisible();
 
@@ -176,7 +198,7 @@ test.describe('below 1024 the rail is a sheet, opened from the top bar', () => {
 
   test('🔴 the content region is not covered, and its last row is reachable', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
+    await expect(page.getByTestId('home')).toBeVisible();
 
     // 📁 **This is what `pb-20` was buying and no longer has to.** ⚡ **The
     // check is that `main`'s own bottom edge is not hidden behind anything** —
@@ -198,7 +220,7 @@ test.describe('at and above 1024 the rail is in flow and the trigger is gone', (
 
   test('⛔ no sheet trigger is offered where the rail is already visible', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
+    await expect(page.getByTestId('home')).toBeVisible();
 
     await expect(page.locator(PRIMARY)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Open navigation' })).toBeHidden();

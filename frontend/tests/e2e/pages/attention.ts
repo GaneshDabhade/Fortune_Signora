@@ -13,8 +13,13 @@ import { expect, type Locator, type Page } from '@playwright/test';
 export class AttentionPage {
   constructor(private readonly page: Page) {}
 
+  /**
+   * ⚠️ **`/attention`, not `/`.** 📁 The Authenticated Entry document gives `/`
+   * to the shell's resolver — *"entry resolution belongs to the shell,
+   * exclusively"* — and this screen took its own address when that was wired.
+   */
   async open(): Promise<void> {
-    await this.page.goto('/');
+    await this.page.goto('/attention');
   }
 
   get heading(): Locator {

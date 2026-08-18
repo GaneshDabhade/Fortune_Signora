@@ -43,7 +43,7 @@ test.describe('the content region carries the design’s maximum', () => {
 
   test('🔴 content stops at 1600px however wide the monitor is', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
+    await expect(page.getByTestId('home')).toBeVisible();
 
     const box = await page.getByTestId('content-container').boundingBox();
 
@@ -58,7 +58,7 @@ test.describe('the content region carries the design’s maximum', () => {
 
   test('⛔ and it is centred, not pinned to the left edge', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
+    await expect(page.getByTestId('home')).toBeVisible();
 
     const container = await page.getByTestId('content-container').boundingBox();
     const main = await page.locator('main').boundingBox();
@@ -89,7 +89,7 @@ test.describe('the gutter is the design’s 24px', () => {
 
   test('📁 24px between the content region’s edge and its content', async ({ page }) => {
     await page.goto('/');
-    const heading = page.getByRole('heading', { name: 'Attention', level: 1 });
+    const heading = page.getByTestId('home');
     await expect(heading).toBeVisible();
 
     // 🔴 **Measured on the CONTAINER, not on the first heading — and the first
@@ -119,7 +119,7 @@ test.describe('the gutter is the design’s 24px', () => {
 
   test('⛔ the content region never overflows the frame horizontally', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
+    await expect(page.getByTestId('home')).toBeVisible();
 
     // 🔴 **`min-w-0` on `<main>` is what makes this true**, and it is the one
     // class the row's root-cause note says was already correct. ⚠️ **A wide
@@ -137,7 +137,7 @@ test.describe('the gutter yields before the data does', () => {
 
   test('📁 16px on a phone, because chrome yields before data', async ({ page }) => {
     await page.goto('/');
-    const heading = page.getByRole('heading', { name: 'Attention', level: 1 });
+    const heading = page.getByTestId('home');
     await expect(heading).toBeVisible();
 
     // ⚡ **24px each side of a 390px viewport is 12% of the screen spent on

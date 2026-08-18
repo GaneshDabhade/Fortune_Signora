@@ -79,7 +79,10 @@ test.describe('a member of the organization', () => {
     await page.goto('/settings');
     // The client guard redirects. This is a courtesy and the test says so —
     // the next test is the one that proves anything.
-    await expect(page).toHaveURL((url) => url.pathname === '/', { timeout: 20_000 });
+    // ⚠️ **`/` is the entry resolver and forwards to the resolved Home** —
+    // 📁 the Authenticated Entry document. A guard that sends somebody to `/`
+    // now lands them where their memberships say they belong.
+    await expect(page).toHaveURL(/\/w\/[0-9a-f-]+\/home$/, { timeout: 20_000 });
   });
 
   test('@regression the server refuses an administrative write regardless', async ({

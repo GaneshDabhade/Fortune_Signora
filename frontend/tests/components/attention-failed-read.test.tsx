@@ -29,7 +29,7 @@ vi.mock('@/lib/state/workspace-provider', () => ({
   useWorkspaceContext: () => context,
 }));
 
-import AttentionPage from '@/app/(app)/page';
+import AttentionPage from '@/app/(app)/attention/page';
 
 function renderPage() {
   return render(

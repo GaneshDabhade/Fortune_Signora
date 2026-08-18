@@ -16,7 +16,7 @@ import { expect, test } from './fixtures/signora';
 test.describe('reaching the product without a mouse', () => {
   test('@a11y the first tab stop is reachable and visible', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
+    await expect(page.getByTestId('home')).toBeVisible();
 
     await page.keyboard.press('Tab');
     const focused = page.locator(':focus');
@@ -33,6 +33,11 @@ test.describe('reaching the product without a mouse', () => {
 
   test('@a11y every navigation entry is reachable by keyboard', async ({ page }) => {
     await page.goto('/');
+    // ⚠️ **Wait for the destination, not for the rail.** 📁 `/` is the shell's
+    // entry resolver and forwards to Home — ⛔ **focusing a link while that
+    // navigation is in flight loses the focus to the new document**, which
+    // reads as a keyboard defect and is a race in the test.
+    await expect(page.getByTestId('home')).toBeVisible();
     const nav = page.getByRole('navigation', { name: 'Primary' });
     await expect(nav).toBeVisible();
 
@@ -187,7 +192,7 @@ test.describe('the page has a structure a screen reader can use', () => {
     page,
   }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
+    await expect(page.getByTestId('home')).toBeVisible();
 
     // A decorative icon announced as "image" between every score and every
     // name turns one list into twice as much to listen to.

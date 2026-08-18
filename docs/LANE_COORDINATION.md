@@ -575,6 +575,65 @@ databaseUrl: required(
 
 ---
 
+## C-1532 · `/` is the entry resolver now, and the Attention screen has no design document
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-17, wiring the Authenticated Entry engine to `/` |
+| **Owner** | 🔴 **Product owner** — **whether a shipped surface survives is a product decision** |
+| **Type** | **A screen with no design document, displaced by one that has** |
+| **Blocks** | ⛔ **Nothing.** ✅ The screen kept working at `/attention`. |
+| **Status** | **`OPEN`** |
+
+### ✅ ① What changed, and it was not optional
+
+📁 **The Authenticated Entry document:** *"Every authenticated person lands on `/w/:workspace/home`"*, and *"**entry resolution belongs to the shell, exclusively**, and a module that wants to influence it registers a rule rather than performing a redirect."*
+
+⚠️ **`/` rendered the Attention screen**, so 🔴 **the twenty-four-rule engine had one production caller — onboarding's exit — and never ran for anybody arriving at `/`.** ⛔ **That is the most travelled path in the product**, and rules 11–14 decide which workspace a person with several memberships enters and whether they see the chooser at all.
+
+✅ **`/` calls `resolveEntry` now.** ⚡ **`replace`, never `push`** — 📁 *"pressing back from Home after login exits to the sign-in page, not into a loop through the resolver."* **Verified in a browser: back from Home leaves the app rather than re-entering the resolver.**
+
+### ⚠️ ② The screen that moved has no design document
+
+**Measured across all 34 documents in `docs/design-snapshot/screens/`: none names an *Attention* screen**, and 📁 **the App Shell's rail vocabulary is Home · Accounts · Pipeline · Deals · Reports · Signals** — **Attention is not among them.**
+
+⚡ **It predates the design corpus.** 📁 [D38](../docs/architecture/39-product-review-findings.md) created it by retiring an Overview page — *"a seller's first screen should be their morning's work"* — **and the Home design now answers exactly that question, from the design's own contract, with the Signal Center owning the queue.**
+
+### ⛔ ③ Moved rather than deleted, deliberately
+
+**Retiring a shipped surface is a product decision, not an implementation one.** ✅ **It kept its content, its filters and its tests at `/attention`**, reached from an account brief's *"All accounts"*. ⚠️ **No rail item was invented for it** — **inventing product navigation to satisfy a reachability check would be worse than the orphan.**
+
+### ⚡ ④ Three ways to close it
+
+**①** **Retire it.** Home is the answer, Signals is the queue, Accounts is the book. ⛔ **Place its orphans first** — see ⑤.
+**②** **Keep it and give it an entrance** — a rail item, which 📁 D38 removed screens by name to avoid.
+**③** **Keep it unlisted**, reachable from the account brief only, as today.
+
+⚡ **Lane A's recommendation is ①, after the five component families in ⑤ are placed.** ⛔ **It is a recommendation and not a decision** ([§20e](../CLAUDE.md)).
+
+### ⚠️ ⑤ It is five component families, not three — and three state responsibilities
+
+🔴 **This row said *"`NeedsIdentity`, `DecidedAccounts` and the stage view"* and that undercounted by two.** ⚡ **Raised by Lane C, then measured independently here across every consumer in `frontend/`:**
+
+| Family | Consumers |
+|---|---|
+| `NeedsIdentity` · `DecidedAccounts` · `STAGE_MARK` · `TriageStrip`/`NothingRaises` · `AttentionScore` | ⛔ **the Attention screen, and nothing else** |
+| `EntityName` | ✅ **4** — both Accounts screens too |
+| `ActivationChecklist` | ✅ **also `lib/entry/observed.ts`** |
+| `NoWorkspace` | ✅ **10** |
+
+✅ **So retirement orphans five families and not eight** — **the last three survive on their own consumers.** ⛔ **Each of the five needs a named destination BEFORE retirement, not after**: **five single-consumer components are the exact shape that disappears without anybody deciding it should.**
+
+⛔ **This row briefly claimed it also *"redistributes three state responsibilities that currently sit together"* — `ActivationChecklist`, `NoWorkspace` and `StatedAbsence`. ⚠️ That was wrong and is withdrawn.** ✅ **Measured: `NoWorkspace` has nine other consumers and `StatedAbsence` is in THIRTY files.** ⚡ **They are standard page furniture on nearly every screen, not responsibilities this screen holds.** **Only `ActivationChecklist` is near-exclusive, and its other consumer is `lib/entry/observed.ts`** — already named above.
+
+🔴 **The error was method, not arithmetic, and it is worth naming because it repeats**: the first measurement checked the five candidates that turned out to be orphans and **did not check the ones that might not have been**. ⛔ **Every result confirmed the hypothesis because nothing that could refute it was looked at.** ✅ **Nine were measured the second time, and three of them refuted it.**
+
+⚠️ **Its close relative, recorded because the pair travels together**: the withdrawn *"eleven"* came from a `grep` ending in `head -12`, **and the bound was read as the count.** ⛔ **A bound is a display choice; a count is a claim about the repository.** ⚡ **Both failures produce a confident number that agrees with itself** — **one measures too few candidates, the other reads too few results** — **and truncated output looks complete, which is why neither is caught while it is being written.** ✅ **Every number in this section was produced unbounded (`wc -l`, no `head`).**
+
+🔴 **What survives, and it is the half worth ruling on**: 📁 `lib/home/composition.ts` returns `activation` for an empty workspace, **so a workspace with no CRM connected sees connection steps and no account list at all.** ⛔ **Any option that assumes Home covers Attention's job has to say what that workspace sees.** ⚡ **Observed in the Playground, not reasoned about** — ⚠️ **and it is true of Home TODAY, not a consequence of retiring anything.**
+
+---
+
 ## C-1531 · Home's first-run overlay has no copy id, and its second sentence was false
 
 | | |
@@ -13733,8 +13792,25 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-11, on the first hour of [TASK-1430](BACKLOG.md) — ⛔ **before writing any code** |
 | **Owner** | **Product owner** — 🔴 **an architectural blocker** ([§20e](../CLAUDE.md)): **no accepted architecture exists for the next step**, and the accepted one contradicts itself |
-| **Status** | 🔴 **`OPEN`** |
-| **Blocks** | ⛔ **[TASK-1430](BACKLOG.md) entirely.** ✅ **Claim released** |
+| **Status** | ✅ **`CLOSED` — Lane A, 2026-08-18.** **Ruled ⓓ by the product owner 2026-08-17 and implemented by Lane C**; closed by the raising lane, as [§20e](../CLAUDE.md) requires |
+| **Blocks** | ✅ **Nothing. [TASK-1430](BACKLOG.md) is delivered** — it was never *build a limiter*, and ⑤ is why |
+
+### ✅ ⑦ CLOSED — the ruling, the implementation, and where it actually is
+
+⚡ **Closed on Lane C's report and then verified rather than taken at face value**, because ⑤'s whole lesson is that a confident reading can look in the wrong tier.
+
+| | |
+|---|---|
+| **Ruled** | **⓭ ⓓ, product owner, 2026-08-17** — two policies, as this row recommended |
+| **Implemented** | **Lane C, `2ffcbcb6`** — *"TASK-1430 — inbound rate limiting as two policies, and neither pretends to cover the other tier"* |
+| **The line** | 📁 [`frontend/lib/auth/server.ts`](../frontend/lib/auth/server.ts):177 — **`rateLimit: { enabled: true, storage: 'database' }`** |
+| **The boundary** | 📁 [`docs/architecture/501-rate-limiting-boundary.md`](architecture/501-rate-limiting-boundary.md) — **neither limiter protects both tiers, stated once** |
+
+⚠️ **`'database'` rather than `'secondary-storage'`, and the substitution is sound.** ⛔ **Redis would need a client in the Next.js tier** — a new dependency under the Change Budget ([§6](../CLAUDE.md)). ✅ **The auth pool is already attached and Better Auth migrates its own `rateLimit` table**, so ⑤'s real gap — *"`storage` is unset… in-process counters"* — **closes on infrastructure that already exists.**
+
+🔴 **It is on `lane-c-sync` and NOT on `integration`** — measured after a fetch, not assumed. ⛔ **So the gap ⑤ describes is still live on `integration` today**, and this row is closed against a ruling and an implementation rather than against a promotion. **QE reconciles at the next one.**
+
+⚠️ **This row said `OPEN` and *"blocks TASK-1430 entirely"* for six days after it was answered.** 📁 **That is [C-213](#c-213)'s failure exactly** — *a row that looks unanswered is believed by every lane that passes it* — **and it was mine to close the whole time.** ✅ **Reported by Lane C, who declined to close it themselves because closure is the raising lane's.**
 
 ### 🔴 ① The problem
 

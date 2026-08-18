@@ -1,7 +1,10 @@
 import { SkeletonText } from '@/components/ui';
 
 /**
- * **The loading state for the attention list** — [TASK-1447](../../../docs/BACKLOG.md).
+ * **The loading state for the attention list** — [TASK-1447](../../../../docs/BACKLOG.md).
+ *
+ * ⚠️ **It moved with its route.** This screen was `/` until the shell's entry
+ * resolver took that address; the boundary follows the page it describes.
  *
  * ⚡ **`loading.tsx` existed on 0 of 26 route directories**, which is the first
  * half of what that row measured. **Next renders this while the route segment
@@ -9,7 +12,7 @@ import { SkeletonText } from '@/components/ui';
  * blank frame.
  *
  * ⛔ **A skeleton is NOT an empty state and never stands in for one.** 📁
- * [P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md): *a failed read must never
+ * [P-A](../../../../docs/DOMAIN_DISCOVERY_REGISTER.md): *a failed read must never
  * render as an empty result* — and a skeleton that never resolves is the same
  * lie held open. **The error path belongs to the read**, not here.
  *

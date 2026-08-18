@@ -45,7 +45,7 @@ vi.mock('@/lib/query/hooks', () => ({
   useDecidedAccounts: decided,
 }));
 
-import AttentionPage from '@/app/(app)/page';
+import AttentionPage from '@/app/(app)/attention/page';
 
 const IDLE = { data: undefined, isLoading: false, isError: false };
 
@@ -250,7 +250,7 @@ describe('an empty view is not an empty workspace — LO-03 corrected', () => {
 
     render(withQuery(<AttentionPage />));
 
-    expect(screen.getByRole('link', { name: 'Show everything' })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: 'Show everything' })).toHaveAttribute('href', '/attention');
   });
 
   it('says something different about an unassigned view', () => {

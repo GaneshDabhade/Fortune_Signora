@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 
 import { useWorkspaces } from '@/lib/query/hooks';
+import { lastUsedWorkspaceId } from '@/lib/state/workspace-provider';
 
 import { resolveEntry } from './index';
 import { INTENT_PARAM, captureIntent, classifyIntent, decodeIntent } from './intent';
@@ -56,22 +57,21 @@ import type { EntryDecision, Intent, Membership } from './session';
  * removed** ([§2](../../../CLAUDE.md), *a guard that cannot fail is
  * documentation pretending to be code*).
  *
- * ## ⛔ What this slice deliberately does NOT decide, and it is not an oversight
+ * ## ✅ Rules 12, 13 and 14 resolve now, and C-1522 is how they did not
  *
- * 🔴 **`lastUsedWorkspaceId` is passed as `null`, so rules 11-14 resolve on
+ * ⚠️ **`lastUsedWorkspaceId` was passed as `null`, so rules 11–14 resolved on
  * membership COUNT alone** — 📁 [C-1522](../../../docs/LANE_COORDINATION.md).
- * ⚡ **The fact exists**: `signora.activeWorkspaceId` in `localStorage`. ⛔ **Its
- * key is a private constant inside [`lib/state/workspace-provider.tsx`](../state/workspace-provider.tsx),
- * which is 🔴 frontend foundation** ([§20c](../../../CLAUDE.md)) — **and
- * re-declaring the string here would be two authoritative representations of
- * one fact** ([§2](../../../CLAUDE.md)), **which drift silently and leave the
- * engine reading a key nobody writes.**
+ * **The reasoning was right and the conclusion was temporary**: the key is a
+ * private constant inside [`lib/state/workspace-provider.tsx`](../state/workspace-provider.tsx),
+ * and re-declaring the string here would have been two authoritative
+ * representations of one fact ([§2](../../../CLAUDE.md)).
  *
- * ⚠️ **`activeWorkspace` from the provider is NOT the same fact and is not a
- * substitute**: it falls back to `workspaces[0]` when nothing is stored, so it
- * is never null while a membership exists — ⛔ **which would make rule 13
- * (`AMBIGUOUS`) unreachable and silently enter somebody's first workspace
- * instead of showing them the chooser the design specifies.**
+ * ✅ **The provider publishes a reader instead**, so the fact has one owner and
+ * one key. ⛔ **Not `activeWorkspace` from the provider** — that falls back to
+ * `workspaces[0]` when nothing is stored, so it is never null while a
+ * membership exists, **which would make rule 13 (`AMBIGUOUS`) unreachable and
+ * silently enter somebody's first workspace instead of showing them the chooser
+ * the design specifies.**
  */
 export type EntryState =
   /** ⚡ **Nothing is known yet.** ⛔ **Never routes.** */
@@ -104,7 +104,16 @@ export function useEntryDecision(): EntryState {
   }
 
   const workspaceIds = workspaces.data.items.map((w) => w.id);
-  const session = observedSession({ workspaceIds, lastUsedWorkspaceId: null });
+  /**
+   * ✅ **[C-1522](../../../docs/LANE_COORDINATION.md) is closed.** ⚡ **The
+   * provider that owns the key now publishes a reader**, so rules 12, 13 and 14
+   * resolve on the fact rather than on membership count alone — and there is
+   * still exactly one authoritative representation of where it is stored.
+   */
+  const session = observedSession({
+    workspaceIds,
+    lastUsedWorkspaceId: lastUsedWorkspaceId(),
+  });
 
   return {
     status: 'resolved',

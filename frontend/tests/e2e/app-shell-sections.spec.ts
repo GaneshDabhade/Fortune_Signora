@@ -22,7 +22,7 @@ import { expect, test, type Page } from './fixtures/signora';
  */
 async function settled(page: Page) {
   await expect(
-    page.getByRole('heading', { name: 'Attention', level: 1 }).or(page.getByRole('main')).first(),
+    page.getByTestId('home').or(page.getByRole('main')).first(),
   ).toBeVisible();
 }
 

@@ -895,7 +895,10 @@ export default function AccountBriefPage() {
 function BackToList() {
   return (
     <Link
-      href="/"
+      // ⚠️ **`/` is the shell's entry resolver now** — 📁 the Authenticated
+      // Entry document. ⛔ *Back* pointing at it would resolve a workspace and
+      // land on Home rather than returning a reader to the list they came from.
+      href="/attention"
       className="inline-flex w-fit items-center gap-1.5 rounded text-sm text-content-muted transition-colors hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
     >
       <ArrowLeft aria-hidden className="h-3.5 w-3.5" />

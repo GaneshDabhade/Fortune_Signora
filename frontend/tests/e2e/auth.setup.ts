@@ -22,7 +22,44 @@ async function signIn(page: import('@playwright/test').Page, persona: Persona) {
   // for every person who ever used this product, and nothing failed, because
   // nothing had ever signed in (B-304).
   await new SignInPage(page).signIn(persona);
-  await expect(page.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
+
+  /**
+   * ⚠️ **This asserted the Attention heading, and `/` no longer renders it.**
+   * 📁 The Authenticated Entry document owns what happens after sign-in, and
+   * this setup now walks its ladder as a customer does.
+   *
+   * 🔴 **The Playground personas belong to more than one organization and a
+   * fresh browser has no last-used**, which is 📁 **rule 13 exactly**: *"several
+   * memberships, no last-used → the chooser. **This is a first login with
+   * multiple memberships and nothing else**."*
+   *
+   * ⚡ **That rule was unreachable until `/` started resolving** — the screen
+   * that used to live there rendered regardless of how many organizations
+   * somebody belonged to.
+   *
+   * ✅ **So the setup chooses one, which is what a person does**, and choosing
+   * records the last-used — so every later entry in the suite takes 📁 rule 12
+   * (*"enter the last used"*) rather than the chooser again.
+   */
+  await page.waitForURL(/\/workspaces$|\/w\/[0-9a-f-]+\/home$/);
+  if (new URL(page.url()).pathname === '/workspaces') {
+    await expect(page.getByRole('heading', { name: 'Choose an organization' })).toBeVisible();
+    /**
+     * ⛔ **The Playground by name, never the first row.** Other specs create
+     * organizations — `business-setup` makes an *"E2E Org …"* on every run —
+     * and they sort ahead of it. **Choosing blindly would capture the session
+     * into an empty organization** and every downstream spec would fail
+     * looking for data that is in the other one.
+     */
+    const list = page.getByRole('list', { name: 'Your organizations' });
+    const playground = list.getByRole('button', { name: /Playground/ });
+    await ((await playground.count()) > 0 ? playground.first() : list.getByRole('button').first())
+      .click();
+  }
+
+  // 📁 **Rule 24's destination**, however the ladder reached it.
+  await page.waitForURL(/\/w\/[0-9a-f-]+\/home$/);
+  await expect(page.getByTestId('home')).toBeVisible();
   await page.context().storageState({ path: storageStatePath(persona.email) });
 }
 

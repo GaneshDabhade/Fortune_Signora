@@ -179,7 +179,7 @@ describe('every line narrows the list rather than reporting on it', () => {
 
     expect(screen.getByRole('link', { name: /worth verifying/i })).toHaveAttribute(
       'href',
-      '/?raises=verify',
+      '/attention?raises=verify',
     );
   });
 
@@ -192,7 +192,7 @@ describe('every line narrows the list rather than reporting on it', () => {
 
     expect(screen.getByRole('link', { name: /worth verifying/i })).toHaveAttribute(
       'href',
-      '/?owner=mine&raises=verify',
+      '/attention?owner=mine&raises=verify',
     );
   });
 
@@ -202,7 +202,7 @@ describe('every line narrows the list rather than reporting on it', () => {
       <TriageStrip groups={triage([account({ contested: true })])} active="verify" scope="all" />,
     );
 
-    expect(screen.getByRole('link', { name: /worth verifying/i })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: /worth verifying/i })).toHaveAttribute('href', '/attention');
   });
 
   it('tells a screen reader which question is in force', () => {
@@ -256,7 +256,7 @@ describe('a question the list no longer raises', () => {
 
     expect(screen.getByRole('link', { name: /show every account/i })).toHaveAttribute(
       'href',
-      '/',
+      '/attention',
     );
   });
 
@@ -265,7 +265,7 @@ describe('a question the list no longer raises', () => {
 
     expect(screen.getByRole('link', { name: /show every account/i })).toHaveAttribute(
       'href',
-      '/?owner=mine',
+      '/attention?owner=mine',
     );
   });
 });

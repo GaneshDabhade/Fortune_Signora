@@ -17,6 +17,34 @@ import { useInvalidateWorkspaceScope, useWorkspaces } from '@/lib/query/hooks';
 
 const ACTIVE_WORKSPACE_KEY = 'signora.activeWorkspaceId';
 
+/**
+ * 🔴 **The last workspace this browser was in, or `null`** — 📁 the
+ * Authenticated Entry document's rules **12, 13 and 14**: *"several
+ * memberships, last-used recorded and healthy → enter the last used"*, *"no
+ * last-used → the chooser"*, *"last-used unavailable → fall through and say
+ * why"*.
+ *
+ * ⚡ **Published because the entry engine needs the fact and must not
+ * re-declare the key.** 📁 [C-1522](../../../docs/LANE_COORDINATION.md) recorded
+ * the engine passing `null` for exactly this reason — *"re-declaring the string
+ * here would be two authoritative representations of one fact"* — ⛔ **which
+ * made rule 13 unreachable and rule 12 indistinguishable from rule 11.** ✅ **One
+ * owner, one key, one reader.**
+ *
+ * ⛔ **A HINT and never a grant.** The provider validates it against the
+ * membership list the API returned, `resolveWorkspace` validates it again, and
+ * the server re-verifies membership on every request regardless. **A tampered
+ * value selects nothing.**
+ *
+ * ⚠️ **`null` on the server.** There is no `window` during a render on the
+ * server, and *"nothing stored"* is the honest answer there — rule 13's case,
+ * which shows the chooser rather than guessing.
+ */
+export function lastUsedWorkspaceId(): string | null {
+  if (typeof window === 'undefined') return null;
+  return window.localStorage.getItem(ACTIVE_WORKSPACE_KEY);
+}
+
 interface WorkspaceContextValue {
   workspaces: Workspace[];
   activeWorkspace: Workspace | null;

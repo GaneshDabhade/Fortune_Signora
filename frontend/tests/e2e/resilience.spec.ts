@@ -71,7 +71,7 @@ test.describe('the browser, used the way people use it', () => {
     // A session that only worked in the tab that created it would strand
     // anybody who opens an account in a new tab — which is how a seller reads
     // two accounts side by side.
-    await expect(second.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
+    await expect(second.getByTestId('home')).toBeVisible();
     await second.close();
   });
 
@@ -100,7 +100,7 @@ test.describe('signing out', () => {
 
     const second = await context.newPage();
     await second.goto('/');
-    await expect(second.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
+    await expect(second.getByTestId('home')).toBeVisible();
 
     /**
      * 🔴 **[B-249](../../../docs/BUGS.md), third and fourth instances.** ⛔ **The

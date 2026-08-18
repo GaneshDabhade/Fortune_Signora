@@ -82,7 +82,7 @@ describe('no second copy of the list', () => {
     const { readFileSync } = await import('node:fs');
     const { join } = await import('node:path');
 
-    const page = readFileSync(join(process.cwd(), 'app', '(app)', 'page.tsx'), 'utf8');
+    const page = readFileSync(join(process.cwd(), 'app', '(app)', 'attention', 'page.tsx'), 'utf8');
 
     // **`ByStage` lives inside the page and renders `AccountRow`.** A separate
     // route rendering its own row component is the "second copy" C-229 refuses,
@@ -110,7 +110,7 @@ describe('no second copy of the list', () => {
     const { readFileSync } = await import('node:fs');
     const { join } = await import('node:path');
 
-    const page = readFileSync(join(process.cwd(), 'app', '(app)', 'page.tsx'), 'utf8');
+    const page = readFileSync(join(process.cwd(), 'app', '(app)', 'attention', 'page.tsx'), 'utf8');
     // **`STAGE_MARK` is imported, never restated.** A second table would be a
     // second vocabulary, and the copy is the one that drifts.
     expect(page).toMatch(/STAGE_MARK/);

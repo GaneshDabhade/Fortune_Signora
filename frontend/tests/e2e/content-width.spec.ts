@@ -34,7 +34,19 @@ function expectedWidth(containerWidth: number): number {
 }
 
 const SCREENS = [
-  { path: '/', name: 'Home' },
+  /**
+   * ⚠️ **`/attention`, and it was never Home.** 📁 The Authenticated Entry
+   * document gives `/` to the shell's resolver, so `/` no longer renders a
+   * product surface at all — **but this row measured the ATTENTION screen's
+   * reading column the whole time**, because that is what used to live there.
+   *
+   * ⛔ **Renaming it to Home would be worse than leaving it wrong.** 📁 Home is
+   * a card composition with its own cap (contract 21, *"content is capped at
+   * 1360px"*), **not the eight-of-twelve reading measure this file asserts** —
+   * `Columns` has exactly one consumer, `reading-column.tsx`, and Home is not
+   * it. **The row is corrected to name the screen it actually measures.**
+   */
+  { path: '/attention', name: 'Attention' },
   { path: '/business', name: 'Business' },
   { path: '/help', name: 'Help' },
   { path: '/settings', name: 'Settings' },

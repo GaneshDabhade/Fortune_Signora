@@ -46,6 +46,17 @@ import Link from 'next/link';
 import { cn } from '@/lib/design/cn';
 import { EmptyState } from '@/components/ui';
 import type { AccountAttention, AccountIdentity } from '@/lib/api/types';
+
+/**
+ * ⚠️ **The Attention screen moved from `/` to `/attention`** — 📁 the
+ * Authenticated Entry document gives `/` to the shell's resolver: *"entry
+ * resolution belongs to the shell, exclusively."* ⛔ **These links narrow the
+ * list a reader is already on**, so pointing them at `/` would now navigate
+ * them off it and into whichever workspace their entry resolves to.
+ *
+ * ⚡ **A literal, because `infra/reachability.py` reads static route strings.**
+ */
+const ATTENTION = '/attention';
 import { withScope, type OwnerScope } from '@/lib/state/owner-scope';
 import {
   RAISED_MEANING,
@@ -82,7 +93,7 @@ export function TriageStrip({ groups, active, scope, identities }: TriageStripPr
     return null;
   }
 
-  const base = withScope('/', scope);
+  const base = withScope(ATTENTION, scope);
 
   return (
     <nav aria-label="What these accounts are raising" className="flex flex-col gap-0.5">
@@ -174,7 +185,7 @@ export function NothingRaises({ raised, scope }: { raised: Raised; scope: OwnerS
       description="The evidence has moved since this view was opened."
       action={
         <Link
-          href={withScope('/', scope)}
+          href={withScope(ATTENTION, scope)}
           className="text-sm font-medium text-accent hover:text-accent-hover"
         >
           Show every account

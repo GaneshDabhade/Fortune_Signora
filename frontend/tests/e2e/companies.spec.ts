@@ -37,7 +37,7 @@ test.describe('a seller reaches their whole book', () => {
    */
   test('🔴 the rail leads there, which is what C-229 was about', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
+    await expect(page.getByTestId('home')).toBeVisible();
 
     await page
       .getByRole('navigation', { name: 'Primary' })

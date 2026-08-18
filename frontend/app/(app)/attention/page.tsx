@@ -43,12 +43,37 @@ import {
 import { STANDING_WORDS, standingFrom, withStanding } from '@/lib/state/standing';
 import { raisedFrom, raises, triage } from '@/lib/state/triage';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
-import { ReadingColumn } from './reading-column';
+import { ReadingColumn } from '../reading-column';
 
 /**
- * The morning workspace — *"which accounts should I work on today?"*
+ * ⚡ **This screen's own address, stated once.**
  *
- * **This is `/`.** It replaced an Overview page that promised an integration
+ * 📁 `infra/reachability.py` reads **static route strings**, so this is a
+ * literal rather than a template — and the scope and arrangement links below
+ * carry it so a filter never navigates a reader off the screen they are
+ * filtering.
+ */
+const ATTENTION = '/attention';
+
+/**
+ * ⚡ **This route is `/attention`. It used to be `/`, and `/` is the entry
+ * resolver now.**
+ *
+ * 📁 **The Authenticated Entry document, rule 24 and the resolution ladder:**
+ * *"Every authenticated person lands on `/w/:workspace/home`"*, and *"entry
+ * resolution belongs to the shell, exclusively."* ⛔ **`/` rendering a product
+ * surface meant the shell's own resolver — [`lib/entry`](../../../lib/entry),
+ * twenty-four rules, fully built and tested — **had one production caller and
+ * it was onboarding's exit.** ✅ **`/` calls it now**, and this screen keeps
+ * its own address.
+ *
+ * ⚠️ **No design document names this screen, or an entrance to it** —
+ * 📁 [C-1532](../../../../docs/LANE_COORDINATION.md) asks whether it survives
+ * now that Home answers the same question from the design's own contract.
+ * ⛔ **Moved rather than deleted**: retiring a shipped surface is a product
+ * decision, and this slice's job was the resolver.
+ *
+ * The morning workspace — *"which accounts should I work on today?"* It replaced an Overview page that promised an integration
  * capability a milestone away and showed three permanently-empty counters,
  * reviewed from first principles and retired at M12.3 (**D38**). A seller's
  * first screen should be their morning's work rather than a dashboard about
@@ -271,7 +296,7 @@ export default function AttentionPage() {
                 // **Carries the arrangement.** Changing whose work you are
                 // looking at must not silently rearrange the list — that is
                 // two changes from one click, and the seller made one.
-                href={withStanding('/', one, standing)}
+                href={withStanding(ATTENTION, one, standing)}
                 aria-current={one === scope ? 'page' : undefined}
                 className={
                   one === scope
@@ -291,7 +316,7 @@ export default function AttentionPage() {
             {(['flat', 'stage'] as const).map((one) => (
               <Link
                 key={one}
-                href={withStanding('/', scope, one)}
+                href={withStanding(ATTENTION, scope, one)}
                 aria-current={one === standing ? 'page' : undefined}
                 className={
                   one === standing
@@ -655,7 +680,7 @@ function Quiet({
             ? 'Nothing on your list is held by you. Other accounts may still need attention — this view is showing only yours.'
             : 'Nobody has left an account unclaimed. This view is showing only accounts nobody has taken on.'
         }
-        action={<Link href="/">Show everything</Link>}
+        action={<Link href={ATTENTION}>Show everything</Link>}
       />
     );
   }

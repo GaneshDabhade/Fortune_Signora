@@ -104,7 +104,35 @@ describe('🔴 P-A — a failed read must never render as an empty result', () =
   });
 });
 
+/**
+ * ⚡ **Routes whose `loading.tsx` correctly renders NOTHING**, each with the
+ * design sentence that says so.
+ *
+ * ⛔ **An allowlist, not a widened matcher.** A guard that accepted *"a skeleton
+ * OR anything marked busy"* would accept an empty boundary on any data route,
+ * which is the case this whole file exists to catch. **Naming the exception
+ * keeps the rule strict and makes the exception reviewable** — the same shape
+ * `infra/reachability.py` already uses for a route with no entrance.
+ */
+const NO_SHAPE_TO_SHOW: Readonly<Record<string, string>> = {
+  // ⚠️ **The key is the DIRECTORY label this file computes**, and a route
+  // group keeps its parentheses: `app/(app)/page.tsx` serves `/`.
+  '/(app)':
+    'the entry resolver renders no product UI at all — 📁 the Authenticated ' +
+    'Entry document: "enter it. No confirmation, no picker, no interstitial." ' +
+    'A skeleton on the way to a redirect IS an interstitial, and it would ' +
+    'flash on every sign-in. Its boundary is an aria-busy live region so a ' +
+    'screen-reader user hears that something is happening.',
+};
+
 describe('⛔ a skeleton is not an empty state', () => {
+  it('⚡ every declared exception is a route that still exists', () => {
+    // ⛔ **A declaration for a route that has been deleted or renamed is a
+    // permanent hole nobody notices.**
+    const labels = READING.map((d) => d.replace(APP, '') || '/');
+    expect(Object.keys(NO_SHAPE_TO_SHOW).filter((r) => !labels.includes(r))).toEqual([]);
+  });
+
   it.each(READING.map((d) => [d.replace(APP, '') || '/', d]))(
     '✅ %s\'s loading.tsx renders a skeleton and claims nothing',
     (_label, dir) => {
@@ -116,8 +144,20 @@ describe('⛔ a skeleton is not an empty state', () => {
        * thing to render at this moment.
        */
       const source = readFileSync(join(dir as string, 'loading.tsx'), 'utf8');
-      expect(source).toMatch(/Skeleton/);
+      /**
+       * ✅ **The half that binds every route**: the boundary must not assert
+       * emptiness. ⛔ **Never relaxed, and not relaxed for the exception
+       * below** — it is the property P-A is actually about.
+       */
       expect(source).not.toMatch(/<EmptyState|Nothing here|No results/);
+
+      if (_label in NO_SHAPE_TO_SHOW) {
+        // ⚡ **A declared exception still has to be a real loading boundary**,
+        // so it must say it is busy rather than simply render nothing.
+        expect(source).toMatch(/aria-busy/);
+        return;
+      }
+      expect(source).toMatch(/Skeleton/);
     },
   );
 });

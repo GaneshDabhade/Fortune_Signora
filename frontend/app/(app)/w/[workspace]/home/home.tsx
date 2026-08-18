@@ -203,7 +203,25 @@ export function Home() {
      * column at any breakpoint** — §09's responsive laws and contract item 21.
      * ⚡ *"Surplus width becomes margin, not a third column."*
      */
-    <main className="mx-auto flex w-full max-w-[85rem] flex-col gap-4" data-testid="home" data-composition={composition}>
+    /**
+     * 🔴 **A `<div>`, not a second `<main>`.**
+     *
+     * ⚠️ **This rendered `<main>` and the App Shell already renders one** —
+     * `<main id="shell-content">`, 📁 the App Shell document's *"the content
+     * region. Receives focus on route change."* ⛔ **Two `main` landmarks in one
+     * document is invalid**, and a screen reader offering *"main, 1 of 2"* is
+     * the opposite of the single landmark 1.3.1 asks for.
+     *
+     * ✅ **📁 Home's *"Home is one `<main>` with an h1 naming the workspace"* is
+     * SATISFIED, by the shell's.** ⚡ The two documents are not in conflict —
+     * the shell owns the content region and Home fills it, which is 📁 Home's
+     * own reconciliation: *"no second shell. Home occupies the content region
+     * only."*
+     *
+     * 🔴 **Found by a browser, in `cold-boot-frame.spec.ts`**, which resolved
+     * `main` to two elements the moment `/` started landing here.
+     */
+    <div className="mx-auto flex w-full max-w-[85rem] flex-col gap-4" data-testid="home" data-composition={composition}>
       {/* 📁 Hierarchy 1 and 2. ⚠️ The continuity offer is Session Continuity's
           and has no producer; the source strip is states 10 and 11. */}
       <SourceStrip systems={systems} loading={resolving} />
@@ -299,7 +317,7 @@ export function Home() {
           })}
         </div>
       )}
-    </main>
+    </div>
   );
 }
 
