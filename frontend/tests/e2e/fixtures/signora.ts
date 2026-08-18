@@ -27,6 +27,7 @@ import { type Persona } from './personas';
 import { AccountsPage } from '../pages/accounts';
 import { BriefPage } from '../pages/brief';
 import { BusinessPage } from '../pages/business';
+import { HomePage } from '../pages/home';
 import { SettingsPage } from '../pages/settings';
 import { SignInPage } from '../pages/signin';
 
@@ -42,6 +43,7 @@ export interface ConsoleEvidence {
 export interface SignoraFixtures {
   console: ConsoleEvidence;
   signIn: (persona: Persona) => Promise<void>;
+  home: HomePage;
   accounts: AccountsPage;
   brief: BriefPage;
   settings: SettingsPage;
@@ -94,6 +96,7 @@ export const test = base.extend<SignoraFixtures>({
     await use((persona: Persona) => signInPage.signIn(persona));
   },
 
+  home: async ({ page }, use) => use(new HomePage(page)),
   accounts: async ({ page }, use) => use(new AccountsPage(page)),
   brief: async ({ page }, use) => use(new BriefPage(page)),
   settings: async ({ page }, use) => use(new SettingsPage(page)),

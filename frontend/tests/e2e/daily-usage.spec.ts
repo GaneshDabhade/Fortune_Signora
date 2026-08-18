@@ -117,11 +117,11 @@ test.describe('the morning list', () => {
 
 test.describe('from the list to the account', () => {
   test('@smoke @journey opening an account explains its score', async ({
-    accounts,
+    home,
     brief,
   }) => {
-    await accounts.open();
-    const name = await accounts.openFirstAccount();
+    await home.open();
+    const opened = await home.openFirstRankedAccount();
 
     await brief.waitForScore();
     await expect(brief.whatContributed).toBeVisible();
@@ -129,16 +129,16 @@ test.describe('from the list to the account', () => {
     // that opened the wrong brief is invisible on the row and catastrophic in
     // a pipeline review.
     await expect(brief.backToList).toBeVisible();
-    expect(name.length).toBeGreaterThan(0);
+    expect(brief.accountId()).toBe(opened);
   });
 
   test('@journey the score can be traced to the evidence behind it', async ({
-    accounts,
+    home,
     brief,
     page,
   }) => {
-    await accounts.open();
-    await accounts.openFirstAccount();
+    await home.open();
+    await home.openFirstRankedAccount();
     await brief.waitForScore();
 
     await brief.openFirstCitation();
@@ -155,12 +155,12 @@ test.describe('from the list to the account', () => {
   });
 
   test('@journey the account carries a history of what has happened', async ({
-    accounts,
+    home,
     brief,
     page,
   }) => {
-    await accounts.open();
-    await accounts.openFirstAccount();
+    await home.open();
+    await home.openFirstRankedAccount();
     await brief.waitForScore();
 
     /**
@@ -206,8 +206,15 @@ test.describe('from the list to the account', () => {
      * account with no open opportunity has no neighbours to offer. ⛔ **A page
      * object that quietly picked a scored row would have hidden that.**
      *
-     * ✅ **Home's `card.attention` reads the same population**, so an account
-     * opened from there is in the sequence by construction.
+     * ⚠️ **Home's card is NOT the same list, and the earlier note here said it
+     * was.** 📁 `card.attention` reads the **triage queue** — open signals,
+     * ranked by what ignoring them costs — and one account may hold three of
+     * them, so five items can be three accounts. 📁 The sequence reads
+     * `opportunity_engine`'s attention list, which is **accounts with an open
+     * opportunity**. ✅ **They overlap because an account earns an opportunity
+     * from the same evidence that raises its signals**, which is why entering
+     * from Home works — but *"by construction"* overstated it, and the
+     * assertion below is what actually holds it.
      */
     await page.goto('/');
     await page.waitForURL(/\/w\/[0-9a-f-]+\/home$/, { timeout: 30_000 });
@@ -221,7 +228,13 @@ test.describe('from the list to the account', () => {
     // they have finished reading.
     await expect(brief.backToList).toBeVisible();
     await page.keyboard.press('End');
+    // ⚠️ **`count()` does not auto-wait**, and the sequence renders on a query
+    // that is still in flight when the score lands — 📁 *"it costs no request"*
+    // only once `useAccounts` has resolved. ⛔ Counting immediately reported
+    // *the brief offers nowhere to go* on a page that was about to offer two,
+    // which is a flake that reads as a product defect.
     const sequence = page.locator('main a[href^="/accounts/"]');
+    await expect(sequence.first()).toBeVisible({ timeout: 20_000 });
     expect(await sequence.count()).toBeGreaterThan(0);
   });
 
@@ -233,7 +246,12 @@ test.describe('from the list to the account', () => {
     await accounts.open();
     const before = await accounts.names();
     await accounts.openFirstAccount();
-    await brief.waitForScore();
+    // ⚠️ **Not `waitForScore()`.** ⛔ Companies is the whole book in the book's
+    // own order, so its first row is whichever account sorts first — and the
+    // Playground's is one no provider has scored, which is a designed state
+    // and not a failure. 📁 The claim under test is *back returns to the list
+    // with the list intact*, so what this must wait for is a brief on screen.
+    await expect(brief.backToList).toBeVisible({ timeout: 20_000 });
 
     await page.goBack();
     await expect(accounts.heading).toBeVisible();
@@ -242,13 +260,12 @@ test.describe('from the list to the account', () => {
   });
 
   test('@regression a brief opened by its address alone works', async ({
-    accounts,
+    home,
     brief,
     page,
   }) => {
-    await accounts.open();
-    await accounts.openFirstAccount();
-    const id = brief.accountId();
+    await home.open();
+    const id = await home.openFirstRankedAccount();
 
     // A deep link is how a seller shares an account with their manager. It
     // must not depend on having arrived from the list.
@@ -259,12 +276,12 @@ test.describe('from the list to the account', () => {
   });
 
   test('@regression reloading a brief does not lose it', async ({
-    accounts,
+    home,
     brief,
     page,
   }) => {
-    await accounts.open();
-    await accounts.openFirstAccount();
+    await home.open();
+    await home.openFirstRankedAccount();
     await brief.waitForScore();
 
     await page.reload();

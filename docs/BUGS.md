@@ -100,6 +100,67 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-284 · 🟠 An owner of a workspace with more than 50 members is told they are not one, and the product locks them out of Settings
+
+| | |
+|---|---|
+| **Module** | `workspace_tenancy` — `frontend/lib/query/hooks/team.ts:80` (`useViewerRole`), against `GET /workspaces/{id}/members` |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — `workspace_tenancy`, **Lane A** |
+| **Severity** | 🟠 · ⛔ **Not a regression from the current candidate.** `useViewerRole` has read one page since it was written; **what changed is that a workspace crossed 50 members** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-18 by Lane A**, verifying **B-1022**'s fix in a browser — two `resilience` journeys failed on a screen that had nothing to do with the fix. ⚠️ **B-1022 is QE's row and is not on this branch yet**, so it is named rather than linked |
+
+**The defect.** `useViewerRole` answers *"what is the signed-in person's role here?"* by fetching the members list and searching it:
+
+```ts
+const { data } = useWorkspaceMembers(workspaceId);   // CursorPage<Membership>
+const mine = data.items.find((member) => member.user_id === viewerId);
+return { role: mine?.role ?? null, resolved: true };
+```
+
+⛔ **`CursorPage` is one page.** 📁 `DEFAULT_PAGE_LIMIT` is **50** (`signora_platform/pagination.py:25`) and the listing is ordered **`created_at DESC`** (`modules/workspace_tenancy/infrastructure/repositories.py:114`) — **newest member first**. ⚡ **So the 51st-oldest member is not on the page, and their own role resolves to `null`.**
+
+⚠️ **`resolved` is `true`**, which is what makes it visible rather than merely wrong: 📁 the rail locks only on a **resolved** denial ([B-253](#b-253)'s rule), so this is read as *"resolved, and this person is not a member"* — the one answer that produces a lock.
+
+**What a customer sees.** The rail draws *"Settings — restricted. Requires an owner."* to the workspace's owner, `RouteGuard` refuses `/settings/*`, and navigating there lands on Home. **The server would have allowed every one of those requests** — 📁 §20c, *"this check is presentational… never enforcement"* — so nothing is insecure; **the product simply refuses its owner their own screens.**
+
+**Measured, on `lane-a` at 5732**, workspace `84930338` (`Playground`), 57 members:
+
+| | |
+|---|---|
+| Members | **57** — 54 `owner`, 3 `member` |
+| Page limit | **50** |
+| `dana.reyes@northwind.example` (declared `owner` in [`infra/demo-users.json`](../infra/demo-users.json)) | **position 51** under `created_at DESC, id DESC` |
+| Membership row in the database | `owner` ✅ |
+| Rail | *"Settings — restricted. Requires an owner."* ⛔ |
+
+```sql
+WITH ranked AS (
+  SELECT m.user_id, row_number() OVER (ORDER BY m.created_at DESC, m.id DESC) AS pos
+  FROM membership m WHERE m.workspace_id = '84930338-…')
+SELECT r.pos, u.email FROM ranked r JOIN auth."user" u ON u.id = r.user_id::text
+WHERE u.email LIKE 'dana%';
+→ 51 | dana.reyes@northwind.example
+```
+
+**Why it appeared today and not before.** ⚡ **`created_at DESC` means every newly registered user pushes the existing ones down.** 📁 `tests/playground/seed.py:_enrol_everyone` adds *every* signed-in user to the seeded workspace, and the browser suite mints a fresh account on many of its runs — so the Playground's membership grows by a few on every cycle and the demo personas sink. **They crossed the boundary between this morning's run and this afternoon's**, which is why `resilience` passed at 09:00 and failed at 15:00 with no frontend change between them.
+
+⛔ **The seeder is not the defect and must not be "fixed" to hide it.** **Enrolling fewer users would restore the tests and leave a customer with 51 colleagues locked out of their own Settings.** ✅ **The membership growth is a separate hygiene question and it belongs to [B-282](#b-282)** — one database shared by the suite and the demonstration.
+
+**What it blocks.** **Five certification journeys**, every one of which reaches an owner's Settings — ⚠️ **measured spec-by-spec in isolation, not inferred from a suite run**:
+
+| Spec | Journey |
+|---|---|
+| `resilience` | `@regression the active organization survives a reload` |
+| `resilience` | `@regression saving a product twice does not create two` |
+| `confidence` | `@journey a session that ends mid-edit does not silently swallow the work` |
+| `confidence` | `@journey a change in one tab is visible in the other after a refresh` |
+| `confidence` | `@regression two tabs never disagree about who is signed in` |
+
+⚡ **Three of them never mention Settings.** They open *"Your business"*, which is `/settings/products` — 📁 the customer's own words for a screen the shell files under the restricted prefix. **That is why this reads as five unrelated failures rather than one cause.**
+
+**Suggested shape, not a decision.** The viewer's own role is a fact about **one** membership and should not be read out of a page of others. Either a scoped read (`GET /workspaces/{id}/members/me`, RLS- and Casbin-scoped exactly as the list is) or the role carried on the workspace the shell has already resolved. ⛔ **Paging until found is not a fix** — it makes the shell's first paint depend on how many colleagues a customer has.
+
 ### B-1012 · 🟡 A claim commit's replacement kept the tail of the cell it replaced, and two superseded blockers now read as live
 
 | | |

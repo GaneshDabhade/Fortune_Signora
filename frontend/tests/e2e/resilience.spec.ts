@@ -35,14 +35,20 @@ test.describe('the browser, used the way people use it', () => {
     await accounts.open();
     await accounts.openFirstAccount();
     const url = page.url();
-    await brief.waitForScore();
+    // ⚠️ **Not `waitForScore()`.** 📁 Companies is the whole book in the book's
+    // own order, and *"a Signora score is not on this list yet"* — so its first
+    // row is whichever account sorts first, and the Playground's is one no
+    // provider has scored. ⛔ That is a designed state, not a failure. 📁 The
+    // claim here is *forward after back returns to the account*, so what must
+    // be on screen either side of the journey is the brief.
+    await expect(brief.backToList).toBeVisible({ timeout: 20_000 });
 
     await page.goBack();
     await expect(accounts.heading).toBeVisible();
     await page.goForward();
 
     await expect(page).toHaveURL(url);
-    await brief.waitForScore();
+    await expect(brief.backToList).toBeVisible({ timeout: 20_000 });
   });
 
   test('@regression the active organization survives a reload', async ({

@@ -55,9 +55,16 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import UUID
 
+from cryptography.fernet import Fernet
+from pydantic import ValidationError
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
+from modules.integrations.application.connect import ConnectInput
+from modules.integrations.domain.grant import Credential
+from modules.integrations.infrastructure.composition import build_connect_system
+from modules.integrations.infrastructure.settings import IntegrationSettings
+from signora_platform.db import tenant_scoped_session
 from signora_platform.simulation import dataset as dataset_module
 from tests.conftest import (
     DEFAULT_ADMIN_DATABASE_URL,
@@ -69,6 +76,34 @@ from tests.pipeline import sweep_stale
 
 SCENARIO = ("playground", 4)
 WORKSPACE_NAME = "Playground"
+
+CRM = "hubspot"
+"""The system this workspace has connected.
+
+**B-1022.** Every stage of the pipeline ran here and no connection was ever
+recorded, so the workspace held twelve accounts, their signals, their scores
+and their opportunities while `connected_account` was empty. Home reads rule 1
+of its composition contract — *"a workspace with no connected source cannot
+render a data composition"* — and correctly answered *"How do I begin?"* to a
+customer holding a complete book of intelligence.
+
+**The rule is right and the fixture was wrong.** A book of accounts arrives
+from a customer's own system; a workspace that has one and has connected
+nothing is a state no customer can be in. Seeding the connection makes the
+demonstration a state somebody could actually reach, which is the only thing a
+demonstration is for.
+
+⛔ **Not fixed by relaxing `neverSynced`, and not by teaching the journeys to
+accept the activation composition.** The first makes the product's own
+activation rule untestable; the second deletes the only coverage Home's seller
+composition has.
+
+**HubSpot rather than Salesforce** because the catalog says so — *"HubSpot is
+the first CRM, and Salesforce is the second"* — and **one rather than several**
+because the seeded narrative carries no meetings and no email engagement. A
+connected calendar with nothing behind it would be the demonstration promising
+a capability its own data cannot show.
+"""
 
 HORIZON = timedelta(days=150)
 """How far back the narrative begins.
@@ -160,6 +195,86 @@ async def _enrol_everyone(
             )
         await session.commit()
         return len(users)
+
+
+def _integration_settings() -> IntegrationSettings:
+    """The key that encrypts the connection's credential.
+
+    **Read from the environment, exactly as the API reads it.** `secret_key` is
+    deliberately undefaulted — *"a default here would ship a known key, which is
+    worse than no encryption because it reads as protection"* — and a seeder is
+    no more entitled to invent one than the product is.
+
+    **A run with none configured still seeds**, with a key generated for the
+    run and said out loud. The alternative is refusing to seed at all over a
+    variable no part of local development currently sets, which would take
+    `make demo-seed` away from everyone to protect a credential that is the
+    literal bytes `playground`. What the mismatch costs is bounded and stated:
+    an API holding a different key reports this credential undecryptable, so
+    *probing or disconnecting* the seeded connection fails. Nothing else does —
+    the connection's existence, state and health are records rather than
+    secrets, which is why the Connection Center and Home read it either way.
+    """
+    try:
+        return IntegrationSettings()
+    except ValidationError:
+        print(
+            "SIGNORA_INTEGRATIONS_SECRET_KEY is not set — encrypting the "
+            "Playground's credential with a key generated for this run.\n"
+            "            The connection is real and reads as connected. Probing "
+            "or disconnecting it from an\n            API configured with a "
+            "different key will report the credential undecryptable, which is true."
+        )
+        return IntegrationSettings(secret_key=Fernet.generate_key().decode())
+
+
+async def _connect_the_crm(
+    factory: async_sessionmaker[AsyncSession],
+    workspace_id: UUID,
+    user_id: UUID,
+    *,
+    at: datetime,
+) -> None:
+    """Record that this workspace has a source, **through the use case**.
+
+    No insert. `ConnectSystem` walks its own lifecycle — `AUTHORIZING` before
+    `CONNECTED`, material before grant, grant before the final transition — and
+    a seeder that wrote the end state directly would produce a row the product
+    cannot reproduce and the disconnect path cannot unwind. Same rule the rest
+    of this module follows for the pipeline (`CLAUDE.md` §20e, *test data*).
+
+    **`at` is the story's beginning, not wall-clock now.** `connected_at` is
+    what the Connection Center reads back, and a workspace holding five months
+    of synced evidence that reports *connected today* is telling a reviewer two
+    incompatible things about the same afternoon.
+
+    **`external_account_id` is a fixed string**, because determinism here means
+    *same inputs, same outputs* and a `uuid4()` would make two runs on one day
+    differ in a column the unique index is keyed on. The Playground's portal is
+    the Playground's.
+    """
+    async with tenant_scoped_session(
+        factory, workspace_id=workspace_id, user_id=user_id
+    ) as session:
+        await build_connect_system(session, _integration_settings()).execute(
+            ConnectInput(
+                workspace_id=workspace_id,
+                actor_id=user_id,
+                integration=CRM,
+                external_account_id="playground",
+                # The customer's own name for the relationship. Theirs to
+                # choose, so the seeder picks one a reviewer will recognise
+                # rather than repeating the vendor's name back at them.
+                label="Playground CRM",
+                endpoint=None,
+                credential=Credential(kind="bearer", material=b"playground"),
+                scopes=("crm.objects.companies.read",),
+                expires_at=None,
+                refreshable=True,
+            ),
+            at=at,
+        )
+        await session.commit()
 
 
 def _app_url() -> str:
@@ -304,6 +419,12 @@ async def main() -> int:
             anchor=subjects[0],
         )
 
+        # **Before the sweep and after the pipeline**, which is the only order
+        # the workspace can be assembled in: `_tracked` creates it, and a
+        # connection cannot precede the thing it belongs to. Dated at the
+        # story's beginning so the record reads the way it would have happened.
+        await _connect_the_crm(factory, workspace_id, user_id, at=today - HORIZON)
+
         examined, rescored = await sweep_stale(
             factory, workspace_id, user_id, moment=today - LAST_SWEEP
         )
@@ -324,6 +445,7 @@ async def main() -> int:
 
         print(f"\nworkspace   {workspace_id}")
         print(f"accounts    {opportunities} qualified opportunities")
+        print(f"source      {CRM} connected {HORIZON.days} days ago")
         print(f"re-scored   {rescored} of {examined} readings had aged since they were opened")
         app_url = _app_url()
         if enrolled:
