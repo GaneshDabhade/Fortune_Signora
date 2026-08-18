@@ -15,6 +15,7 @@ import { AttentionCard } from '@/components/home/attention-card';
 import { FirstRunOverlay } from '@/components/home/first-run-overlay';
 import { CompositionSwitcher } from '@/components/home/composition-switcher';
 import { HomeGreeting } from '@/components/home/greeting';
+import { IntegrationHealthCard } from '@/components/home/integration-health-card';
 import { PipelineHealthCard } from '@/components/home/pipeline-health-card';
 import { TopOpportunitiesCard, TopRisksCard } from '@/components/home/posture-cards';
 import { SourceStrip } from '@/components/home/source-strip';
@@ -408,6 +409,7 @@ const RENDERERS: Readonly<Partial<Record<CardContract['id'], () => React.ReactEl
   Object.freeze({
     'needs-you-today': AttentionCard,
     'pipeline-health': PipelineHealthCard,
+    'integration-health': IntegrationHealthCard,
     // 📁 The Executive composition's two ranked lists, partitioned from one
     // queue by the posture the Buying Score Engine publishes.
     'top-risks': TopRisksCard,

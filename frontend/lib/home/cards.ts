@@ -268,6 +268,15 @@ export const REGISTRY: readonly CardContract[] = [
    * `posture` per type and published on `GET /workspaces/{id}/scoring-model` —
    * **the module named below is the one that owns it.**
    */
+  /**
+   * ✅ **`card.inthealth`** — 📁 *"per-connection state"*, whose dependency
+   * `integrations.health` is served today by `GET /workspaces/{id}/integrations`.
+   *
+   * ⛔ **The registry's *"including held write queues"* is NOT implemented** —
+   * no write-queue concept exists in `integrations` and the design defines
+   * none. **The clause is outstanding, not invented.**
+   */
+  { id: 'integration-health', title: 'Integration health', module: 'integrations', requires: null },
   { id: 'top-risks', title: 'Top risks', module: 'signal_engine', requires: null },
   { id: 'top-opportunities', title: 'Top opportunities', module: 'signal_engine', requires: null },
 ];
