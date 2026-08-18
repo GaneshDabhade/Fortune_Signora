@@ -193,17 +193,48 @@ export function AttentionCard() {
                  stop after the heading"*, and the mock fills only the first row's
                  button. */
               lead={index === 0}
+              /**
+               * 🔴 **The phone's cut list** — 📁 the 390 × 844 viewport: *"briefing,
+               * then **three attention items**, then **a link to the rest**."*
+               *
+               * ⛔ **CSS rather than a viewport hook**, deliberately. ⚡ A hook
+               * reads the width after hydration, so the first paint would show
+               * five rows and then drop two — 📁 §09's *"nothing reflows when
+               * data lands"* applied to layout rather than to data.
+               *
+               * ⚠️ **The boundary is the repository's own phone floor** —
+               * `tailwind.config.ts` declares *"`phone` is the <640 floor"*, and
+               * the design's tablet-portrait row keeps *"full order retained;
+               * nothing is cut"* from 768 up. **640–767 is undefined by the
+               * design; the repository's floor is what decides it.**
+               */
+              hiddenOnPhone={index >= PHONE_MAX}
               name={names.data?.get(entry.entity_id)?.name ?? null}
               type={catalog.data?.get(entry.signal_type) ?? null}
               posture={postures.data?.get(entry.signal_type) ?? null}
               value={commercials.data?.get(entry.entity_id)?.open_acv ?? null}
             />
           ))}
-          {/* 📁 ***"A sixth becomes 'See all 8 in Signals'."*** */}
-          {entries.length > MAX ? (
+          {/**
+           * 📁 ***"A sixth becomes 'See all 8 in Signals'."*** — and 📁 the phone's
+           * *"then a link to the rest"*.
+           *
+           * ⚡ **The count is the WHOLE queue either way**, so one element serves
+           * both bands: what changes is when it is shown. ⛔ **A fourth item
+           * hidden on a phone with no link would be a cut**, which is the one
+           * thing the design's responsive law forbids — *"cards are never shrunk
+           * below their legible minimum; they are **moved or replaced by a
+           * link**."*
+           */}
+          {entries.length > PHONE_MAX ? (
             <Link
               href="/signals"
-              className="block border-b border-border-soft px-[18px] py-3 text-[12.5px] font-semibold text-accent hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
+              className={cn(
+                'border-b border-border-soft px-[18px] py-3 text-[12.5px] font-semibold text-accent hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent',
+                // ⚡ **Above the phone floor the link is the design's sixth-item
+                // rule**; at or below it, it stands in for rows four and five.
+                entries.length > MAX ? 'block' : 'block phone:hidden',
+              )}
             >
               See all {entries.length} in Signals
             </Link>
@@ -217,8 +248,10 @@ export function AttentionCard() {
   );
 }
 
-/** 📁 ***"Maximum five items."*** */
+/** 📁 ***"Maximum five items."*** — the 1440 reference viewport. */
 const MAX = 5;
+/** 📁 ***"Briefing, then THREE attention items, then a link to the rest"*** — 390. */
+const PHONE_MAX = 3;
 
 /**
  * 📁 **One row** — *"left rule, account, tag, value, the reason, one action."*
@@ -229,6 +262,7 @@ const MAX = 5;
 function Item({
   entry,
   lead,
+  hiddenOnPhone,
   name,
   type,
   posture,
@@ -236,6 +270,8 @@ function Item({
 }: {
   entry: QueueEntry;
   lead: boolean;
+  /** 📁 **The 390 viewport's cut list** — rows four and five give way to a link. */
+  hiddenOnPhone: boolean;
   name: string | null;
   type: SignalTypeName | null;
   posture: Posture | null;
@@ -247,6 +283,7 @@ function Item({
     <div
       className={cn(
         'flex flex-wrap items-start gap-x-3 gap-y-2.5 border-b border-l-2 border-border-soft px-[18px] py-[15px]',
+        hiddenOnPhone && 'hidden phone:flex',
         tone === 'risk'
           ? 'border-l-danger'
           : tone === 'warn'
@@ -294,7 +331,20 @@ function Item({
       <Link
         href={`/accounts/${entry.entity_id}`}
         className={cn(
-          'inline-flex h-[31px] flex-none items-center rounded-md px-3 text-[12.5px] font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+          'inline-flex items-center rounded-md px-3 text-[12.5px] font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+          /**
+           * 🔴 **The phone's row anatomy** — 📁 the 390 viewport: *"attention
+           * items become full-width rows with the action as a **44px full-width
+           * button beneath the reason**."*
+           *
+           * ⚡ **And `2.5.8` requires it independently**: *"on mobile every
+           * primary action is 44px tall."* ⛔ 31px is the desktop control height
+           * and is below the touch minimum.
+           *
+           * ✅ **`flex-wrap` on the row already puts it beneath**; what was
+           * missing is the width and the height.
+           */
+          'h-11 w-full justify-center phone:h-[31px] phone:w-auto phone:flex-none phone:justify-start',
           lead
             ? 'border border-accent bg-accent text-accent-contrast hover:bg-accent-hover'
             : 'border border-border text-content hover:border-accent hover:text-accent',

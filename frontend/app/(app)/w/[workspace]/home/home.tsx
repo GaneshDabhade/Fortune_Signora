@@ -287,7 +287,32 @@ function HomeContent() {
      * 🔴 **Found by a browser, in `cold-boot-frame.spec.ts`**, which resolved
      * `main` to two elements the moment `/` started landing here.
      */
-    <div className="mx-auto flex w-full max-w-[85rem] flex-col gap-4" data-testid="home" data-composition={composition}>
+    <div
+      /**
+       * 📁 **The design's six viewports**, and only the widths Home owns.
+       *
+       * | Viewport | Design | Here |
+       * |---|---|---|
+       * | 390 Phone | *"1 col · 16px gutter"* | ✅ one column; ⚠️ **the gutter is the shell's `p-4`** |
+       * | 768 Tablet portrait | *"1 col · 20px gutter · **max 720px***" | ✅ `max-w-[45rem]`; ⚠️ **gutter is the shell's `p-6`** |
+       * | 1024 Tablet landscape | *"2 col · **1.4fr / 1fr**"* | ✅ `smalllaptop:` |
+       * | 1280 Laptop | *"2 col · 1.45fr / 1fr · 14px gap"* | ✅ `laptop:`, `gap-3.5` |
+       * | 1440 Desktop | *"content 1360px"* | ✅ `max-w-[85rem]` |
+       * | 1600 Wide | *"surplus width becomes margin, not a third column"* | ✅ same cap |
+       *
+       * ⚠️ **The gutters are the App Shell's and Home does not override them.**
+       * 📁 Home's own reconciliation says *"no second shell. Home occupies the
+       * content region only and **inherits every shell affordance**"*, and
+       * [§20c](../../../../../../CLAUDE.md) forbids restyling a shared component
+       * for one page. ⛔ **`Container` gives 16px below 640 and 24px above** —
+       * the phone figure matches the design exactly; **the tablet figure is 24
+       * where Home drew 20**, and the shell's contract wins because the gutter
+       * belongs to the content region rather than to this screen.
+       */
+      className="mx-auto flex w-full max-w-[45rem] flex-col gap-4 smalllaptop:max-w-[85rem]"
+      data-testid="home"
+      data-composition={composition}
+    >
       {/* 📁 **Hierarchy 1** — the continuity offer. ⚠️ Owned by Session
           Continuity, hosted here, and it has no producer yet. */}
 
@@ -458,8 +483,17 @@ function HomeContent() {
          */
         <div
           className={cn(
-            'grid grid-cols-1 gap-3.5 laptop:items-start',
-            hasWide ? 'laptop:grid-cols-[1.45fr_1fr]' : 'laptop:grid-cols-2',
+            // 📁 **One column below 1024**, which is where the design *"drops
+            // the split rather than compressing it"*.
+            'grid grid-cols-1 gap-3.5 smalllaptop:items-start',
+            // 🔴 **Two columns RETURN at 1024, and at `1.4fr / 1fr`** — 📁 the
+            // tablet-landscape row, *"two columns return"*. ⛔ **They used to
+            // start at 1280**, so the design's 1024 layout was never drawn.
+            // ⚡ **1280 widens to `1.45fr`**, which is a different ratio and not
+            // a rounding of the same one.
+            hasWide
+              ? 'smalllaptop:grid-cols-[1.4fr_1fr] laptop:grid-cols-[1.45fr_1fr]'
+              : 'smalllaptop:grid-cols-2',
           )}
         >
           {/**
@@ -516,13 +550,18 @@ function HomeContent() {
                  * equal columns in DOM order — 📁 which is the order the design
                  * ranks them in, and *"DOM order is visual order"* above.
                  */
+                /* ⚠️ **`smalllaptop:` now, because the two columns start
+                   there** — 📁 the tablet-landscape row's *"two columns
+                   return"*. ⛔ Pins at `laptop:` would have left every card
+                   flowing into one stack between 1024 and 1279 while the grid
+                   underneath them was already two columns wide. */
                 className={
                   FULL.has(card.id)
-                    ? 'laptop:col-span-2'
+                    ? 'smalllaptop:col-span-2'
                     : WIDE.has(card.id)
-                      ? 'laptop:col-start-1'
+                      ? 'smalllaptop:col-start-1'
                       : hasWide
-                        ? 'laptop:col-start-2'
+                        ? 'smalllaptop:col-start-2'
                         : undefined
                 }
               >
