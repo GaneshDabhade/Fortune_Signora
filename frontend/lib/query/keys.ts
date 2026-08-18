@@ -24,6 +24,8 @@ export const queryKeys = {
   /** ⚡ **Workspace-scoped, because `person_preferences` is keyed by
    * `(workspace_id, user_id)`** — [TASK-1424](../../../docs/BACKLOG.md). */
   preferences: (workspaceId: string) => ['preferences', workspaceId] as const,
+  /** ⚡ **Workspace-scoped, because the record is** — `(workspace, person)`. */
+  recentlyViewed: (workspaceId: string) => ['recently-viewed', workspaceId] as const,
 
   members: (workspaceId: string) => ['workspace', workspaceId, 'members'] as const,
 

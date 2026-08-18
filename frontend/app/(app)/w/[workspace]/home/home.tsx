@@ -17,6 +17,7 @@ import { CompositionSwitcher } from '@/components/home/composition-switcher';
 import { HomeGreeting } from '@/components/home/greeting';
 import { IntegrationHealthCard } from '@/components/home/integration-health-card';
 import { PipelineHealthCard } from '@/components/home/pipeline-health-card';
+import { RecentsCard } from '@/components/home/recents-card';
 import { TopOpportunitiesCard, TopRisksCard } from '@/components/home/posture-cards';
 import { SourceStrip } from '@/components/home/source-strip';
 import { HM_COPY_11 } from '@/lib/home/copy';
@@ -410,6 +411,7 @@ const RENDERERS: Readonly<Partial<Record<CardContract['id'], () => React.ReactEl
     'needs-you-today': AttentionCard,
     'pipeline-health': PipelineHealthCard,
     'integration-health': IntegrationHealthCard,
+    recents: RecentsCard,
     // 📁 The Executive composition's two ranked lists, partitioned from one
     // queue by the posture the Buying Score Engine publishes.
     'top-risks': TopRisksCard,

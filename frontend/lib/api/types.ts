@@ -1191,6 +1191,19 @@ export interface Connection {
   health: ConnectionHealth;
 }
 
+/**
+ * 📁 **Session Continuity tier 4** — one record this person opened.
+ *
+ * ⛔ **No title.** An account's name is the Knowledge Graph's to state and moves
+ * without this fact hearing about it; the card resolves names through the
+ * identity surface, exactly as the attention card does.
+ */
+export interface ViewedRecord {
+  entity_id: string;
+  kind: 'account' | 'report' | 'research';
+  viewed_at: string;
+}
+
 export interface IntegrationSystem {
   integration: string;
   capabilities: IntegrationCapability[];

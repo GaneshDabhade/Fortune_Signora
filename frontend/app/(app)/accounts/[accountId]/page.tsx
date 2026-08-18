@@ -3,7 +3,7 @@
 import { ArrowLeft, Briefcase, Lock, Scale } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import {
   ContestedMark,
@@ -73,6 +73,7 @@ import {
 import { useAccountTimeline } from '@/lib/query/hooks/timeline';
 import { useWorkspaceMembers } from '@/lib/query/hooks/team';
 import { scopeFrom } from '@/lib/state/owner-scope';
+import { useRecordView } from '@/lib/query/hooks/recently-viewed';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 import { ReadingColumn } from '../../reading-column';
 
@@ -160,6 +161,35 @@ export default function AccountBriefPage() {
   const accountKind: string | null = null;
 
   const { data: score, isLoading, error } = useAccountScore(workspaceId, accountId);
+
+  /**
+   * 📁 **Session Continuity tier 4** — *"recently viewed records"*, which is
+   * what 📁 Home's `card.recents` offers back as *"pick up where you left
+   * off"*.
+   *
+   * 🔴 **Recorded only once the account has actually resolved.** ⛔ **Writing
+   * on mount would record a view of an account that 403'd, 404'd or never
+   * loaded** — and the card would then invite somebody to pick up work they
+   * were never shown.
+   *
+   * ⚡ **Fire-and-forget.** 📁 Tier 4 restores *"silent where it only informs a
+   * list (recents)"* — **a person opening an account must never wait on the
+   * bookkeeping that remembers they did**, and a failure here costs one row in
+   * a context card rather than the navigation.
+   */
+  // ⚡ **`mutate` rather than the mutation object**: it is stable across
+  // renders, so the effect below can depend on it honestly instead of
+  // suppressing the dependency.
+  const { mutate: recordView } = useRecordView(workspaceId);
+  const recorded = useRef<string | null>(null);
+  useEffect(() => {
+    if (workspaceId === null || score === undefined) return;
+    // ⛔ **Once per account per mount.** Re-running on every render would write
+    // on each poll; the ref is what keeps a view a view.
+    if (recorded.current === accountId) return;
+    recorded.current = accountId;
+    recordView({ entityId: accountId, kind: 'account' });
+  }, [workspaceId, accountId, score, recordView]);
   const { data: opportunity, error: opportunityError } = useAccountOpportunity(
     workspaceId,
     accountId,

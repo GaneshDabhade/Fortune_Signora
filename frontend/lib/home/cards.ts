@@ -279,6 +279,12 @@ export const REGISTRY: readonly CardContract[] = [
    * hold a write because it cannot write. A dependency, not a gap.**
    */
   { id: 'integration-health', title: 'Integration health', module: 'integrations', requires: null },
+  /**
+   * ✅ **`card.recents`** — 📁 Session Continuity **tier 4** is the producer,
+   * and it defines *"touched"* as **viewed**. `workspace_tenancy` owns the
+   * fact because 📁 Home *"defines no storage of its own"*.
+   */
+  { id: 'recents', title: 'Pick up where you left off', module: 'workspace_tenancy', requires: null },
   { id: 'top-risks', title: 'Top risks', module: 'signal_engine', requires: null },
   { id: 'top-opportunities', title: 'Top opportunities', module: 'signal_engine', requires: null },
 ];
