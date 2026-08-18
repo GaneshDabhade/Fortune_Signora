@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: refuse-slot-0 prod-local-env environments reachability event-catalog workstation validate unsaved review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research e2e e2e-quick e2e-smoke product-demo product-demo-record endurance review-product review-messy review-first-hour
+.PHONY: require-e2e-url refuse-slot-0 prod-local-env environments reachability event-catalog workstation validate unsaved review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research e2e e2e-quick e2e-smoke product-demo product-demo-record endurance review-product review-messy review-first-hour
 
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
@@ -594,13 +594,43 @@ E2E_DB  ?= $(SIGNORA_DB)
 E2E_ENV := $(call DESTRUCTIVE_DB_ENV,$(E2E_DB)) \
            SIGNORA_APP_URL=$(E2E_URL)
 
-e2e:
+## ⛔ **A portless `E2E_URL` is REFUSED, never defaulted** — [B-1014](docs/BUGS.md).
+##
+## `environments.py current()` returns `None` on `integration`, `main` **and a
+## detached head**, and says so in its own docstring. No environment derived means
+## no `SIGNORA_WEB_PORT` on line 151, which means `SIGNORA_WEB` is empty, which
+## makes the line above `http://localhost:` — **port 80.**
+##
+## ⚠️ **Certification runs detached at the pinned SHA**, so this is not an edge
+## case for the browser gate; it is the certification path itself. Lane A lost 33
+## tests to `ERR_CONNECTION_REFUSED` and **the run reported them as ordinary
+## failures** — a gate reporting red about nothing, which is worse than no gate,
+## because it looks exactly like a broken product.
+##
+## ✅ **Refusing beats recovering.** Guessing a port would point the suite at
+## whatever happens to be listening — which is the defect `current()` was written
+## to end: *"a wrong guess here points a suite at another lane's database."*
+require-e2e-url:
+	@case '$(E2E_URL)' in \
+	  *:[0-9]*) : ;; \
+	  *) \
+	    printf '\n  \033[31mREFUSED\033[0m — E2E_URL has no port: %s\n\n' '$(E2E_URL)' >&2; \
+	    printf '  No environment was derived, so SIGNORA_WEB_PORT was never set.\n' >&2; \
+	    printf '  environments.py returns None on integration, main and a DETACHED HEAD.\n\n' >&2; \
+	    printf '  Running anyway would hit port 80 and report every browser test as a\n' >&2; \
+	    printf '  failure — red about nothing. B-1014.\n\n' >&2; \
+	    printf '  Name the environment explicitly:\n\n' >&2; \
+	    printf '      SIGNORA_ENVIRONMENT=lane-a make %s\n\n' '$(firstword $(MAKECMDGOALS))' >&2; \
+	    exit 1 ;; \
+	esac
+
+e2e: require-e2e-url
 	@python3 infra/environment-lease.py run e2e -- sh -c 'cd backend && $(E2E_ENV) uv run python -m tests.playground.seed && cd ../frontend && SIGNORA_APP_URL=$(E2E_URL) npx playwright test $(ARGS)'
 
-e2e-quick:
+e2e-quick: require-e2e-url
 	@python3 infra/environment-lease.py run e2e -- sh -c 'cd frontend && SIGNORA_APP_URL=$(E2E_URL) npx playwright test $(ARGS)'
 
-e2e-smoke:
+e2e-smoke: require-e2e-url
 	@python3 infra/environment-lease.py run e2e -- sh -c 'cd frontend && SIGNORA_APP_URL=$(E2E_URL) npx playwright test --grep @smoke'
 
 ## Signora, demonstrated rather than verified — a real browser, at human pace.
@@ -623,10 +653,10 @@ e2e-smoke:
 ## The recording lands in `frontend/test-results/` and is the artifact worth
 ## keeping: a replayable account of how Signora behaves, for somebody who was
 ## not in the room.
-product-demo:
+product-demo: require-e2e-url
 	@python3 infra/environment-lease.py run product-demo -- sh -c 'cd backend && $(E2E_ENV) uv run python -m tests.playground.seed && cd ../frontend && HEADED=1 SIGNORA_APP_URL=$(E2E_URL) npx playwright test --project=demo --reporter=list $(ARGS)'
 
-product-demo-record:
+product-demo-record: require-e2e-url
 	@python3 infra/environment-lease.py run product-demo -- sh -c 'cd backend && $(E2E_ENV) uv run python -m tests.playground.seed && cd ../frontend && SIGNORA_APP_URL=$(E2E_URL) npx playwright test --project=demo --reporter=list $(ARGS)'
 	@echo ""
 	@echo "  video and trace:  frontend/test-results/"
@@ -640,7 +670,7 @@ product-demo-record:
 ##
 ##     make review-product            headed, at human pace
 ##     make review-product PACE=2000  slower, for a demonstration
-review-product:
+review-product: require-e2e-url
 	@python3 infra/environment-lease.py run e2e -- sh -c 'cd backend && $(E2E_ENV) uv run python -m tests.playground.seed && cd ../frontend && SIGNORA_APP_URL=$(E2E_URL) npx tsx tests/review/walk.ts'
 
 ## Review 2 — the accounts the product is not proud of, and the reading load.
@@ -650,7 +680,7 @@ review-product:
 ## Opens the contested, disputed, expired and unnamed accounts rather than the
 ## tidy one at the top, and measures words-per-screen against actions-per-screen
 ## — because "too much text" is a number, not an opinion.
-review-messy:
+review-messy: require-e2e-url
 	@python3 infra/environment-lease.py run e2e -- sh -c 'cd backend && $(E2E_ENV) uv run python -m tests.playground.seed && cd ../frontend && SIGNORA_APP_URL=$(E2E_URL) npx tsx tests/review/messy.ts'
 
 ## Review 3 — the first hour, for somebody the product has never met.
@@ -660,7 +690,7 @@ review-messy:
 ## Registers a brand new person through the real sign-up form and follows them
 ## until they reach value or run out of things to click. **No seeding** — a
 ## seeded shortcut would skip precisely the hour under review.
-review-first-hour:
+review-first-hour: require-e2e-url
 	@python3 infra/environment-lease.py run e2e -- sh -c 'cd frontend && set -a && . ./.env.local && set +a && SIGNORA_APP_URL=$(E2E_URL) npx tsx tests/review/first-hour.ts'
 
 ## A working day in one tab — endurance, not regression.
@@ -681,7 +711,7 @@ review-first-hour:
 ## `frontend/tests/endurance/trend.ts`, unit-tested without a browser, and the
 ## exit code carries it. Samples land in `frontend/test-results/endurance/` as
 ## they are taken, so a session killed at hour six still has hours one to five.
-endurance:
+endurance: require-e2e-url
 	@python3 infra/environment-lease.py run e2e -- sh -c 'cd backend && $(E2E_ENV) uv run python -m tests.playground.seed && cd ../frontend && SIGNORA_APP_URL=$(E2E_URL) npx tsx tests/endurance/record.ts'
 
 ## Prompt evaluation against a real model. Deliberately NOT part of `make test`.

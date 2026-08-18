@@ -188,6 +188,57 @@ git show 19149dc6:docs/BACKLOG.md | grep -c '|) make that permanent'      # → 
 ✅ **The instruction I gave both lanes — *there is one claimant, do not resolve it as a Claim Protocol violation* — was correct.** ⛔ **The reason I gave for it was not.**
 
 
+### B-1014 · 🔴 The browser suite runs against port 80 on a detached HEAD, and reports it as ordinary test failures
+
+| | |
+|---|---|
+| **Module** | `Makefile` · `infra/environments.py` — **certification infrastructure** |
+| **Current assignee** | **QE** — [§20e](../CLAUDE.md), *a gate that cannot run is not a gate*, and the product owner's 2026-08-18 ruling: *"QE may implement that certification infrastructure independently"* |
+| **Severity** | 🔴 · ⛔ **A CERTIFICATION BLOCKER for the browser gate**, which the product owner has just made part of the certification standard |
+| **Status** | ⚠️ **`FIXED` — QE, 2026-08-18.** ⛔ **NOT `VERIFIED`: QE wrote the fix and does not verify its own work** |
+| **Found** | **2026-08-18 by Lane A**, who lost 33 tests to it before noticing. ✅ **Reproduced independently by QE on the certification path** |
+
+**Steps to reproduce — and this *is* the certification path, not an edge case.**
+
+```bash
+git checkout --detach 0281e08be27d          # what a Certification Snapshot does
+python3 infra/environments.py --exports | grep SIGNORA_WEB_PORT
+→ # no environment derived (not on a lane branch) — historical shared stack
+
+make -n e2e   →   SIGNORA_APP_URL=http://localhost:      # port 80
+```
+
+**Expected.** A browser gate either runs against the right stack or **refuses**.
+
+**Actual.** It runs against **port 80**, every test fails with `ERR_CONNECTION_REFUSED`, and ⛔ **the run reports them as ordinary failures.**
+
+### Why 🔴 rather than 🟡
+
+📁 **`environments.py current()` documents the behaviour and is not wrong:** *"**③ Nothing.** On `integration`, `main`, or a detached head, this returns `None`."* **`Makefile:151` then derives an empty `SIGNORA_WEB`, and `E2E_URL ?= http://localhost:$(SIGNORA_WEB)` becomes a bare colon.**
+
+> ⛔ **A gate that reports red about nothing is worse than no gate**, because its output is **indistinguishable from a broken product** — and the first person to meet it spends the diagnosis. **Lane A spent 33 tests.**
+>
+> 🔴 **And certification runs detached at the pinned SHA by construction** ([§20e](../CLAUDE.md), the Certification Snapshot). **So the browser gate would have been wired directly onto the one code path that silently produces a portless URL.**
+
+**Measured, both directions:**
+
+| | |
+|---|---|
+| On `lane-qe` | `SIGNORA_WEB_PORT=3200` ✅ |
+| **Detached at `0281e08be27d`** | 🔴 **no port emitted · `E2E_URL='http://localhost:'`** |
+
+### The fix — refuse, never default
+
+**`require-e2e-url`, a prerequisite of every target that reaches the browser through `E2E_URL`** — `e2e` · `e2e-quick` · `e2e-smoke` · `product-demo` · `product-demo-record` · `review-product` · `review-messy`. **A URL with no port exits non-zero with a diagnostic naming the cause and the one-line workaround.**
+
+⛔ **Guessing a port was rejected.** 📁 **`current()`'s own docstring says why:** *"a wrong guess here points a suite at another lane's database, which is the class of defect the whole change exists to end."* ✅ **And it is the standing repository preference: prefer operations that refuse unsafe states over operations that silently recover from them.**
+
+**`backend/tests/test_e2e_url_guard.py` asserts the *shape*** — every target whose recipe mentions `$(E2E_URL)` must depend on the guard, **read from the recipe bodies rather than a hand-kept list**, so a browser target added later is caught by construction. ⚡ **Plus a vacuity check**: if the recipe scan ever stops matching, the guarded-set assertion would hold while protecting nothing, which is the Decorative Logic [§2](../CLAUDE.md) names.
+
+### ⚡ It is [B-131](#b-131)'s cost again, one layer down
+
+**B-131 is *ten required gates leave no trace*. This is what happens the moment one of them is wired in:** ⛔ **the gate exists, runs, and lies.** ⚡ **Found by a lane using the product rather than by any gate — which is [§20e](../CLAUDE.md)'s own sentence about where every defect that mattered here came from.**
+
 ### B-1013 · 🟡 A claim released in prose is still a claim to every machine that reads the board
 
 | | |
