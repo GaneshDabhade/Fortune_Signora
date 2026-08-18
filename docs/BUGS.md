@@ -2752,6 +2752,36 @@ SIGNORA_ENVIRONMENT=lane-a make e2e-quick ARGS="tests/e2e/account-360.spec.ts \
 
 ⚡ **What is established is that the locator resolves to nothing on `integration` in a seeded Playground.** ⛔ **Whether that is the seed, the attention query, or a product defect in the list is NOT measured**, and a plausible-sounding cause in this row would be believed. 📁 [B-1000](#b-1000)'s class — **a confident reading is the expensive kind.**
 
+#### ⚡ 2026-08-18, later — QE's B-1017 explains the SHAPE and does not fit this INSTANCE
+
+📁 **QE measured a mechanism on `main`**: `organization-setup.spec.ts` creates an
+*"E2E Org …"*, **it becomes the active workspace**, and every spec after it in
+the same run sees a correct, designed empty state — *"Signora needs three things
+before it can score anything"*. ⛔ **No account links, because there are no
+accounts.** **15 of 39 failures were contamination, and five of this row's six
+specs pass in isolation.**
+
+✅ **It fits the symptom exactly**, and it is the cause this row declined to
+guess. ⛔ **Three measurements on Lane A's branch say it is not what happened
+here:**
+
+| Measured | Result |
+|---|---|
+| `account-360` alone, seeded Playground | ✅ **5 passed** |
+| `account-360` **with** `organization-setup` in one run | ✅ **11 passed** — ⚡ **Playwright orders by path, so `account-360` runs FIRST and is never downstream of the org** |
+| `account-360` alone, **with a leftover `E2E Org` in the database** | ✅ **5 passed** — ⛔ **the contamination does not survive across invocations**; a fresh sign-in resolves to the Playground |
+
+🔴 **The distinguishing fact is the run order.** ⛔ **This row's own reproduction
+runs `account-360 confidence perception`, and `account-360` sorts first** — so
+**nothing preceded it that could have switched the workspace**, and it failed
+3 of 3 anyway.
+
+⚠️ **This does NOT refute B-1017 and must not be read as doing so.** The
+baseline was `origin/integration` at `19149dc6` on a different stack; **what is
+measured above is Lane A's branch today.** ⛔ **The honest statement is that the
+two are not yet the same measurement** — 📁 the same reason QE declined to close
+this row on a resemblance. **Re-measure on the rebased tree.**
+
 ---
 
 ### B-280 · 🟡 The theme control does not report `System` as selected, and it is pre-existing
