@@ -348,6 +348,52 @@ run 5: 0 failed                     20 passed
 
 ⛔ **This spec was the intended control for the browser gate.** 📁 **Lane A: *"a control that is clean on one stack and not another is not a control"*** — **and the sharper form this row proves: it is not clean on the SAME stack twice.** **A gate whose control is intermittent cannot distinguish a regression from a re-run.**
 
+### B-1020 · 🟠 QE committed three times to `main`, reported them pushed, and the push was a no-op
+
+| | |
+|---|---|
+| **Module** | QE's own operating practice |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 · ✅ **Nothing was lost and nothing uncertified reached `origin/main`** — the commits simply never left the machine |
+| **Status** | ✅ **`FIXED`** — the three commits are on `origin/lane-qe` at `f37a360c`, verified by reading the remote back |
+| **Found** | **2026-08-18 by `infra/`'s own pre-commit guard**, refusing the fourth commit. ⛔ **Not by QE** |
+
+**What happened.** Repository Closeout ends with `git checkout main`. **Three subsequent commits were authored from `main`** — `74d34c5a`, `b03d53ac`, `f37a360c` — and each was followed by:
+
+```bash
+echo "lane-qe -> $(git rev-parse --short HEAD)"   # printed main's HEAD
+git push -q origin lane-qe && echo pushed          # pushed a branch with nothing new
+```
+
+**Both instruments answered a narrower question than the one asked:**
+
+| The command | What it answers | What was asked |
+|---|---|---|
+| `git rev-parse --short HEAD` | *what commit am I on?* | *what is `lane-qe`?* |
+| `git push origin lane-qe` | *is `lane-qe` up to date on the remote?* | *did my work reach the remote?* |
+
+⛔ **`-q` suppressed the `Everything up-to-date` that would have said so**, and the exit code was 0 because the push genuinely succeeded — **there was simply nothing in it.**
+
+### 🔴 The reporting failure is the serious half
+
+**QE told the product owner and Lane A that these commits were pushed. They were not.** ⚡ **Lane A was told to read B-1017's mechanism from a ref that did not carry it** — and the same hour, QE was telling Lane A their own governance statements were 25 commits stale.
+
+### ✅ Why nothing worse happened, and it was not care
+
+**The pre-commit guard refused the fourth commit** because it carried `frontend/tests/e2e/**`:
+
+> *"REFUSED — `main` accepts a Closeout — documents and certification records only… You are probably on this branch because the previous command left you here. **That is how a commit reached `main` without certification.**"*
+
+⚡ **The first three were documentation-only, so the guard correctly permitted them** — a Closeout may touch `docs/`. **The rule held exactly as written; what was wrong was the branch I was standing on.** ⛔ **And the guard's own message names the cause: *the previous command left you here.***
+
+### The repair, and what it is not
+
+✅ **Done**: the three commits moved to `lane-qe` by `git branch -f`, local `main` returned to `origin/main`, work restored from a stash, pushed, **and verified by reading `origin/lane-qe` back rather than by re-reading `HEAD`.**
+
+⛔ **The fix is NOT "check the branch more carefully".** **Two instruments each gave a true answer to a question I had not asked**, which is [B-1000](#b-1000)'s family, and care is what fails first under repetition.
+
+✅ **The habit that would have caught it, and it is one line:** **after any push, read the remote back and compare it to `HEAD`** — `git fetch && git rev-parse origin/<branch>` against `git rev-parse HEAD`. ⚡ **That answers the question actually being asked**, and it is the same discipline the promotion equality rule already applies to `main`: *verified from `ls-remote` after the push, not from `rev-parse` before it.* **The rule existed and was applied to promotions only.**
+
 ### B-1019 · 🟠 The Team page scrolls sideways on a phone — 117 elements past a 375px viewport
 
 | | |
