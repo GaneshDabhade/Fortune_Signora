@@ -301,31 +301,52 @@ git show 19149dc6:docs/BACKLOG.md | grep -c '|) make that permanent'      # → 
 ✅ **The instruction I gave both lanes — *there is one claimant, do not resolve it as a Claim Protocol violation* — was correct.** ⛔ **The reason I gave for it was not.**
 
 
-### B-1018 · 🟠 Home is 10px off the design's eight-column grid at 1280, and the tolerance is 2px
+### B-1018 · 🟠 `content-width` is intermittently red at 1280 — and QE filed it as a product defect on four runs that were one measurement
 
 | | |
 |---|---|
-| **Module** | `product_surface` — Home |
-| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — **Lane A** |
-| **Severity** | 🟠 · **A design-conformance defect**, which the certification standard ratified 2026-08-18 names explicitly |
+| **Module** | `frontend/tests/e2e/content-width.spec.ts` — **the repository-wide browser suite** |
+| **Current assignee** | **QE** — 📁 [§20e](../CLAUDE.md), *QE creates, maintains, extends and retires repository-wide automated tests*. ⛔ **NOT `product_surface`; see the correction** |
+| **Severity** | 🟠 · ⛔ **It disqualifies the spec as a gate AND as the gate's control** |
 | **Status** | **`OPEN`** |
-| **Found** | **2026-08-18 by QE**, in the first complete browser baseline at `954291ec` |
+| **Found** | **2026-08-18 by QE.** ⚠️ **Correctly characterised only after Lane A challenged the row twice** |
 
-**Steps to reproduce.** `npx playwright test content-width` against a seeded stack.
+**Steps to reproduce.** Against a seeded stack, run it five times:
 
 ```
-✘ content-width.spec.ts:50:11 › at 1280 › @journey Home is eight columns of the design's grid
-
-    Error: expect(received).toBeLessThanOrEqual(expected)
-    Expected: <= 2        ← ±2px, for sub-pixel track rounding
-    Received:    10
+run 1: 1 failed [Home]              19 passed
+run 2: 2 failed [Home, Products]    18 passed
+run 3: 1 failed [Products]          19 passed
+run 4: 0 failed                     20 passed
+run 5: 0 failed                     20 passed
 ```
 
-✅ **Stable and order-independent — FOUR isolated runs, the same test every time, 19 passed / 1 failed.** ⛔ **Not [B-1017](#b-1017)**: it survives a fresh seed and a run with nothing before it.
+**Same tree, same stack, same seed. The failure count and the failing screens both vary.** ⛔ **Only ever at 1280; never at 2400.**
 
-**Every other page passes at both 1280 and 2400** — Business, Help, Settings, Team, Products, Organization, Connections — **so it is Home's composition, not the grid arithmetic.**
+### 🔴 What this row said first, and why it was wrong
 
-> ⚠️ **Lane A measured `content-width` at 18/0 on their own branch** while this reads 17/1 on `main`. ⚡ **Their in-flight Home work may already fix it** — worth checking before anyone builds a fix, because the row would then be closed by work already done rather than by new work.
+**It was titled *"Home is 10px off the design's eight-column grid"*, severity 🟠, assigned to `product_surface` — Lane A.** ⛔ **Every part of that was wrong, and each was wrong for its own reason.**
+
+**① *"Stable and order-independent — FOUR isolated runs, the same test every time."*** 🔴 **Those four runs shared one database state.** **I re-seeded before other batches and not between these**, so *four runs* was **one measurement repeated**, and the stability I reported was the stability of the state, not of the result. **Re-seeding first produced a different failure set immediately.**
+
+**② *"Home."*** 📁 **Lane A: `main`'s spec row is `{ path: '/', name: 'Home' }`, and `/` is the entry resolver — the screen it measures is Attention's reading column.** ⚡ **My own probe had already printed `H1: ["Attention"]` and I did not connect it.** **Home is a card composition capped at 1360px, not the eight-of-twelve reading measure this file asserts, so a fix aimed at *Home* would have changed a screen to satisfy a grid it was never meant to satisfy.**
+
+**③ *"A design-conformance defect, Lane A's."*** ⛔ **It is a flaky assertion, and repository-wide suites are QE's.** **I routed a defect to the implementing lane that was mine.**
+
+**④ I had suspected flakiness, and talked myself out of it** — 📁 *"A different failure in one run was not evidence of a different defect."* ⚠️ **That sentence is true and it was not the question.** **The evidence for flakiness was three more runs, which I did not take because I had already concluded.**
+
+### What is measured, and what is only inferred
+
+| | |
+|---|---|
+| ✅ **Measured** | Five runs, varying failures · **only at 1280** · `container=1005 column=630` identical at `/` and `/settings` · **zero frontend code changed** between Lane A's 18/0 at `19149dc6` and this |
+| ⚠️ **Inferred, NOT measured** | **A layout-settling race.** The spec waits for the column to be *visible*, then reads `boundingBox()` — **it never waits for layout to be stable.** ⚡ **A per-screen composition defect would be deterministic per screen; this is not** |
+
+⛔ **Nobody should act on the inference.** 📁 **Lane A's rule, twice applied to this row: *a plausible cause in a row is believed for six days.***
+
+### Why it matters more than a flaky test usually would
+
+⛔ **This spec was the intended control for the browser gate.** 📁 **Lane A: *"a control that is clean on one stack and not another is not a control"*** — **and the sharper form this row proves: it is not clean on the SAME stack twice.** **A gate whose control is intermittent cannot distinguish a regression from a re-run.**
 
 ### B-1019 · 🟠 The Team page scrolls sideways on a phone — 117 elements past a 375px viewport
 
