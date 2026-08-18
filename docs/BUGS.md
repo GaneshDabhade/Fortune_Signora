@@ -348,7 +348,7 @@ run 5: 0 failed                     20 passed
 
 ⛔ **This spec was the intended control for the browser gate.** 📁 **Lane A: *"a control that is clean on one stack and not another is not a control"*** — **and the sharper form this row proves: it is not clean on the SAME stack twice.** **A gate whose control is intermittent cannot distinguish a regression from a re-run.**
 
-### B-1023 · 🟡 Six `daily-usage` journeys assume a ranked entry list, and the re-aimed entry is the whole book
+### B-1023 · 🟠 Twenty-two journeys assume a ranked entry list, and the re-aimed entry is the whole book
 
 | | |
 |---|---|
@@ -385,6 +385,21 @@ accounts.openFirstAccount()          ← the FIRST row, which is:
 **Do not assert the score against an arbitrary first row.** ⛔ **Do not relax the assertion to make Companies pass** — that deletes the only coverage the brief's score has. ⛔ **Do not add a score to every seeded account** — the unnamed, unscored account is a real state the product must render, and it is [P-A](DOMAIN_DISCOVERY_REGISTER.md)'s neighbourhood.
 
 ✅ **The journey needs an entry that is ranked** — Home's `card.attention` is one — **or an account chosen by having a score rather than by position.**
+
+### ⚠️ SCOPE CORRECTED — 22, not 6. QE, 2026-08-18
+
+**The full suite on the validation tree — `2e758310` + [B-1022](#b-1022)'s fixture — reports 342 passed, 42 failed.** ⚡ **Parsing every failure's error rather than its name: 22 of the 42 cite `Attention score \d+ out of 100`.**
+
+| Spec | Failures with this root |
+|---|---|
+| `interaction-boundaries` | **8** |
+| `daily-usage` | **6** |
+| `accessibility` | **3** |
+| others | 5 |
+
+⛔ **All the same defect: a journey opens the FIRST row of Companies and asserts a score.** **The six filed first were the six that happened to be measured first**, and the wider set only became visible once the fixture stopped blocking the rest.
+
+> ⚠️ **Recorded as a scope correction rather than a new row**, because it is one cause. **A second row would have made one defect look like two and doubled the apparent debt.**
 
 ### 📊 What this cost certification, stated as three separate things
 
@@ -456,6 +471,22 @@ if (input.neverSynced) return 'activation';
 | **Pinned + freshly seeded** | ✅ **The measurement.** Workspace confirmed by `localStorage` and by URL, and Home still rendered activation |
 
 ⚠️ **A seed whose output was sent to `/dev/null` cost one of those passes** — it reported *"replacing 1 previous Playground"* and the run that trusted its exit code measured a workspace that no longer held what it assumed.
+
+### 🔴 The fix has a cost, and QE found it in its own work — 2026-08-18
+
+**`connections.spec.ts:88` — *"what a customer sees before anything is connected"* — FAILS with the corrected fixture, and passed without it.**
+
+| | main+fix | candidate | candidate + this fixture |
+|---|---|---|---|
+| `connections.spec.ts` | 0 | 0 | 🔴 **1** |
+
+⛔ **That is QE's regression, not Lane A's.** **The seeder now connects Salesforce, so *before anything is connected* is no longer true of the seeded workspace.**
+
+> ⚠️ **The same shape as `onboarding-journey` earlier in the day: a spec that legitimately needs a DIFFERENT state.** **One workspace cannot be both connected and never-connected**, so a fixture that makes Home's seller composition reachable necessarily makes the un-connected surfaces unreachable.
+
+**What it must not become**: ⛔ **do not delete or skip `connections.spec.ts:88`** — *"before anything is connected"* is the first thing every customer sees and the only coverage it has. ⛔ **Do not make the connection conditional on an environment variable** — that is a hidden input (§2), and the suite would then prove different things on different machines without saying so.
+
+✅ **The shape that works is a second workspace**: the Playground connected, and an un-connected one beside it for the surfaces that need it — **which is what "represent the states required by the design" actually costs.** ⚠️ **Not built yet, and named here so it is not discovered as a surprise.**
 
 ### The fix, and it is small
 
