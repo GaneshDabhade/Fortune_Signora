@@ -951,6 +951,33 @@ for _lane, _spec in sorted(_notice_health(rows).items()):
 ### ✅ The fix, and why it is not a checker
 
 **The board is reconciled and the stamp corrected.** ⛔ **No new check is added.** A checker for *"did Closeout run all eleven activities?"* would be a fourth place recording what the eleven are, and **the copy is never wrong when written; it is wrong the first time the list grows.** ⚡ **What actually failed already had an instrument — `state-check` printed the finding.** **The repair is that QE reads findings, not exit codes**, and the evidence for whether it holds is the next cycle's board stamp rather than a green tick.
+### B-1400 · 🟠 An e2e spec asserts the combined brand where the constitution requires `Signora` alone
+
+| | |
+|---|---|
+| **Module** | `product_surface` — `frontend/tests/e2e/top-bar-search.spec.ts` |
+| **Severity** | 🟠 **Wrong behaviour a customer would hit** — via a failing gate, not a screen |
+| **Status** | `OPEN` |
+| **Found** | **Lane C, 2026-08-18**, measuring the brand inventory during recovery reconciliation ([502](architecture/502-recovery-reconciliation-2026-08-18.md)) |
+| **Commit found** | `origin/main` `2d26cca3` — ⚡ **pre-existing on `main`, NOT introduced by any in-flight lane work** |
+
+**Steps.** `git grep -n 'Search Fortune Signora' origin/main -- frontend`
+
+**Expected.** 📁 [`CLAUDE.md` §4](../CLAUDE.md): *"Wherever the product speaks — … tooltips, help, empty states, system messages, UI copy — it is `Signora`, alone."* ⛔ **`Fortune Signora` is reserved for branding surfaces.** ✅ **A global search box inside the open application is product speech**, so the accessible name is **`Search Signora`**.
+
+**Actual.** ⛔ **`top-bar-search.spec.ts:28` and `:51` assert `Search Fortune Signora`.**
+
+> 🔴 **The implementation is CORRECT and the test is wrong** — the inverse of the usual case, which is why it is worth stating plainly. **`components/shell/top-bar.tsx:236` renders `aria-label="Search Signora"` with the rule cited beside it.**
+>
+> ⚠️ **And the repository already contradicts itself:** **`tests/components/shell-a11y.test.tsx:119` asserts the name IS `Search Signora`, and `:122` asserts it is NOT `Search Fortune Signora`.** ⛔ **Two tests on one ref assert opposite things about one accessible name.**
+
+**Why it matters beyond two lines.** ⚡ **It was misreading as in-flight breakage.** **A lane baselining e2e failures would spend the attribution on it**; ✅ **it is pre-existing on `main` and belongs to neither.**
+
+⛔ **Not fixed here.** 📁 **Lane C owns no product-surface code, and the product owner has directed no implementation during recovery.** ✅ **The fix is two lines in the spec, never in the shell** — ⛔ **changing `top-bar.tsx` to satisfy the spec would breach §4 and break `shell-a11y.test.tsx`.**
+
+⚠️ **One related finding, deliberately NOT filed as a defect.** 📁 **§4 states the inventory *"is empty: `git grep "Fortune Signora"` returns zero matches"*.** ⛔ **Measured on `main`: 146 matches under `frontend/`, `backend/`, `infra/`.** ✅ **117 are design-document filename citations and most of the rest are comments quoting the rule or approved branding surfaces** — the sign-in mark, the welcome title, the maintenance and outage `<title>` elements, **all of which §4 expressly reserves for the combined brand.** ⚡ **So the sentence is loosely worded rather than false, and this row is the one genuine violation it was written to prevent.** ⛔ **`CLAUDE.md` is the product owner's and is not edited on a lane's measurement.**
+
+
 ### B-443 · 🔴 `coverage-debt` refuses to run when coverage is below the floor — the only situation it exists for
 
 | | |
