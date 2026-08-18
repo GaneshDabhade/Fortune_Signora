@@ -3,6 +3,7 @@
 import Link from 'next/link';
 
 import { CardFailure } from '@/components/home/card-failure';
+import { useCardPhase } from '@/lib/home/loading';
 
 import type { ViewedRecord } from '@/lib/api/types';
 import { useAccountIdentities } from '@/lib/query/hooks';
@@ -60,7 +61,13 @@ export function RecentsCard() {
    * failure rule is exactly that: *"recents unavailable… **no fabricated
    * history**"* — **an empty list and an unread list are different answers.**
    */
-  if (recents.isError) {
+  /** 📁 §09's timed rules — no skeleton under 300ms, an error state over 8s. */
+  const phase = useCardPhase(recents.isPending);
+
+  /* ⚡ **A timeout lands in the error branch** — 📁 *"the card converts to its
+     error state with a retry."* ⛔ The query is not aborted; the card stops
+     waiting, so a late response still renders. */
+  if (recents.isError || phase === 'timeout') {
     /**
      * ⛔ **NOT inside `Frame`, and the 160px footprint is deliberately not
      * imposed here.** 📁 The registry's height is what a LOADED card occupies
@@ -78,19 +85,25 @@ export function RecentsCard() {
         description="Nothing you opened has been lost. Everything else on this page is unaffected."
         error={recents.error}
         onRetry={() => void recents.refetch()}
-        retrying={recents.isFetching}
+        retrying={recents.isFetching && phase !== 'timeout'}
         testId="home-recents"
       />
     );
   }
 
-  /** 📁 **State 07** — skeletonised at the declared footprint. */
+  /** 📁 **State 07** — skeletonised at the declared footprint. ⛔ **And nothing at
+   *  all for the first 300ms** — 📁 *"a placeholder shown and removed inside 300ms
+   *  reads as a flicker."* */
   if (recents.isPending) {
     return (
       <Frame>
         <div aria-hidden className="mt-2.5 space-y-3">
-          <div className="h-4 w-2/3 animate-pulse rounded bg-surface-sunken" />
-          <div className="h-4 w-1/2 animate-pulse rounded bg-surface-sunken" />
+          {phase === 'skeleton' ? (
+            <>
+              <div className="h-4 w-2/3 animate-pulse rounded bg-surface-sunken" />
+              <div className="h-4 w-1/2 animate-pulse rounded bg-surface-sunken" />
+            </>
+          ) : null}
         </div>
       </Frame>
     );

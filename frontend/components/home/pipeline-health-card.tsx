@@ -36,6 +36,7 @@
 
 import { Card, CardBody, CardHeader, CardTitle, EmptyState, SkeletonText } from '@/components/ui';
 import { CardFailure } from '@/components/home/card-failure';
+import { useCardPhase } from '@/lib/home/loading';
 import { LineChart } from 'lucide-react';
 import { formatDay } from '@/components/intelligence/dates';
 import { usePipelineHealth } from '@/lib/query/hooks/commercial';
@@ -60,7 +61,12 @@ export function PipelineHealthCard() {
 function Body({ health }: { health: ReturnType<typeof usePipelineHealth> }) {
   // ⚠️ **Error before empty** — 📁 [P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md):
   // *a failed read must never render as an empty result.*
-  if (health.isError) {
+  /** 📁 §09's timed rules — no skeleton under 300ms, an error state over 8s. */
+  const phase = useCardPhase(health.isLoading);
+
+  /* ⚡ **A timeout lands here too** — 📁 *"the card converts to its error state
+     with a retry."* ⛔ The read is not aborted; a late response still renders. */
+  if (health.isError || phase === 'timeout') {
     /**
      * ⚠️ **This rendered `StatedAbsence`, which is the wrong half of the pair.**
      * 📁 Its own header: *"`EmptyState` says **there is nothing**; a system
@@ -75,13 +81,15 @@ function Body({ health }: { health: ReturnType<typeof usePipelineHealth> }) {
         description="Nothing about your deals has changed. Everything else on this page is unaffected."
         error={health.error}
         onRetry={() => void health.refetch()}
-        retrying={health.isFetching}
+        retrying={health.isFetching && phase !== 'timeout'}
       />
     );
   }
 
   if (health.isLoading || health.data === undefined) {
-    return <SkeletonText lines={3} />;
+    /* ⛔ **Nothing for the first 300ms** — 📁 §09: *"a placeholder shown and
+       removed inside 300ms reads as a flicker."* */
+    return phase === 'skeleton' ? <SkeletonText lines={3} /> : null;
   }
 
   const { ageing, movements, movements_since } = health.data;

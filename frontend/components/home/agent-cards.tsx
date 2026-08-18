@@ -3,6 +3,7 @@
 import Link from 'next/link';
 
 import { CardFailure } from '@/components/home/card-failure';
+import { useCardPhase, type CardPhase } from '@/lib/home/loading';
 
 import type { ResearchRun } from '@/lib/api/types';
 import { cn } from '@/lib/design/cn';
@@ -50,9 +51,11 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
  */
 export function AgentQueueCard() {
   const { runs, mine, names } = useRuns();
+  /** 📁 §09's timed rules — no skeleton under 300ms, an error state over 8s. */
+  const phase = useCardPhase(runs.isPending);
 
-  if (runs.isError) return failed(runs, 'home-agent-queue');
-  if (runs.isPending) return <QueueFrame>{skeleton()}</QueueFrame>;
+  if (runs.isError || phase === 'timeout') return failed(runs, 'home-agent-queue', phase);
+  if (runs.isPending) return <QueueFrame>{skeleton(phase)}</QueueFrame>;
 
   const all = runs.data ?? [];
   /**
@@ -114,9 +117,10 @@ export function AgentQueueCard() {
  */
 export function AgentRunsCard() {
   const { runs, mine, names } = useRuns();
+  const phase = useCardPhase(runs.isPending);
 
-  if (runs.isError) return failed(runs, 'home-agent-runs');
-  if (runs.isPending) return <RunsFrame>{skeleton()}</RunsFrame>;
+  if (runs.isError || phase === 'timeout') return failed(runs, 'home-agent-runs', phase);
+  if (runs.isPending) return <RunsFrame>{skeleton(phase)}</RunsFrame>;
 
   const all = runs.data ?? [];
   /**
@@ -302,6 +306,7 @@ function Row({
 function failed(
   runs: { error: unknown; refetch: () => unknown; isFetching: boolean },
   testId: string,
+  phase: CardPhase,
 ) {
   return (
     <CardFailure
@@ -309,18 +314,27 @@ function failed(
       description="No agent run has been lost or affected. Everything else on this page is unaffected."
       error={runs.error}
       onRetry={() => void runs.refetch()}
-      retrying={runs.isFetching}
+      /* ⛔ **Not `isFetching` on a timeout** — the original attempt is still in
+         flight, and a permanently-loading button is a retry nobody can press. */
+      retrying={runs.isFetching && phase !== 'timeout'}
       testId={testId}
     />
   );
 }
 
 /** 📁 **State 07** — *"cards skeletonised at declared footprints."* */
-function skeleton() {
+function skeleton(phase: CardPhase) {
   return (
+    /* ⛔ **Empty for the first 300ms** — 📁 *"a placeholder shown and removed
+       inside 300ms reads as a flicker."* ⚡ The frame keeps its footprint either
+       way, so nothing reflows when the data lands. */
     <div aria-hidden className="space-y-3 px-[18px] py-[15px]">
-      <div className="h-4 w-2/3 animate-pulse rounded bg-surface-sunken" />
-      <div className="h-4 w-1/2 animate-pulse rounded bg-surface-sunken" />
+      {phase === 'skeleton' ? (
+        <>
+          <div className="h-4 w-2/3 animate-pulse rounded bg-surface-sunken" />
+          <div className="h-4 w-1/2 animate-pulse rounded bg-surface-sunken" />
+        </>
+      ) : null}
     </div>
   );
 }

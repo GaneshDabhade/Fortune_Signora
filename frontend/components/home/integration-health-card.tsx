@@ -3,6 +3,7 @@
 import Link from 'next/link';
 
 import { CardFailure } from '@/components/home/card-failure';
+import { useCardPhase } from '@/lib/home/loading';
 
 import type { Connection, ConnectionHealth } from '@/lib/api/types';
 import { cn } from '@/lib/design/cn';
@@ -60,7 +61,13 @@ export function IntegrationHealthCard() {
    * card's error inside its own footprint with the correlation ID; siblings are
    * unaffected."*
    */
-  if (systems.isError) {
+  /** 📁 §09's timed rules — no skeleton under 300ms, an error state over 8s. */
+  const phase = useCardPhase(systems.isPending);
+
+  /* ⚡ **A timeout lands in the error branch** — 📁 *"the card converts to its
+     error state with a retry."* ⛔ The query is not aborted; the card stops
+     waiting, so a late response still renders. */
+  if (systems.isError || phase === 'timeout') {
     return (
       <CardFailure
         title="Signora could not read your connections"
@@ -70,19 +77,24 @@ export function IntegrationHealthCard() {
         description="Nothing has been disconnected. Everything else on this page is unaffected."
         error={systems.error}
         onRetry={() => void systems.refetch()}
-        retrying={systems.isFetching}
+        retrying={systems.isFetching && phase !== 'timeout'}
         testId="home-integration-health"
       />
     );
   }
 
-  /** 📁 **State 07** — *"cards skeletonised at declared footprints."* */
+  /** 📁 **State 07** — *"cards skeletonised at declared footprints"*, ⛔ **and
+   *  nothing for the first 300ms**, which the design calls a flicker. */
   if (systems.isPending) {
     return (
       <Frame>
         <div aria-hidden className="space-y-3 px-[18px] py-[15px]">
-          <div className="h-4 w-1/2 animate-pulse rounded bg-surface-sunken" />
-          <div className="h-4 w-2/3 animate-pulse rounded bg-surface-sunken" />
+          {phase === 'skeleton' ? (
+            <>
+              <div className="h-4 w-1/2 animate-pulse rounded bg-surface-sunken" />
+              <div className="h-4 w-2/3 animate-pulse rounded bg-surface-sunken" />
+            </>
+          ) : null}
         </div>
       </Frame>
     );

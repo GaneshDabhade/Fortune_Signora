@@ -3,6 +3,7 @@
 import Link from 'next/link';
 
 import { CardFailure } from '@/components/home/card-failure';
+import { useCardPhase } from '@/lib/home/loading';
 
 import type { Money, Posture, QueueEntry, SignalTypeName } from '@/lib/api/types';
 import { formatMoney } from '@/lib/accounts/table';
@@ -127,7 +128,13 @@ function PostureCard({
    * card's error inside its own footprint with the correlation ID; siblings are
    * unaffected."*
    */
-  if (queue.isError || postures.isError) {
+  /** 📁 §09's timed rules — no skeleton under 300ms, an error state over 8s.
+   *  ⚡ **Both reads**, because the card waits on the slower of the two. */
+  const phase = useCardPhase(queue.isPending || postures.isPending);
+
+  /* ⚡ **A timeout lands here too** — 📁 *"the card converts to its error state
+     with a retry."* */
+  if (queue.isError || postures.isError || phase === 'timeout') {
     return (
       <CardFailure
         title={`${title} could not be read`}
@@ -141,7 +148,7 @@ function PostureCard({
           void queue.refetch();
           void postures.refetch();
         }}
-        retrying={queue.isFetching || postures.isFetching}
+        retrying={(queue.isFetching || postures.isFetching) && phase !== 'timeout'}
         testId={testId}
       />
     );
@@ -149,12 +156,17 @@ function PostureCard({
 
   if (queue.isPending || postures.isPending) {
     /** 📁 State 07 — *"cards skeletonised at declared footprints."* ⛔ Never a
-     * page-level spinner, and never an empty state standing in for a load. */
+     * page-level spinner, and never an empty state standing in for a load.
+     * ⛔ **And nothing at all for the first 300ms**, which 📁 §09 calls a flicker. */
     return (
       <Frame title={title} testId={testId}>
         <div aria-hidden className="space-y-3 px-[18px] py-[15px]">
-          <div className="h-4 w-2/3 animate-pulse rounded bg-surface-sunken" />
-          <div className="h-4 w-1/2 animate-pulse rounded bg-surface-sunken" />
+          {phase === 'skeleton' ? (
+            <>
+              <div className="h-4 w-2/3 animate-pulse rounded bg-surface-sunken" />
+              <div className="h-4 w-1/2 animate-pulse rounded bg-surface-sunken" />
+            </>
+          ) : null}
         </div>
       </Frame>
     );

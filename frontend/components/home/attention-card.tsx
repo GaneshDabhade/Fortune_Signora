@@ -7,6 +7,7 @@ import { formatMoney } from '@/lib/accounts/table';
 import { cn } from '@/lib/design/cn';
 import { CardFailure } from '@/components/home/card-failure';
 import { HM_COPY_06 } from '@/lib/home/copy';
+import { useCardPhase } from '@/lib/home/loading';
 import { TONE } from '@/lib/home/tone';
 import { useAccountIdentities, useSignalCatalog } from '@/lib/query/hooks';
 import { useAccountsCount } from '@/lib/query/hooks/accounts-count';
@@ -101,14 +102,27 @@ export function AttentionCard() {
   const count = useAccountsCount(workspaceId);
   const pipeline = usePipelineHealth(workspaceId);
 
+  /**
+   * 📁 §09's two timed rules — *"under 300ms: **no skeleton at all**"* and *"over
+   * 8 seconds: **the card converts to its error state with a retry**"*.
+   */
+  const phase = useCardPhase(queue.isPending);
+
   /** 📁 §09 — *"each skeleton uses the card's declared height."* */
-  if (queue.isPending) {
+  if (queue.isPending && phase !== 'timeout') {
     return (
       <Frame>
         <div role="status" className="flex flex-col gap-3 p-[18px]">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="h-[46px] animate-pulse rounded-lg bg-surface-sunken" />
-          ))}
+          {/* ⛔ **Nothing drawn for the first 300ms** — 📁 *"a placeholder shown
+              and removed inside 300ms reads as a flicker."* ⚡ **The frame still
+              holds its footprint**, so nothing reflows when the data lands. */}
+          {phase === 'skeleton'
+            ? [0, 1, 2].map((i) => (
+                <div key={i} className="h-[46px] animate-pulse rounded-lg bg-surface-sunken" />
+              ))
+            : null}
+          {/* ♿ **Announced from the first frame**, whatever is drawn. A reader
+              waiting on a screen reader should not wait 300ms to be told. */}
           <span className="sr-only">Loading what needs you</span>
         </div>
       </Frame>
@@ -118,8 +132,12 @@ export function AttentionCard() {
   /**
    * 📁 **State 08 — the card's error stays inside the card's footprint**, with a
    * correlation id. ⛔ *"Siblings are unaffected."*
+   *
+   * ⚡ **A timeout lands here too** — 📁 *"the card converts to its error state
+   * with a retry"*. ⛔ **The query is not aborted**: the card stops waiting, the
+   * read does not, so a response at nine seconds still renders.
    */
-  if (queue.isError) {
+  if (queue.isError || phase === 'timeout') {
     /**
      * ⛔ **This card hand-rolled the whole treatment, and it was the closest of
      * the eight to right** — a title, a survivor clause, a real retry and the
@@ -133,7 +151,10 @@ export function AttentionCard() {
         description="Nothing has been missed or dismissed. Everything else on this page is unaffected."
         error={queue.error}
         onRetry={() => void queue.refetch()}
-        retrying={queue.isFetching}
+        /* ⛔ **Not `isFetching` on a timeout.** ⚡ The original attempt is still in
+           flight, and a permanently-loading button is a retry nobody can press —
+           📁 *"with a retry"* means an affordance, not a spinner. */
+        retrying={queue.isFetching && phase !== 'timeout'}
       />
     );
   }
