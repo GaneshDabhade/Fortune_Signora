@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 
-import { ApiError } from '@/lib/api/client';
 import type { Money, Posture, QueueEntry, SignalTypeName } from '@/lib/api/types';
 import { formatMoney } from '@/lib/accounts/table';
 import { cn } from '@/lib/design/cn';
+import { CardFailure } from '@/components/home/card-failure';
 import { HM_COPY_06 } from '@/lib/home/copy';
 import { TONE } from '@/lib/home/tone';
 import { useAccountIdentities, useSignalCatalog } from '@/lib/query/hooks';
@@ -120,33 +120,21 @@ export function AttentionCard() {
    * correlation id. ⛔ *"Siblings are unaffected."*
    */
   if (queue.isError) {
-    const correlation = queue.error instanceof ApiError ? queue.error.correlationId : '';
+    /**
+     * ⛔ **This card hand-rolled the whole treatment, and it was the closest of
+     * the eight to right** — a title, a survivor clause, a real retry and the
+     * correlation ID. ⚡ **What it lacked is what the shared panel supplies**:
+     * the System States tile and glyph, a COPYABLE identifier, and 📁 the
+     * design's dashed frame *"so it is distinguishable from content"*.
+     */
     return (
-      <Frame>
-        <div className="p-[18px]">
-          <p role="alert" className="text-sm font-semibold text-content">
-            What needs you could not be loaded
-          </p>
-          <p className="mt-1.5 text-xs leading-[1.5] text-content-muted">
-            Everything else on this page is unaffected.
-          </p>
-          <div className="mt-3 flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={() => void queue.refetch()}
-              className="inline-flex h-control-sm items-center rounded-md border border-border px-3 text-xs font-semibold text-content transition-colors hover:border-accent hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-            >
-              Retry
-            </button>
-            {/* 📁 Contract item 13 — *"with the correlation ID"*. ⛔ Rendered only
-                when the response carried one; an empty reference is worse than
-                none, because support would search for it. */}
-            {correlation ? (
-              <span className="font-mono text-2xs text-content-subtle">{correlation}</span>
-            ) : null}
-          </div>
-        </div>
-      </Frame>
+      <CardFailure
+        title="What needs you could not be loaded"
+        description="Nothing has been missed or dismissed. Everything else on this page is unaffected."
+        error={queue.error}
+        onRetry={() => void queue.refetch()}
+        retrying={queue.isFetching}
+      />
     );
   }
 

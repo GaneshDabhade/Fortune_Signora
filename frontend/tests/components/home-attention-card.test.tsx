@@ -244,7 +244,19 @@ describe('📁 state 08 — the card fails inside its own footprint', () => {
 
     render(<AttentionCard />);
 
-    expect(screen.getByRole('alert')).toHaveTextContent('What needs you could not be loaded');
+    /**
+     * ⚠️ **`status`, not `alert`, and the change is a correction.**
+     *
+     * 📁 System States `4.1.3`: *"Region errors and retries announce POLITELY.
+     * Only a state that ends the session — 500, maintenance — announces
+     * assertively, once."* ⛔ **This card asserted `role="alert"`**, which
+     * interrupts a screen-reader user mid-sentence for one card that failed
+     * while four others rendered. 📁 `SystemState` decides politeness from
+     * scope rather than from the caller, *"because a caller free to choose will
+     * eventually choose the polite one for an outage and the rude one for a
+     * widget."*
+     */
+    expect(screen.getByRole('status')).toHaveTextContent('What needs you could not be loaded');
     expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
     expect(screen.getByText(/Everything else on this page is unaffected/)).toBeInTheDocument();
   });

@@ -75,6 +75,9 @@ describe('📁 contract 13 and state 07 stay inside the footprint', () => {
     render(<IntegrationHealthCard />);
     expect(screen.getByTestId('home-integration-health')).toBeInTheDocument();
     expect(screen.getByText(/could not read your connections/i)).toBeInTheDocument();
+    /* 📁 State 08's drawn action. ⛔ **A reload would discard every sibling
+       card that succeeded**, which is the opposite of what the design asks. */
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
   });
 
   it('⛔ a pending read skeletons rather than claiming nothing is connected', () => {

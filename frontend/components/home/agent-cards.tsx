@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 
-import { ApiError } from '@/lib/api/client';
+import { CardFailure } from '@/components/home/card-failure';
+
 import type { ResearchRun } from '@/lib/api/types';
 import { cn } from '@/lib/design/cn';
 import { useAccountIdentities } from '@/lib/query/hooks';
@@ -50,7 +51,7 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 export function AgentQueueCard() {
   const { runs, mine, names } = useRuns();
 
-  if (runs.isError) return <QueueFrame>{failed(runs.error)}</QueueFrame>;
+  if (runs.isError) return failed(runs, 'home-agent-queue');
   if (runs.isPending) return <QueueFrame>{skeleton()}</QueueFrame>;
 
   const all = runs.data ?? [];
@@ -114,7 +115,7 @@ export function AgentQueueCard() {
 export function AgentRunsCard() {
   const { runs, mine, names } = useRuns();
 
-  if (runs.isError) return <RunsFrame>{failed(runs.error)}</RunsFrame>;
+  if (runs.isError) return failed(runs, 'home-agent-runs');
   if (runs.isPending) return <RunsFrame>{skeleton()}</RunsFrame>;
 
   const all = runs.data ?? [];
@@ -292,16 +293,25 @@ function Row({
  * 📁 **Contract 13** — *"a card query failing after retries renders that card's
  * error inside its own footprint with the correlation ID; siblings are
  * unaffected."*
+ *
+ * ⚡ **Shared by both cards, because they share the read.** ⛔ **The promise
+ * line does NOT appear over a failure**: *"nothing here was sent or written"*
+ * is a claim about output Signora produced, and a card that could not read is
+ * not in a position to make it.
  */
-function failed(error: unknown) {
-  const correlation = error instanceof ApiError ? error.correlationId : null;
+function failed(
+  runs: { error: unknown; refetch: () => unknown; isFetching: boolean },
+  testId: string,
+) {
   return (
-    <p className="px-[18px] py-[15px] text-[12.5px] leading-[1.55] text-content-muted">
-      Signora could not read what its agents have been doing.
-      {correlation === null ? null : (
-        <span className="ml-1 font-mono text-2xs text-content-subtle">{correlation}</span>
-      )}
-    </p>
+    <CardFailure
+      title="Signora could not read what its agents have been doing"
+      description="No agent run has been lost or affected. Everything else on this page is unaffected."
+      error={runs.error}
+      onRetry={() => void runs.refetch()}
+      retrying={runs.isFetching}
+      testId={testId}
+    />
   );
 }
 

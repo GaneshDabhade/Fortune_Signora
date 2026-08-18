@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 
-import { ApiError } from '@/lib/api/client';
+import { CardFailure } from '@/components/home/card-failure';
+
 import type { ViewedRecord } from '@/lib/api/types';
 import { useAccountIdentities } from '@/lib/query/hooks';
 import { useRecentlyViewed } from '@/lib/query/hooks/recently-viewed';
@@ -60,16 +61,26 @@ export function RecentsCard() {
    * history**"* — **an empty list and an unread list are different answers.**
    */
   if (recents.isError) {
-    const correlation = recents.error instanceof ApiError ? recents.error.correlationId : null;
+    /**
+     * ⛔ **NOT inside `Frame`, and the 160px footprint is deliberately not
+     * imposed here.** 📁 The registry's height is what a LOADED card occupies
+     * and what its skeleton reserves — *"each card skeleton uses the height
+     * declared in the registry, so nothing reflows when data lands."* ⚡ **A
+     * failure panel clipped to 160px would hide its own retry**, and the
+     * design's drawn error card is card-sized rather than row-sized.
+     */
     return (
-      <Frame>
-        <p className="text-[12.5px] leading-[1.55] text-content-muted">
-          Signora could not read what you opened recently.
-          {correlation === null ? null : (
-            <span className="ml-1 font-mono text-2xs text-content-subtle">{correlation}</span>
-          )}
-        </p>
-      </Frame>
+      <CardFailure
+        title="Signora could not read what you opened recently"
+        /* 📁 Session Continuity tier 4's failure rule: *"recents unavailable…
+           **no fabricated history**"* — ⛔ **an empty list and an unread list
+           are different answers**, and this is the one that says which. */
+        description="Nothing you opened has been lost. Everything else on this page is unaffected."
+        error={recents.error}
+        onRetry={() => void recents.refetch()}
+        retrying={recents.isFetching}
+        testId="home-recents"
+      />
     );
   }
 

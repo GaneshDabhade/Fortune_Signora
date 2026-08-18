@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 
-import { ApiError } from '@/lib/api/client';
+import { CardFailure } from '@/components/home/card-failure';
+
 import type { Connection, ConnectionHealth } from '@/lib/api/types';
 import { cn } from '@/lib/design/cn';
 import { useIntegrations } from '@/lib/query/hooks/integrations';
@@ -60,16 +61,18 @@ export function IntegrationHealthCard() {
    * unaffected."*
    */
   if (systems.isError) {
-    const correlation = systems.error instanceof ApiError ? systems.error.correlationId : null;
     return (
-      <Frame>
-        <p className="px-[18px] py-[15px] text-[12.5px] leading-[1.55] text-content-muted">
-          Signora could not read your connections. Everything else on this page is unaffected.
-          {correlation === null ? null : (
-            <span className="ml-1 font-mono text-2xs text-content-subtle">{correlation}</span>
-          )}
-        </p>
-      </Frame>
+      <CardFailure
+        title="Signora could not read your connections"
+        /* ⛔ **What survived, named** — 📁 `3.3.1`. A person reading *"could not
+           read your connections"* has to be told the sources are still
+           connected; the failure is the READ, not the connection. */
+        description="Nothing has been disconnected. Everything else on this page is unaffected."
+        error={systems.error}
+        onRetry={() => void systems.refetch()}
+        retrying={systems.isFetching}
+        testId="home-integration-health"
+      />
     );
   }
 

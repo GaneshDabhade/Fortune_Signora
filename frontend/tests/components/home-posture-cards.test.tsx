@@ -102,8 +102,11 @@ describe('🔴 an unresolved posture map must not read as "nothing is wrong"', (
   it('📁 contract 13 — a failed read stays inside its own footprint', () => {
     scoring.mockReturnValue({ data: undefined, isPending: false, isError: true });
     render(<TopRisksCard />);
+    /* ⚡ **The panel carries the failing card's own test id**, so *"inside its
+       own footprint"* stays assertable when the frame is replaced. */
     expect(screen.getByTestId('home-top-risks')).toBeInTheDocument();
-    expect(screen.getByText(/could not read this/i)).toBeInTheDocument();
+    expect(screen.getByText(/Top risks could not be read/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
   });
 });
 

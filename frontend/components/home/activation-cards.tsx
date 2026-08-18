@@ -33,7 +33,7 @@ import Link from 'next/link';
 import { Check } from 'lucide-react';
 
 import { Card, CardBody, SkeletonText } from '@/components/ui';
-import { StatedAbsence } from '@/components/feedback/stated-absence';
+import { CardFailure } from '@/components/home/card-failure';
 import { cn } from '@/lib/design/cn';
 import {
   DEPENDENCY_REASON,
@@ -41,7 +41,6 @@ import {
   primaryEnabled,
   type ActivationCardId,
 } from '@/lib/home/activation';
-import { correlationOf } from '@/lib/accounts/section-state';
 import { useIntegrations } from '@/lib/query/hooks/integrations';
 import { usePreferences, useSkipInvite } from '@/lib/query/hooks/preferences';
 import { useWorkspaceMembers } from '@/lib/query/hooks/team';
@@ -185,15 +184,22 @@ function Step({ id }: { id: 'connect-a-crm' | 'connect-calls' }) {
   const copy = COPY[id];
 
   if (query.isError) {
+    /**
+     * ⛔ **A failed read, not an absence** — the same correction the pipeline
+     * card carries. ⚠️ **It matters more here than anywhere else on Home**:
+     * this card decides whether somebody is shown SETUP, so *"there is
+     * nothing"* reads as *"you have connected nothing"* to a customer whose
+     * CRM is connected and working.
+     */
     return (
       <Card>
         <CardBody>
-          <StatedAbsence
-            subject="which systems you have connected"
-            reassurance="Nothing you have connected has been lost"
-            {...(correlationOf(query.error) === undefined
-              ? {}
-              : { correlationId: correlationOf(query.error)! })}
+          <CardFailure
+            title="Which systems you have connected could not be read"
+            description="Nothing you have connected has been lost or disconnected. Everything else on this page is unaffected."
+            error={query.error}
+            onRetry={() => void query.refetch()}
+            retrying={query.isFetching}
           />
         </CardBody>
       </Card>

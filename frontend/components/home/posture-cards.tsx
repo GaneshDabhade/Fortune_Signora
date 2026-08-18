@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 
-import { ApiError } from '@/lib/api/client';
+import { CardFailure } from '@/components/home/card-failure';
+
 import type { Money, Posture, QueueEntry, SignalTypeName } from '@/lib/api/types';
 import { formatMoney } from '@/lib/accounts/table';
 import { cn } from '@/lib/design/cn';
@@ -127,17 +128,22 @@ function PostureCard({
    * unaffected."*
    */
   if (queue.isError || postures.isError) {
-    const correlation = queue.error instanceof ApiError ? queue.error.correlationId : null;
     return (
-      <Frame title={title} testId={testId}>
-        <p className="px-[18px] py-[15px] text-[12.5px] leading-[1.55] text-content-muted">
-          Signora could not read this. Nothing has been lost, and the rest of this page is
-          unaffected.
-          {correlation === null ? null : (
-            <span className="ml-1 font-mono text-2xs text-content-subtle">{correlation}</span>
-          )}
-        </p>
-      </Frame>
+      <CardFailure
+        title={`${title} could not be read`}
+        /* ⚡ **Two reads feed this card and either can fail** — the queue and
+           the posture the scoring model publishes. ⛔ **Neither is named
+           here**: which of two internal reads failed is not a fact a customer
+           can act on, and the correlation ID is what carries it to support. */
+        description="Nothing has been lost, and the rest of this page is unaffected."
+        error={queue.isError ? queue.error : postures.error}
+        onRetry={() => {
+          void queue.refetch();
+          void postures.refetch();
+        }}
+        retrying={queue.isFetching || postures.isFetching}
+        testId={testId}
+      />
     );
   }
 

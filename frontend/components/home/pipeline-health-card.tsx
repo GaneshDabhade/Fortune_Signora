@@ -35,10 +35,9 @@
 'use client';
 
 import { Card, CardBody, CardHeader, CardTitle, EmptyState, SkeletonText } from '@/components/ui';
-import { StatedAbsence } from '@/components/feedback/stated-absence';
+import { CardFailure } from '@/components/home/card-failure';
 import { LineChart } from 'lucide-react';
 import { formatDay } from '@/components/intelligence/dates';
-import { correlationOf } from '@/lib/accounts/section-state';
 import { usePipelineHealth } from '@/lib/query/hooks/commercial';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
@@ -62,13 +61,21 @@ function Body({ health }: { health: ReturnType<typeof usePipelineHealth> }) {
   // ⚠️ **Error before empty** — 📁 [P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md):
   // *a failed read must never render as an empty result.*
   if (health.isError) {
+    /**
+     * ⚠️ **This rendered `StatedAbsence`, which is the wrong half of the pair.**
+     * 📁 Its own header: *"`EmptyState` says **there is nothing**; a system
+     * state says **something failed**… conflating them is how a broken widget
+     * renders as an empty one."* ⛔ **A failed pipeline read is a failure**, and
+     * the design's state 08 requires a retry and a dashed frame that
+     * `StatedAbsence` does not offer.
+     */
     return (
-      <StatedAbsence
-        subject="how your pipeline is moving"
-        reassurance="Nothing about your deals has changed"
-        {...(correlationOf(health.error) === undefined
-          ? {}
-          : { correlationId: correlationOf(health.error)! })}
+      <CardFailure
+        title="How your pipeline is moving could not be read"
+        description="Nothing about your deals has changed. Everything else on this page is unaffected."
+        error={health.error}
+        onRetry={() => void health.refetch()}
+        retrying={health.isFetching}
       />
     );
   }
