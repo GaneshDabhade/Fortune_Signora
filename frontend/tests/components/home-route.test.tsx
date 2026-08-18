@@ -255,20 +255,24 @@ describe('⛔ it renders no card the platform has not published', () => {
    */
   it('🔴 a registered card with no renderer is skipped, not drawn empty', () => {
     /**
-     * ⚠️ **The example had to change and the RULE did not** —
-     * [TASK-1424](../../../docs/BACKLOG.md). ⛔ This used `connect-a-crm`,
-     * **which now has a renderer**, so the test was asserting that a card which
-     * DOES draw does not draw. ⚡ **A stale example turns a live guard into a
-     * false one**, and it fails loudly rather than quietly, which is why it was
-     * caught.
+     * ⚠️ **The example has now gone stale TWICE, and the RULE has not moved.**
+     * ⛔ It was `connect-a-crm` until that gained a renderer
+     * ([TASK-1424](../../../docs/BACKLOG.md)); it was then `top-risks`, **which
+     * gained one the moment the risk/opportunity posture was found to be
+     * published already** — `scoring_model@1.json`, one module over from where
+     * the earlier audit looked.
      *
-     * ✅ **`top-risks` is the honest stand-in**: it is a real `CardId`, it is
-     * placed in the executive composition, and 📁 **nothing renders it** —
-     * *"ranked risks with the population each was derived from"* has no read,
-     * measured in [TASK-1425](../../../docs/BACKLOG.md).
+     * 🔴 **Twice is a pattern, so the third example is chosen so it cannot
+     * recur**: 📁 **`forecast-vs-plan` can NEVER acquire a renderer.**
+     * `buying_score_engine` states in two files that *it does not forecast a
+     * purchase*, so `forecast.committed` is refused by domain law rather than
+     * merely unbuilt — [C-1528](../../../docs/LANE_COORDINATION.md).
+     *
+     * ⚡ **An example that is absent by decision outlives every example that is
+     * absent by schedule.**
      */
     cardsFor.mockReturnValue([
-      { id: 'top-risks', title: 'Top risks', module: 'signal_engine', requires: null },
+      { id: 'forecast-vs-plan', title: 'Forecast vs plan', module: 'opportunity_engine', requires: null },
     ]);
 
     render(<Home />);
@@ -276,7 +280,7 @@ describe('⛔ it renders no card the platform has not published', () => {
     expect(document.querySelectorAll('[data-card]')).toHaveLength(0);
     // ⛔ **Its title must not appear either** — a heading with no card under it
     // is the placeholder TASK-1433 refused.
-    expect(screen.queryByText('Top risks')).not.toBeInTheDocument();
+    expect(screen.queryByText('Forecast vs plan')).not.toBeInTheDocument();
     expect(screen.getByText(/nothing to put on your home yet/i)).toBeInTheDocument();
   });
 

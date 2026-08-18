@@ -275,6 +275,18 @@ export const REGISTRY: readonly CardContract[] = [
     module: 'signal_engine',
     requires: null,
   },
+  /**
+   * ✅ **`card.risks` and `card.opps` — registered because their producers
+   * exist, which a previous audit measured wrongly.**
+   *
+   * ⛔ **It searched `signal_engine` for a risk/opportunity classification,
+   * found none, and concluded the cards were unbuildable.** ✅ **The judgement
+   * is `buying_score_engine`'s**, ratified in `scoring_model@1.json` as a
+   * `posture` per type and published on `GET /workspaces/{id}/scoring-model` —
+   * **the module named below is the one that owns it.**
+   */
+  { id: 'top-risks', title: 'Top risks', module: 'signal_engine', requires: null },
+  { id: 'top-opportunities', title: 'Top opportunities', module: 'signal_engine', requires: null },
 ];
 
 /**

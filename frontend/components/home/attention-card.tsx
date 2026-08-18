@@ -7,6 +7,7 @@ import type { Money, Posture, QueueEntry, SignalTypeName } from '@/lib/api/types
 import { formatMoney } from '@/lib/accounts/table';
 import { cn } from '@/lib/design/cn';
 import { HM_COPY_06 } from '@/lib/home/copy';
+import { TONE } from '@/lib/home/tone';
 import { useAccountIdentities, useSignalCatalog } from '@/lib/query/hooks';
 import { useAccountsCount } from '@/lib/query/hooks/accounts-count';
 import { usePipelineHealth } from '@/lib/query/hooks/commercial';
@@ -317,19 +318,6 @@ function Item({
   );
 }
 
-/**
- * 📁 **Posture is the severity**, and the map is one line rather than a
- * judgement.
- *
- * ⛔ **The posture itself is NOT decided here** — it is Signora's, published by
- * the Buying Score Engine per hypothesis type. **This turns a domain word into a
- * colour, which is the only part of it a screen owns.**
- */
-const TONE: Readonly<Record<Posture, 'risk' | 'warn' | 'pos'>> = Object.freeze({
-  contractionary: 'risk',
-  neutral: 'warn',
-  expansionary: 'pos',
-});
 
 /**
  * 📁 The design's *"at 07:00"*.

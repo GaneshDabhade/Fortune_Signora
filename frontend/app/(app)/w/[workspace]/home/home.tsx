@@ -4,6 +4,7 @@ import { Home as HomeIcon } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
 import { StatedAbsence } from '@/components/feedback/stated-absence';
+import { cn } from '@/lib/design/cn';
 import {
   ConnectCallsCard,
   ConnectCrmCard,
@@ -15,6 +16,7 @@ import { FirstRunOverlay } from '@/components/home/first-run-overlay';
 import { CompositionSwitcher } from '@/components/home/composition-switcher';
 import { HomeGreeting } from '@/components/home/greeting';
 import { PipelineHealthCard } from '@/components/home/pipeline-health-card';
+import { TopOpportunitiesCard, TopRisksCard } from '@/components/home/posture-cards';
 import { SourceStrip } from '@/components/home/source-strip';
 import { HM_COPY_11 } from '@/lib/home/copy';
 import { cardsFor, type CardContract } from '@/lib/home/cards';
@@ -176,6 +178,8 @@ export function Home() {
   });
 
   const cards = cardsFor(composition, role);
+  /** 📁 Whether any rendered card claims the design's wide column. */
+  const hasWide = cards.some((card) => WIDE.has(card.id));
   const rendered = cards.filter((card) => RENDERERS[card.id] !== undefined);
 
   /**
@@ -288,8 +292,30 @@ export function Home() {
          * 📁 **Two columns, `1.45fr / 1fr`, 14px gap at the reference viewport**
          * — §09. ⛔ **One column below `laptop`**, which is where the design drops
          * the split rather than compressing it.
+         *
+         * 🔴 **The wide column is reserved only when a card actually claims
+         * it** — 📁 the registry's footprints, and **found in a screenshot.**
+         *
+         * ⛔ **`[1.45fr_1fr]` was hard-coded**, and the only card in `WIDE` is
+         * `card.attention`, which is **SELLER's**. ⚠️ **So the Executive
+         * composition rendered every card crushed into the 1fr column against
+         * 770px of empty space** — its own wide card, `card.forecast` at
+         * *"1.4fr × 320px"*, is the one the domain refuses to produce
+         * ([C-1528](../../../../../../docs/LANE_COORDINATION.md)), **so the
+         * column it would have filled can never be filled.**
+         *
+         * ✅ **With no wide card present the columns are equal**, which is what
+         * the registry asks for when everything remaining is `1fr` —
+         * `card.pipeline`, `card.risks` and `card.opps` all are. 📁 **Contract
+         * 21 still holds**: *"surplus width becomes margin, not a third
+         * column"* — ⛔ **and an empty reserved column is neither.**
          */
-        <div className="grid grid-cols-1 gap-3.5 laptop:grid-cols-[1.45fr_1fr] laptop:items-start">
+        <div
+          className={cn(
+            'grid grid-cols-1 gap-3.5 laptop:items-start',
+            hasWide ? 'laptop:grid-cols-[1.45fr_1fr]' : 'laptop:grid-cols-2',
+          )}
+        >
           {rendered.map((card) => {
             const Card = RENDERERS[card.id];
             if (Card === undefined) return null;
@@ -303,12 +329,29 @@ export function Home() {
                 key={card.id}
                 data-card={card.id}
                 aria-label={card.title}
+                /**
+                 * 🔴 **`col-start-2` is a PIN, and it was unconditional.**
+                 *
+                 * ⛔ **Every card that is not in `WIDE` was pinned to column
+                 * two** — which is right while `card.attention` holds column
+                 * one, and **wrong for every composition that has no wide card
+                 * at all.** ⚠️ **The Executive composition has none**, so all
+                 * three of its cards stacked in the right-hand column against
+                 * an empty left one. **Widening the template did not fix it;
+                 * the pin did.**
+                 *
+                 * ✅ **With no wide card the cards simply FLOW**, filling both
+                 * equal columns in DOM order — 📁 which is the order the design
+                 * ranks them in, and *"DOM order is visual order"* above.
+                 */
                 className={
                   FULL.has(card.id)
                     ? 'laptop:col-span-2'
                     : WIDE.has(card.id)
                       ? 'laptop:col-start-1'
-                      : 'laptop:col-start-2'
+                      : hasWide
+                        ? 'laptop:col-start-2'
+                        : undefined
                 }
               >
                 <Card />
@@ -365,6 +408,10 @@ const RENDERERS: Readonly<Partial<Record<CardContract['id'], () => React.ReactEl
   Object.freeze({
     'needs-you-today': AttentionCard,
     'pipeline-health': PipelineHealthCard,
+    // 📁 The Executive composition's two ranked lists, partitioned from one
+    // queue by the posture the Buying Score Engine publishes.
+    'top-risks': TopRisksCard,
+    'top-opportunities': TopOpportunitiesCard,
     'connect-a-crm': ConnectCrmCard,
     'connect-calls': ConnectCallsCard,
     'invite-the-team': InviteTheTeamCard,
