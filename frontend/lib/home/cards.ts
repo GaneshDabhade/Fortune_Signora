@@ -272,9 +272,11 @@ export const REGISTRY: readonly CardContract[] = [
    * ✅ **`card.inthealth`** — 📁 *"per-connection state"*, whose dependency
    * `integrations.health` is served today by `GET /workspaces/{id}/integrations`.
    *
-   * ⛔ **The registry's *"including held write queues"* is NOT implemented** —
-   * no write-queue concept exists in `integrations` and the design defines
-   * none. **The clause is outstanding, not invented.**
+   * ⛔ **The registry's *"including held write queues"* waits on E2.** 📁 CRM
+   * Integrations defines a held write precisely; 📁 `source.py:177` says
+   * *"write-back is E2's territory"*, and 📁 `406-epic-e2-crm-write-back.md`
+   * is *"prepared… no code was written and none should be."* **Signora cannot
+   * hold a write because it cannot write. A dependency, not a gap.**
    */
   { id: 'integration-health', title: 'Integration health', module: 'integrations', requires: null },
   { id: 'top-risks', title: 'Top risks', module: 'signal_engine', requires: null },

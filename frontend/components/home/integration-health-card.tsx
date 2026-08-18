@@ -16,18 +16,32 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
  * > 📁 Compositions **`OP` · `EX`** · footprint `1.2fr × auto` · dependency
  * > `integrations.health` · primary action ***"Open the integration"***.
  *
- * ## ⛔ *"Including held write queues"* is NOT implemented, and is not invented
+ * ## ⛔ *"Including held write queues"* waits on E2, and the earlier reason here was wrong
  *
- * 🔴 **The repository has no write-queue concept**, and 📁 **the design does not
- * define one** — it never says when a write is held, what a queue contains, or
- * what this card renders about it. **Measured**: `integrations` carries
- * `state · attention · reason · health · connected_at` and nothing resembling a
- * held write.
+ * ⚠️ **This comment first said the design does not define a held write. It
+ * does.** 📁 **CRM Integrations** — the approved screen for this capability —
+ * specifies it exactly: **`Held writes · 41 · queued · "Retained until
+ * permissions verify"`**, *"writes are held, **not discarded**"*, the log line
+ * `write.opp held=41 reason=INSUFFICIENT_ACCESS retry_in=15m`, and a recovery
+ * step *"drain the 41 held writes in order"*.
  *
- * ✅ **So the per-connection state the design specifies is implemented in full,
- * and that one clause is left out rather than guessed.** ⛔ **The card is not
- * redesigned around the gap** and its structure is unchanged; the clause is
- * recorded as the exact outstanding item.
+ * 🔴 **The real reason is that Signora cannot hold a write, because Signora
+ * cannot write.** 📁 `integrations/domain/source.py:177` — ***"Read-only.
+ * `fetch` is the only verb, and write-back is E2's territory."***
+ *
+ * 📁 **E2 is a ratified epic that is deliberately unbuilt** —
+ * [`406-epic-e2-crm-write-back.md`](../../../docs/architecture/406-epic-e2-crm-write-back.md):
+ * ***"Prepared by Lane C — Product Office. No code was written and none should
+ * be."*** ⛔ **It owns write-back entirely**, and its guardrail is structural:
+ * *"no write path without an `actor_id`"*, because *"a machine-authored
+ * commitment in a customer's CRM is [**intelligence suggests, humans commit**]
+ * being broken in somebody else's database."*
+ *
+ * ✅ **So this is a dependency, not a gap and not a product question.** ⛔
+ * **Building a write queue inside a Home slice would take E2's territory and
+ * breach its guardrail.** **The count appears here when E2 lands**; until then
+ * there is nothing to count, and a `0` would imply a capability that does not
+ * exist.
  *
  * ## ✅ Per-connection, not per-system
  *
