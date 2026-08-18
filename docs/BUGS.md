@@ -301,6 +301,60 @@ git show 19149dc6:docs/BACKLOG.md | grep -c '|) make that permanent'      # → 
 ✅ **The instruction I gave both lanes — *there is one claimant, do not resolve it as a Claim Protocol violation* — was correct.** ⛔ **The reason I gave for it was not.**
 
 
+### B-1018 · 🟠 Home is 10px off the design's eight-column grid at 1280, and the tolerance is 2px
+
+| | |
+|---|---|
+| **Module** | `product_surface` — Home |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — **Lane A** |
+| **Severity** | 🟠 · **A design-conformance defect**, which the certification standard ratified 2026-08-18 names explicitly |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-18 by QE**, in the first complete browser baseline at `954291ec` |
+
+**Steps to reproduce.** `npx playwright test content-width` against a seeded stack.
+
+```
+✘ content-width.spec.ts:50:11 › at 1280 › @journey Home is eight columns of the design's grid
+
+    Error: expect(received).toBeLessThanOrEqual(expected)
+    Expected: <= 2        ← ±2px, for sub-pixel track rounding
+    Received:    10
+```
+
+✅ **Stable and order-independent — FOUR isolated runs, the same test every time, 19 passed / 1 failed.** ⛔ **Not [B-1017](#b-1017)**: it survives a fresh seed and a run with nothing before it.
+
+**Every other page passes at both 1280 and 2400** — Business, Help, Settings, Team, Products, Organization, Connections — **so it is Home's composition, not the grid arithmetic.**
+
+> ⚠️ **Lane A measured `content-width` at 18/0 on their own branch** while this reads 17/1 on `main`. ⚡ **Their in-flight Home work may already fix it** — worth checking before anyone builds a fix, because the row would then be closed by work already done rather than by new work.
+
+### B-1019 · 🟠 The Team page scrolls sideways on a phone — 117 elements past a 375px viewport
+
+| | |
+|---|---|
+| **Module** | `product_surface` — Team |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — **Lane A** |
+| **Severity** | 🟠 — **a customer on a phone cannot read the page without dragging it sideways** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-18 by QE**, same baseline |
+
+**Steps to reproduce.** `npx playwright test layout-invariants` — the `layout-handset` project, 375px.
+
+```
+✘ layout-invariants.spec.ts:33:7 › Team holds its layout invariants   [layout-handset]
+
+    Error: 117 element(s) extend past the 375px viewport, so the page scrolls sideways
+      {"tag":"table", "cls":"w-full border-separate …", "right":589}
+      {"tag":"thead", …, "right":589}
+      {"tag":"th",    …, "right":474}
+    Expected: 0   Received: 117
+```
+
+**A `<table>` 589px wide inside a 375px viewport.** ⚡ **The root is one element and the 117 are its descendants** — a table that has no handset treatment, not 117 separate mistakes.
+
+✅ **Stable and order-independent: failed in the full suite twice and in isolation.** ⛔ **Not [B-1017](#b-1017).**
+
+**Team is the only page of the eight that fails this**; the other seven hold their invariants at handset. ⚠️ **Related in theme to [B-203](#b-203)** — *below 768px the product has no navigation at all* — **and distinct from it: this is content overflow, not a missing control.**
+
 ### B-1017 · 🔴 A spec creates a workspace, it becomes the persona's active one, and every later spec sees an empty product
 
 | | |
@@ -356,6 +410,8 @@ MAIN TEXT: … Welcome to E2E Org 1787050307980 | Signora needs three things
 ### ⚡ It probably explains [B-279](#b-279), and that is Lane A's row to decide
 
 **Lane A filed six specs failing through `main a[href^="/accounts/"]` and deliberately did not guess the cause** — *"whether it is the seed, the attention query or the list itself is unmeasured."* ✅ **Their restraint was right and this is the measurement.** **Five of their six are in the table above and all five pass in isolation.**
+
+✅ **TESTED, 2026-08-18, by Lane A's own protocol — and it does NOT explain their instance.** **Lane A's distinguishing fact: Playwright orders by path, `account-360` sorts FIRST, so nothing precedes it that could switch the workspace — and it failed 3 of 3 for them anyway.** **Run on `main` as they specified — `account-360.spec.ts` first and alone against a freshly seeded Playground: ✅ 5 passed.** ⛔ **By their stated criterion that means B-279 stays open on its own evidence**, and this row's scope stays at what it measured. ⚡ **Two trees, two measurements** — the resemblance was strong and it was not the same instance.
 
 ⛔ **QE does not close another lane's row.** **The evidence is theirs to weigh** — their run was on a different tree and a different stack, so this explains the shape without proving it is the same instance.
 
