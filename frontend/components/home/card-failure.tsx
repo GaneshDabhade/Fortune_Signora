@@ -1,7 +1,9 @@
 'use client';
 
 import { X } from 'lucide-react';
+import { useEffect } from 'react';
 
+import { useCardOutcomes } from '@/components/home/card-outcomes';
 import { Button } from '@/components/ui/button';
 import { SystemState } from '@/components/ui/system-state';
 import { ApiError } from '@/lib/api/client';
@@ -82,6 +84,26 @@ export function CardFailure({
   retrying = false,
   testId,
 }: CardFailureProps) {
+  /**
+   * 🔴 **State 08's page half is counted here** — 📁 *"if EVERY card fails, the
+   * page states that and offers one retry for all."*
+   *
+   * ⚡ **A card is failed exactly when it renders this**, so this is the one place
+   * that knows without Home duplicating ten queries (§2). ⛔ **The registry is
+   * optional** — outside Home there is no provider and the count stays zero.
+   *
+   * ⚠️ **Keyed on `testId`, which is the failing card's own id.** A failure with
+   * no id is still reported, under a stable fallback, because *"every card
+   * failed"* must not become *"every card with a test hook failed"*.
+   */
+  const outcomes = useCardOutcomes();
+  const id = testId ?? title;
+  const { report, forget } = outcomes;
+  useEffect(() => {
+    report(id, onRetry);
+    return () => forget(id);
+  }, [id, onRetry, report, forget]);
+
   /**
    * ⛔ **A wrapper rather than a prop on `SystemState`.** ⚡ That component
    * takes a fixed set of props deliberately — it is the ratified presentation

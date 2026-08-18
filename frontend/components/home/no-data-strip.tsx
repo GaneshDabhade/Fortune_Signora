@@ -84,7 +84,7 @@ export function NoDataStrip({ systems, accounts, activation, loading }: NoDataSt
       >
         !
       </span>
-      <p className="text-[12.5px] leading-[1.5] text-content">
+      <p className="text-label leading-[1.5] text-content">
         {/* 📁 `HM-COPY-05`, verbatim, with the source named from what actually
             connected. ⛔ **`syncedAgo` is `null`** — nothing publishes when a
             connection last synced, and `connected_at` is when the relationship
@@ -96,7 +96,7 @@ export function NoDataStrip({ systems, accounts, activation, loading }: NoDataSt
           and health cards link into it and never restate a connection step"*. */}
       <a
         href="/settings/connections"
-        className="ml-auto inline-flex h-control-sm items-center rounded-md border border-border bg-surface px-3 text-[11.5px] font-semibold text-content transition-colors hover:border-accent hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="ml-auto inline-flex h-control-sm items-center rounded-md border border-border bg-surface px-3 text-2xs font-semibold text-content transition-colors hover:border-accent hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
         Check what is synced
       </a>

@@ -8,6 +8,7 @@
  * published.**
  */
 import { render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const workspace = vi.hoisted(() => vi.fn());
@@ -38,6 +39,8 @@ const statedRole = vi.hoisted(() => vi.fn());
 const activationState = vi.hoisted(() => vi.fn());
 /** ⚡ **State 05's second half** — 📁 *"record count is zero"*. */
 const accountsCount = vi.hoisted(() => vi.fn());
+/** ⚡ **State 08's page half** — what the cards reported. */
+const outcomes = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/state/workspace-provider', () => ({ useWorkspaceContext: workspace }));
 vi.mock('@/lib/query/hooks/team', () => ({ useViewerRole: viewerRole }));
@@ -63,6 +66,10 @@ vi.mock('@/lib/query/hooks/home', () => ({
   useActivationState: activationState,
 }));
 vi.mock('@/lib/query/hooks/accounts-count', () => ({ useAccountsCount: accountsCount }));
+vi.mock('@/components/home/card-outcomes', async () => {
+  const actual = await vi.importActual<Record<string, unknown>>('@/components/home/card-outcomes');
+  return { ...actual, useCardOutcomes: outcomes };
+});
 vi.mock('@/lib/query/hooks/preferences', () => ({
   // ⚡ **`setup_complete_seen: false` is *told nobody yet*** — 📁 state 04's strip
   // is silent until the preference is READ, so omitting the field here would
@@ -137,6 +144,9 @@ beforeEach(() => {
   // ⚡ **A book with records by default**, so state 05's strip is absent unless a
   // test asks for it. ⛔ `0` is a real answer and is the subject of its own test.
   accountsCount.mockReturnValue({ data: { total: 41 } });
+  // ⛔ **Nothing failed by default**, so the page-level line is absent unless a
+  // test is about it.
+  outcomes.mockReturnValue({ failed: 0, retryAll: () => {}, report: () => {}, forget: () => {} });
 });
 
 describe('🔴 Home always renders', () => {
@@ -260,6 +270,92 @@ describe('🔴 Home always renders', () => {
     // to do* rather than *we could not ask*.
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     expect(screen.queryByText(/0 of 0/)).not.toBeInTheDocument();
+  });
+});
+
+describe('📁 state 08, the page half — AC-H07', () => {
+  /**
+   * ⚡ **A real query client, because these tests need cards that RENDER.**
+   *
+   * ⛔ Every id with a renderer reads something of its own, and `rendered.length`
+   * is half of Home's rule — so a card list with nothing in it cannot exercise
+   * it. ✅ **The reads sit pending and the cards draw their skeletons**, which is
+   * all this rule needs from them.
+   */
+  function renderHome() {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    return render(
+      <QueryClientProvider client={client}>
+        <Home />
+      </QueryClientProvider>,
+    );
+  }
+
+  /**
+   * 📁 *"The composition never collapses. **If every card fails, the page states
+   * that and offers one retry for all.**"*
+   *
+   * ⚡ **Home's RULE is what is asserted here** — the count itself is the
+   * registry's, and `card-outcomes.test.tsx` asserts that. ⛔ Rendering real
+   * cards to make them fail would test four other modules' reads on the way
+   * past.
+   */
+  it('🔴 states it when every rendered card has failed', () => {
+    ready(true);
+    cardsFor.mockReturnValue([{ id: 'recents', title: 'Pick up where you left off' }]);
+    outcomes.mockReturnValue({ failed: 1, retryAll: () => {}, report: () => {}, forget: () => {} });
+
+    renderHome();
+
+    expect(screen.getByTestId('home-all-failed')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Retry all' })).toBeVisible();
+  });
+
+  /**
+   * ⛔ **The composition never collapses.** ⚡ The page-level statement is
+   * *added*, not substituted — which is what stops a total failure becoming a
+   * blank page.
+   */
+  it('⛔ and the cards keep their own footprints underneath it', () => {
+    ready(true);
+    cardsFor.mockReturnValue([{ id: 'recents', title: 'Pick up where you left off' }]);
+    outcomes.mockReturnValue({ failed: 1, retryAll: () => {}, report: () => {}, forget: () => {} });
+
+    renderHome();
+
+    expect(screen.getByTestId('home').querySelector('[data-card]')).not.toBeNull();
+  });
+
+  /**
+   * 🔴 **`0 === 0` would have claimed total failure on a page that made no
+   * request at all.** ⚡ A composition with nothing rendered is state 12 or the
+   * designed empty state, and neither is a failure.
+   */
+  it('⛔ and never claims failure on a composition with no cards', () => {
+    ready(true);
+    cardsFor.mockReturnValue([]);
+    outcomes.mockReturnValue({ failed: 0, retryAll: () => {}, report: () => {}, forget: () => {} });
+
+    renderHome();
+
+    expect(screen.queryByTestId('home-all-failed')).not.toBeInTheDocument();
+  });
+
+  /**
+   * ⛔ **One working card is not total failure.** 📁 *"No sibling is affected"* —
+   * the line must not appear while anything on the page still works.
+   */
+  it('⛔ and stays silent while one card still works', () => {
+    ready(true);
+    cardsFor.mockReturnValue([
+      { id: 'recents', title: 'Pick up where you left off' },
+      { id: 'integration-health', title: 'Integration health' },
+    ]);
+    outcomes.mockReturnValue({ failed: 1, retryAll: () => {}, report: () => {}, forget: () => {} });
+
+    renderHome();
+
+    expect(screen.queryByTestId('home-all-failed')).not.toBeInTheDocument();
   });
 });
 

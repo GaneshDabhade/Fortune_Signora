@@ -108,7 +108,7 @@ export function SetupCompleteStrip({
       {/* 📁 `HM-COPY-04`, verbatim: *"Setup is complete. Home now shows your
           accounts, deals and signals."* ⛔ **It states what CHANGED**, which is
           the design's own requirement for this strip. */}
-      <p className="text-[12.5px] leading-[1.5] text-content">{HM_COPY_04}</p>
+      <p className="text-label leading-[1.5] text-content">{HM_COPY_04}</p>
     </div>
   );
 }

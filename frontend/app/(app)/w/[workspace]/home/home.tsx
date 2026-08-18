@@ -20,6 +20,7 @@ import { IntegrationHealthCard } from '@/components/home/integration-health-card
 import { PipelineHealthCard } from '@/components/home/pipeline-health-card';
 import { RecentsCard } from '@/components/home/recents-card';
 import { TopOpportunitiesCard, TopRisksCard } from '@/components/home/posture-cards';
+import { CardOutcomesProvider, useCardOutcomes } from '@/components/home/card-outcomes';
 import { NoDataStrip } from '@/components/home/no-data-strip';
 import { SetupCompleteStrip } from '@/components/home/setup-complete-strip';
 import { SourceStrip } from '@/components/home/source-strip';
@@ -92,7 +93,23 @@ import type { WorkspaceRole } from '@/lib/state/permissions';
  * primary role existed. ⚡ **Onboarding screen `05` collects it** — *"Role sets
  * the home page"* — so rules 3, 4 and 5 all reach their compositions.
  */
+/**
+ * 🔴 **The provider wraps the page so state 08's page half can be counted** —
+ * 📁 *"if every card fails, the page states that and offers one retry for all."*
+ *
+ * ⛔ **Outside `Home` rather than inside it**, because the count must survive
+ * every re-render `Home` performs while cards fail and retry: a provider declared
+ * in the same function as the consumer would remount its own state.
+ */
 export function Home() {
+  return (
+    <CardOutcomesProvider>
+      <HomeContent />
+    </CardOutcomesProvider>
+  );
+}
+
+function HomeContent() {
   const { activeWorkspace, isLoading, error } = useWorkspaceContext();
   const workspaceId = activeWorkspace?.id ?? null;
 
@@ -185,6 +202,16 @@ export function Home() {
   const accounts = useAccountsCount(workspaceId);
 
   /**
+   * 🔴 **State 08's page half** — 📁 *"if EVERY card fails, the page states that
+   * and offers one retry for all."*
+   *
+   * ⚡ **Reported by the cards rather than derived here** — see
+   * `card-outcomes.tsx`. ⛔ Home cannot see the cards' queries, and §09's
+   * independence rule is why it must not.
+   */
+  const outcomes = useCardOutcomes();
+
+  /**
    * ⚡ **`working` is *"at least one connection Signora can currently use"*.**
    * 📁 Rule 1 asks whether one has ever *completed a sync*, and a working
    * connection is the closest fact the contract publishes — ⚠️ **recorded because
@@ -225,6 +252,15 @@ export function Home() {
    * alternate Home §03 exists to forbid.
    */
   const nothingComposed = composition !== 'activation' && rendered.length === 0 && !resolving;
+
+  /**
+   * 📁 **State 08's page condition** — *"if EVERY card fails."*
+   *
+   * ⛔ **`rendered.length > 0` is load-bearing.** ⚡ A composition with nothing
+   * rendered is state 12 or the designed empty state; **`0 === 0` would report
+   * total failure on a page that made no request at all.**
+   */
+  const everyCardFailed = rendered.length > 0 && outcomes.failed >= rendered.length;
 
   return (
     /**
@@ -314,6 +350,43 @@ export function Home() {
 
       {/* 📁 ***"Progress counts blocking cards only"***, activation only. */}
       {composition === 'activation' && !registryEmpty ? <ActivationProgress /> : null}
+
+      {/**
+        * 📁 **State 08, the page half.** ⛔ **Above the grid rather than instead
+        * of it**: *"the composition never collapses"*, so every failed card keeps
+        * its own footprint and its own correlation ID underneath this line.
+        *
+        * ⚡ **`everyCardFailed` needs at least one card** — a composition with
+        * nothing rendered is state 12 or the designed empty state, not a failure,
+        * and `0 === 0` would have claimed otherwise.
+        */}
+      {everyCardFailed ? (
+        <div
+          role="status"
+          data-testid="home-all-failed"
+          className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-danger/30 bg-danger-subtle px-4 py-3"
+        >
+          <span
+            aria-hidden
+            className="grid h-5 w-5 flex-none place-items-center rounded-sm bg-surface text-xs font-bold text-danger"
+          >
+            !
+          </span>
+          {/* ⛔ **Names the scope and what survived**, which is the failure
+              grammar `3.3.1` asks for — and ⛔ never *"something went wrong"*. */}
+          <p className="text-label leading-[1.5] text-content">
+            Nothing on your home could be loaded. Signora is reachable and your accounts, signals
+            and settings all work — every card here failed its own read.
+          </p>
+          <button
+            type="button"
+            onClick={outcomes.retryAll}
+            className="ml-auto inline-flex h-control-sm items-center rounded-md border border-border bg-surface px-3 text-2xs font-semibold text-content transition-colors hover:border-accent hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            Retry all
+          </button>
+        </div>
+      ) : null}
 
       {nothingComposed ? (
         <section
