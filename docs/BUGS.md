@@ -2710,6 +2710,68 @@ logger.info("connecting to postgres://signora_app:S3cr3tPassw0rd@db:5432/signora
 
 ⚡ **The 34 tests added in [`tests/workspace_tenancy/test_onboarding_run.py`](../backend/tests/workspace_tenancy/test_onboarding_run.py) are kept**, and they are not redundant: **they took `domain/onboarding.py` from 96% to 100%** by covering `describe_person`'s team-size range — 📁 **screen `05`'s own guard, which genuinely had never executed.** ⛔ **The file's header claim that it was the module's first test is corrected in place.**
 
+### B-278 · The Makefile's own instruction for creating `.env.prod-local` writes npm's banner into it, and `make up` then cannot parse the file
+
+| | |
+|---|---|
+| **Module** | **`platform_foundation`** — [`Makefile`](../Makefile) line 82 |
+| **Current assignee** | ⚡ **Lane C**, joined from [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 — ⛔ **the documented setup command produces a file the next documented command refuses**, and the refusal names a line the reader never wrote |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-18**, `4749c3a8` on `lane-c-sync`. Awaiting QE verification. ⛔ **Lane A reported it and did not fix it**: `Makefile` is Lane C's ([§20e](../CLAUDE.md), D-022) |
+| **Found** | **2026-08-18**, bringing a stack up to verify entry resolution in a browser. ⚠️ **Not by any gate** |
+| **Commit found** | `7afb10c2` |
+
+**Steps to reproduce.** From a clone with no `infra/.env.prod-local`, run `make up` and follow the two commands it prints, exactly:
+
+```
+cp infra/.env.prod-local.example infra/.env.prod-local
+cd frontend && npm run keys:generate >> ../infra/.env.prod-local
+```
+
+Then run `make up` again.
+
+**Expected.** ⚡ The stack comes up. **The Makefile printed these two commands itself**, as the whole of what is required.
+
+**Actual.** ⛔ **`make up` refuses:**
+
+```
+failed to read infra/.env.prod-local: line 54: unexpected character ">"
+in variable name "> signora-frontend@0.1.0 keys:generate"
+```
+
+⚠️ **`npm run` prints a two-line banner to stdout before the script's own output:**
+
+```
+> signora-frontend@0.1.0 keys:generate
+> tsx scripts/generate-keys.ts
+```
+
+⛔ **`>>` appends stdout, so the banner lands in the env file**, and `docker compose --env-file` parses every line as `NAME=VALUE`. **`> signora-frontend@0.1.0 keys:generate` is not one.**
+
+#### ⚡ The repository already knows the answer, in the same file
+
+📁 **[`Makefile:255`](../Makefile) and [`Makefile:245`](../Makefile) both use `npm run --silent`** — `demo-users` and `demo-prepare` suppress exactly this banner. ⛔ **Only the instruction a *reader* is told to type omits it**, which is the half nothing runs in CI.
+
+**The fix is one word:**
+
+```
+cd frontend && npm run --silent keys:generate >> ../infra/.env.prod-local
+```
+
+✅ **Lane C landed exactly that at `4749c3a8`**, and **reproduced the failure before touching anything** — confirming the banner is on `stdout`, so `2>/dev/null` would not have saved it either. **Verified as behaviour rather than as a diff**: with `--silent` the appended file carries no banner line, `docker compose config -q` accepts it, and both `SIGNORA_JWT_*` values land.
+
+⚡ **And the regression test asserts the general property rather than this line** — **any `npm run` redirected into a file, across `Makefile`, `README.md` and `docs/RUNNING.md`, must pass `--silent`** ([`backend/tests/test_documented_commands.py`](../backend/tests/test_documented_commands.py), with a vacuity control). ✅ **Mutated to confirm it fails on the unfixed Makefile with a diagnostic naming the cause.** ⛔ **So the next instance is caught in any of the three files, not only this one.**
+
+#### 🔴 Why no gate could catch it
+
+⛔ **The failing command is printed by a shell `echo` inside a `test -f` guard** — it is documentation that happens to live in a Makefile, and **nothing executes a guard's error message.** ⚠️ **`make up` itself passes on every machine where the file already exists**, which is every machine that has run it once. **The defect is reachable only from a clone that has never had the stack up**, and by construction no gate runs there.
+
+⚡ **Same class as [B-009](#b-009--the-documented-command-for-starting-the-api-cannot-start-the-api) and [B-1003](#b-1003--the-runbook-hands-every-lane-slot-0s-port-and-it-had-told-qe-so-itself)** — a documented command that cannot be pasted, where the document and the behaviour were each correct in isolation.
+
+#### ⚠️ `README.md:46` is not the same defect
+
+📁 **`cd frontend && npm install && npm run keys:generate`** prints to a terminal for a human to read and copy. **The banner is harmless there and removing it would lose nothing** — ⛔ **this row is about the redirect, not about the banner.**
+
 ### B-277 · Onboarding loaded forever when there was no active organization
 
 | | |
