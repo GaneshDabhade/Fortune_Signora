@@ -79,7 +79,7 @@ prod-local-env:
 	  echo "  Two commands create it:"; \
 	  echo ""; \
 	  echo "    cp infra/.env.prod-local.example infra/.env.prod-local"; \
-	  echo "    cd frontend && npm run keys:generate >> ../infra/.env.prod-local"; \
+	  echo "    cd frontend && npm run --silent keys:generate >> ../infra/.env.prod-local"; \
 	  echo ""; \
 	  echo "  Only the two SIGNORA_JWT_* values are required; everything else defaults."; \
 	  echo ""; \

@@ -105,3 +105,81 @@ def test_a_factory_entry_point_is_invoked_with_the_factory_flag(
         f"{source}:{line_number} starts the API at `apps.api.main:{target}`, "
         f"which is a factory, but the file never passes --factory.\n  {line}"
     )
+
+
+# ---------------------------------------------------------------------------
+# B-278 — a documented command whose own output corrupts the file it writes
+# ---------------------------------------------------------------------------
+#
+# `npm run` prints a two-line banner naming the package and the script, and it
+# prints it to **stdout**. Harmless when a person is reading it; fatal the
+# moment the line redirects into a file that something else must parse.
+#
+#     cd frontend && npm run keys:generate >> ../infra/.env.prod-local
+#
+# lands `> signora-frontend@0.1.0 keys:generate` in the env file, and `make up`
+# then refuses with *unexpected character ">" in variable name*. Lane A hit it
+# for real bringing a stack up from a clone that had never had one.
+#
+# **No existing gate could see it**, which is what makes it worth a test rather
+# than a careful reader: the line lives inside an `echo` in a `test -f` guard,
+# so nothing ever executes it, and `make up` passes on every machine where the
+# file already exists — which is every machine that has run it once. It is
+# reachable only from a fresh clone, exactly once.
+#
+# `--silent` suppresses the banner, and this repository already knew that:
+# `demo-users`, `demo-prepare`, `infra/workstation.py` and `infra/smoke.sh` all
+# use it. **Only the instruction a human was told to type omitted it.**
+
+FILES_A_HUMAN_COPIES_COMMANDS_FROM = (
+    "Makefile",
+    "README.md",
+    "docs/RUNNING.md",
+)
+
+# `npm run <script>` whose output is redirected into a file. `2>` and `>&` are
+# deliberately excluded — redirecting stderr is not this defect, and a banner
+# on stdout is unaffected by it.
+_REDIRECTED_NPM_RUN = re.compile(r"npm run\b(?P<flags>.*?)(?<![0-9&])>{1,2}\s*[^\s&|]")
+
+
+def _redirected_npm_invocations() -> list[tuple[str, int, str]]:
+    found = []
+    for relative in FILES_A_HUMAN_COPIES_COMMANDS_FROM:
+        path = REPO_ROOT / relative
+        for number, line in enumerate(path.read_text().splitlines(), start=1):
+            if _REDIRECTED_NPM_RUN.search(line):
+                found.append((relative, number, line.strip()))
+    return found
+
+
+def test_some_documented_command_redirects_npm_output() -> None:
+    """A control. If the regex stops matching, the assertion below passes
+    vacuously and this section becomes decoration — the failure mode this
+    repository calls Decorative Logic.
+    """
+    assert _redirected_npm_invocations(), (
+        "no documented command redirects `npm run` output any more — either "
+        "the instruction was removed or this test stopped being able to see it"
+    )
+
+
+@pytest.mark.parametrize(
+    ("source", "line_number", "line"),
+    _redirected_npm_invocations(),
+    ids=lambda value: str(value) if isinstance(value, str | int) else "",
+)
+def test_a_redirected_npm_command_silences_the_banner(
+    source: str, line_number: int, line: str
+) -> None:
+    match = _REDIRECTED_NPM_RUN.search(line)
+    assert match is not None
+
+    assert "--silent" in match.group("flags"), (
+        f"{source}:{line_number} redirects `npm run` output into a file "
+        f"without --silent. npm prints a two-line banner to stdout before the "
+        f"script runs, so the banner lands in the file (B-278).\n"
+        f"  {line}\n"
+        f"Add --silent, as demo-users, demo-prepare, infra/workstation.py and "
+        f"infra/smoke.sh already do."
+    )
