@@ -32,6 +32,7 @@ from modules.ai_research_engine.application.queries import (
     AccountResearch,
     ReadableFinding,
     ResearchArtifact,
+    ResearchRun,
 )
 from modules.ai_research_engine.domain.request import ResearchRequestState, ResearchStatus
 
@@ -214,4 +215,63 @@ class ResearchStateResponse(BaseModel):
             updated_at=state.occurred_at,
             detail=state.detail,
             artifact=None,
+        )
+
+
+class ResearchRunResponse(BaseModel):
+    """One run of the research agent, as a list of them reads.
+
+    ⛔ **No artifact, deliberately.** 📁 A list answers *"what has Signora been
+    doing?"*; `ResearchStateResponse` answers *"what did it find?"*, and a list
+    that carried every brief would ship a page of model output for rows nobody
+    has opened.
+
+    ⚡ **`account_id` is on the wire and the account's NAME is not.** Naming it
+    here would make this module read `commercial_profile`'s records to render
+    somebody else's; the identity read every other list on this surface already
+    uses resolves it in one batch.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    request_id: UUID = Field(description="The ask this describes.")
+    account_id: UUID = Field(description="The account that was researched.")
+    requested_by: UUID = Field(
+        description=(
+            "Who asked. **The verified principal at the time of asking** — a surface saying "
+            "*you requested it* needs to be right about that."
+        )
+    )
+    requested_at: datetime = Field(description="When somebody asked.")
+    status: ResearchStatus = Field(
+        description=(
+            "Where this run got to. `nothing_to_research` is **not a failure** — it finished "
+            "and found nothing worth comparing."
+        )
+    )
+    updated_at: datetime = Field(description="When it last changed.")
+    detail: str | None = Field(
+        description=(
+            "Why it failed, verbatim. **Null unless `status` is `failed`.**"
+        )
+    )
+    sources: int | None = Field(
+        description=(
+            "How many distinct sources the run read. **Null unless it completed** — a run still "
+            "running has read nothing anybody may cite yet. **`0` is a different fact**: it "
+            "completed and cited nothing."
+        )
+    )
+
+    @classmethod
+    def from_domain(cls, run: ResearchRun) -> "ResearchRunResponse":
+        return cls(
+            request_id=run.request.id,
+            account_id=run.request.entity_id,
+            requested_by=run.request.requested_by,
+            requested_at=run.request.requested_at,
+            status=run.state.status,
+            updated_at=run.state.occurred_at,
+            detail=run.state.detail,
+            sources=run.sources,
         )

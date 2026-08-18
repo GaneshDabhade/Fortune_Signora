@@ -21,7 +21,10 @@ from fastapi import APIRouter, HTTPException, Response, status
 
 from apps.api.composition.research import ResearchRead, ResearchRequestWrite
 from modules.ai_research_engine.application.request import RequestResearchInput
-from modules.ai_research_engine.interface.schemas import ResearchStateResponse
+from modules.ai_research_engine.interface.schemas import (
+    ResearchRunResponse,
+    ResearchStateResponse,
+)
 from signora_platform.api import CurrentWorkspace
 from signora_platform.authorization import Action, Resource
 
@@ -104,6 +107,34 @@ async def account_research(
             detail="No research has been requested for this account.",
         )
     return ResearchStateResponse.from_domain(found)
+
+
+@router.get(
+    "/workspaces/{workspace_id}/research",
+    response_model=list[ResearchRunResponse],
+    summary="What Signora has researched lately, across accounts",
+)
+async def workspace_research(
+    context: CurrentWorkspace, research: ResearchRead
+) -> list[ResearchRunResponse]:
+    """*"What has Signora been doing?"* — the whole workspace, newest first.
+
+    **The only read here that is not about one account.** Both other endpoints
+    answer for the account in the path; this one exists because the question a
+    home page asks is about the agent rather than about a record, and a client
+    that had to ask account by account could not ask it at all.
+
+    **Newest first, and no status ordering.** *Failures first* is one surface's
+    ranking and *the latest output* is another's; the server returns the order
+    the runs happened and each surface ranks what it was given.
+
+    **An empty list is an answer**, not a `404`. A workspace nobody has asked
+    to research anything is an ordinary state, and it is the caller that says
+    so in words.
+    """
+    context.authorize(Resource.RESEARCH, Action.READ)
+    runs = await research.recent_runs(context.workspace_id)
+    return [ResearchRunResponse.from_domain(run) for run in runs]
 
 
 __all__ = ["router"]

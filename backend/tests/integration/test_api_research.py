@@ -329,3 +329,79 @@ class TestTheRequestIsAppendOnly:
                 )
             )
         assert granted is False
+
+
+class TestTheWorkspaceListAnswersWhatSignoraHasBeenDoing:
+    """`GET /workspaces/{id}/research` — the only read here not about one
+    account.
+
+    **Home's two agent cards depend on it** (`card.agentqueue` and
+    `card.agentruns`, both on `agents.runs`), and both ask about the agent
+    rather than about a record. A client that had to ask account by account
+    could not ask the question at all.
+    """
+
+    async def test_a_member_sees_the_run_they_asked_for(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        await _ask(client, key_pair, user_id, workspace_id, entity_id)
+
+        response = await client.get(
+            f"/workspaces/{workspace_id}/research", headers=_auth(key_pair, user_id)
+        )
+
+        assert response.status_code == 200, response.text
+        (run,) = response.json()
+        assert run["account_id"] == str(entity_id)
+        assert run["requested_by"] == str(user_id)
+        assert run["status"] == "requested"
+        assert run["sources"] is None, "nothing has run, so nothing has been read"
+
+    async def test_a_workspace_nobody_has_asked_in_answers_with_an_empty_list(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**200 with `[]`, not 404.** A workspace that has never used research
+        is an ordinary state, and the surface is what says so in words."""
+        workspace_id, user_id, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        response = await client.get(
+            f"/workspaces/{workspace_id}/research", headers=_auth(key_pair, user_id)
+        )
+
+        assert response.status_code == 200
+        assert response.json() == []
+
+    async def test_a_stranger_cannot_read_what_signora_researched(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**Which accounts a workspace is researching is a fact about that
+        workspace**, and a token belonging to nobody in it is refused before
+        RLS is ever consulted."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        await _ask(client, key_pair, user_id, workspace_id, entity_id)
+
+        response = await client.get(
+            f"/workspaces/{workspace_id}/research", headers=_auth(key_pair, uuid4())
+        )
+
+        assert response.status_code in (403, 404), response.text
+        assert str(entity_id) not in response.text

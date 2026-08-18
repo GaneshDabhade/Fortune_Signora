@@ -14,6 +14,7 @@ rather than vocabulary, so they live here.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Protocol
 from uuid import UUID
 
@@ -58,6 +59,27 @@ class ResearchArtifactReader(Protocol):
         self, workspace_id: UUID, task_id: UUID
     ) -> tuple[ResearchTask, tuple[ResearchFinding, ...], ResearchSynthesis] | None: ...
 
+    async def source_counts(
+        self, workspace_id: UUID, task_ids: tuple[UUID, ...]
+    ) -> Mapping[UUID, int]:
+        """How many distinct sources each of these runs read.
+
+        **A count, not the citations.** 📁 The corpus's word for a piece of
+        evidence a run cited is a *source* — *"14 sources · 3 excluded"*,
+        *"6 sources · confidence 3 of 5"* — and a surface that only says how
+        many needs the number rather than the tokens.
+
+        ⛔ **Reading the whole artifact to count them would load every finding,
+        its attributes and its synthesis** for one integer per run, which is
+        the cost `by_task` is worth paying once and not worth paying for a
+        list.
+
+        ⚡ **Absent from the mapping means no findings**, which a completed run
+        can legitimately have: `NOTHING_TO_RESEARCH` is a real outcome, and a
+        caller must not read a missing key as a fault.
+        """
+        ...
+
 
 class ResearchRequestRepository(Protocol):
     """A request and its history. **Append-only, like the workflow it mirrors.**
@@ -95,6 +117,23 @@ class ResearchRequestRepository(Protocol):
         self, workspace_id: UUID, entity_id: UUID
     ) -> tuple[ResearchRequest, ResearchRequestState] | None:
         """The most recent request for this account, finished or not."""
+        ...
+
+    async def recent(
+        self, workspace_id: UUID, *, limit: int
+    ) -> tuple[tuple[ResearchRequest, ResearchRequestState], ...]:
+        """The workspace's most recent requests, newest first, each with its
+        current state.
+
+        ⚡ **Across accounts, which every other read here refuses to be.** The
+        two questions this module was built for are asked *about one account*;
+        this one is asked about the workspace — *"what has Signora been
+        doing?"* — and it is the only shape that can answer it without a caller
+        fetching one account at a time.
+
+        ⛔ **Still one workspace, explicitly.** The scope does not widen because
+        the entity narrowing was dropped.
+        """
         ...
 
     async def generations(self, workspace_id: UUID, entity_id: UUID) -> int:

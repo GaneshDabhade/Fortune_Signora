@@ -17,11 +17,13 @@ see while reviewing.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import func, select
+from sqlalchemy import distinct, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import aliased
 
 from modules.ai_platform.public import AIVendor, EvidenceRef, GroundedStatement
 from modules.ai_research_engine.domain.request import (
@@ -184,6 +186,54 @@ class SqlResearchRequestRepository:
             return None
         return _request(row), state
 
+    async def recent(
+        self, workspace_id: UUID, *, limit: int
+    ) -> tuple[tuple[ResearchRequest, ResearchRequestState], ...]:
+        """Every account's latest ask, newest first — one query, not N+1.
+
+        **The current state is the highest `sequence`**, exactly as
+        `_current_state` reads it for one request. Asking that per request
+        would be one round trip per row for a list; a window function ranks
+        every request's history once and keeps the top of each.
+
+        ⚡ **Ordered by when it was ASKED, not by when it last moved.** A run
+        that failed at 04:00 and one requested at 09:00 are two different
+        answers to *"what has Signora been doing?"*, and ordering by the state
+        would put a long-finished request above a fresh one every time its
+        history gained a row.
+        """
+        ranked = (
+            select(
+                ResearchRequestStateModel,
+                func.row_number()
+                .over(
+                    partition_by=ResearchRequestStateModel.request_id,
+                    order_by=ResearchRequestStateModel.sequence.desc(),
+                )
+                .label("rank"),
+            )
+            .where(ResearchRequestStateModel.workspace_id == workspace_id)
+            .subquery()
+        )
+        # **The subquery mapped back to the entity**, so the row this method
+        # returns is built by `_state` — the same function `by_id`,
+        # `latest_for` and `in_flight_for` all go through. A second hand-rolled
+        # mapping here would be a second place for a column rename to break.
+        current = aliased(ResearchRequestStateModel, ranked)
+        rows = (
+            await self._session.execute(
+                select(ResearchRequestModel, current)
+                .join(ranked, ranked.c.request_id == ResearchRequestModel.id)
+                .where(
+                    ResearchRequestModel.workspace_id == workspace_id,
+                    ranked.c.rank == 1,
+                )
+                .order_by(ResearchRequestModel.requested_at.desc())
+                .limit(limit)
+            )
+        ).all()
+        return tuple((_request(request), _state(state)) for request, state in rows)
+
     async def _current_state(
         self, workspace_id: UUID, request_id: UUID
     ) -> ResearchRequestState | None:
@@ -265,6 +315,47 @@ class SqlResearchArtifactReader:
             tuple(_finding(row) for row in finding_rows),
             _synthesis(synthesis_row),
         )
+
+
+    async def source_counts(
+        self, workspace_id: UUID, task_ids: tuple[UUID, ...]
+    ) -> Mapping[UUID, int]:
+        """How many distinct sources each run read — one query for all of them.
+
+        **`unnest` then `count(distinct)`**, because a source cited by two
+        findings is one source. A run that compared six business events across
+        four derivations read six things, and reporting twenty-two would be
+        counting the comparisons rather than the evidence.
+
+        ⚡ **A task with no findings is absent from the mapping rather than
+        `0`.** `NOTHING_TO_RESEARCH` is a real outcome, and the caller's own
+        `.get` decides how to say so — a `0` written here would be this adapter
+        answering a product question.
+        """
+        if not task_ids:
+            return {}
+        # `joins_implicitly` is the truthful description rather than a warning
+        # suppressed: a set-returning function in `FROM` that reads a column of
+        # another `FROM` item is an implicit LATERAL in PostgreSQL, so each row
+        # is unnested against its own citations and never against every other
+        # finding's.
+        source = func.unnest(ResearchFindingModel.cited).column_valued(
+            "source", joins_implicitly=True
+        )
+        rows = (
+            await self._session.execute(
+                select(
+                    ResearchFindingModel.task_id,
+                    func.count(distinct(source)),
+                )
+                .where(
+                    ResearchFindingModel.workspace_id == workspace_id,
+                    ResearchFindingModel.task_id.in_(task_ids),
+                )
+                .group_by(ResearchFindingModel.task_id)
+            )
+        ).all()
+        return {task_id: count for task_id, count in rows}
 
 
 def _request(row: ResearchRequestModel) -> ResearchRequest:

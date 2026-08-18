@@ -85,6 +85,41 @@ class AccountResearch:
     artifact: ResearchArtifact | None
 
 
+@dataclass(frozen=True, slots=True)
+class ResearchRun:
+    """One run of the research agent, as a list reads it.
+
+    ⚡ **The same request and state `AccountResearch` carries, WITHOUT the
+    artifact.** 📁 A list of runs answers *"what has Signora been doing?"*; the
+    artifact answers *"what did it find?"*, and loading every finding and
+    synthesis for a list nobody has opened yet is the cost `sources` exists to
+    avoid.
+    """
+
+    request: ResearchRequest
+    state: ResearchRequestState
+    #: How many distinct sources this run read. **`None` unless it completed** —
+    #: a run still running has read nothing yet that anybody may cite, and a
+    #: failed one produced no artifact to count. ⛔ **`0` is a different fact**:
+    #: a completed run that found nothing worth citing.
+    sources: int | None
+
+
+#: 📁 **How many runs a workspace read returns.**
+#:
+#: ⚡ **Four times what any one surface shows.** Home's two agent cards read
+#: this ONE list and filter it differently — 📁 *"agent output awaiting a
+#: person"* takes completed runs, *"scheduled and triggered runs, failures
+#: first"* takes every run — so a list cut to five would leave the first card
+#: empty on a morning when five runs failed.
+#:
+#: ⛔ **Not a page size and there is no cursor.** Nothing in the design pages
+#: this: both cards show a handful and link onward, and a pagination contract
+#: invented here would be a second one to keep in step with the real list
+#: screen when one is designed.
+RECENT_RUNS: int = 20
+
+
 class ResearchQueries:
     """Read-only. Every method is scoped to one workspace, explicitly."""
 
@@ -109,6 +144,38 @@ class ResearchQueries:
         if state.task_id is not None:
             artifact = await self._artifact(workspace_id, state.task_id)
         return AccountResearch(request=request, state=state, artifact=artifact)
+
+    async def recent_runs(
+        self, workspace_id: UUID, *, limit: int = RECENT_RUNS
+    ) -> tuple[ResearchRun, ...]:
+        """What the research agent has been asked for lately, newest first.
+
+        ⛔ **Ordering by status is NOT done here.** 📁 *"Failures first"* is one
+        surface's ranking of the same list another surface ranks by recency,
+        and a read model that baked in one of them would make the other
+        re-sort what it was given. **The order this returns is the order the
+        runs happened.**
+
+        ⚡ **One extra query for the whole page, not one per run.** The source
+        counts arrive as a single grouped read over the tasks that completed.
+        """
+        runs = await self._requests.recent(workspace_id, limit=limit)
+        tasks = tuple(
+            state.task_id for _, state in runs if state.task_id is not None
+        )
+        counts = await self._artifacts.source_counts(workspace_id, tasks)
+        return tuple(
+            ResearchRun(
+                request=request,
+                state=state,
+                # ⚡ **`0` when the run completed and cited nothing**, `None`
+                # when there is nothing to have cited. 📁 The two read
+                # differently on a card and the distinction is made here rather
+                # than by a renderer inferring it from the status.
+                sources=None if state.task_id is None else counts.get(state.task_id, 0),
+            )
+            for request, state in runs
+        )
 
     async def _artifact(self, workspace_id: UUID, task_id: UUID) -> ResearchArtifact:
         stored = await self._artifacts.by_task(workspace_id, task_id)
