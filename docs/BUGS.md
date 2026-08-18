@@ -348,6 +348,73 @@ run 5: 0 failed                     20 passed
 
 ⛔ **This spec was the intended control for the browser gate.** 📁 **Lane A: *"a control that is clean on one stack and not another is not a control"*** — **and the sharper form this row proves: it is not clean on the SAME stack twice.** **A gate whose control is intermittent cannot distinguish a regression from a re-run.**
 
+### B-1022 · 🟠 The Playground seeds a workspace that has never synced, so Home's seller composition cannot be exercised by any journey
+
+| | |
+|---|---|
+| **Module** | `backend/tests/playground/seed.py` — the Product Playground |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — `platform_foundation`, **Lane A** |
+| **Severity** | 🟠 · ⛔ **NOT a product defect and NOT a regression.** **It is a fixture gap that makes seven journeys unrunnable** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-18 by QE**, validating `lane-a-product-surface-r2` at `2e758310` |
+
+**Steps to reproduce.** Seed the Playground, sign in, open Home:
+
+```
+URL    /w/12946063-…/home
+CARDS  ["connect-a-crm:0","connect-calls:0","invite-the-team:0"]
+```
+
+**Expected**, for a workspace the seeder reports as *"12 accounts through the real pipeline · 7 qualified opportunities"* — the **seller** composition, with an attention card carrying account links.
+
+**Actual** — the **activation** composition, *"How do I begin?"*.
+
+### ✅ The product is right, and the rule is the design's
+
+📁 `frontend/lib/home/composition.ts:151`:
+
+```ts
+if (input.neverSynced) return 'activation';
+```
+
+📁 `home.tsx:177` — `const neverSynced = !resolving && !everConnected;`
+
+**Measured on the freshly seeded workspace:**
+
+| | |
+|---|---|
+| `connected_account` | 🔴 **0** |
+| `opportunity` · `buying_score` · `signal` | ✅ **7 · 8 · 14** |
+| `claim` · `timeline_entry` · `observation` | ✅ 193 · 136 · 93 |
+
+⚡ **The seeder writes the whole pipeline and never creates a connection.** **So `neverSynced` is TRUE for a workspace holding a complete book of intelligence**, and Home correctly answers *"How do I begin?"* to a customer who, by the only fact Home consults, has not begun.
+
+> ⛔ **This is not the candidate's defect. `main` rendered the account list regardless of connection state because the old Attention screen had no composition rule at all** — the behaviour changed because a rule was *added*, exactly as the design specifies.
+
+### 🔴 What it costs certification, and the word is *unvalidated*
+
+**Seven journeys enter through Home's account list and therefore cannot run against the standard seed:**
+
+`account-360` ×3 · `daily-usage` ×2 · `consistency` ×2
+
+⚠️ **They are not failing because the product is wrong.** ⛔ **They are unrunnable**, and *unvalidated* is a different certification statement from *failed* — **QE cannot certify a journey it could not execute, and must not report one as a defect either.**
+
+### ✅ How it was separated from contamination, which it looked exactly like
+
+**Three passes, because the first two lied:**
+
+| | |
+|---|---|
+| Full suite | 58 failed — includes [B-1017](#b-1017)'s contamination, which the candidate does not carry the fix for |
+| Four specs "in isolation" | 6 failed — ⛔ **still contaminated: isolating specs from each other does not isolate them from a database holding 22 users and eight workspaces** |
+| **Pinned + freshly seeded** | ✅ **The measurement.** Workspace confirmed by `localStorage` and by URL, and Home still rendered activation |
+
+⚠️ **A seed whose output was sent to `/dev/null` cost one of those passes** — it reported *"replacing 1 previous Playground"* and the run that trusted its exit code measured a workspace that no longer held what it assumed.
+
+### The fix, and it is small
+
+**The Playground must create a connection**, so the workspace it seeds is one a customer could actually be in. ⛔ **Not by relaxing `neverSynced`, and not by teaching the journeys to accept the activation composition** — both would make the seed prove less than it claims.
+
 ### B-1021 · ⏸️ Fifteen standalone-Attention assertions are TRUE today and go stale the moment Lane A's split lands — tracking row
 
 | | |
