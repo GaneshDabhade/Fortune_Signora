@@ -527,6 +527,38 @@ MAIN TEXT: … Welcome to E2E Org 1787050307980 | Signora needs three things
 
 ⛔ **QE does not close another lane's row.** **The evidence is theirs to weigh** — their run was on a different tree and a different stack, so this explains the shape without proving it is the same instance.
 
+### ⚡ The fix works, and it exposed the same defect producing false GREENS — QE, 2026-08-18
+
+**Re-baseline on the same tree and stack, with the workspace declared at sign-in:**
+
+| | before | after |
+|---|---|---|
+| **passed** | 343 | ✅ **362** |
+| **failed** | 🔴 **39** | ✅ **25** |
+| skipped | 9 | 7 |
+| wall clock | 23.0m | **16.8m** |
+
+**Gone entirely**: `workflow` 5 · `utility-panel` 3 · `perception` 2 · `content-grid` 1 · `signal-center` 1. **Reduced**: `visual` 5→1 · `resilience` 4→3.
+
+### 🔴 And two specs failed that had not — one of which QE reported as its own regression, wrongly
+
+**`onboarding-journey:89` — *"leaving part-way through, and coming back to what was answered"* — asserts a `setup is unfinished` banner.** ⚠️ **The obvious reading was that pinning to the fully-seeded Playground removed the unfinished state, so QE called it a self-inflicted regression.**
+
+⛔ **It is not. Measured all four cells:**
+
+| | full suite | isolated |
+|---|---|---|
+| **without the pin** | ✅ PASS | 🔴 **FAIL** |
+| **with the pin** | 🔴 FAIL | 🔴 **FAIL** |
+
+⚡ **Isolated, it fails either way. It has never been self-sufficient.** **In the full suite it passed only because an earlier spec left a workspace in the state it needed** — so the pin did not break it; **the pin removed the borrowed state that was making it pass.**
+
+> 🔴 **This row's own defect, inverted. Contamination was producing false GREENS as well as false reds** — and the greens are the more dangerous half, because nothing ever asks why a passing test passed. **The original baseline's 343 passes were not all earned.**
+
+✅ **The isolation fix is therefore working in both directions**, and a test that cannot pass alone was never evidence of anything. **`accessibility` shows the same shape**: with the pin one case fails, without it a *different* two fail — 13 passed against 16.
+
+⚠️ **Recorded because the wrong conclusion was published first.** **"I introduced a regression" was the careful-sounding answer and the false one**, and the measurement that settled it was the one cell nobody asks for — *does it pass alone, without my change?*
+
 ### The repair, and what it must not be
 
 ⛔ **Not "run the affected specs first".** **Ordering that happens to work is not isolation, and the next spec added breaks it silently.**
