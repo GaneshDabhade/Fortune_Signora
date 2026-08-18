@@ -2,7 +2,9 @@
 
 **The single place the product owner reviews when making rulings.** Established 2026-08-05 by product owner directive.
 
-> ## 🔴 One live decision: [C-1528](#-c-1528--screen-09-asks-for-a-forecast-and-the-scoring-engine-states-twice-that-it-does-not-forecast). Everything below it was already decided.
+> ## 🔴 Two live decisions: [C-1528](#-c-1528--screen-09-asks-for-a-forecast-and-the-scoring-engine-states-twice-that-it-does-not-forecast) and [C-1532](#-c-1532---became-the-entry-resolver-and-the-screen-it-displaced-has-no-design-document). Everything below them was already decided.
+>
+> ⚠️ **Both were raised by Lane A and both register rows are on their unpushed branch.** ⛔ **This office authors neither row and prepares both.** 🟠 **C-1532 blocks nothing today** — the displaced screen kept working at `/attention` — **but it prices five orphaned components, and that is cheaper to answer before Home ships than after.**
 >
 > ⚡ **Raised by Lane A 2026-08-17 and verified by this office against the code, not accepted from the report.** ⛔ **It blocks nothing today — screen 09 is not started and the flow already completes on Connect — but it must be answered before that screen is built.**
 >
@@ -77,6 +79,72 @@
 ### ⚡ What is NOT at stake
 
 ⛔ **Nothing is half-built while this is open.** **Screen 09 is not started**, and the design puts *"Connect and finish"* on screen 07 — **so a customer reaches a finished setup today.** ✅ **The completion screen adds a payoff; its absence is not a dead end.**
+
+---
+
+## 🟠 C-1532 · `/` became the entry resolver, and the screen it displaced has no design document
+
+**Raised by Lane A, 2026-08-17, wiring the Authenticated Entry engine to `/`. ✅ Verified by Lane C against the code rather than accepted from the report — and the verification changed the cost of the recommended option.**
+
+> ⚠️ **The register row is Lane A's and sits UNCOMMITTED in their working copy** — not on `integration`, not on any of their three pushed refs. 📁 **They supplied the substance verbatim and are holding the id and wording stable.** ⛔ **This office is NOT authoring a second copy** — same reasoning as [C-1528](#-c-1528--screen-09-asks-for-a-forecast-and-the-scoring-engine-states-twice-that-it-does-not-forecast) directly above, and the same reason no `B-278` row was written yesterday. ✅ **`decision-queue.py --check` will report the row as missing until their branch integrates, and it is right to.**
+
+> ### ⛔ **Nothing is blocked today.** ⚡ **But three of the five orphaned capabilities have no destination, and that is cheaper to answer now than after Home ships.**
+
+### ① What changed, and it was not optional
+
+📁 **`Fortune Signora Authenticated Entry.dc.html`:** *"Every authenticated person lands on `/w/:workspace/home`"*, and *"entry resolution belongs to the shell, exclusively."*
+
+⛔ **`/` rendered the Attention screen, so the twenty-four-rule entry engine had exactly one production caller — onboarding's exit — and never ran for anybody arriving at `/`.** ⚡ **That is the most travelled path in the product**, and rules 11–14 decide which workspace a person with several memberships enters and whether they see the chooser at all. **Wiring it was a defect fix, not a redesign.**
+
+### ② The screen that moved has no design document — ✅ verified
+
+✅ **Measured across all 34 distinct screen documents in [`docs/design-snapshot/screens/`](design-snapshot/): none is an Attention screen.** ⚡ **Stronger than the row claims — the word `attention` does not appear in `Fortune Signora App Shell.dc.html` at all**, so it is absent from the rail vocabulary rather than merely unlisted in it.
+
+📁 **It predates the design corpus.** [D38](architecture/38-design-decisions.md) created it by retiring an Overview page — *"a seller's first screen should be their morning's work"* — and **the Home design now answers exactly that question from the design's own contract**, with the Signal Center owning the queue.
+
+### 🔴 ③ Five single-consumer components, not three — this is the correction that matters
+
+⚠️ **The row names three capabilities that Home does not answer. ✅ Measured: there are five, and every one has exactly one consumer in the entire frontend.**
+
+| Component | Consumers outside the Attention screen |
+|---|---|
+| `NeedsIdentity` | ⛔ **none** |
+| `DecidedAccounts` | ⛔ **none** |
+| `STAGE_MARK` *(the stage view)* | ⛔ **none** |
+| ⚠️ `TriageStrip` | ⛔ **none** — *not named in the row* |
+| ⚠️ `AttentionScore` | ⛔ **none** — *not named in the row* |
+
+⛔ **Retiring the screen orphans five component families, not three.** ⚡ **That does not argue for keeping it** — it prices the option the row recommends, and the row underprices it by two.
+
+### ⚠️ ④ The activation gap is real, and the Attention screen already solves it
+
+✅ **Verified at [`lib/home/composition.ts:109`](../frontend/lib/home/composition.ts#L109):** `if (input.workspaceIsEmpty) return 'activation'`.
+
+⛔ **So a workspace with no CRM connected resolves Home to the ACTIVATION composition — connection steps, and no account list at all.** ⚡ **Any option assuming Home covers Attention's job must say what such a workspace sees.**
+
+> 🔴 **And the sharper form, which the row does not make:** the Attention screen already imports `ActivationChecklist`, `NoWorkspace` **and** `StatedAbsence`. **It handles the empty-workspace, no-workspace and populated states in one place.** ⛔ **Retirement does not just move five components — it redistributes three state responsibilities that currently sit together.**
+
+### ✅ ⑤ What is NOT at stake
+
+⛔ **This is not [C-1528](#-c-1528--screen-09-asks-for-a-forecast-and-the-scoring-engine-states-twice-that-it-does-not-forecast).** ⚡ **No architectural boundary is contradicted and no ratified ADR is in tension.** **A designed screen displaced an undesigned one, which is [D-128](DECISION_REGISTER.md) working as intended.** **The question is only where five capabilities live.**
+
+⛔ **It is also not a reachability defect.** 📁 **The screen kept its content, filters and tests at `/attention`, reached from an account brief's *"All accounts"*.** ✅ **No rail item was invented** — *"inventing product navigation to satisfy a reachability check would be worse than the orphan"*, and this office agrees.
+
+### The options
+
+| | | |
+|---|---|---|
+| ⚡ **①** | **Retire it, after placing the five** | Home is the answer, Signals is the queue, Accounts is the book. ⛔ **Not free: five components and three state responsibilities need destinations first** |
+| **②** | **Keep it and give it a rail entrance** | ⚠️ **[D38](architecture/38-design-decisions.md) removed screens by name to avoid exactly this**, and the design's rail does not contain it |
+| **③** | **Keep it unlisted, as today** | Reachable from the account brief only. ⛔ **Costs nothing and decides nothing** — the orphan persists and the next lane rediscovers it |
+
+### ⚡ Lane C's recommendation — ① **with a precondition**, and the precondition is the whole of it
+
+✅ **Retire it — but not before each of the five has a named destination, and `/accounts` is the obvious candidate for at least three.** ⛔ **Retiring first and placing afterwards is how a capability disappears without anybody deciding it should** — and five single-consumer components are exactly the shape that vanishes quietly.
+
+⚠️ **The activation gap in ④ must be answered whichever option is chosen.** ⚡ **It is not a consequence of retirement; it is true of Home today.**
+
+> ⛔ **This is a recommendation and not a decision** ([§20e](../CLAUDE.md)). **Lane A independently recommends ①; this office reaches the same option by a different route and prices it higher.**
 
 ---
 

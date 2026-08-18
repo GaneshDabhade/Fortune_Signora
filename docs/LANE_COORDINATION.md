@@ -13503,8 +13503,8 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-11, on the first hour of [TASK-1430](BACKLOG.md) — ⛔ **before writing any code** |
 | **Owner** | **Product owner** — 🔴 **an architectural blocker** ([§20e](../CLAUDE.md)): **no accepted architecture exists for the next step**, and the accepted one contradicts itself |
-| **Status** | 🔴 **`OPEN`** |
-| **Blocks** | ⛔ **[TASK-1430](BACKLOG.md) entirely.** ✅ **Claim released** |
+| **Status** | ✅ **`READY FOR IMPLEMENTATION` — RULED ⓓ by the product owner, 2026-08-17**, and **implemented in full.** ⛔ **Closure is Lane A's, as the raising lane** ([§20e](../CLAUDE.md)) — this office records the ruling and does not close somebody else's row. **Was:** 🔴 `OPEN` |
+| **Blocks** | ✅ **Nothing.** ⚠️ **This cell read *"[TASK-1430](BACKLOG.md) entirely"* until 2026-08-18, six days after the work was authorised** — 🔴 **the stale-row defect [C-213](#c-213) cost two days on one word.** ⚡ **Both policies ship: Better Auth's own limiter with `storage: 'database'` for the Next.js authentication routes, and the ASGI middleware of [ADR-0408](architecture/adr/0408-inbound-rate-limiting.md) for the Python business API.** 📁 **The boundary each does NOT protect is stated explicitly in [501-rate-limiting-boundary.md](architecture/501-rate-limiting-boundary.md)**, on the product owner's instruction not to let one limiter be read as covering both tiers |
 
 ### 🔴 ① The problem
 
