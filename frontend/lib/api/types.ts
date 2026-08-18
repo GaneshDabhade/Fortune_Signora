@@ -1204,6 +1204,33 @@ export interface ViewedRecord {
   viewed_at: string;
 }
 
+/**
+ * **One run of the research agent** — `GET /workspaces/{id}/research`.
+ *
+ * 📁 Home's `card.agentqueue` and `card.agentruns` both depend on
+ * `agents.runs`, and this is it: *"scheduled and triggered runs"* with where
+ * each got to.
+ */
+export interface ResearchRun {
+  request_id: string;
+  account_id: string;
+  requested_by: string;
+  requested_at: string;
+  /**
+   * ⚠️ **`nothing_to_research` is NOT a failure** — the run finished and found
+   * nothing worth comparing, which is a real answer on a thin account.
+   */
+  status: 'requested' | 'running' | 'completed' | 'nothing_to_research' | 'failed';
+  updated_at: string;
+  /** Why it failed, verbatim. **Null unless `status` is `failed`.** */
+  detail: string | null;
+  /**
+   * How many distinct sources the run read. **Null unless it completed** —
+   * ⛔ **`0` is a different fact**: it completed and cited nothing.
+   */
+  sources: number | null;
+}
+
 export interface IntegrationSystem {
   integration: string;
   capabilities: IntegrationCapability[];

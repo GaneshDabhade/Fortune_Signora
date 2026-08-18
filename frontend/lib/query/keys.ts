@@ -26,6 +26,12 @@ export const queryKeys = {
   preferences: (workspaceId: string) => ['preferences', workspaceId] as const,
   /** ⚡ **Workspace-scoped, because the record is** — `(workspace, person)`. */
   recentlyViewed: (workspaceId: string) => ['recently-viewed', workspaceId] as const,
+  /**
+   * 📁 **Home's two agent cards, `card.agentqueue` and `card.agentruns`** —
+   * ⚡ **one key for both**, because they are two rankings of one list rather
+   * than two questions, and a second key would spend two reads on one answer.
+   */
+  researchRuns: (workspaceId: string) => ['research-runs', workspaceId] as const,
 
   members: (workspaceId: string) => ['workspace', workspaceId, 'members'] as const,
 

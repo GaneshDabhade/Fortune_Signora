@@ -285,6 +285,29 @@ export const REGISTRY: readonly CardContract[] = [
    * fact because 📁 Home *"defines no storage of its own"*.
    */
   { id: 'recents', title: 'Pick up where you left off', module: 'workspace_tenancy', requires: null },
+  /**
+   * ✅ **`card.agentqueue` and `card.agentruns`** — 📁 both depend on
+   * `agents.runs`, and **the research request is what a run IS in this
+   * repository**: `requested → running → completed / nothing_to_research /
+   * failed`, with who asked, when, and why it failed.
+   *
+   * ⛔ **`action_batch` is NOT the producer**, though it looked like it. Its
+   * `proposed_by` is the acting person on every path that creates one — 📁
+   * *"intelligence suggests; humans commit"* — so a batch is somebody's bulk
+   * edit on Companies. **Filing that under *Signora worked overnight* would
+   * attribute a person's work to the agent.**
+   *
+   * ⚠️ **`requires` is `null`** for the reason the contract gives: the read is
+   * workspace-scoped and Casbin authorizes it server-side.
+   */
+  {
+    id: 'agent-queue',
+    // 📁 The design's own words, from the drawn card's header.
+    title: 'Signora worked overnight',
+    module: 'ai_research_engine',
+    requires: null,
+  },
+  { id: 'agent-runs', title: 'Agent runs', module: 'ai_research_engine', requires: null },
   { id: 'top-risks', title: 'Top risks', module: 'signal_engine', requires: null },
   { id: 'top-opportunities', title: 'Top opportunities', module: 'signal_engine', requires: null },
 ];

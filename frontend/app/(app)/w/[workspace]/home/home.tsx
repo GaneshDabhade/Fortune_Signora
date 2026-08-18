@@ -11,6 +11,7 @@ import {
   InviteTheTeamCard,
 } from '@/components/home/activation-cards';
 import { ActivationProgress } from '@/components/home/activation-progress';
+import { AgentQueueCard, AgentRunsCard } from '@/components/home/agent-cards';
 import { AttentionCard } from '@/components/home/attention-card';
 import { FirstRunOverlay } from '@/components/home/first-run-overlay';
 import { CompositionSwitcher } from '@/components/home/composition-switcher';
@@ -416,6 +417,10 @@ const RENDERERS: Readonly<Partial<Record<CardContract['id'], () => React.ReactEl
     // queue by the posture the Buying Score Engine publishes.
     'top-risks': TopRisksCard,
     'top-opportunities': TopOpportunitiesCard,
+    // 📁 Both read `agents.runs` — the queue takes the runs with something to
+    // read, the runs card ranks every run failures first.
+    'agent-queue': AgentQueueCard,
+    'agent-runs': AgentRunsCard,
     'connect-a-crm': ConnectCrmCard,
     'connect-calls': ConnectCallsCard,
     'invite-the-team': InviteTheTeamCard,
