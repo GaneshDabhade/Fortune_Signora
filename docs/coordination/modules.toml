@@ -438,8 +438,24 @@ context = "Environment framework, repository tooling, developer commands"
 #    Lane C (D-022: infra/, the Makefile, environment tooling, simulation).
 #    The registry and the constitution disagreed, and TASK-1481 sat on it.
 #    §20e is the authority; the registry is corrected to match it.
-current_owner = "Lane C"
-future_owner = "Lane C"
+# 🔴 SUPERSEDED 2026-08-18 — product owner, the two-lane operating model.
+#    **"Lane C is retired. There will be no Lane C going forward."**
+#    **"Lane A is now the sole implementation owner"**, owning the entire
+#    implementation including "required supporting infrastructure/code".
+#    **"Reconcile the repository to this operating model."**
+#
+#    ⛔ Recorded by QE, NOT decided by QE. The D-240 §2 correction above is a
+#    dated record of what was true then and is deliberately left standing
+#    (CLAUDE.md §2): a claim about the present is corrected, a record of the
+#    past is not rewritten. This line is the correction.
+#
+#    ✅ It also settles C-108, which asked who owns `signora_platform/`. The
+#    two rules were never governing the same thing: this registry says WHO
+#    IMPLEMENTS, and CLAUDE.md §20a's 🔴 tier says WHAT AUTHORITY A CHANGE
+#    NEEDS. `signora_platform/**` remains 🔴 and remains frozen; the freeze
+#    is unaffected by who the implementing lane is.
+current_owner = "Lane A"
+future_owner = "Lane A"
 transition = "settled"
 implementation = 60
 basis = "Environment Framework phases 1-2 built; the demo profile and make doctor are IN VALIDATION"

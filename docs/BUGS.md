@@ -4,6 +4,16 @@
 >
 > **Why this file exists.** Open defects had no home. They were split between `39-product-review-findings.md` (a *dated record of reviews*, append-only, and not a feature lane's to edit) and `PROJECT_STATUS.md`'s known-limitations table. Neither can carry a row whose status changes, and a review finding is not the same thing as a defect with an owner and a fix. This file replaces that responsibility rather than adding one.
 
+> ## ⚠️ Lane C is retired — 2026-08-18, product owner
+
+> **Two lanes: Lane A implements everything; QE certifies and promotes. There is no third implementation lane.**
+>
+> ⛔ **15 open rows in this register name Lane C as `Current assignee`, and they are DELIBERATELY NOT REWRITTEN.** **Rewriting them would be QE assigning 15 defects**, and the product owner was explicit: ***"Do not create replacement work merely because Lane C previously started it."***
+>
+> ✅ **Read them through [`modules.toml`](coordination/modules.toml), the ownership registry every view derives from** ([§20e](../CLAUDE.md)) — **every module now resolves to Lane A.** **A row naming Lane C records who filed or held it; it does not route the fix.**
+>
+> ⚡ **This is [C-213](LANE_COORDINATION.md)'s rule working rather than failing:** *no document restates an assignee; a row names its module and the assignee is joined at render time.* **The rows that restate one are exactly the ones that now read stale.**
+
 ## Identifier blocks — per lane, from 2026-08-02
 
 **Product owner's direction.** New rows use the opening lane's allocated block, so two lanes can no longer allocate the same number and QE no longer renumbers at merge (which is what [B-017](#b-017--a-lanes-merged-slice-disappeared-from-integration-and-the-backlog-reoffers-it)'s neighbourhood cost once already). Rows numbered below 100 predate the scheme and keep their identifiers permanently; **an id is never renumbered.**
@@ -185,7 +195,8 @@ git show 19149dc6:docs/BACKLOG.md | grep -c '|) make that permanent'      # → 
 | **Module** | [`docs/ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) — the execution board. ⛔ **NOT `infra/state-check.py`; see the correction below** |
 | **Current assignee** | **QE** — [§20e](../CLAUDE.md): QE reconciles the board, *"and no stale assignment is left behind"* |
 | **Severity** | 🟡 · ⛔ **Not a Blocking Quality Defect** — `state-check` is advisory and refuses nothing |
-| **Status** | **`OPEN`** |
+| **Status** | ⚠️ **`FIXED` — QE, 2026-08-18, board reconciled.** ⛔ **NOT `VERIFIED`: QE performed this repair and does not verify its own work** ([§20e](../CLAUDE.md)) — **it needs independent confirmation.** ✅ **`state-check` no longer reports either dual claim** |
+| **Repair** | **The three released rows were REMOVED from `## Current`, not annotated** — `TASK-202`, `TASK-1430`, `TASK-489`. ⛔ **The checker was NOT taught to parse `claim released` out of prose**: that is a second representation of one fact, and the next release will be worded differently |
 | **Found** | **2026-08-18.** ⚠️ **Reported by Lane C with a mechanism that does not hold; the underlying finding is real and the mechanism is measured here** |
 
 **Steps to reproduce.**
@@ -9717,6 +9728,17 @@ runtime-composition · state-check
 >
 > ⛔ **It also lands inside [B-1000](#b-1000)'s family from the other end.** Every prior instance was *an instrument answering a narrower question than the one asked*. **Here the instrument was never asked** — and the failure mode is the same, because a lane reading a green `frontend-suite` reads it as *the frontend is consistent*.
 
+
+### ⚡ B-1400 — classification, recorded by QE 2026-08-18
+
+**The row itself is Lane C's and sits on `lane-c-sync`; it has never reached `integration`.** **Its classification is recorded here so it survives the retirement:**
+
+| | |
+|---|---|
+| **Class** | **PRE-EXISTING BASELINE ISSUE** — an integration defect already on `main`. ⛔ **Not a Lane A regression** |
+| **Owner** | **Lane A — *only if it remains within current implementation scope.*** ⛔ **Not routed there by QE** |
+| ⛔ **Do NOT** | **Modify `top-bar.tsx`.** **The evidence settles the direction**: the component renders `Search Signora`, `shell-a11y.test.tsx` *requires* `Search Signora`, and **the stale Playwright assertion in `top-bar-search.spec.ts` is the defect** |
+| **Why it survived** | **[B-131](#b-131). Playwright is in no certification gate**, so the one test that could have caught it is the one test nothing runs |
 
 ### B-130 · D-107 removed `UI_WAVE_TASKS` and left its test referencing it
 
