@@ -188,6 +188,59 @@ git show 19149dc6:docs/BACKLOG.md | grep -c '|) make that permanent'      # → 
 ✅ **The instruction I gave both lanes — *there is one claimant, do not resolve it as a Claim Protocol violation* — was correct.** ⛔ **The reason I gave for it was not.**
 
 
+### B-1015 · 🟠 After a host restart the prod stack returns as three app containers crash-looping against a dead database, holding a gate's port
+
+| | |
+|---|---|
+| **Module** | `infra/docker-compose.prod.yml` — **certification infrastructure**. 📁 [§20e](../CLAUDE.md) names the compose files among the things that *"decide whether a gate passes"* |
+| **Current assignee** | **QE** — `make smoke` and `make dr` are QE's gates and this is their stack |
+| **Severity** | 🟠 · ⛔ **Not a Blocking Quality Defect today** — no gate is failing, because no gate has been run since the restart. **It would be the first thing a post-reboot cycle hit** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-18 by QE**, on the first poll after a machine restart — looking for the environment, not for this |
+
+**Steps to reproduce.** Restart the host with the prod-local stack up.
+
+```bash
+docker ps -a --filter name=signora-prod --format '{{.Names}}\t{{.Status}}'
+→ signora-prod-api-1        Up About an hour (unhealthy)
+→ signora-prod-relay-1      Up 5 seconds
+→ signora-prod-worker-1     Up 5 seconds
+→ signora-prod-postgres-1   Exited (0)
+→ signora-prod-redis-1      Exited (0)
+→ signora-prod-frontend-1   Exited (0)
+
+ss -ltn | grep 8100
+→ LISTEN 0 4096 0.0.0.0:8100          # held by the unhealthy API
+```
+
+**Expected.** Either the whole stack returns, or none of it does.
+
+**Actual.** **The three tiers that depend on PostgreSQL come back; PostgreSQL does not.**
+
+### It is an asymmetry in the file, not an accident of one reboot
+
+| Service | `restart:` |
+|---|---|
+| `api` · `worker` · `relay` | **`unless-stopped`** — survives a host restart |
+| **`postgres` · `redis` · `frontend`** | ⛔ **none — defaults to `no`** |
+| `migrate` | `"no"`, deliberately and correctly |
+
+📁 **`depends_on: condition: service_healthy` is honoured at `compose up`, never on a daemon-driven restart.** ⚡ **So the dependency that makes the file correct when a human runs it is exactly the one that does not apply when Docker restarts it** — and the tiers with the weaker guarantee are the ones everything else depends on.
+
+### Why it matters to QE rather than being cosmetic
+
+**① It holds `8100`.** A container that is not serving occupies the port `make smoke` and `make dr` need, so the next gate run fails on a port conflict whose cause is three layers away from its message.
+
+**②** 🔴 **`docker ps` reports the API as `Up`.** **The `(unhealthy)` is there and it is one word inside a status column** — and *"is the service up?"* is answered `yes` by the instrument most people ask. ⚡ **[B-1000](#b-1000)'s family exactly: the instrument answers a narrower question than the one asked**, and here the narrower answer is the reassuring one.
+
+**③ It is silent and periodic.** **Nothing announces it.** It arrives with a reboot, which is precisely when nobody is looking at a compose stack.
+
+### The fix is one line and it is deliberately NOT taken yet
+
+**Give `postgres` and `redis` the same `restart: unless-stopped`** — a data tier must never have a weaker restart guarantee than the tiers that depend on it.
+
+⛔ **Held, because it changes what the stack does on boot and therefore what `make smoke` and `make dr` run against.** ⚡ **A gate's semantics are not something to adjust while clearing a blocker** — 📁 [§20e](../CLAUDE.md), *the authority is to make the documented gate runnable, never to make it pass.* **Recorded first, decided separately.**
+
 ### B-1014 · 🔴 The browser suite runs against port 80 on a detached HEAD, and reports it as ordinary test failures
 
 | | |
