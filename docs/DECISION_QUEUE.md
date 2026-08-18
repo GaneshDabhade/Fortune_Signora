@@ -122,7 +122,17 @@
 
 ⛔ **So a workspace with no CRM connected resolves Home to the ACTIVATION composition — connection steps, and no account list at all.** ⚡ **Any option assuming Home covers Attention's job must say what such a workspace sees.**
 
-> 🔴 **And the sharper form, which the row does not make:** the Attention screen already imports `ActivationChecklist`, `NoWorkspace` **and** `StatedAbsence`. **It handles the empty-workspace, no-workspace and populated states in one place.** ⛔ **Retirement does not just move five components — it redistributes three state responsibilities that currently sit together.**
+> ⚠️ **CORRECTED 2026-08-18, before this page was ruled on.** 🔴 **This paragraph claimed retirement would *"redistribute three state responsibilities that currently sit together"* — `ActivationChecklist`, `NoWorkspace` and `StatedAbsence`. ⛔ That was wrong, and it inflated the cost of ①.**
+>
+> ✅ **Measured after Lane A ran the negative case this office had not:** **`NoWorkspace` has nine other consumers and `StatedAbsence` eleven.** ⚡ **They are standard page furniture on almost every screen — not responsibilities the Attention screen holds.** **Only `ActivationChecklist` is near-exclusive, with one other consumer (`lib/entry/observed.ts`).**
+>
+> ✅ **What survives is the gap itself, and it is enough:** **a workspace with no CRM sees Home's ACTIVATION composition — connection steps, no account list — so any option assuming Home covers Attention's job must say what that workspace sees.**
+
+### ✅ ④b The negative measurement — three candidates that look orphaned are not
+
+⚡ **Lane A measured nine candidates, not five, and this office had only measured the five that failed.** ✅ **`EntityName` has four consumers including both Accounts screens · `ActivationChecklist` two · `NoWorkspace` ten.**
+
+⛔ **So retirement orphans five families, not eight.** ⚡ **The count could have inflated in the other direction just as easily, and ④① is cheaper than a naive sweep would price it.** **Both lanes now recommend ① and both arrived at five independently.**
 
 ### ✅ ⑤ What is NOT at stake
 
@@ -134,7 +144,7 @@
 
 | | | |
 |---|---|---|
-| ⚡ **①** | **Retire it, after placing the five** | Home is the answer, Signals is the queue, Accounts is the book. ⛔ **Not free: five components and three state responsibilities need destinations first** |
+| ⚡ **①** | **Retire it, after placing the five** | Home is the answer, Signals is the queue, Accounts is the book. ⛔ **Not free — five component families need destinations first**, and ⚠️ **the activation question in ④ needs answering whichever option is chosen** |
 | **②** | **Keep it and give it a rail entrance** | ⚠️ **[D38](architecture/38-design-decisions.md) removed screens by name to avoid exactly this**, and the design's rail does not contain it |
 | **③** | **Keep it unlisted, as today** | Reachable from the account brief only. ⛔ **Costs nothing and decides nothing** — the orphan persists and the next lane rediscovers it |
 
@@ -144,7 +154,7 @@
 
 ⚠️ **The activation gap in ④ must be answered whichever option is chosen.** ⚡ **It is not a consequence of retirement; it is true of Home today.**
 
-> ⛔ **This is a recommendation and not a decision** ([§20e](../CLAUDE.md)). **Lane A independently recommends ①; this office reaches the same option by a different route and prices it higher.**
+> ⛔ **This is a recommendation and not a decision** ([§20e](../CLAUDE.md)). ✅ **Both lanes recommend ①, both measured five orphans independently, and both now carry the same precondition.** ⚠️ **This office initially priced ① higher on a third count that did not survive measurement — see the correction in ④.** ⚡ **The remaining difference is only emphasis: place the five first.**
 
 ---
 
