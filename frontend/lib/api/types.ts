@@ -1438,6 +1438,20 @@ export interface PipelineHealth {
  * like a capability somebody had built a screen for.** ⚡ They join this type
  * when a screen reads them.
  */
+/**
+ * 🔴 **What entering a workspace reports about the entry** — Home hierarchy 2.
+ *
+ * 📁 Entry rule 12's confirmation strip is *"dismissible, never blocking, and
+ * **gone on the second visit that day**"*, and Home state 13 suppresses it.
+ *
+ * ⛔ **The answer, not the moment.** *"The same calendar day"* is a question about
+ * a zone and a clock the server owns; a client deriving it from a timestamp would
+ * answer differently on a device whose clock or timezone is wrong.
+ */
+export interface WorkspaceEntry {
+  first_entry_today: boolean;
+}
+
 export interface PersonPreferences {
   /**
    * 🔴 **Whether this person has closed the first-run overlay.**

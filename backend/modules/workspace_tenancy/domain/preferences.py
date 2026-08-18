@@ -58,9 +58,10 @@ database, where a token edit could not reach it.
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta, tzinfo
 from enum import StrEnum
 from uuid import UUID
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 #: The design's segmented control offers `3 · 4 · 5`, and `3` is where it sits.
 #: ⚠️ **A floor, not a threshold anybody else can lower** — the design says
@@ -310,6 +311,54 @@ class PersonPreferences:
         if self.first_run_dismissed_at is not None:
             return self
         return replace(self, first_run_dismissed_at=at)
+
+    def first_entry_today(self, at: datetime) -> bool:
+        """Whether `at` is this person's **first** entry into this workspace today.
+
+        🔴 **Home state 13 · `state.returningpartial`'s sibling** — 📁 *"second or
+        later entry on the same calendar day in this workspace"* renders *"identical
+        to state 06 with the workspace confirmation strip suppressed. **Home does
+        not congratulate people for returning.**"* ⚡ And 📁 Entry rule 12's strip is
+        *"gone on the second visit that day."*
+
+        ⛔ **Asked BEFORE the entry is recorded**, because recording it makes the
+        answer `False` for the rest of the day. {@link RecordWorkspaceEntry} reads
+        this and then writes, in that order, which is why the use case returns it
+        rather than a caller re-deriving it afterwards.
+
+        ⚠️ **A calendar day needs a zone, and it is this person's.** 📁 `U-06`'s
+        interim ruling for the same question one card over is *"per person in
+        profile timezone"*, and `timezone` on this aggregate is where that lives.
+        ⛔ **`None` means *not chosen*, which is not UTC** — but a day boundary has
+        to fall somewhere, and UTC is the only zone the platform can assert without
+        inventing a preference nobody expressed. **Recorded rather than hidden:** a
+        person in Auckland who has not set a zone sees the strip again at noon.
+
+        ⚡ **Never entered is a first entry**, which is the reading that makes rule
+        11 and rule 12 agree: somebody who has been nowhere has not been here today.
+        """
+        if self.last_entered_at is None:
+            return True
+        zone = self._zone()
+        return self.last_entered_at.astimezone(zone).date() != at.astimezone(zone).date()
+
+    def _zone(self) -> tzinfo:
+        """This person's zone, or UTC when they have expressed none.
+
+        ⛔ **Not a stored default.** 📁 `timezone`'s own comment: *"`None` means
+        not chosen, which is different from UTC — a stored UTC would be an answer
+        nobody gave."* ✅ **This derives a day boundary from the absence** without
+        writing one back.
+        """
+        if self.timezone is None:
+            return UTC
+        try:
+            return ZoneInfo(self.timezone)
+        except (ZoneInfoNotFoundError, ValueError):
+            # ⚠️ **A zone the platform cannot resolve is not a reason to refuse an
+            # entry.** ⛔ The strip is a courtesy; failing the whole entry over an
+            # unrecognised IANA string would make it a blocker.
+            return UTC
 
     def saw_setup_complete(self, at: datetime) -> PersonPreferences:
         """Record that this person has been told setup is finished.

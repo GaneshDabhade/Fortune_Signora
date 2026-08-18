@@ -24,6 +24,7 @@ import { CardOutcomesProvider, useCardOutcomes } from '@/components/home/card-ou
 import { NoDataStrip } from '@/components/home/no-data-strip';
 import { SetupCompleteStrip } from '@/components/home/setup-complete-strip';
 import { SourceStrip } from '@/components/home/source-strip';
+import { WorkspaceStrip } from '@/components/home/workspace-strip';
 import { HM_COPY_11 } from '@/lib/home/copy';
 import { cardsFor, type CardContract } from '@/lib/home/cards';
 import { resolveComposition } from '@/lib/home/composition';
@@ -110,7 +111,7 @@ export function Home() {
 }
 
 function HomeContent() {
-  const { activeWorkspace, isLoading, error } = useWorkspaceContext();
+  const { activeWorkspace, workspaces, isLoading, error } = useWorkspaceContext();
   const workspaceId = activeWorkspace?.id ?? null;
 
   const { data: session } = useSession();
@@ -287,8 +288,22 @@ function HomeContent() {
      * `main` to two elements the moment `/` started landing here.
      */
     <div className="mx-auto flex w-full max-w-[85rem] flex-col gap-4" data-testid="home" data-composition={composition}>
-      {/* 📁 Hierarchy 1 and 2. ⚠️ The continuity offer is Session Continuity's
-          and has no producer; the source strip is states 10 and 11. */}
+      {/* 📁 **Hierarchy 1** — the continuity offer. ⚠️ Owned by Session
+          Continuity, hosted here, and it has no producer yet. */}
+
+      {/* 📁 **Hierarchy 2** — *"workspace confirmation strip, if any. Four seconds
+          after a resolved entry, per Entry rule 12. **Absent on the second entry
+          of the day.**"* ⚡ **This is also what finally CALLS D-196's last-used
+          mechanism**, which had been built and never invoked. */}
+      <WorkspaceStrip
+        workspaceId={workspaceId}
+        workspaceName={activeWorkspace?.name ?? null}
+        memberships={workspaces?.length ?? 0}
+      />
+
+      {/* ⚠️ Above the greeting but below the confirmation: 📁 state 10's strip
+          *"changes how every figure below it should be read"*, and hierarchy puts
+          continuity and confirmation first. */}
       <SourceStrip systems={systems} loading={resolving} />
 
       {/* 📁 **State 04** — *"a one-time strip states that setup is finished and

@@ -156,6 +156,28 @@ class MembershipResponse(BaseModel):
         )
 
 
+class WorkspaceEntryResponse(BaseModel):
+    """What entering a workspace tells the caller about the entry itself.
+
+    🔴 **Home hierarchy 2 and state 13.** 📁 Entry rule 12's confirmation strip is
+    *"dismissible, never blocking, and **gone on the second visit that day**"*, and
+    Home's state 13 renders *"identical to state 06 with the workspace confirmation
+    strip suppressed — **Home does not congratulate people for returning**."*
+
+    ⛔ **One field, and it is an answer rather than a moment.** ⚡ *"The same
+    calendar day"* is a question about a zone and a clock the server owns; a
+    client computing it from `last_entered_at` would answer differently on a device
+    whose clock or timezone is wrong — the same reasoning `invite_hidden` records.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    #: 📁 `True` on the first entry of this person's day in this workspace.
+    #: ⛔ **Read before the entry was recorded**, which is the only order in which
+    #: the question has a useful answer.
+    first_entry_today: bool
+
+
 class ViewerRoleResponse(BaseModel):
     """The signed-in person's own standing in this workspace.
 

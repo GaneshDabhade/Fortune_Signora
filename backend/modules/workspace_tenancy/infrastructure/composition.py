@@ -38,6 +38,9 @@ from modules.workspace_tenancy.application.use_cases.invite_member import (
     ResendInvitation,
     RevokeInvitation,
 )
+from modules.workspace_tenancy.application.use_cases.last_used_workspace import (
+    RecordWorkspaceEntry,
+)
 from modules.workspace_tenancy.application.use_cases.leave_workspace import LeaveWorkspace
 from modules.workspace_tenancy.application.use_cases.onboarding import (
     AdvanceOnboardingUseCase,
@@ -132,6 +135,8 @@ class WorkspaceTenancyUseCases:
     get_preferences: GetPreferencesUseCase
     change_preferences: ChangePreferencesUseCase
     acknowledge_setup_complete: AcknowledgeSetupCompleteUseCase
+    #: 🔴 **D-196's mechanism finally has a caller** — Home hierarchy 2, Entry rule 12.
+    record_entry: RecordWorkspaceEntry
     dismiss_first_run: DismissFirstRunUseCase
     skip_invite: SkipInviteUseCase
     record_view: RecordViewUseCase
@@ -238,6 +243,7 @@ def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
         skip_onboarding=SkipOnboardingUseCase(runs=onboarding_repository),
         get_preferences=GetPreferencesUseCase(preferences=preferences_repository),
         change_preferences=ChangePreferencesUseCase(preferences=preferences_repository),
+        record_entry=RecordWorkspaceEntry(preferences=preferences_repository),
         acknowledge_setup_complete=AcknowledgeSetupCompleteUseCase(
             preferences=preferences_repository
         ),

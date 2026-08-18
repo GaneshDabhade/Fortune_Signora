@@ -59,8 +59,23 @@ class RecordWorkspaceEntry:
 
     preferences: PersonPreferencesRepository
 
-    async def execute(self, workspace_id: UUID, person_id: UUID, *, now: datetime) -> None:
+    async def execute(self, workspace_id: UUID, person_id: UUID, *, now: datetime) -> bool:
+        """Record the entry, and answer **whether it was the first one today.**
+
+        🔴 **The answer is read BEFORE the write, and that order is the whole
+        reason this returns anything.** ⚡ Recording an entry sets
+        `last_entered_at` to `now`, so *"is this the first entry today?"* is
+        `False` for every caller that asks afterwards — 📁 including Home, whose
+        state 13 is *"second or later entry on the same calendar day"* and whose
+        confirmation strip is *"gone on the second visit that day"* (Entry rule 12).
+
+        ⛔ **Not a separate read endpoint.** Two calls would let the second one
+        land after the write, which is the same bug one round trip later; and a
+        `GET` that decided this would have to write to be meaningful, which §7
+        keeps out of a read.
+        """
         current = await self.preferences.get(workspace_id, person_id)
+        first_today = current.first_entry_today(now)
         entered = current.entered(now)
         # ⚡ **Nothing is written when nothing changed.** The aggregate refuses
         # a moment older than the one it holds, so a retried request or a clock
@@ -68,6 +83,7 @@ class RecordWorkspaceEntry:
         # moves somebody's destination backwards.
         if entered is not current:
             await self.preferences.save(entered)
+        return first_today
 
 
 @dataclass(frozen=True, slots=True)

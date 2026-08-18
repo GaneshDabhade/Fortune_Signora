@@ -41,6 +41,8 @@ const activationState = vi.hoisted(() => vi.fn());
 const accountsCount = vi.hoisted(() => vi.fn());
 /** ⚡ **State 08's page half** — what the cards reported. */
 const outcomes = vi.hoisted(() => vi.fn());
+/** ⚡ **Hierarchy 2** — what `POST /workspaces/{id}/entry` answered. */
+const recordEntry = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/state/workspace-provider', () => ({ useWorkspaceContext: workspace }));
 vi.mock('@/lib/query/hooks/team', () => ({ useViewerRole: viewerRole }));
@@ -81,6 +83,13 @@ vi.mock('@/lib/query/hooks/preferences', () => ({
   useSkipInvite: () => ({ mutate: () => {}, isPending: false }),
   // ⚡ **State 04's strip records that it was shown** — 📁 *"exactly once"*.
   useAcknowledgeSetupComplete: () => ({ mutate: () => {}, isPending: false }),
+  /**
+   * ⚡ **Hierarchy 2's strip records the entry and reads the answer back** — 📁
+   * Entry rule 12. ⛔ **`first_entry_today: false` by default**, so the strip is
+   * absent unless a test is about it: an unrelated assertion must not have to
+   * account for a four-second courtesy appearing above the greeting.
+   */
+  useRecordEntry: () => ({ mutateAsync: recordEntry, isPending: false }),
   // ⚡ **The switcher writes this** — 📁 rule 2's input, and [C-1530](../../../docs/LANE_COORDINATION.md).
   useChangePreferences: () => ({ mutate: () => {}, isPending: false }),
 }));
@@ -147,6 +156,8 @@ beforeEach(() => {
   // ⛔ **Nothing failed by default**, so the page-level line is absent unless a
   // test is about it.
   outcomes.mockReturnValue({ failed: 0, retryAll: () => {}, report: () => {}, forget: () => {} });
+  recordEntry.mockReset();
+  recordEntry.mockResolvedValue({ first_entry_today: false });
 });
 
 describe('🔴 Home always renders', () => {
@@ -270,6 +281,104 @@ describe('🔴 Home always renders', () => {
     // to do* rather than *we could not ask*.
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     expect(screen.queryByText(/0 of 0/)).not.toBeInTheDocument();
+  });
+});
+
+describe('📁 hierarchy 2 — the workspace confirmation strip, and state 13', () => {
+  /**
+   * 📁 **Entry rule 12**: *"Several memberships, last-used recorded and healthy.
+   * Enter the last used. **The workspace strip confirms which for four
+   * seconds.**"*
+   */
+  /**
+   * ⚡ **Two memberships**, because rule 12 is *"several memberships"* and
+   * `ready()`'s default is one — which is rule 11's case and draws no strip.
+   */
+  function severalWorkspaces() {
+    workspace.mockReturnValue({
+      activeWorkspace: { id: 'w1', name: 'Northwind' },
+      workspaces: [
+        { id: 'w1', name: 'Northwind' },
+        { id: 'w2', name: 'Ashgrove' },
+      ],
+      isLoading: false,
+      error: null,
+    });
+  }
+
+  it('✅ confirms which organization on a first entry today', async () => {
+    ready(true);
+    severalWorkspaces();
+    recordEntry.mockResolvedValue({ first_entry_today: true });
+
+    render(<Home />);
+
+    expect(await screen.findByTestId('workspace-confirmation')).toBeVisible();
+    expect(screen.getByText('Northwind')).toBeVisible();
+  });
+
+  /**
+   * 🔴 **State 13 · `state.returning`** — *"second or later entry on the same
+   * calendar day in this workspace"* renders *"identical to state 06 with the
+   * workspace confirmation strip suppressed. **Home does not congratulate people
+   * for returning.**"*
+   *
+   * ⛔ **Suppressed, not replaced.** ⚡ There is no *"welcome back"* — the design
+   * bans that phrase by name — so state 13 is the absence of a strip and nothing
+   * else.
+   */
+  it('🔴 state 13 · says nothing at all on the second entry of the day', async () => {
+    ready(true);
+    severalWorkspaces();
+    recordEntry.mockResolvedValue({ first_entry_today: false });
+
+    render(<Home />);
+    await screen.findByTestId('home');
+
+    expect(screen.queryByTestId('workspace-confirmation')).not.toBeInTheDocument();
+    // ⛔ **And nothing congratulates them either.**
+    expect(screen.queryByText(/Welcome back/i)).not.toBeInTheDocument();
+  });
+
+  /**
+   * 📁 **Entry rule 11**: *"Exactly one membership. Enter it. **No confirmation,
+   * no picker, no interstitial.**"* ⚡ There is nothing to confirm when there was
+   * never a choice.
+   */
+  it('⛔ and confirms nothing to somebody with one organization', async () => {
+    workspace.mockReturnValue({
+      activeWorkspace: { id: 'w1', name: 'Northwind' },
+      workspaces: [{ id: 'w1', name: 'Northwind' }],
+      isLoading: false,
+      error: null,
+    });
+    integrations.mockReturnValue({
+      data: [],
+      isPending: false,
+      isError: false,
+      refetch: () => {},
+    });
+    recordEntry.mockResolvedValue({ first_entry_today: true });
+
+    render(<Home />);
+    await screen.findByTestId('home');
+
+    expect(screen.queryByTestId('workspace-confirmation')).not.toBeInTheDocument();
+  });
+
+  /**
+   * ⛔ **A failed entry record shows no strip.** ⚡ It is a courtesy, and guessing
+   * *"probably your first visit"* is the one thing it must not do.
+   */
+  it('⛔ and stays silent when the entry could not be recorded', async () => {
+    ready(true);
+    severalWorkspaces();
+    recordEntry.mockRejectedValue(new Error('down'));
+
+    render(<Home />);
+    await screen.findByTestId('home');
+
+    expect(screen.queryByTestId('workspace-confirmation')).not.toBeInTheDocument();
   });
 });
 

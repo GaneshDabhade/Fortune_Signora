@@ -90,6 +90,7 @@ from modules.workspace_tenancy.interface.schemas import (
     NotificationResponse,
     MembershipResponse,
     ViewerRoleResponse,
+    WorkspaceEntryResponse,
     OnboardingRunResponse,
     PreferencesResponse,
     RemoveMemberRequest,
@@ -1042,6 +1043,42 @@ async def dismiss_first_run(context: CurrentWorkspace) -> PreferencesResponse:
         now=datetime.now(UTC),
     )
     return PreferencesResponse.from_domain(prefs, now=datetime.now(UTC))
+
+
+@router.post(
+    "/workspaces/{workspace_id}/entry",
+    response_model=WorkspaceEntryResponse,
+    summary="This person is in this workspace now",
+)
+async def record_entry(context: CurrentWorkspace) -> WorkspaceEntryResponse:
+    """⚡ **An event, and the one that makes rule 12 possible.**
+
+    📁 [D-196](../../../../docs/DECISION_REGISTER.md) built the whole last-used
+    mechanism — `RecordWorkspaceEntry`, `ForgetWorkspaceEntry`,
+    `ResolveLastUsedWorkspace` — and **nothing ever called it**, so
+    `last_entered_at` was `NULL` for everybody and rule 12 could never fire.
+    **This is the caller.**
+
+    ⛔ **`POST` rather than a field on a read.** Entering is something a person
+    does; §7 keeps a write out of a `GET`, and the answer below is only meaningful
+    if it is computed in the same breath as the write.
+
+    ⚠️ **It returns whether this was the FIRST entry today**, because recording it
+    makes that `False` for every later question. 📁 Home's confirmation strip is
+    *"gone on the second visit that day"* and state 13 suppresses it — **so the
+    answer has to come back from the write, not from a read after it.**
+
+    ⛔ **No body, and there could not be one.** *Who* is the caller's verified
+    identity, *where* is the path, and *when* is the server's clock. **A
+    client-supplied moment would let a browser decide which day it was.**
+    """
+    context.authorize(Resource.PREFERENCES, Action.UPDATE)
+    first_today = await build_use_cases(context.session).record_entry.execute(
+        context.workspace_id,
+        context.principal.user_id,
+        now=datetime.now(UTC),
+    )
+    return WorkspaceEntryResponse(first_entry_today=first_today)
 
 
 @router.post(

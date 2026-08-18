@@ -11,7 +11,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { apiRequest } from '@/lib/api/client';
-import type { PersonPreferences } from '@/lib/api/types';
+import type { PersonPreferences, WorkspaceEntry } from '@/lib/api/types';
 import { queryKeys } from '@/lib/query/keys';
 
 export function usePreferences(workspaceId: string | null) {
@@ -50,6 +50,32 @@ export function useDismissFirstRun(workspaceId: string | null) {
     onSuccess: (preferences) => {
       client.setQueryData(queryKeys.preferences(workspaceId ?? ''), preferences);
     },
+  });
+}
+
+/**
+ * 🔴 **Home hierarchy 2 and state 13** — the workspace confirmation strip.
+ *
+ * 📁 Entry rule 12: *"Enter the last used. **The workspace strip confirms which
+ * for four seconds.**"* 📁 Home state 13: *"second or later entry on the same
+ * calendar day"* renders *"identical to state 06 with the workspace confirmation
+ * strip suppressed. **Home does not congratulate people for returning.**"*
+ *
+ * ⚡ **A mutation, because entering is an event.** 📁 [D-196](../../../../docs/DECISION_REGISTER.md)
+ * built the last-used mechanism and **nothing called it**, so `last_entered_at`
+ * was `NULL` for everybody and rule 12 could never fire. **This is the caller.**
+ *
+ * ⛔ **The answer comes back from the WRITE, never from a read after it.**
+ * Recording the entry sets `last_entered_at` to now, so *"is this the first entry
+ * today?"* is `false` for anything that asks afterwards.
+ */
+export function useRecordEntry(workspaceId: string | null) {
+  return useMutation({
+    mutationFn: () =>
+      apiRequest<WorkspaceEntry>(`/workspaces/${workspaceId}/entry`, {
+        method: 'POST',
+        workspaceId: workspaceId ?? undefined,
+      }),
   });
 }
 
