@@ -101,6 +101,43 @@ echo "local $(git rev-parse --short HEAD) · origin $(git rev-parse --short orig
 
 > **`integration` moves continuously and by design** (§20e). A rejected push is therefore **normal**, not exceptional — which is exactly why it must be checked rather than assumed away.
 
+### ⚠️ Amended 2026-08-18 by [B-1020](BUGS.md) — the rule existed and was not applied, and it was also incomplete
+
+**Three commits were authored from `main` after a Closeout left QE standing there, and each reported itself pushed:**
+
+```bash
+echo "lane-qe -> $(git rev-parse --short HEAD)"   # printed MAIN's head
+git push -q origin lane-qe && echo pushed          # pushed a branch with nothing new
+```
+
+⛔ **The push genuinely succeeded — there was nothing in it.** **`-q` suppressed the `Everything up-to-date` that would have said so**, and **the exit code was 0 honestly.**
+
+> 🔴 **This section already forbade that**, and the comparison above would have caught it. **The failure was not a missing rule; it was a rule not run.** ⚠️ **Recorded that way deliberately** — *"we need a rule for this"* would have been the comfortable conclusion and the false one.
+
+**Two things the comparison was missing, and both are one line:**
+
+| | |
+|---|---|
+| 🔴 **The branch you are ON is an input, not a given** | **The comparison reads `HEAD` and assumes it is the branch being pushed.** ⚡ **`git rev-parse --short HEAD` answers *what commit am I on*, never *what is `lane-qe`*** — and after a Closeout those are different |
+| 🔴 **`origin/<branch>` is a local cache** | **Comparing without a `fetch` first compares against what the remote said last time**, which agrees with itself and proves nothing |
+
+**The form that answers the question actually being asked:**
+
+```bash
+git push origin "$BRANCH" 2>&1 | tee push.log; echo "PUSH_EXIT=${PIPESTATUS[0]}"
+git fetch -q origin
+echo "  on      $(git rev-parse --abbrev-ref HEAD)"      # ← the branch, asserted
+echo "  HEAD    $(git rev-parse --short HEAD)"
+echo "  remote  $(git rev-parse --short origin/$BRANCH)"
+[ "$(git rev-parse HEAD)" = "$(git rev-parse origin/$BRANCH)" ] || echo "🔴 NOT LANDED"
+```
+
+⛔ **Never `-q` on a push.** **The one line it hides is the one line that carries the answer.**
+
+✅ **The promotion path already had this right** — 📁 *"verified from `ls-remote` after the push, not from `rev-parse` before it"* — **and it had only ever been applied to `main`.** ⚡ **A rule held at the most important boundary and nowhere else is a rule that will be broken at every other one.**
+
+> ⚠️ **What actually caught it was `infra/`'s pre-commit guard refusing the FOURTH commit**, because that one carried `frontend/tests/e2e/**`. **The first three were documentation-only, so the guard correctly permitted them** — a Closeout may touch `docs/`. **The rule held exactly as written; the branch was wrong.** 📁 **And the guard's own message names the cause: *"You are probably on this branch because the previous command left you here."***
+
 ## 0e-3 · Ask the guard before parking the record, never after
 
 **Ratified by QE, 2026-08-06, cycle 78 — the second time this exact order has produced a false refusal.**

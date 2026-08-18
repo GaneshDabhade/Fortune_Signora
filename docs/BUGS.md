@@ -348,6 +348,51 @@ run 5: 0 failed                     20 passed
 
 ⛔ **This spec was the intended control for the browser gate.** 📁 **Lane A: *"a control that is clean on one stack and not another is not a control"*** — **and the sharper form this row proves: it is not clean on the SAME stack twice.** **A gate whose control is intermittent cannot distinguish a regression from a re-run.**
 
+### B-1021 · ⏸️ Fifteen standalone-Attention assertions are TRUE today and go stale the moment Lane A's split lands — tracking row
+
+| | |
+|---|---|
+| **Module** | `frontend/tests/e2e/**` · `frontend/tests/components/**` — **certification coverage**, not product |
+| **Current assignee** | **QE** — repository-wide suites |
+| **Severity** | ⏸️ **Not a defect today.** ⛔ **On `main` at `954291ec` every one of these assertions is TRUE** — `/` renders a level-1 heading *Attention* |
+| **Status** | ⏸️ **`PENDING RECONCILIATION`** — **opened on the product owner's explicit instruction to track them, 2026-08-18** |
+| **Found** | **2026-08-18**, by the certification audit of the obsolete `/attention` surface |
+
+**The fifteen, by file — all one assertion: `heading { name: 'Attention', level: 1 }` after visiting `/`.**
+
+| File | Count |
+|---|---|
+| `navigation-bands.spec.ts` | 5 |
+| `content-grid.spec.ts` | 5 |
+| `auth-journey.spec.ts` | 3 |
+| `interaction-boundaries.spec.ts` | 1 |
+| `app-shell-sections.spec.ts` | 1 *(with an `.or()` fallback, so it may survive unchanged)* |
+
+⛔ **`auth.setup.ts` carried a sixteenth and it is already reconciled** — it asserted the same title, every project depends on the setup, and leaving it there would have forced the obsolete contract to survive **for the suite to run at all.** ✅ **It now asserts what signing in must PROVE** — not on `/sign-in`, and the shell rendered.
+
+### ⛔ Why they are NOT being changed now
+
+📁 **The product owner, 2026-08-18:** ***"Do not change the obsolete assertions on main merely to make the current baseline green… do not delete them prematurely from the published branch."***
+
+⚡ **`main` is not the final implementation state.** **Lane A's route split — `/` becomes the shell's entry resolver and the old screen moves to `/attention` — is on an UNPUSHED branch**, so it cannot be audited and these assertions cannot be reconciled against a contract that is not in the repository.
+
+> ⚠️ **When they fail after that lands, they are STALE CERTIFICATION COVERAGE, never a product regression.** 📁 **The product owner's words, and the distinction this row exists to preserve.**
+
+### ✅ What is NOT on this list, and must not be swept into it
+
+**The `AccountAttention` domain concept is not obsolete.** 📁 **The product owner: *"`AccountAttention` is NOT obsolete merely because it contains the word Attention."***
+
+| Kept, untouched | Where |
+|---|---|
+| `Attention score N out of 100` | `workflow` ×3 · `daily-usage` ×2 · `consistency` ×1 · `contributions.test.tsx` |
+| `AccountAttention` / `AttentionScore` | Account 360 · Triage · `needs-identity` |
+| `GET /workspaces/{id}/accounts` → `CursorPage[AccountAttentionResponse]` | The attention **list**, a live capability |
+| The **absence** tests | `navigation-rail.test.tsx:107` · `shell-palette.test.tsx` *(already reconciled under TASK-1482 / D-240)* |
+
+### The action, when it can be taken
+
+**Re-run the same content-based audit against the resulting repository once Lane A's split reaches a reachable ref**, reclassify every match, and reconcile the obsolete assertions with the new contract. ⛔ **Not before, and not by deleting anything named *Attention*.**
+
 ### B-1020 · 🟠 QE committed three times to `main`, reported them pushed, and the push was a no-op
 
 | | |
