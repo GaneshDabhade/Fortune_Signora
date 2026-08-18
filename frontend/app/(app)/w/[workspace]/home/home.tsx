@@ -51,7 +51,7 @@ import type { WorkspaceRole } from '@/lib/state/permissions';
  * | 3 | Greeting and scope line | ✅ `HomeGreeting` |
  * | 4 | **The answer** | ✅ activation step one · ⛔ the briefing has no producer |
  * | 5 | **The work** | ✅ `AttentionCard`, five maximum |
- * | 6 | Context | ⛔ meetings, agent queue and recents have no producers |
+ * | 6 | Context | ✅ `AgentQueueCard`, `RecentsCard` · ⛔ meetings has no producer |
  *
  * ## 🔴 Home always renders Home
  *
@@ -63,16 +63,18 @@ import type { WorkspaceRole } from '@/lib/state/permissions';
  * ⚡ Contract item 3 asks a reviewer to grep for exactly that, and
  * `home-route.test.tsx` does it in a test so the grep is not a habit.
  *
- * ## ⚠️ Nine of the design's sixteen cards have no producer, and none is faked
+ * ## ⚠️ Five of the design's sixteen cards have no producer, and none is faked
  *
  * **Measured against every API path the backend publishes, not inferred:**
  *
  * | Card | Dependency | Producer |
  * |---|---|---|
  * | `card.attention` · `card.pipeline` · `card.inthealth` · `card.activation.*` | signals · pipeline-health · integrations · members | ✅ **shipped** |
+ * | `card.risks` · `card.opps` | `signals.risk` · `signals.opportunity` | ✅ **shipped** — partitioned by the posture `buying_score_engine` publishes |
+ * | `card.recents` | `activity.mine` | ✅ **shipped** — Session Continuity tier 4 |
+ * | `card.agentqueue` · `card.agentruns` | `agents.runs` | ✅ **shipped** — the research request IS the run |
  * | `card.briefing` · `card.execsummary` | `ai.briefing.v1` · `ai.execsummary` | ⛔ **no workspace-level AI endpoint** |
- * | `card.meetings` · `card.recents` | `calendar.events` · `activity.mine` | ⛔ **no endpoint** |
- * | `card.agentqueue` · `card.agentruns` | `agents.runs` | ⛔ **no list endpoint** |
+ * | `card.meetings` | `calendar.events` | ⛔ **a DEPENDENCY, not a gap** — every catalog entry is `connectable=False` and no meeting is modelled anywhere in the domain |
  * | `card.dataquality` · `card.requests` | `quality.summary` · `access.requests` | ⛔ **no endpoint** |
  * | `card.forecast` | `forecast.committed` | 🔴 **refused by domain law** — [C-1528](../../../../../../docs/LANE_COORDINATION.md) |
  *

@@ -2771,6 +2771,56 @@ SIGNORA_ENVIRONMENT=lane-a make e2e-quick ARGS="tests/e2e/account-360.spec.ts \
 
 ---
 
+### B-282 · 🟡 `make test` truncates the database `make demo-seed` fills, and the repository already solved this exactly once
+
+| | |
+|---|---|
+| **Module** | **`platform_foundation`** — [`Makefile`](../Makefile) (`test`, `SIGNORA_DB`, `DESTRUCTIVE_DB_ENV`) and [`infra/environments.py`](../infra/environments.py) |
+| **Current assignee** | ⚡ **Lane C**, joined from [`modules.toml`](coordination/modules.toml). ⚠️ **QE proposed Lane A** *"by the registry"* — **the registry says otherwise**: line 436 records the 2026-08-16 correction (D-240 §2, closing C-1519) putting Platform Foundation with Lane C, per [§20e](../CLAUDE.md) D-022 |
+| **Severity** | 🟡 — **wrong but survivable.** ⛔ It destroys a reviewable environment rather than customer data, and it fails loudly: an empty Playground is obvious within one screen |
+| **Status** | **`OPEN`** — ⛔ **Lane A reported it and did not fix it.** The `Makefile` and environment tooling are Lane C's |
+| **Found** | **2026-08-18**, by Lane A running the backend suite on a seeded lane stack. **Reproduced independently by QE from the Makefile.** ⚠️ **Not by any gate** — the gate runs on a clean database, which is the one shape that cannot show it |
+| **Commit found** | `6684477d` |
+
+**Steps to reproduce.** On any lane, with the stack up:
+
+```
+make demo-seed        # the Playground: workspaces, memberships, twelve accounts
+make test             # or any bare `uv run pytest` in backend/
+```
+
+**Expected.** ⚡ The suite runs against a database that exists for it.
+
+**Actual.** ⛔ **Every table is truncated after each test, and the Playground is gone** — workspaces and memberships at zero, `auth.user` untouched, so the product looks signed-in and empty rather than reset. **Re-seeding is one command; the confusing part is diagnosing it**, because Home resolves `activation` from the missing connection and reads as a product defect.
+
+**Cause.** `SIGNORA_DATABASE` is `signora` for **every** environment, so **one database name serves three commands**, one of which is destructive:
+
+```
+make test          localhost:<lane cluster>/signora
+make demo-seed     localhost:<lane cluster>/signora
+make demo-narrate  localhost:<lane cluster>/signora
+```
+
+⚡ **Isolating the cluster never isolated the database.** [B-270](#b-270--make-demo-seed-seeds-human-reviews-database-from-any-lane-and-says-it-succeeded)'s fix closed the dangerous half — the fallback to slot 0, human review's — by making `DESTRUCTIVE_DB_ENV` name a database in the same breath as the consent flag. ⛔ **It did not separate a lane's test database from its own reviewable one**, because there is only one name.
+
+🔴 **The framing that makes the fix obvious rather than debatable, and it is QE's**: [`backend/tests/certification/database.py`](../backend/tests/certification/database.py) **already creates a disposable `signora_certify_<sha12>` per run and drops it afterwards.** **The capability exists in-repo and `make test` is one command short of using it.**
+
+**So this is not *"be careful which database you point at."*** ⛔ **The certification path relies on nobody knowing** — which is the property a lane-facing command should have too.
+
+**Lane A's present workaround, which is that pattern applied by hand:**
+
+```
+docker exec <lane>-postgres-1 psql -U signora -d postgres \
+  -c "CREATE DATABASE signora_lane_a_test OWNER signora"
+SIGNORA_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:<port>/signora_lane_a_test \
+  uv run alembic upgrade head
+SIGNORA_TEST_APP_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:<port>/signora_lane_a_test \
+SIGNORA_TEST_ADMIN_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:<port>/signora_lane_a_test \
+SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run pytest
+```
+
+⚠️ **QE holds the same collision from the other end**: its `lane-qe` cluster still carries 36 `action_batch_transition` rows left by a `demo-seed`, which is what exposed **B-1016**'s downgrade (QE's row, not yet on this branch) against a *used* database. **Neither defect is visible on the clean database every gate runs against.**
+
 ### B-281 · 🟡 Signing out does not close the product in every tab — pre-existing
 
 | | |
