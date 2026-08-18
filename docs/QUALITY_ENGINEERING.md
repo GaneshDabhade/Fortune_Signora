@@ -33,6 +33,44 @@ QE is the only lane that may merge into `integration`, certify, move `main`, wri
 
 ---
 
+## 0 · The Continuous Certification & Promotion model — ratified 2026-08-18, product owner
+
+> ## **Lane A should never wait for QE. QE should never chase a moving Lane A branch.**
+
+**QE certifies fixed snapshots in isolated environments, promotes only what it actually certified, and picks up newer Lane A work in the next cycle.**
+
+| | |
+|---|---|
+| **The candidate is a SHA, never a branch** | Fetch, select a commit, record it, work from that exact tree. **Immutable for the cycle** |
+| **Lane A keeps pushing, and that is normal** | ⛔ **Not a special event.** Newer commits are simply the *next available candidate* |
+| **Never mix two snapshots** | ⛔ No re-pull mid-run, no rebase underneath, no silent switch to a newer commit |
+| **Not every commit needs a cycle** | If Lane A produces A…E while QE certifies A, **the next candidate is E**, not B. **Continuous validated progress, not one certification per commit** |
+| **Promote only what was certified** | `promoted == certified`, or an explicitly documented controlled promotion of exactly that content |
+
+### 🔴 Complete environment isolation — the part that is new, and it is mandatory
+
+**QE must never make Lane A wait for a database, a process, a container, a port, seeded data, a browser profile, a test user or a credential.** ⛔ **No shared mutable state.** Own checkout · own database · own services · own ports · own fixtures · own artifacts. **Prefer one environment per cycle where practical.**
+
+> ⚠️ **This is written from a cycle that violated it repeatedly.** **Both lanes seeded the same Playground on the same stack**, and it cost: [B-282](BUGS.md) — `make test` truncates the database the demonstration is seeded in · a connection nobody could account for, `external_account_id = "e2e-recents"`, **a string that exists nowhere in the repository**, which made Home's composition a function of who had last poked the stack · and [B-284](BUGS.md), where **QE's own browser runs registered enough accounts to push the demo owner past page 1 and lock their rail.**
+>
+> ⛔ **Each of those read as a product defect and none of them was.** **The isolation requirement is not hygiene; it is what makes an attribution trustworthy.**
+
+### Fixtures: mock at the pipeline boundary, never below it
+
+**If a design state needs data the standard fixture cannot produce:** ① produce it through the real pipeline where possible; ② otherwise **mock at the correct boundary**, representing what production would eventually produce.
+
+⛔ **Never an unrelated database shortcut to make a screenshot pass. Never arbitrary rows that bypass the domain pipeline. Never a production change to accommodate a fixture. And never ask Lane A to stop because QE needs one.**
+
+### An incomplete candidate is still certifiable
+
+**Separate three things and report them separately** — **implemented and certifiable** → certify · **implemented but blocked** → document the exact blocker · **not yet implemented** → outside this certification. ⛔ **Do not reject a whole candidate for unfinished work in it.**
+
+### Every cycle reports the same shape
+
+**Candidate SHA · Environment · Result (CERTIFIED / BLOCKED / FAILED) · Tests · Browser · Governance · Migration · Regression · Promotion (PROMOTED / NOT PROMOTED) · Next candidate.**
+
+⚡ **So that *what was tested*, *what was promoted* and *what Lane A has since built* can never be confused for one another.**
+
 ## 0d · Validate on QE's own stack; certify on the default one
 
 **Ratified by QE, 2026-08-05, closing [B-121](BUGS.md).** The environment derivation keys off the **branch name**. QE validates a lane's tree by pointing a throwaway branch — `qe-validate` — at their tip, and **that name derives nothing**:
