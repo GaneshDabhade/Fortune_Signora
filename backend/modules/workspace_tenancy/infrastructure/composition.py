@@ -83,11 +83,16 @@ from modules.workspace_tenancy.infrastructure.repositories import (
     SqlAlchemyNotificationRepository,
     SqlAlchemyOnboardingRunRepository,
     SqlAlchemyPersonPreferencesRepository,
+    SqlAlchemyRecentlyViewedRepository,
     SqlAlchemyRoleChangeLog,
     SqlAlchemySavedViewRepository,
     SqlAlchemyWorkspaceRepository,
 )
 from modules.workspace_tenancy.infrastructure.saved_view_service import SavedViewService
+from modules.workspace_tenancy.application.use_cases.recently_viewed import (
+    RecentRecordsUseCase,
+    RecordViewUseCase,
+)
 from modules.workspace_tenancy.infrastructure.settings import load_tenancy_settings
 from signora_platform.authorization import CasbinAuthorizer
 from signora_platform.event_bus import PostgresOutboxEventPublisher
@@ -127,6 +132,8 @@ class WorkspaceTenancyUseCases:
     change_preferences: ChangePreferencesUseCase
     dismiss_first_run: DismissFirstRunUseCase
     skip_invite: SkipInviteUseCase
+    record_view: RecordViewUseCase
+    recent_records: RecentRecordsUseCase
 
 
 def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
@@ -136,10 +143,13 @@ def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
     saved_view_repository = SqlAlchemySavedViewRepository(session)
     onboarding_repository = SqlAlchemyOnboardingRunRepository(session)
     preferences_repository = SqlAlchemyPersonPreferencesRepository(session)
+    recently_viewed_repository = SqlAlchemyRecentlyViewedRepository(session)
+    # 📁 Session Continuity U-01 — the window is configuration.
+    tenancy_settings = load_tenancy_settings()
     tenant_context = SessionTenantContext(session)
     # **Constructed here, at the composition root**, from the module's own
     # settings rather than from `os.environ` anywhere downstream (§6, §20b).
-    delivery = ConsoleInvitationDelivery(app_url=load_tenancy_settings().app_url)
+    delivery = ConsoleInvitationDelivery(app_url=tenancy_settings.app_url)
     event_publisher = OutboxEventPublisherAdapter(session, delegate=PostgresOutboxEventPublisher())
 
     return WorkspaceTenancyUseCases(
@@ -228,6 +238,11 @@ def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
         change_preferences=ChangePreferencesUseCase(preferences=preferences_repository),
         dismiss_first_run=DismissFirstRunUseCase(preferences=preferences_repository),
         skip_invite=SkipInviteUseCase(preferences=preferences_repository),
+        record_view=RecordViewUseCase(recently_viewed=recently_viewed_repository),
+        recent_records=RecentRecordsUseCase(
+            recently_viewed=recently_viewed_repository,
+            retention_days=tenancy_settings.recents_retention_days,
+        ),
     )
 
 

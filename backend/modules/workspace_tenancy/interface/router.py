@@ -64,6 +64,8 @@ from modules.workspace_tenancy.infrastructure.repositories import (
     SqlAlchemyNotificationRepository,
 )
 from modules.workspace_tenancy.interface.schemas import (
+    RecordViewRequest,
+    ViewedRecordResponse,
     AddMemberRequest,
     AdvanceOnboardingRequest,
     AnswerPayload,
@@ -1370,3 +1372,55 @@ async def mark_notifications_read(
         context.workspace_id, context.principal.user_id, body.notification_ids
     )
     return UnreadBadgeResponse.from_domain(badge)
+
+
+@router.post(
+    "/workspaces/{workspace_id}/recently-viewed",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Record that this person opened a record",
+)
+async def record_view(context: CurrentWorkspace, body: RecordViewRequest) -> None:
+    """📁 **Session Continuity tier 4** — *"recently viewed records"*, whose
+    medium is the server (`D-01`, *"four tiers, one medium each"*).
+
+    ⚡ **Idempotent per record.** Opening the same account twice moves its time
+    rather than adding a row — 📁 Home asks for *"the last five **records**"*,
+    and an append-only log answers with one account five times for somebody who
+    refreshed.
+
+    ⛔ **Own history only, and there is no parameter that could ask otherwise.**
+    The person is the verified caller; 492 §0's predicate is in the RLS policy
+    as well as the query, so the absence of the parameter is not the only thing
+    preventing it.
+
+    **204, deliberately.** Recording a view returns nothing a caller needs, and
+    a body would invite the browser to block a navigation on reading it.
+    """
+    context.authorize(Resource.RECENTLY_VIEWED, Action.UPDATE)
+    await build_use_cases(context.session).record_view.execute(
+        context.workspace_id, context.principal.user_id, body.entity_id, body.kind
+    )
+
+
+@router.get(
+    "/workspaces/{workspace_id}/recently-viewed",
+    response_model=list[ViewedRecordResponse],
+    summary="What this person opened most recently",
+)
+async def recently_viewed(context: CurrentWorkspace) -> list[ViewedRecordResponse]:
+    """📁 **Home's `card.recents`** — *"last five records touched. Context,
+    never urgent."*
+
+    ⚡ **Five is the design's number and is applied here**, not in the card: a
+    limit chosen in a component would make the answer depend on who asked.
+
+    ⛔ **An empty list is an answer, not a fault.** 📁 Session Continuity:
+    *"if a tier has no record, the screen renders empty rather than
+    reconstructing a plausible state. Fabricated continuity is worse than
+    none."*
+    """
+    context.authorize(Resource.RECENTLY_VIEWED, Action.READ)
+    records = await build_use_cases(context.session).recent_records.execute(
+        context.workspace_id, context.principal.user_id
+    )
+    return [ViewedRecordResponse.from_domain(record) for record in records]

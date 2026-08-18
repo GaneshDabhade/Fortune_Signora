@@ -103,6 +103,27 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # and *dismissing* one is a read in `notification_read` rather than a
         # deletion here.
         "notification",
+        # Recently viewed records — 📁 Session Continuity tier 4, migration
+        # 0064. **The FOURTH table of `person_preferences`' class**: 492 §0's
+        # narrowing, `workspace_id` non-nullable with every tenancy guarantee
+        # intact and `user_id` added on top, in all four policies as well as in
+        # the query.
+        #
+        # 🔴 **UPDATE IS granted here and is NOT granted on `notification_read`,
+        # and the difference is the modelling rather than an inconsistency.** A
+        # read records that something happened and is therefore immutable (§2).
+        # ⚡ **This table does not hold view EVENTS; it holds *the last time
+        # this person opened this record*** — one row per `(workspace, person,
+        # entity)` — **and that fact moves by definition.** 📁 The design forces
+        # the choice: Home asks for *"the last five RECORDS"*, and an
+        # append-only view log answers with one account five times for somebody
+        # who refreshed.
+        #
+        # ⛔ **The read guarantee is the same one `notification` holds**: one
+        # person's reading history is not a colleague's to see, and the person
+        # predicate is in the policy so that stays true even if a query forgets
+        # it.
+        "recently_viewed",
         # Onboarding (TASK-469, Workflow 8), migration 0043. **Every answer
         # column is nullable and the table is still tenant-owned** — a
         # skippable step is a nullable column, not an exempt table, and the

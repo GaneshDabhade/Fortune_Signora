@@ -46,6 +46,7 @@ from modules.workspace_tenancy.domain.onboarding import (
     OnboardingStep,
     Provenance,
 )
+from modules.workspace_tenancy.domain.recently_viewed import ViewedKind, ViewedRecord
 from modules.workspace_tenancy.domain.preferences import (
     HOME_COMPOSITIONS,
     MAX_CONFIDENCE_FLOOR,
@@ -871,3 +872,47 @@ class NotificationFeedResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     notifications: list[NotificationResponse]
+
+
+class RecordViewRequest(BaseModel):
+    """*"I opened this record."*
+
+    📁 **Session Continuity tier 4.** ⛔ **The person is NOT in the body** — it
+    is the verified caller, exactly as `workspace_id` is the path's. A body that
+    could name a person would be a route to writing into somebody else's
+    reading history (§7).
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    entity_id: UUID = Field(description="The record that was opened.")
+    kind: ViewedKind = Field(
+        description=(
+            "What sort of record. Bounded by the enum at the edge and by a check "
+            "constraint in the table — a kind nothing can open is a row the card "
+            "would render with nowhere to go."
+        )
+    )
+
+
+class ViewedRecordResponse(BaseModel):
+    """One record this person opened, newest first.
+
+    ⛔ **Carries no title.** 📁 An account's name is the Knowledge Graph's to
+    state and moves without this module hearing about it; **storing or
+    returning it here would be a second representation of a fact that changes**
+    ([§2](../../../../CLAUDE.md)). ✅ **Home resolves names through the identity
+    surface**, exactly as its attention card already does.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    entity_id: UUID
+    kind: ViewedKind
+    viewed_at: datetime
+
+    @classmethod
+    def from_domain(cls, record: ViewedRecord) -> "ViewedRecordResponse":
+        return cls(
+            entity_id=record.entity_id, kind=record.kind, viewed_at=record.viewed_at
+        )

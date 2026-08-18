@@ -378,6 +378,36 @@ class PersonPreferencesModel(Base, TimestampMixin, AuditMixin):
     )
 
 
+class RecentlyViewedModel(Base, TimestampMixin, AuditMixin):
+    """A record this person opened — 📁 Session Continuity **tier 4**.
+
+    🔴 **Person-scoped within a workspace**, the same class as
+    {@link PersonPreferencesModel} — 492 §0's *narrowing of tenant-owned*.
+    `workspace_id` stays non-nullable and the person predicate is added on top,
+    in the RLS policy as well as in the query.
+
+    ⚡ **`(workspace, person, entity)` is the identity**, so a second view
+    updates `viewed_at` rather than appending. 📁 The design asks for *"the last
+    five RECORDS"* — ⛔ an append-only log answers with one account five times.
+
+    ⛔ **`viewed_at` is the fact, `updated_at` is audit metadata.** Ordering by
+    the audit column would work until the first backfill touched a row.
+    """
+
+    __tablename__ = "recently_viewed"
+
+    workspace_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("workspace.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    user_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    entity_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+
+    entity_kind: Mapped[str] = mapped_column(String(32), nullable=False)
+    viewed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
 class CapabilityRoleModel(Base, WorkspaceScopedMixin, TimestampMixin, AuditMixin):
     """One named capability role — migration `0057`, ADR-0410.
 

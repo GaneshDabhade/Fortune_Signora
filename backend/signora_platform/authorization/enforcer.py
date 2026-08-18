@@ -140,6 +140,19 @@ class Resource(StrEnum):
     #: that enters**, so a grant cannot be widened into reading a colleague's
     #: read state by editing `policy.csv`.
     NOTIFICATION = "notification"
+    #: ⚡ 📁 **Session Continuity tier 4** — a person's recently viewed records,
+    #: read by 📁 Home's `card.recents`.
+    #:
+    #: ⚡ **Its own resource rather than `PREFERENCES`, for exactly the reason
+    #: `NOTIFICATION` records one entry above**: *a preference is a current
+    #: answer a person may change, and a read is a record of something that
+    #: happened.* ⛔ **A view is the second kind**, so it cannot share the
+    #: first's resource.
+    #:
+    #: ⛔ **The scoping to self is the endpoint's and the RLS policy's** — 492
+    #: §0's person predicate — **so a grant cannot be widened into reading a
+    #: colleague's reading history by editing `policy.csv`.**
+    RECENTLY_VIEWED = "recently_viewed"
     #: ⚡ **[TASK-465](../../../docs/BACKLOG.md), slice 5.** 📁 [§20a](../../../CLAUDE.md)
     #: ruled at [C-224](../../../docs/LANE_COORDINATION.md) that adding a member
     #: here is a **declarative registration and never an authorization grant** —

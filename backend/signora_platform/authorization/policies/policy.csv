@@ -59,6 +59,10 @@ p, member, *, notification, read
 p, owner, *, notification, read
 p, member, *, notification, update
 p, owner, *, notification, update
+p, member, *, recently_viewed, read
+p, owner, *, recently_viewed, read
+p, member, *, recently_viewed, update
+p, owner, *, recently_viewed, update
 p, owner, *, preferences, read
 p, member, *, preferences, read
 p, owner, *, preferences, update

@@ -14,6 +14,7 @@ from modules.workspace_tenancy.domain.entities import Membership, Workspace, Wor
 from modules.workspace_tenancy.domain.invitation import Invitation
 from modules.workspace_tenancy.domain.onboarding import OnboardingRun
 from modules.workspace_tenancy.domain.preferences import PersonPreferences
+from modules.workspace_tenancy.domain.recently_viewed import ViewedKind, ViewedRecord
 from modules.workspace_tenancy.domain.saved_view import SavedView
 from signora_platform.pagination import CursorPosition
 
@@ -188,3 +189,25 @@ class PersonPreferencesRepository(Protocol):
 
     async def get(self, workspace_id: UUID, person_id: UUID) -> PersonPreferences: ...
     async def save(self, preferences: PersonPreferences) -> None: ...
+
+
+class RecentlyViewedRepository(Protocol):
+    """📁 Session Continuity **tier 4** — a person's recently viewed records.
+
+    ⚡ **`record` is idempotent per record.** Opening the same account twice is
+    one entry with a later time, and the port says so rather than leaving each
+    caller to decide.
+
+    ⛔ **`recent` takes the window as an argument.** 📁 Session Continuity keeps
+    tier 4 for **30 days**, and its `U-01` — owner *Legal + Security* — requires
+    that be *"configuration, not a constant"*, because retention may be
+    constrained by the DPA.
+    """
+
+    async def record(
+        self, workspace_id: UUID, person_id: UUID, entity_id: UUID, kind: ViewedKind
+    ) -> None: ...
+
+    async def recent(
+        self, workspace_id: UUID, person_id: UUID, *, limit: int, within_days: int
+    ) -> tuple[ViewedRecord, ...]: ...

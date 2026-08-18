@@ -16,6 +16,9 @@ from dataclasses import dataclass
 
 DEFAULT_APP_URL = "http://localhost:3000"
 
+#: 📁 Session Continuity state 14 — *"tier 4 kept 30 days"*.
+DEFAULT_RECENTS_RETENTION_DAYS = 30
+
 
 @dataclass(frozen=True, slots=True)
 class TenancySettings:
@@ -24,9 +27,31 @@ class TenancySettings:
     #: application or interface code sees `os.environ` (§20b).
     app_url: str = DEFAULT_APP_URL
 
+    #: 📁 **How long a recently-viewed record is offered back** — Session
+    #: Continuity state 14, *"tier 4 kept 30 days"*.
+    #:
+    #: ⛔ **Configuration, not a constant, and the design says why.** Its
+    #: `U-01` — owner **Legal + Security** — reads *"implement 7 and 30 as
+    #: configuration"*, because a viewed-record history may be constrained by
+    #: the DPA and by regional policy. **A literal here would need a release to
+    #: satisfy a compliance answer.**
+    recents_retention_days: int = DEFAULT_RECENTS_RETENTION_DAYS
+
 
 def load_tenancy_settings() -> TenancySettings:
-    return TenancySettings(app_url=os.environ.get("SIGNORA_APP_URL", DEFAULT_APP_URL))
+    return TenancySettings(
+        app_url=os.environ.get("SIGNORA_APP_URL", DEFAULT_APP_URL),
+        recents_retention_days=int(
+            os.environ.get(
+                "SIGNORA_RECENTS_RETENTION_DAYS", DEFAULT_RECENTS_RETENTION_DAYS
+            )
+        ),
+    )
 
 
-__all__ = ["DEFAULT_APP_URL", "TenancySettings", "load_tenancy_settings"]
+__all__ = [
+    "DEFAULT_APP_URL",
+    "DEFAULT_RECENTS_RETENTION_DAYS",
+    "TenancySettings",
+    "load_tenancy_settings",
+]

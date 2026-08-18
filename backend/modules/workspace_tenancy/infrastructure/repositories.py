@@ -6,7 +6,7 @@ between domain entities and ORM models in both directions.
 """
 
 from collections.abc import Sequence
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -46,6 +46,7 @@ from modules.workspace_tenancy.domain.preferences import (
     Theme,
     TimeFormat,
 )
+from modules.workspace_tenancy.domain.recently_viewed import ViewedKind, ViewedRecord
 from modules.workspace_tenancy.domain.saved_view import SavedView
 from modules.workspace_tenancy.domain.security_event import SecurityEvent
 from modules.workspace_tenancy.infrastructure.models import (
@@ -56,6 +57,7 @@ from modules.workspace_tenancy.infrastructure.models import (
     NotificationRow,
     OnboardingRunModel,
     PersonPreferencesModel,
+    RecentlyViewedModel,
     SavedViewModel,
     SecurityEventModel,
     WorkspaceModel,
@@ -947,3 +949,75 @@ def _to_notification(row: NotificationRow) -> Notification:
         expectation=row.expectation,
         occurred_at=row.occurred_at,
     )
+
+
+class SqlAlchemyRecentlyViewedRepository(SqlAlchemyRepository):
+    """📁 Session Continuity **tier 4**, stored and read back.
+
+    ⚡ **`record` upserts on `(workspace, person, entity)`.** Viewing the same
+    account twice moves its time; it does not add a row. 📁 The design asks for
+    *"the last five RECORDS"*, and an append-only log would answer with one
+    account five times for somebody who refreshed.
+    """
+
+    async def record(
+        self, workspace_id: UUID, person_id: UUID, entity_id: UUID, kind: ViewedKind
+    ) -> None:
+        now = datetime.now(UTC)
+        statement = select(RecentlyViewedModel).where(
+            RecentlyViewedModel.workspace_id == workspace_id,
+            # Defence in depth beside the RLS policy, which carries the same
+            # two predicates (11-tenancy.md, 492 §0).
+            RecentlyViewedModel.user_id == person_id,
+            RecentlyViewedModel.entity_id == entity_id,
+        )
+        model = (await self._session.execute(statement)).scalar_one_or_none()
+        if model is None:
+            self._session.add(
+                RecentlyViewedModel(
+                    workspace_id=workspace_id,
+                    user_id=person_id,
+                    entity_id=entity_id,
+                    entity_kind=kind.value,
+                    viewed_at=now,
+                    created_by=person_id,
+                    updated_by=person_id,
+                )
+            )
+            return
+        model.viewed_at = now
+        model.entity_kind = kind.value
+        model.updated_by = person_id
+
+    async def recent(
+        self, workspace_id: UUID, person_id: UUID, *, limit: int, within_days: int
+    ) -> tuple[ViewedRecord, ...]:
+        """⛔ **The window is applied here, not left to the caller.**
+
+        📁 Session Continuity keeps tier 4 for 30 days. **A row older than the
+        window is not returned** — it is not deleted here either, because
+        pruning is an operational concern and deleting on a read would make a
+        GET destructive.
+        """
+        cutoff = datetime.now(UTC) - timedelta(days=within_days)
+        statement = (
+            select(RecentlyViewedModel)
+            .where(
+                RecentlyViewedModel.workspace_id == workspace_id,
+                RecentlyViewedModel.user_id == person_id,
+                RecentlyViewedModel.viewed_at >= cutoff,
+            )
+            .order_by(RecentlyViewedModel.viewed_at.desc())
+            .limit(limit)
+        )
+        rows = (await self._session.execute(statement)).scalars().all()
+        return tuple(
+            ViewedRecord(
+                workspace_id=row.workspace_id,
+                person_id=row.user_id,
+                entity_id=row.entity_id,
+                kind=ViewedKind(row.entity_kind),
+                viewed_at=row.viewed_at,
+            )
+            for row in rows
+        )
