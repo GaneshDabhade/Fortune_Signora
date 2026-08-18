@@ -13,13 +13,13 @@ import { OWNER } from './fixtures/personas';
 
 test.describe('the browser, used the way people use it', () => {
   test('@regression refreshing the list keeps the same accounts in the same order', async ({
-    attention,
+    accounts,
     page,
   }) => {
-    await attention.open();
-    const before = await attention.names();
+    await accounts.open();
+    const before = await accounts.names();
     await page.reload();
-    const after = await attention.names();
+    const after = await accounts.names();
 
     // The ranking is computed by the pipeline, not by the browser. Two reads
     // of an unchanged workspace that disagreed would mean the order is not a
@@ -28,17 +28,17 @@ test.describe('the browser, used the way people use it', () => {
   });
 
   test('@regression forward after back returns to the account', async ({
-    attention,
+    accounts,
     brief,
     page,
   }) => {
-    await attention.open();
-    await attention.openFirstAccount();
+    await accounts.open();
+    await accounts.openFirstAccount();
     const url = page.url();
     await brief.waitForScore();
 
     await page.goBack();
-    await expect(attention.heading).toBeVisible();
+    await expect(accounts.heading).toBeVisible();
     await page.goForward();
 
     await expect(page).toHaveURL(url);
@@ -169,28 +169,39 @@ test.describe('controls that are pressed twice', () => {
 test.describe('when the network is not cooperating', () => {
   test('@regression a failed list says so rather than showing nothing', async ({
     page,
-    attention,
+    accounts,
   }) => {
     // The API is made to fail for this page only. Not a mock of the product's
     // own data — the request still goes to the real endpoint and the real
     // client handles the failure. What is simulated is the network, which is
     // the one thing a customer's environment genuinely does to us.
     await page.route('**/api/proxy/**/accounts*', (route) => route.abort('failed'));
-    await attention.open();
+    await accounts.open();
 
-    await expect(page.getByText('Could not load your accounts')).toBeVisible();
-    // The wording is the point: it must reassure that nothing has *changed*,
+    /**
+     * ⚠️ **The copy is Companies', and it used to be the retired screen's.**
+     * ⛔ *"Could not load your accounts / Nothing has changed about your
+     * accounts"* was the Attention list's wording; **Companies answers the
+     * same fear in its own words**, and asserting the old strings against the
+     * new screen would have failed for the right reason and read as a defect.
+     *
+     * ⚡ **`.first()` is required, not defensive**: 📁 `companies-failed-read.test.tsx`
+     * records it — *"the page variant states it in a heading AND in a
+     * sentence, and a single-match query would fail on a correct render."*
+     */
+    await expect(page.getByText(/could not load/i).first()).toBeVisible();
+    // The wording is the point: it must reassure that nothing has been *lost*,
     // because a seller's first thought on an error is that they lost work.
-    await expect(page.getByText(/Nothing has changed about your accounts/i)).toBeVisible();
+    await expect(page.getByText(/no account has been removed/i)).toBeVisible();
   });
 
   test('@regression a failed brief does not look like an empty account', async ({
     page,
     brief,
-    attention,
+    accounts,
   }) => {
-    await attention.open();
-    const links = await attention.accountLinks.first().getAttribute('href');
+    await accounts.open();
+    const links = await accounts.accountLinks.first().getAttribute('href');
     const id = links?.split('/').pop() ?? '';
 
     await page.route('**/api/proxy/**/score', (route) => route.abort('failed'));
@@ -199,7 +210,9 @@ test.describe('when the network is not cooperating', () => {
     // *"Could not load"* and *"nothing has scored this"* are different
     // sentences for different situations, and rendering the second for the
     // first would tell a customer a falsehood about their own data.
-    await expect(page.getByText('Could not load this account')).toBeVisible();
+    // ⚡ **`.first()` for the reason above** — the brief states it in a heading
+    // and again in the sentence beneath it.
+    await expect(page.getByText('Could not load this account').first()).toBeVisible();
     await expect(brief.neverScored).toHaveCount(0);
   });
 });

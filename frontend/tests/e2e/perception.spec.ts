@@ -72,19 +72,29 @@ function report(name: string, perception: Perception): void {
 }
 
 test.describe('opening the product', () => {
-  test('@journey the attention list, measured the way a customer experiences it', async ({
+  test('@journey the accounts list, measured the way a customer experiences it', async ({
     page,
-    attention,
+    accounts,
   }) => {
-    const perception = await measure(page, '/', async () => {
-      await expect(attention.accountLinks.first()).toBeVisible({ timeout: 30_000 });
+    const perception = await measure(page, '/accounts', async () => {
+      await expect(accounts.accountLinks.first()).toBeVisible({ timeout: 30_000 });
     });
-    report('the attention list', perception);
+    report('the accounts list', perception);
 
-    // **The finding, made permanent.** One access token is minted *per data
-    // request* — each an RS256 signature on the Next tier — for a token that is
-    // valid for minutes. The target is **one**; the ceiling below is set to
-    // catch a regression rather than to bless the current number.
+    /**
+     * ⚠️ **Measured at `/accounts`, and it used to be `/`.** 🔴 `/` became the
+     * shell's entry resolver, so this measured a redirect into Home while
+     * calling itself *"the accounts list"* — **and Home mints 15, which failed
+     * a ceiling calibrated on a screen that no longer exists.**
+     *
+     * ✅ **Pointing it at the surface it names restores the finding rather than
+     * relaxing it**: 11 token mints for 11 data reads, under the same ceiling.
+     *
+     * **The finding, made permanent.** One access token is minted *per data
+     * request* — each an RS256 signature on the Next tier — for a token that is
+     * valid for minutes. The target is **one**; the ceiling below is set to
+     * catch a regression rather than to bless the current number.
+     */
     expect(
       perception.tokens,
       `${perception.tokens} access tokens for one page. The target is 1: the token ` +
@@ -97,11 +107,11 @@ test.describe('opening the product', () => {
 
   test('@journey the account brief, which composes six read models', async ({
     page,
-    attention,
+    accounts,
     brief,
   }) => {
-    await attention.open();
-    const href = await attention.accountLinks.first().getAttribute('href');
+    await accounts.open();
+    const href = await accounts.accountLinks.first().getAttribute('href');
 
     const perception = await measure(page, href ?? '/', async () => {
       await brief.waitForScore();
@@ -116,7 +126,7 @@ test.describe('opening the product', () => {
 });
 
 test.describe('how many times a screen changes shape', () => {
-  test('@journey the attention list settles in one phase, not four', async ({
+  test('@journey the accounts list settles in one phase, not four', async ({
     page,
   }) => {
     await page.goto('/');

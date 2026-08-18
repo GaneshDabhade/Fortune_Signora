@@ -37,11 +37,11 @@ import { expect, test } from './fixtures/signora';
 /** Open the first citation on the first account — the product's one modal that
  * a customer meets while reading rather than while editing. */
 async function openReadingDialog(
-  attention: import('./pages/attention').AttentionPage,
+  accounts: import('./pages/accounts').AccountsPage,
   brief: import('./pages/brief').BriefPage,
 ): Promise<void> {
-  await attention.open();
-  await attention.openFirstAccount();
+  await accounts.open();
+  await accounts.openFirstAccount();
   await brief.waitForScore();
   await brief.openFirstCitation();
 }
@@ -94,10 +94,10 @@ async function focusReachesNothingBehind(
 test.describe('a dialog stops the rest of the product', () => {
   test('@a11y the keyboard cannot walk out of a dialog and into the page behind it', async ({
     page,
-    attention,
+    accounts,
     brief,
   }) => {
-    await openReadingDialog(attention, brief);
+    await openReadingDialog(accounts, brief);
     await expect(page.getByRole('dialog')).toBeVisible();
 
     // Twenty tabs is several times round any dialog here, so a leak would have
@@ -107,10 +107,10 @@ test.describe('a dialog stops the rest of the product', () => {
 
   test('@a11y a control behind the dialog cannot be reached or activated', async ({
     page,
-    attention,
+    accounts,
     brief,
   }) => {
-    await openReadingDialog(attention, brief);
+    await openReadingDialog(accounts, brief);
 
     // The shell's navigation is always present and always behind the modal.
     const behind = page.getByRole('link', { name: 'Settings' }).first();
@@ -127,10 +127,10 @@ test.describe('a dialog stops the rest of the product', () => {
 
   test('@regression Escape closes exactly one dialog and leaves the page where it was', async ({
     page,
-    attention,
+    accounts,
     brief,
   }) => {
-    await openReadingDialog(attention, brief);
+    await openReadingDialog(accounts, brief);
     const where = page.url();
 
     await page.keyboard.press('Escape');
@@ -145,10 +145,10 @@ test.describe('a dialog stops the rest of the product', () => {
 
   test('@a11y closing returns focus to something, never to the bare page', async ({
     page,
-    attention,
+    accounts,
     brief,
   }) => {
-    await openReadingDialog(attention, brief);
+    await openReadingDialog(accounts, brief);
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toHaveCount(0);
 
@@ -170,12 +170,12 @@ test.describe('a dialog stops the rest of the product', () => {
 test.describe('a dialog and the browser', () => {
   test('@regression Back does not have to be pressed twice to leave a page with a dialog', async ({
     page,
-    attention,
+    accounts,
     brief,
   }) => {
-    await attention.open();
+    await accounts.open();
     const listUrl = page.url();
-    await attention.openFirstAccount();
+    await accounts.openFirstAccount();
     await brief.waitForScore();
     await brief.openFirstCitation();
     await expect(page.getByRole('dialog')).toBeVisible();
@@ -187,19 +187,17 @@ test.describe('a dialog and the browser', () => {
     // silently doing one while the design assumed the other is not.
     await page.goBack();
     await page.waitForURL(listUrl, { timeout: 15_000 });
-    await expect(
-      page.getByRole('heading', { name: 'Attention', level: 1 }),
-    ).toBeVisible();
+    await expect(accounts.heading).toBeVisible();
     // No orphan: whatever Back did, it must not leave a dialog over the list.
     await expect(page.getByRole('dialog')).toHaveCount(0);
   });
 
   test('@regression reloading with a dialog open lands on a usable page, not a stuck one', async ({
     page,
-    attention,
+    accounts,
     brief,
   }) => {
-    await openReadingDialog(attention, brief);
+    await openReadingDialog(accounts, brief);
     await page.reload();
 
     // A dialog is view state and a reload is entitled to drop it. **What must
@@ -242,11 +240,11 @@ test.describe('a dialog and the browser', () => {
 test.describe('the page behind holds still', () => {
   test('@regression the content behind a dialog does not move while it is open', async ({
     page,
-    attention,
+    accounts,
     brief,
   }) => {
-    await attention.open();
-    await attention.openFirstAccount();
+    await accounts.open();
+    await accounts.openFirstAccount();
     await brief.waitForScore();
 
     await brief.openFirstCitation();
@@ -325,7 +323,7 @@ test.describe('the editing dialog answers the same questions', () => {
 
   test('@a11y a dialog offers the keyboard something to land on', async ({
     page,
-    attention,
+    accounts,
     brief,
   }) => {
     // ✅ **`test.fail()` REMOVED — [B-312](../../../docs/BUGS.md) is fixed**, and
@@ -337,7 +335,7 @@ test.describe('the editing dialog answers the same questions', () => {
     // the defect was gone, and then told the lane fixing it that it was done.
     // ⛔ **Both reasons it was not Lane B's are inside this lane's assignment**:
     // `components/ui` and the `product_surface` component test it breaks.
-    await openReadingDialog(attention, brief);
+    await openReadingDialog(accounts, brief);
 
     // **The other half of a focus trap, and the half nobody checks.** Trapping
     // focus inside a dialog that contains nothing focusable does not protect a

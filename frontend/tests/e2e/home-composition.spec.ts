@@ -13,6 +13,7 @@
  * guarantee survives a real session.
  */
 import { expect, test } from './fixtures/signora';
+import { REGISTRY } from '../../lib/home/cards';
 
 test('🔴 the rail leads to Home, and Home renders', async ({ page }) => {
   await page.goto('/');
@@ -49,14 +50,25 @@ test('⛔ it draws no card the platform has not published', async ({ page }) => 
   const drawn = await page
     .locator('[data-card]')
     .evaluateAll((els) => els.map((e) => e.getAttribute('data-card')));
-  const registered = new Set([
-    'connect-a-crm',
-    'connect-calls',
-    'invite-the-team',
-    'pipeline-health',
-    'needs-you-today',
-  ]);
-  expect(drawn.every((id) => id !== null && registered.has(id))).toBe(true);
+  /**
+   * 🔴 **Read from the registry, never restated here.**
+   *
+   * ⚠️ **This was a hand-written list of five card ids and it went stale the
+   * moment a lane shipped a sixth** — which is 📁 [§2](../../../CLAUDE.md)'s
+   * *"truth has exactly one authoritative representation"* failing in a test
+   * rather than in the product. ⛔ **The failure looked like Home drawing an
+   * unregistered card**, which is the one thing this assertion exists to
+   * catch, so the false alarm was expensive.
+   *
+   * ✅ **`REGISTRY` is the registration mechanism** — a module contributes by
+   * adding a line to it — **so a card drawn and not registered still fails
+   * here, and a card registered and drawn no longer does.**
+   */
+  const registered = new Set(REGISTRY.map((card) => card.id));
+  expect(
+    drawn.every((id) => id !== null && registered.has(id as (typeof REGISTRY)[number]['id'])),
+    `Home drew ${drawn.filter((id) => !registered.has(id as never)).join(', ')}, which no module registered`,
+  ).toBe(true);
 
   // ⛔ **Never a placeholder for a card nobody has built** — 📁 the design's own
   // non-goal: *"sample or synthetic data to make an empty Home look populated."*

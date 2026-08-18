@@ -56,8 +56,15 @@ export const authClient = createAuthClient({
 });
 
 /**
- * Where a person lands once they are signed in: the attention list, which is
- * a seller's morning.
+ * Where a person lands once they are signed in: **`/`, which is the shell's
+ * entry resolver.**
+ *
+ * ⚠️ **This said *"the attention list, which is a seller's morning"*.** 🔴
+ * **Both halves have since changed**: `/` became the twenty-four-rule entry
+ * resolver (📁 the Authenticated Entry document, *"entry resolution belongs to
+ * the shell, exclusively"*), and **the Attention screen is retired** — 📁 the
+ * App Shell names nine destinations and Attention is not among them. ✅ **The
+ * constant was right the whole time; the sentence explaining it was not.**
  *
  * **It said `/workspaces` and no such route has ever existed.** The comment
  * here argued for workspace selection over the product — a reasonable
@@ -71,9 +78,9 @@ export const authClient = createAuthClient({
  * comment claiming a correctness property the code does not have**, and it
  * survived because no test has ever signed in.
  *
- * A brand-new account with no organization is answered by the attention list
- * itself, which says so and offers to create one — so the destination this
- * constant used to argue for is a screen the product already has.
+ * ✅ **A brand-new account with no organization is answered by the resolver**,
+ * which routes it to `/workspaces/none` — 📁 rule 10 — **so the destination
+ * this constant used to argue for is a screen the product already has.**
  */
 const AFTER_SIGN_IN = '/';
 

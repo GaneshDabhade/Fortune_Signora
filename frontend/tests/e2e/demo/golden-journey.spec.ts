@@ -50,7 +50,7 @@ async function beat(page: import('@playwright/test').Page, ms = 1200): Promise<v
   await page.waitForTimeout(ms);
 }
 
-test('a working morning at Signora', async ({ page, attention, brief }) => {
+test('a working morning at Signora', async ({ page, accounts, brief }) => {
   say(
     'Signora — a working morning',
     `signed in as ${OWNER.name}, ${OWNER.persona}`,
@@ -61,8 +61,8 @@ test('a working morning at Signora', async ({ page, attention, brief }) => {
     '1 · "Which accounts should I work on today?"',
     'The first screen is the morning\'s work, not a dashboard about it.',
   );
-  await attention.open();
-  const names = await attention.names();
+  await accounts.open();
+  const names = await accounts.names();
   expect(names.length).toBeGreaterThan(0);
   say(
     `   ${names.length} accounts, most pressing first`,
@@ -75,13 +75,13 @@ test('a working morning at Signora', async ({ page, attention, brief }) => {
     '2 · Every row says what changed, and how far it can be trusted',
     'Nothing on this screen was written by a model. All of it is computed.',
   );
-  const firstRow = await attention.rows.first().innerText();
+  const firstRow = await accounts.rows.first().innerText();
   say('   the top row reads:', firstRow.replace(/\n+/g, ' · '));
   await beat(page);
 
   // ── 3 ─────────────────────────────────────────────────────────────────────
   say('3 · "Why this account?"', 'The question the list cannot answer.');
-  const opened = await attention.openFirstAccount();
+  const opened = await accounts.openFirstAccount();
   await brief.waitForScore();
   say(`   opened ${opened}`);
   await beat(page, 2000);

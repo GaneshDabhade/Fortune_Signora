@@ -124,7 +124,7 @@ async function main(): Promise<void> {
 
   say('Reading load, per screen');
   for (const [label, path] of [
-    ['the attention list', '/'],
+    ['the accounts list', '/accounts'],
     ['your business', '/settings/products'],
     ['settings', '/settings'],
     ['connections', '/settings/connections'],

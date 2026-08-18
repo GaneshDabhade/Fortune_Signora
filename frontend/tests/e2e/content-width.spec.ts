@@ -35,18 +35,23 @@ function expectedWidth(containerWidth: number): number {
 
 const SCREENS = [
   /**
-   * ⚠️ **`/attention`, and it was never Home.** 📁 The Authenticated Entry
-   * document gives `/` to the shell's resolver, so `/` no longer renders a
-   * product surface at all — **but this row measured the ATTENTION screen's
-   * reading column the whole time**, because that is what used to live there.
+   * 🔴 **The Attention screen was measured here and it is retired.**
    *
-   * ⛔ **Renaming it to Home would be worse than leaving it wrong.** 📁 Home is
-   * a card composition with its own cap (contract 21, *"content is capped at
-   * 1360px"*), **not the eight-of-twelve reading measure this file asserts** —
-   * `Columns` has exactly one consumer, `reading-column.tsx`, and Home is not
-   * it. **The row is corrected to name the screen it actually measures.**
+   * ⚠️ **This row has been wrong twice and in opposite directions.** It read
+   * `{ path: '/', name: 'Home' }` while measuring the ATTENTION screen's
+   * reading column, then `/attention` once that screen took its own address —
+   * ⛔ **and now the screen is gone**, because the App Shell's nine
+   * destinations do not include it and no design document defines it.
+   *
+   * ⛔ **It is NOT repointed at Home.** 📁 Home is a card composition with its
+   * own cap (contract 21, *"content is capped at 1360px"*), **not the
+   * eight-of-twelve reading measure this file asserts** — `Columns` has
+   * exactly one consumer, `reading-column.tsx`, and Home is not it. ⚡ **Nor
+   * at Companies**, which draws a table rather than a reading column.
+   *
+   * ✅ **So the row is removed rather than moved**: the seven screens below
+   * are every surface that actually uses the reading measure.
    */
-  { path: '/attention', name: 'Attention' },
   { path: '/business', name: 'Business' },
   { path: '/help', name: 'Help' },
   { path: '/settings', name: 'Settings' },

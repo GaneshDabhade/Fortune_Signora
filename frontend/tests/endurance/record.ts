@@ -44,7 +44,7 @@ import { dirname, join } from 'node:path';
 
 import { browserEnvironment, resolveAppUrl } from '../e2e/fixtures/environment';
 import { OWNER } from '../e2e/fixtures/personas';
-import { AttentionPage } from '../e2e/pages/attention';
+import { AccountsPage } from '../e2e/pages/accounts';
 import { BriefPage } from '../e2e/pages/brief';
 import { SignInPage } from '../e2e/pages/signin';
 import { judge, summarise, type Sample } from './trend';
@@ -96,16 +96,16 @@ interface CycleResult {
 /** One cycle of a seller's work. Identical every time — that is the point. */
 async function cycle(
   page: Page,
-  attention: AttentionPage,
+  accounts: AccountsPage,
   brief: BriefPage,
 ): Promise<CycleResult> {
   const asked = Date.now();
-  await attention.open();
+  await accounts.open();
 
   let rendered = false;
   try {
-    await attention.accountLinks.first().waitFor({ state: 'visible', timeout: 30_000 });
-    rendered = (await attention.accountLinks.count()) > 0;
+    await accounts.accountLinks.first().waitFor({ state: 'visible', timeout: 30_000 });
+    rendered = (await accounts.accountLinks.count()) > 0;
   } catch {
     // **Recorded, never thrown.** A cycle that failed to render is the single
     // most valuable observation this harness can make, and throwing here would
@@ -115,7 +115,7 @@ async function cycle(
   const firstContentMs = Date.now() - asked;
 
   if (rendered) {
-    await attention.openFirstAccount();
+    await accounts.openFirstAccount();
     await brief.waitForScore().catch(() => undefined);
     await brief.openFirstCitation().catch(() => undefined);
     await page.keyboard.press('Escape');
@@ -128,8 +128,8 @@ async function cycle(
     // described the emptiest screen in the product — 334 DOM nodes, and a
     // reassuring flat line that said nothing about the screen a seller
     // actually leaves open.
-    await attention.open();
-    await attention.accountLinks.first().waitFor({ state: 'visible', timeout: 30_000 })
+    await accounts.open();
+    await accounts.accountLinks.first().waitFor({ state: 'visible', timeout: 30_000 })
       .catch(() => undefined);
   }
 
@@ -216,7 +216,7 @@ async function main(): Promise<void> {
   const cdp = await context.newCDPSession(page);
   await cdp.send('Performance.enable');
 
-  const attention = new AttentionPage(page);
+  const accounts = new AccountsPage(page);
   const brief = new BriefPage(page);
   await new SignInPage(page).signIn(OWNER);
 
@@ -225,7 +225,7 @@ async function main(): Promise<void> {
   const began = Date.now();
 
   for (let index = 1; Date.now() < deadline; index += 1) {
-    const { rendered, firstContentMs } = await cycle(page, attention, brief);
+    const { rendered, firstContentMs } = await cycle(page, accounts, brief);
     const observed = await metrics(cdp);
 
     const sample: Sample = {

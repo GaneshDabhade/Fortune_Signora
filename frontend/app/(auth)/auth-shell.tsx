@@ -95,7 +95,7 @@ export function AuthShell({
 
             ⚡ **It is a link, and that is what gives Welcome a door.** The
             design's hierarchy puts Welcome at the root; ours cannot be, because
-            `/` is the attention list and a signed-in person's morning. **A
+            `/` is the shell's entry resolver and a signed-in person's way in. **A
             product mark that goes home is how every real product behaves**, so
             the entrance is the ordinary one rather than a back-link invented to
             satisfy `reachability`. */}

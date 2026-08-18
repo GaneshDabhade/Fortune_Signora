@@ -374,7 +374,7 @@ export default function AccountBriefPage() {
               account they were looking at.
 
               **The heading is here rather than inside `EntityName`**, which is
-              shared with the attention list — a name that is a page title on
+              shared with Companies — a name that is a page title on
               one screen and a row label on another cannot be one element, and
               bending the component to suit this caller would make it slightly
               wrong for every other (§20c). The `<h1>` carries no styling of
@@ -925,10 +925,16 @@ export default function AccountBriefPage() {
 function BackToList() {
   return (
     <Link
-      // ⚠️ **`/` is the shell's entry resolver now** — 📁 the Authenticated
-      // Entry document. ⛔ *Back* pointing at it would resolve a workspace and
-      // land on Home rather than returning a reader to the list they came from.
-      href="/attention"
+      // 🔴 **`/accounts`, and it used to be `/attention`.** 📁 The App Shell's
+      // nine destinations are **Home · Forecast · Pipeline · Accounts · Deals ·
+      // Conversations · Signals · Reports** — ⛔ **Attention is not among them**,
+      // and no approved design defines it as a screen. **Companies is the list a
+      // reader came from**, which is what the label below has always said.
+      //
+      // ⚠️ **`/` is the shell's entry resolver and is not the answer either** —
+      // 📁 the Authenticated Entry document. *Back* pointing there would resolve
+      // a workspace and land on Home rather than on a list.
+      href="/accounts"
       className="inline-flex w-fit items-center gap-1.5 rounded text-sm text-content-muted transition-colors hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
     >
       <ArrowLeft aria-hidden className="h-3.5 w-3.5" />

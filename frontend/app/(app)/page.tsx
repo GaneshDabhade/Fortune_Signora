@@ -30,10 +30,17 @@ import { useEntryDecision } from '@/lib/entry/use-entry';
  * **none of them ran for anybody arriving at `/`**, which is the most travelled
  * path in the product.
  *
- * ✅ **The Attention screen keeps working at [`/attention`](./attention/page.tsx).**
- * ⛔ **It is moved rather than deleted** — no design document names it, and
- * retiring a shipped surface is a product decision
- * ([C-1532](../../../docs/LANE_COORDINATION.md)).
+ * 🔴 **The Attention screen is GONE, and [C-1532](../../../docs/LANE_COORDINATION.md)
+ * is what closed it.** ⚠️ **This comment used to say *"it keeps working at
+ * `/attention`… moved rather than deleted, because retiring a shipped surface
+ * is a product decision"*** — ✅ **the product owner has since taken that
+ * decision: Attention is obsolete and must not remain as a product surface.**
+ *
+ * 📁 **The App Shell's nine destinations are Home · Forecast · Pipeline ·
+ * Accounts · Deals · Conversations · Signals · Reports.** ⛔ **Attention is not
+ * among them, and no design document in the snapshot defines it as a screen** —
+ * the only *"attention"* the corpus names is Home's `card.attention`,
+ * *"Needs you today"*, which is a card and not a route.
  *
  * ## ⛔ `replace`, never `push`
  *

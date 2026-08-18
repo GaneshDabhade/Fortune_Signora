@@ -71,6 +71,24 @@ export type OwnerScope = 'all' | 'mine' | 'unassigned';
  * **The brief shares this key** (D41), so a seller walking their own accounts
  * is offered their own next one. That only holds while the account link
  * carries the scope, which is why it travels in the URL rather than in state.
+ *
+ * ## ✅ Who still reads it, recorded because one consumer was retired
+ *
+ * 🔴 **The Attention screen was this hook's original caller and is gone** — 📁
+ * the App Shell names nine destinations and Attention is not among them.
+ * ⛔ **The hook and the endpoint behind it are NOT obsolete**, and the
+ * distinction is the point: `GET /workspaces/{id}/accounts` is
+ * `opportunity_engine`'s `attention_list`, a **shared capability** with two
+ * current consumers —
+ *
+ * | Consumer | What it needs the list for |
+ * |---|---|
+ * | **Account 360** | *"the next account in this seller's sequence"*, which is why the brief shares this key |
+ * | **Onboarding's completion step** | whether the workspace has anything to work on yet |
+ *
+ * ⚠️ **`AccountAttention` is the domain's word for a ranked account and is not
+ * the retired screen.** Deleting it because a screen with a similar name was
+ * retired would take a capability two live surfaces depend on.
  */
 export function useAccounts(workspaceId: string | null, scope: OwnerScope = 'all') {
   return useQuery({

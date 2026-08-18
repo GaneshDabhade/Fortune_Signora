@@ -91,7 +91,7 @@ test.describe('the session ends while somebody is working', () => {
 test.describe('the network is not what it was in development', () => {
   test('@journey a slow API shows something, rather than an empty screen', async ({
     page,
-    attention,
+    accounts,
   }) => {
     // Three seconds is a bad hotel wifi, not a pathological case.
     await page.route('**/api/proxy/**/accounts*', async (route) => {
@@ -99,7 +99,7 @@ test.describe('the network is not what it was in development', () => {
       await route.continue();
     });
 
-    await attention.open();
+    await accounts.open();
 
     // **Once the page has painted, the content region must say something is
     // happening.** A blank region reads as a broken product and the reader
@@ -110,10 +110,17 @@ test.describe('the network is not what it was in development', () => {
     // blank screen for a screen that is correctly showing a loading state.
     // What a customer perceives is *something in the content region*, which is
     // text **or** a skeleton.
-    await expect(attention.heading).toBeVisible({ timeout: 20_000 });
+    await expect(accounts.heading).toBeVisible({ timeout: 20_000 });
+    /**
+     * ⚠️ **`rows` counted `ol > li` and the retired screen drew one.**
+     * ⛔ Companies draws a table, and `ol > li` matched two unrelated elements
+     * there — **so the guard below tripped on a correct loading state.**
+     * ✅ **The row is what the page object says it is**, which is the same
+     * definition every other assertion in these journeys uses.
+     */
     const inFlight = await page.locator('main').evaluate((main) => ({
       skeletons: main.querySelectorAll('[class*="animate-pulse"]').length,
-      rows: main.querySelectorAll('ol > li').length,
+      rows: main.querySelectorAll('a[href^="/accounts/"]').length,
       words: (main.textContent ?? '').trim().length,
     }));
 
@@ -124,16 +131,16 @@ test.describe('the network is not what it was in development', () => {
       'the content region was empty while a request was in flight',
     ).toBe(true);
 
-    await expect(attention.accountLinks.first()).toBeVisible({ timeout: 30_000 });
+    await expect(accounts.accountLinks.first()).toBeVisible({ timeout: 30_000 });
   });
 
   test('@journey losing the connection mid-visit is recoverable without a reload', async ({
     page,
-    attention,
+    accounts,
     context,
   }) => {
-    await attention.open();
-    await attention.names();
+    await accounts.open();
+    await accounts.names();
 
     await context.setOffline(true);
     await page.goto('/settings/products').catch(() => undefined);
@@ -143,7 +150,7 @@ test.describe('the network is not what it was in development', () => {
     // reconnects should be able to carry on; needing to reload is the product
     // asking them to fix it.
     await page.goto('/');
-    await expect(attention.accountLinks.first()).toBeVisible({ timeout: 30_000 });
+    await expect(accounts.accountLinks.first()).toBeVisible({ timeout: 30_000 });
   });
 });
 
@@ -195,7 +202,7 @@ test.describe('two tabs, one customer', () => {
 test.describe('the token behind every request', () => {
   test('@regression a rejected token is refreshed once, and the customer never sees it', async ({
     page,
-    attention,
+    accounts,
   }) => {
     // The first proxied call is refused as though the token had just expired.
     // The client's documented behaviour is to mint a new one and retry **once**
@@ -216,10 +223,10 @@ test.describe('the token behind every request', () => {
       await route.continue();
     });
 
-    await attention.open();
+    await accounts.open();
     // The list arrives anyway. A customer whose token expired mid-morning
     // should never learn that it did.
-    await expect(attention.accountLinks.first()).toBeVisible({ timeout: 30_000 });
+    await expect(accounts.accountLinks.first()).toBeVisible({ timeout: 30_000 });
     expect(refused, 'the 401 was never exercised').toBe(true);
   });
 });

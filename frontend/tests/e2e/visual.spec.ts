@@ -26,7 +26,7 @@
 import { expect, test } from './fixtures/signora';
 
 const SCREENS = [
-  ['the attention list', '/'],
+  ['the accounts list', '/accounts'],
   ['your business', '/settings/products'],
   ['settings', '/settings'],
   ['connections', '/settings/connections'],
@@ -113,10 +113,13 @@ test.describe('the page fits the window', () => {
 });
 
 test.describe('the layout settles', () => {
-  test('@regression the attention list does not jump once it has loaded', async ({
+  test('@regression the accounts list does not jump once it has loaded', async ({
     page,
   }) => {
-    await page.goto('/');
+    // ⚠️ **`/accounts`, and it used to be `/`.** `/` is the shell's entry
+    // resolver now, so this measured a redirect into Home while calling itself
+    // *"the accounts list"*.
+    await page.goto('/accounts');
     // Measure from the first paint, which is when a customer starts reading.
     await page.evaluate(() => {
       (window as unknown as { __shift: number }).__shift = 0;
@@ -140,22 +143,30 @@ test.describe('the layout settles', () => {
     const shift = await page.evaluate(
       () => (window as unknown as { __shift: number }).__shift,
     );
-    // **A list that reflows under the cursor makes a customer click the wrong
-    // row.** 0.1 is the web's own "good" boundary; the number is recorded so a
-    // regression is visible even when it passes.
+    /**
+     * 🔴 **KNOWN RED — [B-283](../../../docs/BUGS.md), filed 2026-08-18.**
+     * ⛔ **The assertion is NOT relaxed.** Measured on this branch:
+     * **Companies `0.277`, Home `0.153`**, against a boundary of `0.1` — and
+     * the retired Attention screen settled under it, which is why the number
+     * only became visible when the journeys moved.
+     *
+     * **A list that reflows under the cursor makes a customer click the wrong
+     * row.** 0.1 is the web's own "good" boundary; the number is recorded so a
+     * regression is visible even when it passes.
+     */
     test.info().annotations.push({ type: 'cumulative-layout-shift', description: `${shift}` });
-    expect(shift, `cumulative layout shift on the attention list`).toBeLessThan(0.1);
+    expect(shift, `cumulative layout shift on the accounts list`).toBeLessThan(0.1);
   });
 });
 
 test.describe('dialogs behave like dialogs', () => {
   test('@regression an open dialog does not leave the page scrolling behind it', async ({
-    attention,
+    accounts,
     brief,
     page,
   }) => {
-    await attention.open();
-    await attention.openFirstAccount();
+    await accounts.open();
+    await accounts.openFirstAccount();
     await brief.waitForScore();
     await brief.openFirstCitation();
 
@@ -180,12 +191,12 @@ test.describe('dialogs behave like dialogs', () => {
   });
 
   test('@regression only one dialog is ever open', async ({
-    attention,
+    accounts,
     brief,
     page,
   }) => {
-    await attention.open();
-    await attention.openFirstAccount();
+    await accounts.open();
+    await accounts.openFirstAccount();
     await brief.waitForScore();
 
     // Two citations in quick succession — a customer comparing two lines.
@@ -203,14 +214,14 @@ test.describe('dialogs behave like dialogs', () => {
 test.describe('focus is never lost', () => {
   test('@a11y navigating with the keyboard never drops focus to the body', async ({
     page,
-    attention,
+    accounts,
   }) => {
-    await attention.open();
+    await accounts.open();
     // **Wait for the rows, not the heading.** The shell has seven controls and
     // the list adds twelve; tabbing before the rows arrive walks off the end of
     // a shorter page, which is the browser behaving correctly and the test
     // asking the wrong question.
-    await attention.names();
+    await accounts.names();
 
     for (let step = 0; step < 12; step += 1) {
       await page.keyboard.press('Tab');

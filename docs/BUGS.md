@@ -2815,6 +2815,38 @@ this row on a resemblance. **Re-measure on the rebased tree.**
 
 ---
 
+### B-283 · 🟠 Companies and Home both reflow after they load, and the screen that did not is the one just retired
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`app/(app)/accounts/page.tsx`](../frontend/app/(app)/accounts/page.tsx) and [`app/(app)/w/[workspace]/home/home.tsx`](../frontend/app/(app)/w/[workspace]/home/home.tsx) |
+| **Current assignee** | ⚡ **Lane A** |
+| **Severity** | 🟠 — ⛔ **a list that reflows under the cursor makes a customer click the wrong row**, and both screens are ones people land on rather than visit |
+| **Status** | **`OPEN`** — ⛔ **not started, and the test is left RED rather than relaxed.** 📁 The precedent is [B-279](#b-279): a filed red is a measurement; a widened threshold is a lost one |
+| **Found** | **2026-08-18**, retiring `/attention` — the journey moved to the surfaces that replaced it and the number moved with it |
+| **Commit found** | `764ee927` |
+
+**Steps to reproduce.**
+
+```
+SIGNORA_ENVIRONMENT=lane-a npx playwright test --project=owner \
+  tests/e2e/visual.spec.ts -g "does not jump once it has loaded"
+```
+
+**Expected.** Cumulative layout shift below **0.1** — the web's own *good* boundary, and the threshold this test has always carried.
+
+**Actual.** ⛔ **Measured on this branch:**
+
+| Screen | CLS |
+|---|---|
+| **Companies** (`/accounts`) | 🔴 **0.277** |
+| **Home** (`/w/:workspace/home`) | 🟠 **0.153** |
+| *the retired Attention list* | ✅ *under 0.1 — it is what the threshold was set against* |
+
+⚠️ **Neither number is a regression this change caused.** The spec navigated to `/`, which the entry resolver turned into Home some commits ago, and it was named *"the accounts list"* throughout — **so it has been measuring the wrong screen under the right name, and the failure was read as contamination** ([B-1017](#b-1017)'s class).
+
+🔴 **The cause is NOT diagnosed and is deliberately not guessed.** Both screens compose several independent reads that arrive separately — identities, tags, assignments, segments on Companies; cards on Home — and **a plausible cause in this row would be believed** ([B-1000](#b-1000)'s class). ⚡ **What is established is the measurement and the boundary.**
+
 ### B-282 · 🟡 `make test` truncates the database `make demo-seed` fills, and the repository already solved this exactly once
 
 | | |

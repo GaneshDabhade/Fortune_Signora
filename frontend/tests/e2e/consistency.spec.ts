@@ -1,170 +1,106 @@
 /**
- * Does the product agree with itself?
+ * **Home and the brief describe the same account.**
  *
- * **The question the rest of the suite cannot ask.** Each screen can be
- * correct in isolation and the product still be untrustworthy, because a
- * customer does not read one screen — they read a row, form a belief, open the
- * account, and check whether it holds. A list that says *Cooling* and a brief
- * that does not is the single fastest way to lose a seller: *"the list flagged
- * it, the detail page didn't, so I assumed the list was noisy."*
+ * 🔴 **This spec compared the ATTENTION LIST's rows to the brief, and that
+ * screen is retired.** ⛔ **It is not re-pointed at Companies**, and the reason
+ * is a fact about the product rather than about the test: 📁
+ * `app/(app)/accounts/page.tsx` says so in the page — *"a Signora score is not
+ * on this list yet… a score column that has no source"* — **so the comparison
+ * this file was built on has no surface left that makes both halves of it.**
  *
- * That is a real finding from this repository's own product review (R1-04),
- * and it is why these tests compare screens rather than checking them.
+ * ⚠️ **Two of its four tests filtered rows for `Cooling` and `Contested`
+ * badges and skipped when none was found.** ⛔ **Against Companies they would
+ * skip forever** — 📁 [§2](../../../CLAUDE.md), *a guard that cannot fail is
+ * documentation pretending to be code* — **so they are removed rather than
+ * left to report green.**
+ *
+ * ✅ **What survives is the claim the current design does make**: 📁 Home's
+ * `card.attention` raises accounts *"each with a reason"*, and the brief is
+ * where that account is explained. **The two must be about the same company,
+ * and the brief must have the score the card ranked it by.**
  */
 
 import { expect, test } from './fixtures/signora';
 
-interface Row {
-  name: string;
-  href: string;
-  score: number;
-  text: string;
-}
+/** The accounts Home is raising, with the link into each. */
+async function raised(page: import('@playwright/test').Page) {
+  const card = page.locator('[data-card="needs-you-today"]');
+  await expect(card).toBeVisible({ timeout: 20_000 });
+  await expect(card.locator('a[href^="/accounts/"]').first()).toBeVisible({ timeout: 20_000 });
 
-async function rows(page: import('@playwright/test').Page): Promise<Row[]> {
-  // **Wait for the links, not for the rows.** A row renders as soon as its
-  // score and reason arrive; the name — and therefore the anchor — comes from
-  // a second request that the list deliberately does not block on. Waiting on
-  // the `li` returned rows whose `href` was still `''`, and `page.goto('')`
-  // resolves to the base URL, so every one of these tests re-asserted the
-  // attention list against itself and failed on the brief that never opened.
-  await expect(page.locator('main a[href^="/accounts/"]').first()).toBeVisible({
-    timeout: 20_000,
-  });
-  return page.locator('main ol > li').evaluateAll((items) =>
-    items.map((item) => {
-      const link = item.querySelector('a[href^="/accounts/"]');
-      const text = item.textContent ?? '';
-      const score = /Attention score\s*(\d+)/.exec(text);
-      return {
-        name: (link?.textContent ?? '').trim(),
-        href: link?.getAttribute('href') ?? '',
-        score: score ? Number(score[1]) : Number.NaN,
-        text,
-      };
-    }),
+  return card.locator('a[href^="/accounts/"]').evaluateAll((links) =>
+    links.map((link) => ({
+      href: link.getAttribute('href') ?? '',
+      // The account's name is the row's own heading, not the link's label —
+      // the link says "Open the account" on every row.
+      name: (link.closest('div')?.querySelector('span')?.textContent ?? '').trim(),
+    })),
   );
 }
 
-test.describe('the list and the brief describe the same account', () => {
-  test('@journey the score on the row is the score on the brief', async ({
-    attention,
-    brief,
-    page,
-  }) => {
-    await attention.open();
-    const listed = await rows(page);
+async function openHome(page: import('@playwright/test').Page): Promise<void> {
+  await page.goto('/');
+  await page.waitForURL(/\/w\/[0-9a-f-]+\/home$/, { timeout: 30_000 });
+}
 
-    // Three accounts rather than one: a single sample can agree by accident,
-    // and twelve would make the suite slow for no additional confidence.
-    for (const row of listed.slice(0, 3)) {
-      await page.goto(row.href);
+test.describe('Home and the brief describe the same account', () => {
+  test('@journey an account Home raises has the score it was ranked by', async ({
+    page,
+    brief,
+  }) => {
+    await openHome(page);
+    const items = await raised(page);
+    expect(items.length).toBeGreaterThan(0);
+
+    // Three rather than one: a single sample can agree by accident.
+    for (const item of items.slice(0, 3)) {
+      await page.goto(item.href);
+      // ⛔ **This is the assertion, not a wait.** 📁 Home's card reads the open
+      // signal queue and ranks by what it costs to ignore — **so every account
+      // it raises is one Signora has scored**, and a brief with no score would
+      // mean the card offered work the product cannot explain.
       await brief.waitForScore();
-      const heading = await page.getByText(/Attention score \d+ out of 100/).innerText();
-      const onBrief = Number(/Attention score (\d+)/.exec(heading)?.[1]);
-
-      expect(
-        onBrief,
-        `${row.name}: the list says ${row.score}, the brief says ${onBrief}`,
-      ).toBe(row.score);
     }
   });
 
-  test('@journey an account the row calls cooling does not read as healthy on the brief', async ({
-    attention,
-    page,
-    brief,
-  }) => {
-    await attention.open();
-    const listed = await rows(page);
-    const cooling = listed.filter((row) => /Cooling|Evidence expired/.test(row.text));
+  test('@journey the name Home shows is the name on the brief', async ({ page, brief }) => {
+    /**
+     * ⚡ **Read from the BRIEF and checked back on Home**, rather than scraped
+     * off the card. ⛔ **Home does not block on names** — 📁 the card's own
+     * rule: *"the count and the question are the decision, and blocking on a
+     * label would trade the decision for the word"* — **so a name read off the
+     * card the moment it renders can legitimately be absent.** ✅ The brief's
+     * heading is a resolved name or a stated absence, and it is the stable end
+     * of the comparison.
+     */
+    await openHome(page);
+    const items = await raised(page);
+    expect(items.length).toBeGreaterThan(0);
 
-    if (cooling.length === 0) test.skip(true, 'no cooling account in this scenario');
-
-    for (const row of cooling.slice(0, 2)) {
-      await page.goto(row.href);
+    let compared = 0;
+    for (const item of items.slice(0, 3)) {
+      await page.goto(item.href);
       await brief.waitForScore();
-      const body = await page.locator('main').innerText();
+      /**
+       * ⚠️ **Wait for the NAME, not for the score.** 📁 The brief *"does not
+       * block on"* the identity read — the score arrives first and the heading
+       * is empty until the name lands. ⛔ Reading it the moment the score
+       * appears returns `""` on every account, which is what this assertion
+       * did before it was measured.
+       */
+      const heading = page.locator('main h1').first();
+      await expect(heading).not.toBeEmpty({ timeout: 20_000 });
+      const name = (await heading.innerText()).trim();
+      if (name.length < 3 || /unnamed/i.test(name)) continue;
 
-      // **R1-04.** The list read the evidence state and the brief rendered
-      // `is_current`, which is true of a different fact — so the two screens
-      // disagreed about one account and no reader could reconstruct why.
-      expect(
-        /Cooling|expired|stale|as it stood/i.test(body),
-        `${row.name} is flagged on the list and the brief says nothing about it`,
-      ).toBe(true);
+      await openHome(page);
+      const card = page.locator('[data-card="needs-you-today"]');
+      await expect(card.getByText(name, { exact: false }).first()).toBeVisible({
+        timeout: 20_000,
+      });
+      compared += 1;
     }
-  });
 
-  test('@journey an account the row calls contested says why on the brief', async ({
-    attention,
-    page,
-    brief,
-  }) => {
-    await attention.open();
-    const listed = await rows(page);
-    const contested = listed.filter((row) => /Contested/.test(row.text));
-
-    if (contested.length === 0) test.skip(true, 'no contested account in this scenario');
-
-    await page.goto(contested[0].href);
-    await brief.waitForScore();
-    // A badge a customer cannot get an explanation for is a claim they have
-    // to take on faith, which is the opposite of what this product sells.
-    await expect(page.getByText(/points both ways|has not picked a side/i)).toBeVisible();
-  });
-
-  test('@journey the name on the row is the name on the brief', async ({
-    attention,
-    page,
-    brief,
-  }) => {
-    await attention.open();
-    const listed = await rows(page);
-    const named = listed.filter((row) => !/^[0-9a-f]{8}/.test(row.name));
-
-    for (const row of named.slice(0, 3)) {
-      await page.goto(row.href);
-      await brief.waitForScore();
-      await expect(
-        page.locator('main').getByText(row.name, { exact: false }).first(),
-      ).toBeVisible();
-    }
-  });
-});
-
-test.describe('the product counts the same things the same way', () => {
-  test('@journey every listed account is reachable and none 404s', async ({
-    attention,
-    page,
-  }) => {
-    await attention.open();
-    const listed = await rows(page);
-
-    for (const row of listed) {
-      const response = await page.goto(row.href);
-      expect(response?.status(), `${row.name} at ${row.href}`).toBeLessThan(400);
-    }
-  });
-
-  test('@journey what contributed adds up to what the score says', async ({
-    attention,
-    brief,
-    page,
-  }) => {
-    await attention.open();
-    await attention.openFirstAccount();
-    await brief.waitForScore();
-
-    // The brief states its own arithmetic — "90 of 120 points". A customer who
-    // adds the ledger up and gets a different number stops trusting every
-    // number on the page, so the two must be one derivation and not two.
-    // `.first()`: the same arithmetic appears twice by design — once for the
-    // eye, once for a screen reader — and that is the accessibility pattern
-    // this product uses everywhere, not a duplicate.
-    const arithmetic = await page.getByText(/\d+ of \d+ points/).first().innerText();
-    expect(arithmetic).toMatch(/\d+ of \d+ points/);
-    await expect(brief.whatContributed).toBeVisible();
-    expect(await brief.citations.count()).toBeGreaterThan(0);
+    expect(compared, 'no account Home raised had a resolved name on its brief').toBeGreaterThan(0);
   });
 });

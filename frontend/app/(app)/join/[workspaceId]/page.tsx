@@ -96,10 +96,13 @@ export default function JoinPage() {
               intelligence are yours to read.
             </p>
           </div>
-          {/* **`/` and not `/accounts`.** There is no accounts index — the
-              attention list is the product's home, and `/accounts/[id]` is the
-              only route under that segment. A guard caught the difference
-              before a customer did. */}
+          {/* **`/` and not `/accounts`, and the reason changed.** ⚠️ This said
+              *"there is no accounts index"* — **there is one now**: Companies
+              lives at `/accounts` and is one of the App Shell's nine
+              destinations. ✅ **`/` is still right, for a better reason**:
+              somebody who has just joined a workspace needs ENTRY RESOLUTION to
+              establish which workspace they are in, and `/` is the shell's
+              resolver. ⛔ Going straight to a list would skip it. */}
           <Button onClick={() => router.push('/')}>Go to your accounts</Button>
         </CardBody>
       </Card>

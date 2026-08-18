@@ -5,12 +5,11 @@ import {
   ArrowRight,
   ArrowUpRight,
   Scale,
-  TrendingDown,
 } from 'lucide-react';
 
 import { howLongAgo } from '@/components/intelligence/dates';
 import { Badge } from '@/components/ui';
-import type { EvidenceState, Posture, ScoreTrigger, Stage, Trend, SignalTypeName } from '@/lib/api/types';
+import type { EvidenceState, ScoreTrigger, Stage, Trend } from '@/lib/api/types';
 import { cn } from '@/lib/design/cn';
 
 /**
@@ -50,40 +49,6 @@ const EVIDENCE_WORDING: Record<
   cooling: { label: 'Cooling', tone: 'warning' },
   stale: { label: 'Evidence expired', tone: 'warning' },
 };
-
-/**
- * The magnitude behind a row's position.
- *
- * Typographic rather than a gauge or a ring: a dial invites comparison to a
- * maximum that means nothing here. **The score is an ordering of attention,
- * not a probability**, and drawing it as a filled percentage would state a
- * confidence the pipeline never computed.
- *
- * **Deliberately subordinate to the account name.** The list is already sorted,
- * so position carries the ranking and the number only answers *how strongly* —
- * a sanity check rather than the thing being scanned. Rendered muted and
- * tabular so the column reads down the page without competing with the name
- * for the eye. A score set at display weight makes every row equally loud,
- * which is the same as having no hierarchy at all.
- */
-export function AttentionScore({ score }: { score: number | null }) {
-  if (score === null) {
-    return (
-      <span
-        className="text-lg font-medium tabular-nums text-content-subtle"
-        aria-label="No current score"
-      >
-        —
-      </span>
-    );
-  }
-  return (
-    <span className="text-lg font-medium tabular-nums text-content-muted">
-      <span className="sr-only">Attention score </span>
-      {score}
-    </span>
-  );
-}
 
 /**
  * What changed, and which way.
@@ -161,108 +126,6 @@ export function WhyNow({ trigger }: { trigger: ScoreTrigger | null }) {
     <span className="text-sm text-content-muted">
       {trigger ? TRIGGER_WORDING[trigger] : 'No current reading'}
     </span>
-  );
-}
-
-export function Hypothesis({
-  signalType,
-  definition,
-}: {
-  signalType: string | null;
-  /** From `useSignalCatalog`. `undefined` while it loads or if the key is one
-   * this catalog version does not declare — which is a real possibility, since
-   * a score records the catalog version it was formed under. */
-  definition: SignalTypeName | undefined;
-}) {
-  if (signalType === null) {
-    // Not "unknown" and not blank: the opportunity is open and its
-    // justification has expired, which is the thing the badge beside this
-    // already says. Saying it twice in different words invites the reader to
-    // reconcile two statements that are one fact.
-    return <span className="text-sm text-content-subtle">No current reading</span>;
-  }
-  if (definition === undefined) return null;
-  return (
-    <span className="text-sm text-content">
-      {definition.title}
-      {/* **C-204: the catalog explained nine words to nobody.** A seller read
-          a two-word label on a ranked row and had no way to learn what it
-          meant — the explanation existed, reviewed, in the catalog, and
-          reached no screen.
-
-          **Read by a screen reader, not drawn.** The list is scanned before
-          it is read (SW-05), and a sentence on every row would make the
-          ranking harder to see while answering a question most rows are not
-          raising. **Where it is drawn is the account brief**, which is where
-          somebody has already stopped to read. */}
-      <span className="sr-only">. {definition.why_it_matters}</span>
-    </span>
-  );
-}
-
-/**
- * Which way this row cuts.
- *
- * **A contraction risk and a low-scoring opportunity are opposite facts that
- * rank next to each other**, because the score orders *attention* and refuses
- * to sign it — two accounts can score identically and mean opposite things.
- * Measured on the real twelve, both risk rows sat at positions eleven and
- * twelve, beside the weakest opportunities on the list. A CRO scanning
- * downward reads the bottom of a list as *least important*, and for one of
- * those two rows that is exactly backwards.
- *
- * ### Only contraction is marked
- *
- * A product judgement rather than a derivation, and the same one this file
- * makes about evidence: the list is mostly expansion, so marking every posture
- * would mark almost every row, and a badge on every row saying *everything is
- * fine* trains people to stop reading badges. **The marked minority is the
- * signal.**
- *
- * ### It reads posture and cannot read anything else
- *
- * **This is why it is a component of its own rather than a branch inside
- * `Hypothesis`, and the reason is stronger than tidiness.** The mapping from a
- * catalog key to a commercial meaning belongs to the Buying Score Engine; a
- * copy in the browser would be a second vocabulary, wrong the moment the
- * catalog gained a type and invisible when it did (R9-03). Taking `posture`
- * and nothing else makes that copy **unconstructable** rather than merely
- * tested — the component has no key to pattern-match (§2).
- *
- * **And it no longer waits for the catalog.** The mark used to be attached to
- * the title, so a row whose title had not arrived — every first paint, and
- * *permanently* for a score formed under a catalog version that no longer
- * declares its key — rendered as an unmarked row. That is precisely the
- * confusion the mark exists to prevent, reappearing exactly where nobody was
- * looking. Posture travels on the wire so that a client never needs the
- * catalog to know which way a row cuts; it should never have been spent on
- * making the mark conditional on one.
- *
- * ### Where it sits, and why that is the point
- *
- * **Immediately left of the score**, in the row's status lane beside
- * *Contested* and the evidence badge. The confusion is with a number, so the
- * correction belongs next to the number: *At risk · 31* cannot be read as a
- * weak opportunity. The hypothesis line still says what happened, in the
- * catalog's words — **`decision_maker_departed` renders as a neutral sentence
- * that never says *risk* at all**, so on that row this badge is the only thing
- * carrying it.
- */
-export function PostureMark({ posture }: { posture: Posture | null }) {
-  if (posture !== 'contractionary') return null;
-  return (
-    <Badge tone="warning">
-      {/* An icon as well as a tone, and words as well as both. Colour alone
-          fails a colour-blind reader, and accessibility is a defect class
-          rather than an enhancement (§20c). `warning`, not `danger`: a
-          contraction risk is a different *kind* of attention, not something
-          that has gone wrong. */}
-      <TrendingDown aria-hidden className="mr-1 h-3 w-3" />
-      At risk
-      {/* Two words fit the badge lane a phone already reflows; the sentence
-          they abbreviate is the one a screen reader hears. */}
-      <span className="sr-only"> to existing revenue</span>
-    </Badge>
   );
 }
 
@@ -391,21 +254,23 @@ export function Ownership({
  * already states and the evidence badge already grades. This is the clock that
  * starts when a person takes responsibility.
  */
-export function HeldSince({ stage, since }: { stage: Stage; since: string }) {
-  if (stage !== 'engaged') return null;
-  return <span className="text-xs text-content-subtle">Taken on {howLongAgo(since)}</span>;
-}
-
-/** What a stage is called where there is room for one word. The brief spells
- * each of them out; a list row has to be scannable.
+/**
+ * 📁 **The stage in the customer's word** — ⛔ never the platform's enum.
  *
- * **Exported from TASK-441**, so the stage-grouped view names a stage the same
- * way the row inside it does. A second table would be a second vocabulary, and
- * the copy is always the one that drifts. */
-export const STAGE_MARK: Record<Stage, string> = {
+ * ⚠️ **It was exported until the Attention screen was retired**, and its only
+ * external consumer was that screen. ✅ **Module-private now**: `HeldSince`
+ * below is the one thing that reads it, and an export nothing imports is a
+ * second copy waiting to disagree with this one ([§2](../../../CLAUDE.md)).
+ */
+const STAGE_MARK: Record<Stage, string> = {
   tracking: 'Tracking',
   engaged: 'Being worked',
   closed_won: 'Won',
   closed_lost: 'Lost',
   dismissed: 'Dismissed',
 };
+
+export function HeldSince({ stage, since }: { stage: Stage; since: string }) {
+  if (stage !== 'engaged') return null;
+  return <span className="text-xs text-content-subtle">Taken on {howLongAgo(since)}</span>;
+}

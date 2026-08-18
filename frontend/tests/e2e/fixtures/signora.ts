@@ -24,7 +24,7 @@
 import { test as base, expect, type Page } from '@playwright/test';
 
 import { type Persona } from './personas';
-import { AttentionPage } from '../pages/attention';
+import { AccountsPage } from '../pages/accounts';
 import { BriefPage } from '../pages/brief';
 import { BusinessPage } from '../pages/business';
 import { SettingsPage } from '../pages/settings';
@@ -42,7 +42,7 @@ export interface ConsoleEvidence {
 export interface SignoraFixtures {
   console: ConsoleEvidence;
   signIn: (persona: Persona) => Promise<void>;
-  attention: AttentionPage;
+  accounts: AccountsPage;
   brief: BriefPage;
   settings: SettingsPage;
   business: BusinessPage;
@@ -94,7 +94,7 @@ export const test = base.extend<SignoraFixtures>({
     await use((persona: Persona) => signInPage.signIn(persona));
   },
 
-  attention: async ({ page }, use) => use(new AttentionPage(page)),
+  accounts: async ({ page }, use) => use(new AccountsPage(page)),
   brief: async ({ page }, use) => use(new BriefPage(page)),
   settings: async ({ page }, use) => use(new SettingsPage(page)),
   business: async ({ page }, use) => use(new BusinessPage(page)),

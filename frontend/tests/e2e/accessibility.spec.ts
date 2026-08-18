@@ -65,13 +65,13 @@ test.describe('reaching the product without a mouse', () => {
 
   test('@a11y an account can be opened with the keyboard alone', async ({
     page,
-    attention,
+    accounts,
     brief,
   }) => {
-    await attention.open();
-    await attention.names();
+    await accounts.open();
+    await accounts.names();
 
-    await attention.accountLinks.first().focus();
+    await accounts.accountLinks.first().focus();
     await page.keyboard.press('Enter');
     await page.waitForURL(/\/accounts\/[0-9a-f-]{36}/);
     await brief.waitForScore();
@@ -80,12 +80,12 @@ test.describe('reaching the product without a mouse', () => {
 
 test.describe('dialogs', () => {
   test('@a11y the evidence drawer is a dialog, is labelled, and takes focus', async ({
-    attention,
+    accounts,
     brief,
     page,
   }) => {
-    await attention.open();
-    await attention.openFirstAccount();
+    await accounts.open();
+    await accounts.openFirstAccount();
     await brief.waitForScore();
     await brief.openFirstCitation();
 
@@ -103,12 +103,12 @@ test.describe('dialogs', () => {
   });
 
   test('@a11y closing a dialog returns focus to what opened it', async ({
-    attention,
+    accounts,
     brief,
     page,
   }) => {
-    await attention.open();
-    await attention.openFirstAccount();
+    await accounts.open();
+    await accounts.openFirstAccount();
     await brief.waitForScore();
 
     const citation = brief.citations.first();
@@ -174,7 +174,7 @@ test.describe('forms say what they are for', () => {
 
 test.describe('the page has a structure a screen reader can use', () => {
   for (const [name, path] of [
-    ['the attention list', '/'],
+    ['Companies', '/accounts'],
     ['the business page', '/settings/products'],
     ['settings', '/settings'],
   ] as const) {

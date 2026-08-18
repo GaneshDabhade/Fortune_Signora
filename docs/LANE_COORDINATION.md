@@ -582,8 +582,55 @@ databaseUrl: required(
 | **Raised by** | **Lane A**, 2026-08-17, wiring the Authenticated Entry engine to `/` |
 | **Owner** | 🔴 **Product owner** — **whether a shipped surface survives is a product decision** |
 | **Type** | **A screen with no design document, displaced by one that has** |
-| **Blocks** | ⛔ **Nothing.** ✅ The screen kept working at `/attention`. |
-| **Status** | **`OPEN`** |
+| **Blocks** | ⛔ **Nothing.** |
+| **Status** | ✅ **`CLOSED` — 2026-08-18. The product owner ruled option ①: retire it.** *"The `/attention` product surface is OBSOLETE… Attention must not remain as an obsolete product surface anywhere in the implementation or certification ecosystem."* **Removed by Lane A in the same instruction.** |
+
+### ✅ ⑥ The ruling, and what it removed
+
+📁 **Option ① of ④ below, which was this lane's recommendation.** ⚡ **The
+condition it carried — *"place its five orphans first"* — was met by measuring
+each against the design corpus rather than by finding it a new home**: none is
+named by any of the 34 screens, so each was removed with the screen.
+
+| Removed | Why it was obsolete |
+|---|---|
+| `app/(app)/attention/` | ⛔ The route. **The App Shell's nine destinations are Home · Forecast · Pipeline · Accounts · Deals · Conversations · Signals · Reports** |
+| `TriageStrip` · `NothingRaises` · `NeedsIdentity` · `DecidedAccounts` | **Sole consumer was the screen** |
+| `lib/state/triage.ts` · `lib/state/standing.ts` | **Sole consumers were the above** |
+| `AttentionScore` · `Hypothesis` · `PostureMark` exports | **Zero production consumers after the screen went.** `STAGE_MARK` became module-private — `HeldSince` still reads it |
+| 7 component/unit test files · the `/attention` row in `content-width` | **They asserted the obsolete contract** |
+
+### ✅ ⑦ What was PRESERVED, and the distinction that decided it
+
+🔴 **`AccountAttention` and `/attention` are not the same thing**, and the ruling
+says so explicitly.
+
+| Kept | Its current authority |
+|---|---|
+| `GET /workspaces/{id}/accounts` (`opportunity_engine.attention_list`) | ⚡ **A shared capability with two live consumers** — Account 360's *next in sequence*, and onboarding's completion step |
+| `components/intelligence/attention.tsx` (6 exports) | **Account 360 renders all six** |
+| `components/home/attention-card.tsx` | 📁 Home's `card.attention`, *"Needs you today"* — **a card, not a route** |
+| `backend/tests/opportunity_engine/test_attention_list.py` | **Domain ordering of the shared list** |
+
+⚡ **The e2e journeys that used the screen were never ABOUT it** — they entered
+through a list and opened a brief. **`AttentionPage` became `AccountsPage` at
+`/accounts`**, so nine specs keep their subject and enter through an approved
+surface.
+
+### ⚠️ ⑧ Two consequences, stated so neither is rediscovered as a defect
+
+🔴 **One capability leaves the product with the screen.** 📁 **C-204/TASK-456**
+put the signal catalog's `why_it_matters` on screen — *"a seller can learn what
+the two-word label means"* — **and the Attention row was its only renderer.**
+⛔ **Home's attention card and the Signals queue both refuse it deliberately**,
+in comments, because it describes the TYPE rather than the instance; **and no
+design document in the snapshot asks for it.** ✅ **So it is removed rather than
+re-homed — but it was a real capability and this is where that is written down.**
+
+✅ **The empty-workspace question in ⑤ is answered by the shell.** 📁
+`composition.ts` returns `activation` for a workspace with no connection, so
+Home shows connection steps — **and `Accounts` is one of the nine rail
+destinations**, so the book of accounts is reachable without Attention.
 
 ### ✅ ① What changed, and it was not optional
 

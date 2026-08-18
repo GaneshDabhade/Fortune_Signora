@@ -11,43 +11,14 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import {
-  AttentionScore,
   ContestedMark,
   EvidenceHealth,
-  Hypothesis,
   HeldSince,
   Ownership,
-  PostureMark,
   ScoreMovement,
   WhyNow,
 } from '@/components/intelligence/attention';
 import type { ScoreTrigger } from '@/lib/api/types';
-
-describe('the score is an ordering, not a probability', () => {
-  it('renders the number the pipeline computed', () => {
-    render(<AttentionScore score={73} />);
-
-    expect(screen.getByText('73')).toBeInTheDocument();
-  });
-
-  it('renders no score at all when the evidence has expired', () => {
-    // Not a zero. Zero is a reading; absence is the lack of one, and showing
-    // 0 would rank a stale account as actively uninteresting.
-    render(<AttentionScore score={null} />);
-
-    expect(screen.queryByText('0')).not.toBeInTheDocument();
-    expect(screen.getByLabelText('No current score')).toBeInTheDocument();
-  });
-
-  it('draws no percentage, gauge or progress element', () => {
-    // A filled ring implies a maximum that means something. This number is
-    // an ordering of attention; a 90 is not "90% likely to buy".
-    const { container } = render(<AttentionScore score={90} />);
-
-    expect(container.querySelector('progress, meter, svg')).toBeNull();
-    expect(container.textContent).not.toContain('%');
-  });
-});
 
 describe('every trigger has its own wording', () => {
   const triggers: ScoreTrigger[] = [
@@ -130,7 +101,7 @@ describe('badges appear only when they carry information', () => {
 
   it('does not describe a contested account as uncertain', () => {
     // The Buying Score Engine refuses to average opposing readings away
-    // because a fought-over account warrants *more* attention. Wording that
+    // because a fought-over account warrants *more* accounts. Wording that
     // implied doubt would invert the meaning the pipeline computed.
     const { container } = render(<ContestedMark contested />);
     const text = (container.textContent ?? '').toLowerCase();
@@ -138,123 +109,6 @@ describe('badges appear only when they carry information', () => {
     for (const wrong of ['uncertain', 'unclear', 'conflict', 'warning', 'unreliable']) {
       expect(text).not.toContain(wrong);
     }
-  });
-});
-
-describe('the row says what is happening, not that something happened', () => {
-  it('names the hypothesis in the words the catalog owns', () => {
-    render(<Hypothesis signalType="active_evaluation" definition={{ key: 'x', title: "Active evaluation", why_it_matters: 'It matters.' }} />);
-
-    expect(screen.getByText('Active evaluation')).toBeInTheDocument();
-  });
-
-  it('never renders the raw key', () => {
-    // `expansion_opportunity` is not a sentence. A reader who saw one would
-    // learn that this line is machine output — and this is the line the whole
-    // row is read for.
-    const { container } = render(
-      <Hypothesis signalType="expansion_opportunity" definition={undefined} />,
-    );
-
-    expect(container.textContent).not.toContain('expansion_opportunity');
-  });
-
-  it('shows nothing at all while the vocabulary is in flight', () => {
-    // The name arrives in a separate request from the row. Blocking the list
-    // on it would trade the decision for the label; showing a placeholder
-    // would put a shape on screen that then moves.
-    const { container } = render(
-      <Hypothesis signalType="active_evaluation" definition={undefined} />,
-    );
-
-    expect(container).toBeEmptyDOMElement();
-  });
-
-  it('says there is no reading when no score is live', () => {
-    // The opportunity is still open and its justification has expired. That is
-    // a real answer, and it is not the same as "we do not know".
-    render(<Hypothesis signalType={null} definition={undefined} />);
-
-    expect(screen.getByText('No current reading')).toBeInTheDocument();
-  });
-
-  it('holds no translation table of its own', async () => {
-    // **A second vocabulary is wrong the moment the catalog changes, and
-    // invisible when it does.** The proof is that a title the catalog has
-    // never contained still renders verbatim.
-    render(
-      <Hypothesis signalType="active_evaluation" definition={{ key: 'x', title: "Something Else Entirely", why_it_matters: 'It matters.' }} />,
-    );
-
-    expect(screen.getByText('Something Else Entirely')).toBeInTheDocument();
-  });
-});
-
-describe('a contraction risk does not read as a weak opportunity', () => {
-  it('marks a contraction risk so it survives scanning', () => {
-    // **R9-03, and the ruling behind TASK-905.** *Datadog · Contraction risk ·
-    // 5* rendered identically to *Salesforce · New decision maker · 10*. The
-    // word was already there; a manager scanning twelve rows had to read
-    // twelve titles.
-    render(<PostureMark posture="contractionary" />);
-
-    expect(screen.getByText(/at risk/i)).toBeInTheDocument();
-  });
-
-  it('marks the row without waiting for the catalog', () => {
-    // **The hole this slice closes.** The mark used to hang off the catalog's
-    // title, so a row whose title had not arrived rendered unmarked — on every
-    // first paint, and *permanently* for a score formed under a catalog
-    // version that no longer declares its key. Posture is on the wire so a
-    // client never needs the catalog to know which way a row cuts.
-    render(
-      <>
-        <Hypothesis signalType="contraction_risk" definition={undefined} />
-        <PostureMark posture="contractionary" />
-      </>,
-    );
-
-    expect(screen.getByText(/at risk/i)).toBeInTheDocument();
-  });
-
-  it('says what it means to somebody who cannot see the badge', () => {
-    // Two words fit the lane a phone reflows; the sentence they abbreviate is
-    // what a screen reader hears.
-    render(<PostureMark posture="contractionary" />);
-
-    expect(screen.getByText(/at risk/i)).toHaveTextContent(
-      /at risk to existing revenue/i,
-    );
-  });
-
-  it('leaves an expansion row exactly as it was', () => {
-    // Marking every posture would mark almost every row, and a badge on every
-    // row saying "everything is fine" trains people to stop reading badges.
-    const { container } = render(<PostureMark posture="expansionary" />);
-
-    expect(container).toBeEmptyDOMElement();
-  });
-
-  it('leaves a neutral row exactly as it was', () => {
-    const { container } = render(<PostureMark posture="neutral" />);
-
-    expect(container).toBeEmptyDOMElement();
-  });
-
-  it('does not rely on colour alone to say a row is a risk', () => {
-    // Colour as the only channel fails a colour-blind reader, and
-    // accessibility is a defect class rather than an enhancement (§20c).
-    const { container } = render(<PostureMark posture="contractionary" />);
-
-    expect(container.querySelector('svg')).not.toBeNull();
-  });
-
-  it('marks nothing when the posture is absent', () => {
-    // Posture is null exactly when the leading hypothesis is. A marked row
-    // with no reading behind it would be a claim with nothing under it.
-    const { container } = render(<PostureMark posture={null} />);
-
-    expect(container).toBeEmptyDOMElement();
   });
 });
 
@@ -421,45 +275,6 @@ describe('how long an account has been sitting where it sits — LO-06', () => {
     const { container } = render(<HeldSince stage="closed_won" since={THREE_WEEKS_AGO} />);
 
     expect(container).toBeEmptyDOMElement();
-  });
-});
-
-describe('the catalog explains itself — C-204, TASK-456', () => {
-  const DEFINITION = {
-    key: 'expansion_opportunity',
-    title: 'Expansion opportunity',
-    why_it_matters:
-      'Companies investing ahead of growth buy differently from companies holding steady.',
-  };
-
-  it('a seller can learn what the two-word label means', () => {
-    /** **C-204: the catalog explained nine words to nobody.** The
-     * explanation existed, reviewed, in `signals@1.json`, and reached no
-     * screen — so a row said *Expansion opportunity* and a seller had no way
-     * to find out what Signora meant by it. */
-    render(<Hypothesis signalType="expansion_opportunity" definition={DEFINITION} />);
-
-    expect(screen.getByText(/Companies investing ahead of growth/)).toBeInTheDocument();
-  });
-
-  it('the title is still what is drawn', () => {
-    // **The list is scanned before it is read** (SW-05). A sentence on every
-    // row would make the ranking harder to see while answering a question
-    // most rows are not raising.
-    render(<Hypothesis signalType="expansion_opportunity" definition={DEFINITION} />);
-
-    expect(screen.getByText('Expansion opportunity')).toBeInTheDocument();
-  });
-
-  it('says nothing at all when the catalog does not declare the key', () => {
-    /** A score records the catalog version it was formed under, so a key this
-     * version does not declare is a real possibility — and inventing a label
-     * for it would be the product naming something it cannot define. */
-    const { container } = render(
-      <Hypothesis signalType="retired_type" definition={undefined} />,
-    );
-
-    expect(container.textContent).toBe('');
   });
 });
 

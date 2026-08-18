@@ -1,5 +1,10 @@
 /**
- * Whose work the attention list is showing.
+ * Whose work a list of accounts is showing.
+ *
+ * ⚠️ **This said *"the attention list"* and that screen is retired** — 📁 the
+ * App Shell names nine destinations and Attention is not among them. ✅ **The
+ * scope survives it**: Companies reads it, and the brief reads the same query
+ * to offer *next*.
  *
  * **In the URL, not in state**, and for three reasons the product owner named:
  * it survives a refresh, it survives browser back, and it can be opened in a

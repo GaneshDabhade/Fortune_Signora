@@ -1,10 +1,18 @@
 /**
  * A seller's morning, end to end.
  *
- * **The journey the product exists for**: open the list, decide which account
- * to work, open it, understand why, check the evidence, see what has happened,
- * and move on to the next one. Every assertion here is about what a customer
- * can *do and trust*, never about which component rendered.
+ * **The journey the product exists for**: see what needs you, decide which
+ * account to work, open it, understand why, check the evidence, see what has
+ * happened, and move on to the next one. Every assertion here is about what a
+ * customer can *do and trust*, never about which component rendered.
+ *
+ * 🔴 **The morning used to start on `/attention` and that screen is retired.**
+ * 📁 The App Shell's nine destinations do not include it, and no design
+ * document defines it. ⚡ **The morning now starts on Home** — 📁 *"Home tells
+ * a person what to do next, using the workspace's own data, with a reason
+ * attached to every item"* — **and the book of accounts is Companies.**
+ * ⛔ **The tests below were re-aimed rather than deleted**: the promises they
+ * assert are the design's, and only the surface carrying them changed.
  *
  * The data is the Playground's twelve accounts, put through the real pipeline
  * by `make demo-seed`. Nothing here creates data, and nothing here depends on
@@ -15,61 +23,76 @@
 import { expect, test } from './fixtures/signora';
 
 test.describe('the morning list', () => {
-  test('@smoke opens with accounts ranked by attention', async ({ attention }) => {
-    await attention.open();
-    const names = await attention.names();
+  test('@smoke the book of accounts opens and is populated', async ({ accounts }) => {
+    await accounts.open();
+    const names = await accounts.names();
 
     expect(names.length).toBeGreaterThan(0);
     // **The proof that data actually reaches the browser.** Until the API
     // proxy existed, this page rendered "You are not part of an organization
     // yet" to the owner of a seeded organization.
-    await expect(attention.noOrganization).toHaveCount(0);
+    await expect(accounts.noOrganization).toHaveCount(0);
   });
 
-  test('@journey every row carries the four things a decision needs', async ({
-    attention,
-  }) => {
-    await attention.open();
-    await attention.names();
-
-    const first = attention.rows.first();
-    // What, why, how much it moved, how far it can be trusted — the order the
-    // surface is built around.
-    await expect(first.locator('a[href^="/accounts/"]')).toBeVisible();
-    await expect(first).toContainText(/[A-Za-z]/);
-    await expect(first.getByText(/Attention score/)).toBeVisible();
-  });
-
-  test('@journey the ranking is an ordering, not a coincidence', async ({
-    attention,
+  test('@journey every item Home raises carries a reason and a way in', async ({
     page,
   }) => {
-    await attention.open();
-    await attention.names();
+    /**
+     * 📁 **Home's registry, `card.attention`**: *"Up to five ordered items,
+     * **each with a reason and a cost of ignoring it**"* — and 📁 P-08,
+     * *"every attention item carries a reason."*
+     *
+     * ⚠️ **This asserted the retired screen's row anatomy** — an `Attention
+     * score` per row in an ordered list. ⛔ **Companies is not that screen**:
+     * it is the whole book, with its own columns, and re-pointing the old
+     * assertion at it would have tested a promise nothing makes.
+     */
+    await page.goto('/');
+    await page.waitForURL(/\/w\/[0-9a-f-]+\/home$/, { timeout: 30_000 });
+    const card = page.locator('[data-card="needs-you-today"]');
+    await expect(card).toBeVisible({ timeout: 20_000 });
 
-    const scores = await page
-      .locator('main ol > li')
-      .evaluateAll((rows) =>
-        rows.map((row) => {
-          const text = row.textContent ?? '';
-          const match = /Attention score\s*(\d+)/.exec(text);
-          return match ? Number(match[1]) : Number.NaN;
-        }),
-      );
+    const first = card.locator('a[href^="/accounts/"]').first();
+    await expect(first).toBeVisible({ timeout: 20_000 });
+    // The account is named, the reason is written, and there is a way in.
+    await expect(card).toContainText(/[A-Za-z]{3,}/);
+    await expect(first).toHaveText('Open the account');
+  });
 
-    expect(scores.every((score) => !Number.isNaN(score))).toBe(true);
-    // *"Most pressing first"* is a promise the header makes in words. A list
-    // that broke it would be wrong in a way no single row could reveal.
-    const sorted = [...scores].sort((a, b) => b - a);
-    expect(scores).toEqual(sorted);
+  test('@journey Home ranks what needs you, and says by what', async ({ page }) => {
+    /**
+     * 📁 **`card.attention`, in the design's own words**: *"Up to five ordered
+     * items"*, ranked — and the card states the basis in the header, because
+     * *"most pressing first"* is a promise a reader cannot verify from one row.
+     *
+     * ⚠️ **The retired screen proved this by reading an `Attention score` off
+     * every row and checking the sequence descended.** ⛔ **Home does not draw
+     * a score per item** — 📁 its rows carry *"a reason and a cost of ignoring
+     * it"* instead — **so the assertion is now the design's cap and its stated
+     * basis**, which are the two claims Home actually makes.
+     */
+    await page.goto('/');
+    await page.waitForURL(/\/w\/[0-9a-f-]+\/home$/, { timeout: 30_000 });
+    const card = page.locator('[data-card="needs-you-today"]');
+    await expect(card).toBeVisible({ timeout: 20_000 });
+    await expect(card.locator('a[href^="/accounts/"]').first()).toBeVisible({ timeout: 20_000 });
+
+    // 📁 *"Up to five ordered items"* — a sixth becomes *"See all N in Signals"*.
+    const items = await card.locator('a[href^="/accounts/"]').count();
+    expect(items).toBeGreaterThan(0);
+    expect(items).toBeLessThanOrEqual(5);
+
+    // ⛔ **The basis is stated rather than implied.** A ranked list that does
+    // not say what it ranked by asks a reader to trust an order they cannot see.
+    await expect(card.getByText(/Ranked by what it costs to ignore/i)).toBeVisible();
   });
 
   test('@regression an account nobody has named still says something useful', async ({
-    attention,
+    accounts,
     page,
   }) => {
-    await attention.open();
-    await attention.names();
+    await accounts.open();
+    await accounts.names();
 
     // The Playground deliberately includes one account no provider has named.
     // It must render as an identifier with an explanation, never as a blank
@@ -80,9 +103,9 @@ test.describe('the morning list', () => {
     }
   });
 
-  test('@journey a name several sources disagree about says so', async ({ page, attention }) => {
-    await attention.open();
-    await attention.names();
+  test('@journey a name several sources disagree about says so', async ({ page, accounts }) => {
+    await accounts.open();
+    await accounts.names();
 
     const disputed = page.getByRole('button', { name: /Show details/ });
     if ((await disputed.count()) === 0) test.skip(true, 'no disputed name in this scenario');
@@ -94,11 +117,11 @@ test.describe('the morning list', () => {
 
 test.describe('from the list to the account', () => {
   test('@smoke @journey opening an account explains its score', async ({
-    attention,
+    accounts,
     brief,
   }) => {
-    await attention.open();
-    const name = await attention.openFirstAccount();
+    await accounts.open();
+    const name = await accounts.openFirstAccount();
 
     await brief.waitForScore();
     await expect(brief.whatContributed).toBeVisible();
@@ -110,12 +133,12 @@ test.describe('from the list to the account', () => {
   });
 
   test('@journey the score can be traced to the evidence behind it', async ({
-    attention,
+    accounts,
     brief,
     page,
   }) => {
-    await attention.open();
-    await attention.openFirstAccount();
+    await accounts.open();
+    await accounts.openFirstAccount();
     await brief.waitForScore();
 
     await brief.openFirstCitation();
@@ -132,12 +155,12 @@ test.describe('from the list to the account', () => {
   });
 
   test('@journey the account carries a history of what has happened', async ({
-    attention,
+    accounts,
     brief,
     page,
   }) => {
-    await attention.open();
-    await attention.openFirstAccount();
+    await accounts.open();
+    await accounts.openFirstAccount();
     await brief.waitForScore();
 
     /**
@@ -172,13 +195,26 @@ test.describe('from the list to the account', () => {
     await expect(panel.getByText(/Nothing has been recorded/i)).toHaveCount(0);
   });
 
-  test('@journey the brief offers somewhere to go next', async ({
-    attention,
-    brief,
-    page,
-  }) => {
-    await attention.open();
-    await attention.openFirstAccount();
+  test('@journey the brief offers somewhere to go next', async ({ brief, page }) => {
+    /**
+     * ⚠️ **Entered from HOME, and the entrance is load-bearing.**
+     *
+     * 🔴 **Measured when the retired screen went**: entering from Companies
+     * made this fail, and the product was right. 📁 The brief's *next in
+     * sequence* is derived from `opportunity_engine`'s attention list — **open
+     * opportunities, ranked** — and **Companies is the whole book**, so an
+     * account with no open opportunity has no neighbours to offer. ⛔ **A page
+     * object that quietly picked a scored row would have hidden that.**
+     *
+     * ✅ **Home's `card.attention` reads the same population**, so an account
+     * opened from there is in the sequence by construction.
+     */
+    await page.goto('/');
+    await page.waitForURL(/\/w\/[0-9a-f-]+\/home$/, { timeout: 30_000 });
+    const card = page.locator('[data-card="needs-you-today"]');
+    await expect(card).toBeVisible({ timeout: 20_000 });
+    await card.locator('a[href^="/accounts/"]').first().click();
+    await page.waitForURL(/\/accounts\/[0-9a-f-]{36}/, { timeout: 20_000 });
     await brief.waitForScore();
 
     // R10-01: the page's only exit used to be at the top, where nobody is when
@@ -190,28 +226,28 @@ test.describe('from the list to the account', () => {
   });
 
   test('@regression back returns to the list with the list intact', async ({
-    attention,
+    accounts,
     brief,
     page,
   }) => {
-    await attention.open();
-    const before = await attention.names();
-    await attention.openFirstAccount();
+    await accounts.open();
+    const before = await accounts.names();
+    await accounts.openFirstAccount();
     await brief.waitForScore();
 
     await page.goBack();
-    await expect(attention.heading).toBeVisible();
-    const after = await attention.names();
+    await expect(accounts.heading).toBeVisible();
+    const after = await accounts.names();
     expect(after).toEqual(before);
   });
 
   test('@regression a brief opened by its address alone works', async ({
-    attention,
+    accounts,
     brief,
     page,
   }) => {
-    await attention.open();
-    await attention.openFirstAccount();
+    await accounts.open();
+    await accounts.openFirstAccount();
     const id = brief.accountId();
 
     // A deep link is how a seller shares an account with their manager. It
@@ -223,12 +259,12 @@ test.describe('from the list to the account', () => {
   });
 
   test('@regression reloading a brief does not lose it', async ({
-    attention,
+    accounts,
     brief,
     page,
   }) => {
-    await attention.open();
-    await attention.openFirstAccount();
+    await accounts.open();
+    await accounts.openFirstAccount();
     await brief.waitForScore();
 
     await page.reload();

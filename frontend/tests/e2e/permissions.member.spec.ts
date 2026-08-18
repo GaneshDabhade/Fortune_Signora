@@ -20,9 +20,9 @@ import { expect, test } from './fixtures/signora';
 import { MEMBER } from './fixtures/personas';
 
 test.describe('a member of the organization', () => {
-  test('@smoke sees their morning like everybody else', async ({ attention, page }) => {
-    await attention.open();
-    const names = await attention.names();
+  test('@smoke sees their morning like everybody else', async ({ accounts, page }) => {
+    await accounts.open();
+    const names = await accounts.names();
 
     expect(names.length).toBeGreaterThan(0);
     // The intelligence surface is not an administrative capability. A member
