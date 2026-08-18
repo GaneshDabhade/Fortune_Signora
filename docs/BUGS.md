@@ -2710,6 +2710,82 @@ logger.info("connecting to postgres://signora_app:S3cr3tPassw0rd@db:5432/signora
 
 ⚡ **The 34 tests added in [`tests/workspace_tenancy/test_onboarding_run.py`](../backend/tests/workspace_tenancy/test_onboarding_run.py) are kept**, and they are not redundant: **they took `domain/onboarding.py` from 96% to 100%** by covering `describe_person`'s team-size range — 📁 **screen `05`'s own guard, which genuinely had never executed.** ⛔ **The file's header claim that it was the module's first test is corrected in place.**
 
+### B-279 · 🟠 Six journeys reach account content through `main a[href^="/accounts/"]` and it resolves to nothing on `integration`
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`tests/e2e/`](../frontend/tests/e2e/), six specs |
+| **Current assignee** | ⚡ **Lane A**, joined from [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 — ⛔ **six journeys cannot reach an account**, and each reports a different-looking failure |
+| **Status** | **`OPEN` — PRE-EXISTING BASELINE ISSUE.** ⛔ **Not introduced by Lane A and not accepted by having been found** — product owner, 2026-08-18, relayed by QE: *"do not turn pre-existing baseline failures into Lane A defects"*. ⚠️ **Quoted from the relay; no `D-` row is cited because none was named to this lane** |
+| **Found** | **2026-08-18**, baselining an unrelated slice. ⚠️ **Not by any gate** — Playwright is in none |
+| **Commit found** | `19149dc6` (`origin/integration`) |
+
+**Steps to reproduce.** Check out `origin/integration` — ⛔ **detached, so `SIGNORA_ENVIRONMENT=lane-a` is required until [B-1014](#b-1014) lands** — seed the Playground, and run:
+
+```
+SIGNORA_ENVIRONMENT=lane-a make e2e-quick ARGS="tests/e2e/account-360.spec.ts \
+  tests/e2e/confidence.spec.ts tests/e2e/perception.spec.ts"
+```
+
+**Expected.** The account list at `/` offers a link into a brief.
+
+**Actual.** ⛔ **`locator('main a[href^="/accounts/"]')` resolves to nothing**, and each spec then fails in its own vocabulary — a `getAttribute` timeout in one, `toBeVisible` in another, a 30s or 60s wait in a third. **Same locator, same absence, three unrelated-looking reports.**
+
+#### ✅ Measured on `origin/integration`, with none of Lane A's work present
+
+⚡ **The whole point of the measurement.** ⛔ **Lane A's branch moves `/` to the entry resolver, so it would have been the obvious suspect** — and it is not the cause:
+
+| Spec | Ran | Failed on `integration` |
+|---|---|---|
+| `account-360` | 3 | 🔴 **3** |
+| `confidence` | 7 | 🔴 **4** |
+| `perception` | 3 | 🔴 **2** |
+| **`content-width`** | **18** | ✅ **0** |
+| **`navigation-bands`** | **17** | ✅ **0** |
+
+✅ **`content-width` and `navigation-bands` are the control**: they ran in the same session against the same tree and passed, **so the environment was working and the run was real.** ⛔ **Their failures on Lane A's branch WERE Lane A's, and were fixed in `f46e5da8`.**
+
+⚠️ **`visual.spec.ts` and `resilience.spec.ts` use the same locator and were not reached** — the baseline was stopped at 89 of 132. **Named here so the sixth and seventh are not rediscovered as new.**
+
+#### ⛔ The cause is NOT diagnosed, and is deliberately not guessed
+
+⚡ **What is established is that the locator resolves to nothing on `integration` in a seeded Playground.** ⛔ **Whether that is the seed, the attention query, or a product defect in the list is NOT measured**, and a plausible-sounding cause in this row would be believed. 📁 [B-1000](#b-1000)'s class — **a confident reading is the expensive kind.**
+
+---
+
+### B-280 · 🟡 The theme control does not report `System` as selected, and it is pre-existing
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`profile-journey.spec.ts`](../frontend/tests/e2e/profile-journey.spec.ts):246 |
+| **Current assignee** | ⚡ **Lane A**, joined from [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟡 |
+| **Status** | **`OPEN` — PRE-EXISTING BASELINE ISSUE** |
+| **Found** | **2026-08-18**, in the same baseline |
+| **Commit found** | `19149dc6` (`origin/integration`) |
+
+**Actual.** ⛔ **`getByRole('radio', { name: /^System\b/ })` resolves and is `unchecked`** — the input exists, so this is a *state* defect rather than a missing control.
+
+⚡ **Nothing to do with routing**, which is why it is filed apart from [B-279](#b-279): 📁 **it was the first of the twenty-nine that did not fit the entry-resolution story**, and saying so is what prompted the baseline that separated them.
+
+---
+
+### B-281 · 🟡 Signing out does not close the product in every tab — pre-existing
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`auth-journey.spec.ts`](../frontend/tests/e2e/auth-journey.spec.ts), *"signing out ends the session and the product is closed again"* |
+| **Current assignee** | ⚡ **Lane A**, joined from [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟡 |
+| **Status** | **`OPEN` — PRE-EXISTING BASELINE ISSUE** |
+| **Found** | **2026-08-18**, in the same baseline |
+| **Commit found** | `19149dc6` (`origin/integration`) |
+
+⚠️ **It passes in isolation and fails in a full run** — 📁 measured both ways on Lane A's branch (31 passed running `auth-journey.spec.ts` alone) **and it fails on `integration` too**, so it is neither Lane A's nor purely an ordering artifact of one tree.
+
+⛔ **Order-dependence is a property worth keeping in the row**: a defect that only appears after other specs have run is one a targeted re-run will always report as fixed.
+
 ### B-278 · The Makefile's own instruction for creating `.env.prod-local` writes npm's banner into it, and `make up` then cannot parse the file
 
 | | |
