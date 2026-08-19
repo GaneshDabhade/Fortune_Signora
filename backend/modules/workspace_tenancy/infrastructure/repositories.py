@@ -10,7 +10,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import Select, func, literal, select, text, tuple_, update
+from sqlalchemy import Select, and_, func, literal, select, text, tuple_, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import aliased
 
@@ -25,6 +25,7 @@ from modules.workspace_tenancy.domain.notification import (
     Actor,
     ActorKind,
     Category,
+    FeedItem,
     Notification,
     NotificationError,
     Subject,
@@ -976,7 +977,7 @@ class SqlAlchemyNotificationRepository(SqlAlchemyRepository):
 
     async def feed(
         self, workspace_id: UUID, person_id: UUID, *, limit: int
-    ) -> list[Notification]:
+    ) -> list[FeedItem]:
         """This person's notifications, newest first, bounded.
 
         ⚠️ **`limit` is required and has no default.** ⛔ **A caller that forgot
@@ -993,8 +994,23 @@ class SqlAlchemyNotificationRepository(SqlAlchemyRepository):
                 f"a feed limit of {limit} asks for no notifications and returns "
                 "an empty panel, which a customer cannot tell from having none."
             )
+        # **Left join, never inner.** An inner join would return only what the
+        # person has already read, which is the exact inverse of the panel's
+        # purpose — and it is the kind of mistake that looks like an empty
+        # feed rather than like a wrong one.
         statement = (
-            select(NotificationRow)
+            select(NotificationRow, NotificationReadRow.read_at)
+            .outerjoin(
+                NotificationReadRow,
+                and_(
+                    NotificationReadRow.notification_id == NotificationRow.id,
+                    # **The read row is per person**, so the join carries the
+                    # recipient too — without it, one colleague reading an item
+                    # would mark it read for everyone it was sent to.
+                    NotificationReadRow.user_id == person_id,
+                    NotificationReadRow.workspace_id == workspace_id,
+                ),
+            )
             .where(
                 NotificationRow.workspace_id == workspace_id,
                 # Defence in depth beside the RLS policy, which carries the
@@ -1004,8 +1020,11 @@ class SqlAlchemyNotificationRepository(SqlAlchemyRepository):
             .order_by(NotificationRow.occurred_at.desc(), NotificationRow.id.desc())
             .limit(limit)
         )
-        rows = (await self._session.execute(statement)).scalars().all()
-        return [_to_notification(row) for row in rows]
+        rows = (await self._session.execute(statement)).all()
+        return [
+            FeedItem(notification=_to_notification(row), read_at=read_at)
+            for row, read_at in rows
+        ]
 
 
 def _to_notification(row: NotificationRow) -> Notification:

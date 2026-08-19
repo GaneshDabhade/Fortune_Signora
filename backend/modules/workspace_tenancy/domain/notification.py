@@ -220,6 +220,31 @@ class Subject:
 
 
 @dataclass(frozen=True, slots=True)
+class FeedItem:
+    """One notification, and whether this person has read it.
+
+    ⛔ **Two facts, deliberately not one.** The notification records *what
+    happened*; :attr:`read_at` records *when this person read it*, which is a
+    later and separate event with its own row and its own immutability
+    ([§2](../../../../CLAUDE.md)). ⚡ **Folding a read time onto the
+    notification would put a mutable-looking field on a record the module
+    refuses to let anything update.**
+
+    **The panel needs both in one place** — 📁 the design's *"unread is a 6px
+    dot on the right, never a coloured row"* — and a surface that fetched the
+    feed and then asked separately which were read would render every item as
+    unread for one frame, on the one control whose entire job is to say how
+    much is outstanding.
+    """
+
+    notification: "Notification"
+    #: `None` means unread. **Not a boolean**: the time is what makes
+    #: *"opening an item marks it read"* auditable afterwards, and a flag
+    #: would answer *whether* without ever answering *when*.
+    read_at: datetime | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class Notification:
     """**One thing that happened, addressed to exactly one person.**
 

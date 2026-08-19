@@ -65,7 +65,7 @@ from modules.workspace_tenancy.domain.preferences import (
     TimeFormat,
 )
 from modules.workspace_tenancy.domain.saved_view import SavedView
-from modules.workspace_tenancy.domain.notification import Notification
+from modules.workspace_tenancy.domain.notification import FeedItem
 from signora_platform.pagination import MAX_PAGE_LIMIT
 
 
@@ -982,20 +982,29 @@ class NotificationResponse(BaseModel):
         description="When it happened. Always timezone-aware: the panel groups by day, "
         "and a naive moment is the one item that could land under the wrong one."
     )
+    read_at: datetime | None = Field(
+        default=None,
+        description=(
+            "When this person read it, or null if they have not. The panel draws "
+            "its unread mark from this rather than from the badge count, which "
+            "says how many without saying which."
+        ),
+    )
 
     @classmethod
-    def from_domain(cls, notification: Notification) -> "NotificationResponse":
+    def from_domain(cls, item: FeedItem) -> "NotificationResponse":
         return cls(
-            id=notification.id,
-            category=notification.category.value,
-            actor_kind=notification.actor.kind.value,
-            actor_person_id=notification.actor.person_id,
-            actor_agent_name=notification.actor.agent_name,
-            subject_kind=notification.subject.kind,
-            subject_id=notification.subject.id,
-            summary=notification.summary,
-            expectation=notification.expectation,
-            occurred_at=notification.occurred_at,
+            read_at=item.read_at,
+            id=item.notification.id,
+            category=item.notification.category.value,
+            actor_kind=item.notification.actor.kind.value,
+            actor_person_id=item.notification.actor.person_id,
+            actor_agent_name=item.notification.actor.agent_name,
+            subject_kind=item.notification.subject.kind,
+            subject_id=item.notification.subject.id,
+            summary=item.notification.summary,
+            expectation=item.notification.expectation,
+            occurred_at=item.notification.occurred_at,
         )
 
 
