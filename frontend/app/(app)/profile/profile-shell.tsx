@@ -11,6 +11,7 @@ import { AppearancePanel } from './appearance-panel';
 import { AvatarArea } from './avatar-area';
 import { LocalePanel } from './locale-panel';
 import { ProfilePanel } from './profile-panel';
+import { ShortcutsPanel } from './shortcuts-panel';
 
 /**
  * **The finalized User Profile design's `ProfileShell`.**
@@ -179,7 +180,12 @@ export function ProfileShell({ name, email }: { name: string | null; email: stri
         {current === 'appearance' ? <AppearancePanel /> : null}
         {current === 'accessibility' ? <AccessibilityPanel /> : null}
         {current === 'ai' ? <AiPanel /> : null}
-        {current === 'shortcuts' || current === 'accounts' || current === 'activity' ? (
+        {/* ✅ **Built** — the registry the `?` overlay reads, rendered by the
+            component they now share. ⛔ **No *Customise* control**: the design's
+            conflict rule describes an editor, and no preference field or
+            endpoint stores a binding. */}
+        {current === 'shortcuts' ? <ShortcutsPanel /> : null}
+        {current === 'accounts' || current === 'activity' ? (
           <SectionNotBuilt section={current} />
         ) : null}
       </div>
@@ -196,8 +202,6 @@ export function ProfileShell({ name, email }: { name: string | null; email: stri
  */
 function SectionNotBuilt({ section }: { section: string }) {
   const WHAT: Record<string, string> = {
-    shortcuts:
-      'The shortcuts Signora publishes, read from the same registry the ⌘-overlay uses.',
     accounts:
       'The accounts you have connected, their scope, and every session signed in as you.',
     activity:
