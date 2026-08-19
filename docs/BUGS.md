@@ -1331,7 +1331,7 @@ recents — "PHPorterfield Health SystemsToda" is 37px tall on a phone
 | **Module** | `frontend/tests/e2e/` — **the repository-wide browser suite** |
 | **Current assignee** | **QE** |
 | **Severity** | 🟡 — ⚠️ **and the class is genuinely unestablished. This row exists so it stops being rediscovered** |
-| **Status** | **`OPEN`** |
+| **Status** | 🔴 **CAUSE ESTABLISHED 2026-08-19 — and it is the hypothesis this row recorded as DISCONFIRMED.** **`OPEN`**, pending the two fixes below |
 | **Found** | **2026-08-19 by QE**, attributing what survived [B-1017](#b-1017), [B-1026](#b-1026) and [B-1028](#b-1028) |
 
 **Each spec run ALONE on a freshly rebuilt environment** — `down -v` · `up` with the mailbox · `auth:migrate` · `demo:users` · `playground.seed`:
@@ -1366,6 +1366,52 @@ resilience                  1 failed   2 passed
 ⚠️ **The common shape is a NAVIGATION that does not complete**: `page.waitForURL` timing out, a sign-in that lands back on `/signin`, a 60-second test timeout. **`auth.setup.ts >> sign in as a member` timed out at 20s on one run**, which puts it in the setup rather than in any one spec.
 
 ⛔ **QE is not naming a cause.** 📁 *"A 'cannot reproduce' is a claim about the reproduction attempt, not about the defect"* — **and a cause asserted from four varying symptoms would be the same error in the other direction.**
+
+### 🔴 2026-08-19 — the cause IS rate limiting, and this row's disconfirmation was measured with the wrong instrument
+
+**Found on the screen, in a page snapshot, in the words a customer would read:**
+
+```
+- paragraph: Too many requests. Please try again later.
+- alert:     Too many requests. Please try again later.
+```
+
+**Then confirmed against the running product — twelve POSTs to `/api/auth/sign-in/email`:**
+
+```
+401 401 401 429 429 429 429 429 429 429 429 429
+```
+
+📁 **`better-auth/dist/api/rate-limiter/index.mjs`, `getDefaultSpecialRules()`:**
+
+| Paths | Limit |
+|---|---|
+| `/sign-in` · `/sign-up` · `/change-password` · `/change-email` | **3 per 10 seconds** |
+| `/forget-password` · `/request-password-reset` · `/send-verification-email` | **3 per 60 seconds** |
+
+### ⛔ Why the disconfirmation above was wrong, and it is [B-1000](#b-1000)'s family a THIRD time
+
+**This row measured the frontend container's structured `signora.auth` log for `"status":429`, `TOO_MANY` and `rate limit exceeded`, found zero, and concluded rate limiting was not happening.** ⚡ **The limiter lives INSIDE Better Auth's route handler and returns `429` without ever passing through the application's auth logger** — so the log could not have recorded one however many there were.
+
+> 🔴 **The instrument answered *"did OUR logger record a refusal?"*** when the question was ***"was a request refused?"*** ⛔ **The same shape as the `429|rate.?limit` grep this row already records against itself, and as the `AUTH_TOKEN_REJECTED` count** — **all nine of those are `reason: no_active_session`, an anonymous page load, read on 2026-08-19 rather than counted.**
+
+### ✅ It predicts every symptom the row could not explain
+
+| Symptom this row recorded | What a 10-second window explains |
+|---|---|
+| *"WHICH test fails moves between runs"* | **Whichever happens to be the 4th sign-in inside a 10-second window** |
+| *"each fails ALONE too, so not contamination"* | ✅ **Both were true.** A single spec that signs in 4 times in 10 seconds trips it by itself |
+| *"`auth.setup.ts >> sign in as a member` timed out at 20s"* | 🔴 **The setup signs in THREE times back to back — the limit exactly — before one journey has run** |
+| *"a sign-in that lands back on `/signin`"* | **A refused sign-in does not navigate** |
+| *"password reset timing out at `New password`"* | 📁 **`/forget-password` is 3 per 60 seconds**, a window six times longer |
+
+### The two fixes, and only one of them is QE's
+
+**[C-109](LANE_COORDINATION.md) carries the decision.** ✅ **QE implements the half that is unambiguously its own — the suite honouring the limiter it is being refused by, using the product's own `Retry-After` rather than a blind sleep.** ⛔ **Loosening the control is not QE's, and turning it off where it is tested is refused outright.**
+
+### ⚠️ Three of the eight were something else entirely
+
+📁 **[B-1026](#b-1026) was half a fix**: the mailbox was never actually served. **With `/dev/mailbox` answering `200`, the auth family went from 8 failures to 5** — and the 5 are the ones above.
 
 ### B-1029 · 🟡 Three browser journeys fail alone, on a clean environment, and are not contamination
 

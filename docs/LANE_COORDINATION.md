@@ -3237,6 +3237,47 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 
 ---
 
+## C-109 · The browser suite cannot exercise the auth journeys against a production rate limit from one host
+
+| | |
+|---|---|
+| **Raised by** | **QE**, 2026-08-19, attributing [B-1030](BUGS.md) to a cause the row had recorded as *disconfirmed* |
+| **Owner** | **Product owner** — 🔴 **it is a security control's configuration**, and 📁 `frontend/lib/auth/server.ts` is not QE's to change |
+| **Blocks** | ⛔ **Nothing today.** **QE will implement the half that is unambiguously its own** — the suite honouring the limiter it is being refused by — **and that may be sufficient.** ⚡ **Raised now precisely because nothing is waiting on it** |
+| **Status** | **`OPEN`** |
+
+**The product is behaving correctly. `frontend/lib/auth/server.ts:147` sets `rateLimit: { enabled: true }`, and Better Auth's defaults are:**
+
+| Paths | Limit |
+|---|---|
+| `/sign-in` · `/sign-up` · `/change-password` · `/change-email` | **3 per 10 seconds** |
+| `/forget-password` · `/request-password-reset` · `/send-verification-email` | **3 per 60 seconds** |
+
+**Measured against the running stack, twelve POSTs to `/api/auth/sign-in/email`:**
+
+```
+401 401 401 429 429 429 429 429 429 429 429 429
+```
+
+⚡ **The browser suite signs in far more than three times in ten seconds** — 📁 **`auth.setup.ts` alone signs in THREE times back to back**, which is the limit exactly, before a single journey has run.
+
+### ⛔ The tension is between two correct things, which is why it is not QE's to settle
+
+| | |
+|---|---|
+| **The limit** | **A real security control**, and ⛔ **weakening it to make a suite green is exactly what this repository forbids** |
+| **The suite** | **Cannot avoid signing in** — the journeys that trip it are the ones whose subject IS signing in |
+
+### The options, and QE's recommendation
+
+| | |
+|---|---|
+| ✅ **Recommended — ① the suite honours the limiter** | **The sign-in helper detects the product's own `429`/`Retry-After` and waits for the window it is told about.** ⚡ **Responding to the product's real signal, not sleeping blindly**, and it weakens nothing: a test whose subject IS rate limiting still asserts it. ⛔ **QE's own fixture, so QE can do this without a ruling** — and it may be the whole answer |
+| ⚠️ **② configure the limit per environment** | **A typed setting, strict by default, looser only in `.env.prod-local`** — 📁 the same shape as [B-1026](BUGS.md)'s mailbox fix, and what §20b requires of configuration anyway. ⛔ **Cost: the local gate stops proving the production limit works**, so it would need a test that asserts the limiter deliberately. **Product code — Lane A's, not QE's** |
+| ⛔ **③ disable it locally** | **Refused.** A control that is off wherever it is tested is a control nobody tests |
+
+**QE proceeds with ① and reports what it recovers. ② is only worth deciding if ① is not enough.**
+
 ## C-108 · `modules.toml` grants Lane C the whole of `signora_platform/`, and `CLAUDE.md` grants `simulation/**`
 
 | | |
