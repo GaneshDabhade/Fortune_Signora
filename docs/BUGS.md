@@ -987,7 +987,7 @@ pass "workers resumed consuming"
 | **Module** | [`docs/REPOSITORY_RELEASE_CHECKLIST.md`](REPOSITORY_RELEASE_CHECKLIST.md) — **QE's runbook, and QE's to fix** |
 | **Current assignee** | **QE** |
 | **Severity** | 🟠 — ⛔ **a documented gate step that stops the operator every cycle** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED`** by QE, 2026-08-19, cycle 254. ⛔ **NOT `VERIFIED`** — QE wrote the fix, and QE does not stamp its own work |
 | **Found** | **2026-08-19 by QE**, cycle 253, running the step exactly as the checklist gives it |
 
 **Steps.** Copy the block under *"Migration reversibility — to base and back"* and run it.
@@ -1018,6 +1018,14 @@ export SIGNORA_TEST_ADMIN_DATABASE_URL="postgresql+asyncpg://signora:signora@loc
 ```
 
 ⛔ **Not a hardcoded port** — 📁 that is [B-1003](#b-1003) and [B-1028](#b-1028), twice. ⚠️ **And [B-1034](#b-1034) still applies to whichever branch this runs from.**
+
+### ✅ Fixed, and the repair carried a measured speed improvement with it
+
+**The block now derives the variable from `infra/environments.py` rather than inheriting it from a Makefile it is not inside**, which is the same authority `make certify` uses and is not a hardcoded port ([B-1003](#b-1003), [B-1028](#b-1028)).
+
+⚡ **And it moved off the critical path.** 📁 **It runs against a DISPOSABLE database on the LANE's server; the browser gate runs against prod-local on 5433.** ⛔ **Different server, different database, no shared state** — so it belongs **beside** the browser suite, not after it. ✅ **Measured 2026-08-19, cycle 254: 12 seconds, fully overlapped with a running browser suite, no interference in either direction.**
+
+> ⚠️ **This is not a gate change.** **The same command runs, against the same disposable database, asserting the same `head → base → head`.** **Only where it sits in the sequence moved.**
 
 ✅ **Reversibility itself PASSED once the variable was supplied**: `head → base → head` on a disposable database, cycle 253.
 

@@ -159,7 +159,23 @@ make down           # leave the workstation as the cycle found it
 
 # Migration reversibility — to base and back, against a database this check
 # creates. Never against a shared one: `downgrade base` drops every table.
-cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -c "
+#
+# B-1041: this block used to start at `cd backend` and could NOT be run.
+# `disposable()` refuses without SIGNORA_TEST_ADMIN_DATABASE_URL — correctly,
+# because its only alternative is to default to 5432, which is slot 0 and
+# human review's (B-1028). `make certify` and `make test` set it from the
+# lane's own allocation; a snippet pasted out of a Makefile inherits nothing.
+# Derive it, never hardcode a port (B-1003, B-1028).
+#
+# It takes ~12 seconds and it does NOT belong on the critical path. It uses a
+# DISPOSABLE database on the LANE's server; the browser gate uses prod-local
+# on 5433. Different server, different database, no shared state — so run it
+# BESIDE the browser suite rather than after it. Measured 2026-08-19, cycle
+# 254: 12s, fully overlapped, no interference in either direction.
+cd backend
+export $(python3 ../infra/environments.py --exports | grep -v '^#' | xargs)
+export SIGNORA_TEST_ADMIN_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:${SIGNORA_POSTGRES_PORT}/signora"
+SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -c "
 import os, subprocess, sys
 sys.path.insert(0, '.')
 from tests.certification import database
