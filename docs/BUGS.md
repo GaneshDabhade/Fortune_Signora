@@ -1109,7 +1109,7 @@ NOT CERTIFIED
 | **Module** | `frontend/tests/components/` — **the shared frontend suite, so QE's** |
 | **Current assignee** | **QE** |
 | **Severity** | 🟠 — ⛔ **it refuses a certification cycle at random, and the candidate is not at fault** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` — QE, 2026-08-19.** ⛔ **`VERIFIED` is not this lane's to set on its own repair** |
 | **Found** | **2026-08-19 by QE**, certifying [`8ceff5d6`](#) in cycle 251 |
 
 **What certification reported:**
@@ -1150,6 +1150,48 @@ This error was caught after test environment was torn down.
 **The honest fix is for the test that mounts the auth client to cancel its subscription before finishing** — vitest's own message says exactly that. ⛔ **But which test mounts it is not established**: the exception is *attributed* to `companies-workspace.test.tsx` because that file was running, and vitest says in as many words that *"it doesn't mean the error was thrown inside the file itself."*
 
 📁 **Attributing it from that attribution would be [B-1000](#b-1000)'s family again** — **the message answers *"what was running?"* and the question is *"what registered the timer?"*** ✅ **Recorded with the evidence so the next occurrence has something to build on, rather than guessed at now.**
+
+### ✅ FIXED — and the culprit is not a test, which is why no test could be named
+
+⚡ **The row above was looking for the wrong kind of thing.** 📁 **`nanostores/lifecycle` does not run a store's `onMount` destructors when its last subscriber leaves — it SCHEDULES them**, `setTimeout(…, STORE_UNMOUNT_DELAY)`. ⛔ **So `afterEach(cleanup)` in `tests/setup.ts` — the thing that unmounts the last `useSession` consumer — ARMS a timer rather than running one**, and **every jsdom file that ever rendered one ends with that timer pending.**
+
+**Measured rather than argued**, by rendering a `useSession` consumer and reading `nanostores`' own bookkeeping:
+
+| | `session.lc` — live subscribers | `session.active` — destructors outstanding |
+|---|---|---|
+| **before** | `0` | `undefined` |
+| **mounted** | `1` | `true` |
+| **unmounted** | `0` | 🔴 **`true`** — ⛔ **nothing subscribed, destructors still owed** |
+| **after `cleanStores`** | `0` | ✅ **`false`** |
+
+📁 **`lifecycle/index.js` guards the armed timer with `if ($store.active && !$store.lc)`.** ✅ **With `active` false it fires into nothing** — which is what stops it reaching a `window` that has gone. **`tests/setup.ts` therefore runs the destructors in `afterAll`, synchronously, while there is still a `window` for them to find.**
+
+### 🔴 The first attempt at this fix was DECORATIVE, and it was caught by probing rather than by reasoning
+
+**It read `cleanStores(...Object.values(authClient.$store.atoms))` — which looks exactly right and does nothing.** ⛔ **`authClient.$store` is a `createDynamicPathProxy`, whose `get` returns a fresh proxy for any key it cannot resolve to a function or an atom, and which has no `ownKeys` trap over the real object.** ⚡ **So `Object.values(...)` yields `[]`, `cleanStores` matched nothing, and the call would have shipped as a guard that cannot fail** — 📁 **§2's named class, in a repair written for a defect of the same family.**
+
+✅ **A path ending AT an atom does resolve**, so the call names one: `cleanStores(authClient.$store.atoms.session)`. ⛔ **Named, never enumerated** — and `session` is the only atom measured to arm a destructor.
+
+> ⚠️ **The tell was that the probe printed nothing.** **Had it been written to assert instead of to print, it would have passed** — `Object.values({})` is a legal empty spread and `cleanStores()` of nothing succeeds. **The lesson is the one this register keeps recording: an instrument that answers a narrower question than the one asked.**
+
+### ✅ The mechanism ships as a test, and both halves are mutation-tested
+
+**`frontend/tests/components/session-store-teardown.test.tsx` asserts the two facts the setup line depends on**, so that either of them changing is reported rather than discovered:
+
+| If this changes | The failure says |
+|---|---|
+| **unmount starts disarming by itself** | *"the `cleanStores()` call in `tests/setup.ts` is dead code and should be removed"* |
+| **`cleanStores` stops disarming** | *"`tests/setup.ts` is not protecting anything"* |
+
+**Both were fired by mutation and both killed with those messages.** ⚠️ **It asserts a dependency's internals deliberately** — `active` and `lc` are `nanostores`' own fields, and they are the entire justification for a line in the shared setup.
+
+### ⛔ What is NOT claimed
+
+**The crash itself was never reproduced** — not in six earlier attempts, and not in a further run of a `useSession` file followed by 58 node-environment files in one worker, which was the most promising ordering. ⚡ **What is demonstrated is the ARMING**, deterministically, and that the fix disarms it. ⛔ **The frequency remains unmeasured and is stated as unmeasured.**
+
+⛔ **And not `dangerouslyIgnoreUnhandledErrors`**, which vitest offers and which would have made the gate green by making it blind. 📁 **The gate's verdict is its exit code — `passed=code == 0` — and it was right to be non-zero: an uncaught exception means the run cannot be read.**
+
+✅ **Full suite after the change: `199 files, 3432 passed, exit 0`** — **exactly one file and two tests more than before, both of them this row's.**
 
 ### B-1032 · 🟠 `rail-band` measures a rail mid-animation, and the number it reports is a frame
 
