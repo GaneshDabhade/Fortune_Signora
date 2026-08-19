@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `7fae6e18`, 2026-08-19.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `8a8116d5`, 2026-08-19.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,7 +12,9 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `7fae6e18`, 2026-08-19.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `8a8116d5`, 2026-08-19.** Every figure is read from the repository, never carried forward.
+
+> ⚡ **Cycle 253 is Lane A's [TASK-1484](docs/BACKLOG.md) — the top bar against the design, 10 commits, certified on the FIRST attempt.** ⛔ **The browser suite produced three failures that were NOT regressions**: all three passed in isolation, and their durations under the full run were **10–40× their isolated durations** ([B-1036](docs/BUGS.md)). ⚠️ **QE reported them to Lane A as possible defects and retracted within the hour** — ⛔ **the retraction is recorded because the first report was, too.**
 
 > ⚡ **Cycle 252 is the notification feed reaching a customer — Lane A's [TASK-495](docs/BACKLOG.md), 8 commits, certified on the FIRST attempt.** ⛔ **The browser suite found one genuine regression the eight required gates cannot see: [B-1035](docs/BUGS.md), 13 access tokens against a ceiling of 12.** ⚡ **The ceiling was NOT raised — it is set to catch a regression rather than to bless the current number, and it caught one.**
 
@@ -28,9 +30,13 @@
 
 | | |
 |---|---|
-| **`main`** | **`7fae6e18`** — ⚡ **cycle 252**, `promoted == certified`, verified from the remote after the push. **8 commits, Lane A, ONE certification attempt.** **Was `8ceff5d6`:** — ⚡ **cycle 251**, `promoted == certified`, verified from the remote after the push. **25 commits, Lane A. Two attempts.** **Was `7b02364c`:** — ⚡ **cycle 250**, `promoted == certified`, verified from the remote after the push. **7 commits, one lane (QE).** **Was `19317ea3`:** — ⚡ **cycle 249**, `promoted == certified`, verified from the remote after the push. **4 commits, one lane (QE), two certification attempts.** **Was `3a18bd96`:** — ⚡ **cycle 248**, `promoted == certified`, verified from the remote after the push. **29 commits, Lane A.** **Was `6eba78bf`:** — ⚡ **cycle 247**, `promoted == certified`, verified from the remote after the push. **7 commits, one lane (QE), one certification attempt.** **Was `0281e08b`:** — ⚡ **the certified commit itself**, `promoted == certified`, **verified against the SHA the guard named, not against `integration`'s head**. **Cycle 238** — ⛔ **and `integration` had already moved to `9023b187` when the promotion ran, for the second cycle running** |
-| **Release candidate** | `integration` = **`7fae6e18`** — ✅ **rebased onto `main` at Closeout, carrying Lane A's claim of [TASK-1484](docs/BACKLOG.md).** ⚠️ **Lane A holds `10c671d4`, 11 commits ahead — the next candidate, and it arrived while this cycle was closing.** **Was `8ceff5d6`:** — ✅ **equal to `main`; nothing awaits certification.** **Was `7b02364c`:** — ✅ **equal to `main`; nothing awaits certification.** **Was `9023b187`:** — Lane C's three planning commits, rebased onto the pin and ref-pushed **while the gates were running**, so no lane waited and no gate was disturbed |
-| **Certification** | ✅ [`7fae6e189826`](certification/reports/7fae6e189826.md) · migration head **`0066`** · ✅ **eight gates, FIRST attempt** · **DR passed, 679 invariants against the restarted stack** · **reversible on a disposable database** · ⚡ **browser suite 407/12/4, every failure attributed to a named owner**. **Was [`8ceff5d695f6`](certification/reports/8ceff5d695f6.md):** · migration head **`0066`** · ⚠️ **eight gates on the SECOND attempt** — ⛔ **the first was an ABORT, not a failure** · **DR passed, 676 invariants against the restarted stack** · ⚡ **`0065`/`0066` reversible with `person_preferences` holding FOUR REAL ROWS, and they survived** · ⚡ **browser suite 401/13/4 of 418, zero unrun**. **Was [`7b02364cbe45`](certification/reports/7b02364cbe45.md):** · migration head **`0064`** · ✅ **eight gates, FIRST attempt** · **DR passed, 676 invariants against the restarted stack** · ⚡ **reversible head→base→head on a database carrying 796 outbox events, 193 claims and 93 observations** · ⚡ **browser suite 373/16/4, and the arithmetic checked**. **Was [`19317ea3674d`](certification/reports/19317ea3674d.md):** · migration head **`0064`** · ⚠️ **eight gates on the SECOND attempt** — ⛔ **the first was DISCARDED by QE, not failed** ([B-1025](docs/BUGS.md)) · **DR passed, 676 invariants against the restarted stack** · ⚡ **browser suite run in full: 348 passed / 36 failed / 8 skipped, every failure pre-existing and attributed** . **Was [`3a18bd964bb2`](certification/reports/3a18bd964bb2.md):** · migration head **`0064`** · ⚠️ **eight gates on the SECOND attempt** · **DR passed, 676 invariants against the restarted stack** · **reversible base→head→base→head→base→head on a clean database**. **Was [`6eba78bf925d`](certification/reports/6eba78bf925d.md):** · migration head **`0060`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a CLEAN database** — ⛔ **and NOT on a used one, which is [B-1016](docs/BUGS.md)**. **Was [`0281e08be27d`](certification/reports/0281e08be27d.md):** · migration head **`0060`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** |
+| **`main`** | **`8a8116d5`** — ⚡ **cycle 253**, `promoted == certified`, verified from the remote after the push. **10 commits, Lane A, ONE certification attempt.** **Was `7fae6e18`:** — ⚡ **cycle 252**, `promoted == certified`, verified from the remote after the push. **8 commits, Lane A, ONE certification attempt.** **Was `8ceff5d6`:** — ⚡ **cycle 251**, `promoted == certified`, verified from the remote after the push. **25 commits, Lane A. Two attempts.** **Was `7b02364c`:** — ⚡ **cycle 250**, `promoted == certified`, verified from the remote after the push. **7 commits, one lane (QE).** **Was `19317ea3`:** — ⚡ **cycle 249**, `promoted == certified`, verified from the remote after the push. **4 commits, one lane (QE), two certification attempts.** **Was `3a18bd96`:** — ⚡ **cycle 248**, `promoted == certified`, verified from the remote after the push. **29 commits, Lane A.** **Was `6eba78bf`:** — ⚡ **cycle 247**, `promoted == certified`, verified from the remote after the push. **7 commits, one lane (QE), one certification attempt.** **Was `0281e08b`:** — ⚡ **the certified commit itself**, `promoted == certified`, **verified against the SHA the guard named, not against `integration`'s head**. **Cycle 238** — ⛔ **and `integration` had already moved to `9023b187` when the promotion ran, for the second cycle running** |
+| **Release candidate** | `integration` = **`8a8116d5`** — ✅ **equal to `main` at promotion; rebased onto it again at Closeout.** **Was `7fae6e18`:** — ✅ **rebased onto `main` at Closeout, carrying Lane A's claim of [TASK-1484](docs/BACKLOG.md).** ⚠️ **Lane A held `10c671d4`, 11 commits ahead — the next candidate, and it arrived while that cycle was closing.** **Was `8ceff5d6`:** — ✅ **equal to `main`; nothing awaits certification.** **Was `7b02364c`:** — ✅ **equal to `main`; nothing awaits certification.** **Was `9023b187`:** — Lane C's three planning commits, rebased onto the pin and ref-pushed **while the gates were running**, so no lane waited and no gate was disturbed |
+| **Certification** | ✅ [`8a8116d58e62`](certification/reports/8a8116d58e62.md) · migration head **`0066`** · ✅ **eight gates, FIRST attempt** · **DR passed, 679 invariants, 15 checks against the restarted stack** · ⚡ **reversible `head → base → head` on a disposable database** · ⚡ **browser suite 416/14/4 of 434, zero unrun, every failure attributed**. **Was [`7fae6e189826`](certification/reports/7fae6e189826.md):** · migration head **`0066`** · ✅ **eight gates, FIRST attempt** · **DR passed, 679 invariants against the restarted stack** · **reversible on a disposable database** · ⚡ **browser suite 407/12/4, every failure attributed to a named owner**. **Was [`8ceff5d695f6`](certification/reports/8ceff5d695f6.md):** · migration head **`0066`** · ⚠️ **eight gates on the SECOND attempt** — ⛔ **the first was an ABORT, not a failure** · **DR passed, 676 invariants against the restarted stack** · ⚡ **`0065`/`0066` reversible with `person_preferences` holding FOUR REAL ROWS, and they survived** · ⚡ **browser suite 401/13/4 of 418, zero unrun**. **Was [`7b02364cbe45`](certification/reports/7b02364cbe45.md):** · migration head **`0064`** · ✅ **eight gates, FIRST attempt** · **DR passed, 676 invariants against the restarted stack** · ⚡ **reversible head→base→head on a database carrying 796 outbox events, 193 claims and 93 observations** · ⚡ **browser suite 373/16/4, and the arithmetic checked**. **Was [`19317ea3674d`](certification/reports/19317ea3674d.md):** · migration head **`0064`** · ⚠️ **eight gates on the SECOND attempt** — ⛔ **the first was DISCARDED by QE, not failed** ([B-1025](docs/BUGS.md)) · **DR passed, 676 invariants against the restarted stack** · ⚡ **browser suite run in full: 348 passed / 36 failed / 8 skipped, every failure pre-existing and attributed** . **Was [`3a18bd964bb2`](certification/reports/3a18bd964bb2.md):** · migration head **`0064`** · ⚠️ **eight gates on the SECOND attempt** · **DR passed, 676 invariants against the restarted stack** · **reversible base→head→base→head→base→head on a clean database**. **Was [`6eba78bf925d`](certification/reports/6eba78bf925d.md):** · migration head **`0060`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a CLEAN database** — ⛔ **and NOT on a used one, which is [B-1016](docs/BUGS.md)**. **Was [`0281e08be27d`](certification/reports/0281e08be27d.md):** · migration head **`0060`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** |
+| **Cycle 253 gates** | ⚡ **EIGHT required, all recorded, FIRST attempt** — `pytest` **5435** · coverage **95.03%** · **679** security invariants · `mypy` strict over **956** files · `import-linter` **37/37** · `tsc` clean · `frontend-suite` **3518 in 202 files** *(+51)* · `eslint` clean · `smoke` **24 stages in 228s** · scenario **baseline@1, 208 assertions** |
+| ⚠️ **Three failures that were not defects, and the retraction is the record** | **`connections:32` · `search-journey:18` · `top-bar-search:26` failed in the full run and ALL THREE PASSED IN ISOLATION** — 13/13 green in 19s against the identical tree and stack. ⚡ **The durations are the finding: 20s (timeout) · 1.0m · 16.0s under load, against 899ms · 1.9s · 1.4s alone.** ⛔ **QE asked Lane A whether `top-bar-search` — TASK-1484's own spec — was a complete slice. It was, and its own spec passes against its own implementation.** ✅ **No mechanism is named**: 📁 [B-1030](docs/BUGS.md) is what naming an unmeasured one costs |
+| 🔴 **Two gates assert *workers consuming* and NEITHER measures a worker** | 📁 **[B-1040](docs/BUGS.md)** — `smoke.sh` stage 12 prints `pass "workers consuming without error"` and tests only the *without error* half; **a worker on a queue nothing publishes to consumes nothing, logs nothing, and passes.** ⛔ **`disaster-recovery.sh` is worse**: `pass "workers resumed consuming"` checks `outbox_event WHERE relayed_at IS NULL == 0`, **which is the RELAY.** ⚠️ **That very line carries a [B-1024](docs/BUGS.md) comment from a previous vacuity fix — somebody read it closely and did not notice the subject was wrong.** ⚡ **Found while asking why [B-1039](docs/BUGS.md) survived 227 certification runs** |
+| ⛔ **The runbook's own reversibility step cannot be run as written** | 📁 **[B-1041](docs/BUGS.md)** — [`REPOSITORY_RELEASE_CHECKLIST.md`](docs/REPOSITORY_RELEASE_CHECKLIST.md)'s snippet omits `SIGNORA_TEST_ADMIN_DATABASE_URL`, which `make certify` sets from the lane's allocation. ✅ **[B-1028](docs/BUGS.md)'s refusal fired and was RIGHT** — it declined to default to `5432`, human review's port, and named the variable, the slot and the row |
 | **Cycle 252 gates** | ⚡ **EIGHT required, all recorded, FIRST attempt** — `pytest` **5435** *(+3)* · coverage **95.03%** · **679** security invariants *(+3)* · `mypy` strict over **956** files *(+1)* · `import-linter` **37/37** · `tsc` clean · `frontend-suite` **3467 in 199 files** *(+37)* · `eslint` clean · `smoke` **24 stages in 192s** · scenario **baseline@1, 208 assertions** |
 | 🔴 **The one genuine regression, and the eight gates cannot see it** | 📁 **[B-1035](docs/BUGS.md)** — `perception.spec.ts:75` measured **13 access tokens against a ceiling of 12.** ⚡ **The candidate adds `useQuery` on notifications with `refetchInterval: 30_000`** — one more authenticated read on every authenticated screen — **and the platform mints one access token per data request.** ⛔ **Lane A added one legitimate data read; the token-per-read cost is systemic and pre-existing, and their feature merely pushed it over the line.** ✅ **Promoted because the eight REQUIRED gates are the promotion decision and `main` already carried five red browser tests** — **holding this one to a standard the repository does not apply to itself would have been inventing a gate.** ⛔ **Filed, not blessed** |
 | ⚠️ **Twelve browser failures, and every one has a named owner** | **5 QE's own, and the fixes are on `lane-qe` DELIBERATELY not in this candidate** — 3 rate-limit ([B-1030](docs/BUGS.md)), `rail-band` ([B-1032](docs/BUGS.md)), `notification-journey` ([C-1535](docs/LANE_COORDINATION.md), the background tier is not wired) · **5 pre-existing on `main`** — `visual`×2, `layout-invariants`×2, `demo/golden-journey` · **1 flake** — `account-360-research:107`, passed on re-run, [B-1036](docs/BUGS.md) · **1 genuine regression** — [B-1035](docs/BUGS.md). ⛔ **A 13th `✘` marker is `home-a11y:432`, which carries `test.fail()`** — **Lane A's deliberate [B-289](docs/BUGS.md) holder, working as designed, and correctly NOT counted in the 12** |
@@ -70,7 +76,7 @@
 
 > ⚠️ **`Load more` was replaced rather than kept, and that is the standard being applied rather than a preference.** 📁 **The two are different products**: one accumulates the page under somebody scanning it and makes *"which page am I on"* unanswerable. ✅ **`Previous`/`Next` over the existing keyset cursor, with a page number and NO denominator** — **keyset cannot know how many pages exist without reading them, and a total would be fabricated.**
 
-**Repository health:** **5435 backend tests** · ⚠️ **95.03% coverage** *(floor 95 — **3 basis points**)* · **3467 frontend tests** across **199 files** · **679 Security Invariants** · mypy strict over **956 files** · **66 migrations**, `0000`–`0066` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **192s** · **disaster recovery passing** · **20 module directories** · **59 ADRs** · **146 numbered architecture documents** · ⚡ **browser suite 423 enumerated, 407 passing, 0 unrun, 12 failures all attributed** — **measured 2026-08-19 from `7fae6e18`, every figure re-read rather than carried forward.**
+**Repository health:** **5435 backend tests** · ⚠️ **95.03% coverage** *(floor 95 — **3 basis points**)* · **3518 frontend tests** across **202 files** · **679 Security Invariants** · mypy strict over **956 files** · **66 migrations**, `0000`–`0066` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **228s** · **disaster recovery passing, 15 checks** · **20 module directories** · **59 ADRs** · **146 numbered architecture documents** · ⚡ **browser suite 434 enumerated, 416 passing, 0 unrun, 14 failures all attributed** — **measured 2026-08-19 from `8a8116d5`, every figure re-read rather than carried forward.**
 
 > ⚠️ **Two figures on that line were mislabelled rather than stale, and the distinction matters because only one of them is a measurement error.** ⛔ **It read *"60 ADRs"* — `ls adr/*.md`, which counts `README.md`** — **and *"148 numbered architecture documents"*, which counted `ARCHITECTURE_VALIDATION_M1_2.md` and `provider-qualification.md`, neither of them numbered. ✅ **59 and 146 are what the words claim.** ⚡ **The number was right for a question nobody asked** — the same shape as everything else this week, and the reason to re-derive a figure rather than re-read it.
 
@@ -88,17 +94,21 @@
 
 | | **Lane A** | **Lane B** | **Lane C** | **QE** |
 |---|---|---|---|---|
-| **Last promoted** | ✅ **[`TASK-495`](docs/BACKLOG.md) — the notification bell a customer can open**, cycle 252 | — | — | **Cycle 252** |
-| **Execution phase** | ✅ **Building** — [`TASK-1484`](docs/BACKLOG.md) claimed and already `IN VALIDATION` on its own branch | ⛔ **Retired 2026-08-18, product owner** | ⛔ **Retired 2026-08-18, product owner** | **Certified · Promoted · Closed out** |
-| **Branch** | ⚠️ **`lane-a-product-surface-r2` — 11 ahead of `main`**, the next candidate | **stale pointer** — content promoted | **stale pointer** — content promoted | **`lane-qe` — 15 ahead**, six instrument fixes awaiting a cycle |
-| **Validation status** | ✅ **`TASK-495` promoted this cycle** · ⚠️ **`TASK-1484` awaiting cycle 253** | — | — | — |
+| **Last promoted** | ✅ **[`TASK-1484`](docs/BACKLOG.md) — the top bar against the design**, cycle 253 | — | — | **Cycle 253** |
+| **Execution phase** | ✅ **Building** — its next claim is its own to make | ⛔ **Retired 2026-08-18, product owner** | ⛔ **Retired 2026-08-18, product owner** | **Certified · Promoted · Closed out** |
+| **Branch** | ✅ **`lane-a-product-surface-r2` — promoted, level with `main`** | **stale pointer** — content promoted | **stale pointer** — content promoted | 🔴 **`lane-qe` — 18 ahead**, and the fixes have now been held for THREE cycles |
+| **Validation status** | ✅ **`TASK-1484` promoted this cycle** | — | — | — |
 | **Blocked?** | **No** | — | — | **No** |
-| **Waiting on QE?** | ⚠️ **Yes — 11 commits** | — | — | — |
-| **Next executable work** | ⚡ **Its queue** | — | — | ⚡ **Cycle 253** — Lane A's `10c671d4` |
+| **Waiting on QE?** | ✅ **No — nothing outstanding** | — | — | — |
+| **Next executable work** | ⚡ **Its queue** | — | — | 🔴 **Cycle 254 SHOULD BE `lane-qe`** — see below |
 
 > ⛔ **Two lanes, not four** ([`BUGS.md`](docs/BUGS.md), 2026-08-18): **Lane A implements everything; QE certifies and promotes.** ⚠️ **Rows naming Lane B or Lane C record who filed or held something; they do not route work.**
 
-> ⚠️ **QE's own branch is 15 commits ahead and has been through two cycles without being certified.** ⛔ **That is deliberate and it is also a cost**: a candidate is frozen at snapshot, so QE's instrument fixes cannot enter the tree QE is measuring — **and five of this cycle's twelve browser failures are fixed on `lane-qe` already.** ✅ **Named here so it is a decision rather than a drift.**
+> 🔴 **QE's own branch is now 18 commits ahead and has passed through THREE cycles uncertified. That is no longer a decision; it is becoming a habit, and it is named here as one.**
+>
+> ⛔ **Six QE instrument defects are now held on the same reasoning** — [B-1034](docs/BUGS.md) · [B-1037](docs/BUGS.md) · [B-1038](docs/BUGS.md) · [B-1039](docs/BUGS.md) · [B-1040](docs/BUGS.md) · [B-1041](docs/BUGS.md) — **and *not while a candidate is mid-cycle* is correct once and an excuse when it repeats.** ⚡ **Six of this cycle's fourteen browser failures are already fixed on `lane-qe`.**
+>
+> ✅ **QE's stated intent: `lane-qe` is cycle 254's candidate**, ahead of further feature work, unless the product owner directs otherwise. ⛔ **The independent-review property is ABSENT for every one of these rows** — QE is the only lane that may write certification infrastructure and the only lane that may certify it — **as in 247, 249, 250 and 252. Reported rather than resolved, again.**
 
 ---
 
@@ -146,6 +156,55 @@
 | **28 others** | various | mixed | — | See the register |
 
 **37 items · 5 closed.** ⚠️ **Four items have now waited five cycles or more, and every one of them needs the same person.** [C-024](docs/LANE_COORDINATION.md) is the sharpest: Timeline's backend was proven live this cycle by `runtime-composition`, so **ten lines of routing separate a working capability from a customer.**
+
+---
+
+## 1d · Release summary — 2026-08-19, cycle 253
+
+### Cycle 253 — the top bar against the design, and three failures that were not defects
+
+**Promoted `8a8116d5`. 10 commits, Lane A. No migrations. ONE certification attempt.**
+
+### ✅ What a customer can now do
+
+**Find things from the top bar the way the design draws it** — the search field takes the room it is given and gives it back, the command palette shows the design's groups in the design's order, the status pill expands into its services, and the shell holds its shape at every width between a handset and a desktop rather than at the three it was tested at.
+
+### ⚠️ Three failures, three retractions, and the retraction is the record
+
+**`connections:32` (`@smoke`) · `search-journey:18` (`@journey`) · `top-bar-search:26`** failed in the full run. ⛔ **QE reported all three to Lane A as possible defects — including asking whether `top-bar-search`, TASK-1484's own acceptance spec, was a complete slice.**
+
+**Re-run in isolation against the identical tree and stack: `13 passed (19.3s)`.**
+
+| | full run | alone |
+|---|---|---|
+| `connections:32` | **20s — timeout** | 899ms |
+| `search-journey:18` | **1.0m** | 1.9s |
+| `top-bar-search:26` | **16.0s** | 1.4s |
+
+⚡ **A 10–40× slowdown on identical code is starvation, not a defect**, and `top-bar-search:26` passes against the implementation shipped beside it. ✅ **No mechanism is named** — 📁 [B-1030](docs/BUGS.md) is what naming an unmeasured one costs, and [B-1036](docs/BUGS.md) now records the class with its timings rather than a cause.
+
+> ⛔ **The first report is in the record because the retraction is.** **A lane that is told its slice may be broken, and then told it is not, is owed both halves in writing.**
+
+### 🔴 Two gates assert *workers consuming*, and neither measures a worker
+
+**Found by asking why [B-1039](docs/BUGS.md) survived 227 certification runs.** 📁 **[B-1040](docs/BUGS.md)**:
+
+```bash
+smoke.sh   pass "workers consuming without error"    ← tests only "without error"
+dr.sh      pass "workers resumed consuming"          ← tests relayed_at, i.e. the RELAY
+```
+
+⛔ **A worker bound to a queue nothing publishes to consumes nothing, logs nothing, and passes both.** ⚠️ **The `dr.sh` line carries a [B-1024](docs/BUGS.md) comment from a previous vacuity repair — somebody read it closely and did not notice the subject was wrong.**
+
+✅ **The relay halves are genuinely good and are kept**: bounded deadline on `relayed_at` reaching zero, `PUBLISHED == RELAYED`, per-entity causal ordering. ⛔ **Nothing after `relayed_at` is asserted anywhere**, and stages 14b–14k only look like they cover it — **every one runs `uv run pytest tests/…` straight against the database and never enqueues.** ⚡ **The async dispatch path is asserted end to end by nothing.**
+
+### ⛔ And the runbook's own reversibility step cannot be run as written
+
+📁 **[B-1041](docs/BUGS.md).** ✅ **[B-1028](docs/BUGS.md)'s refusal fired and was RIGHT** — it declined to default to `5432`, human review's port, and named the variable, the slot and the row. ⚠️ **`make certify` sets `SIGNORA_TEST_ADMIN_DATABASE_URL` from the lane's allocation; the checklist's standalone snippet does not.** ⚡ **Reversibility passed `head → base → head` once the variable was supplied from `environments.py`.**
+
+### 🔴 Six QE instrument defects are now held on one reasoning, and that is the finding
+
+**[B-1034](docs/BUGS.md) · [B-1037](docs/BUGS.md) · [B-1038](docs/BUGS.md) · [B-1039](docs/BUGS.md) · [B-1040](docs/BUGS.md) · [B-1041](docs/BUGS.md)** are all deferred as *"not while a candidate is mid-cycle"*. ⚡ **Correct once. An excuse when it repeats.** ✅ **QE's stated intent: `lane-qe` is cycle 254's candidate** — **18 commits, and six of this cycle's fourteen browser failures are already fixed there.**
 
 ---
 

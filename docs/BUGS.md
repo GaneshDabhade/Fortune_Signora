@@ -858,6 +858,49 @@ BLOCKED — the development database is not reachable
 
 > ⚠️ **Rows [B-1029](#b-1029)–[B-1033](#b-1033) are referenced below and their headings are NOT in this file yet.** ⛔ **They are QE's, they are on `lane-qe`, and they arrive on `main` when that branch is certified.** ✅ **Named here rather than left as five silent dead anchors** — 📁 [§2](../CLAUDE.md), *the repository itself should always tell the truth.* ⚠️ **`main` already carried one such reference before these rows were added.**
 
+### B-1041 · 🟠 The release checklist's migration-reversibility step cannot be run as written
+
+| | |
+|---|---|
+| **Module** | [`docs/REPOSITORY_RELEASE_CHECKLIST.md`](REPOSITORY_RELEASE_CHECKLIST.md) — **QE's runbook, and QE's to fix** |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — ⛔ **a documented gate step that stops the operator every cycle** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-19 by QE**, cycle 253, running the step exactly as the checklist gives it |
+
+**Steps.** Copy the block under *"Migration reversibility — to base and back"* and run it.
+
+**Actual:**
+
+```
+RuntimeError: SIGNORA_TEST_ADMIN_DATABASE_URL is not set, so there is no server
+to create a disposable database on. It has NO default: `localhost:5432` is
+slot 0 — human review's — and defaulting to it is B-1028.
+```
+
+**Expected.** A runbook step that runs.
+
+### ✅ The refusal is RIGHT, and it is not the defect
+
+📁 **This is [B-1028](#b-1028)'s fix working exactly as designed** — `database.py:95` declines to guess, and names the variable, the slot and the row that made it refuse. ⚡ **A diagnostic that good is what the repository should produce.**
+
+⛔ **The defect is that the runbook never supplies the variable.** 📁 The error message says it itself: *"`make certify` and `make test` both set this from the lane's own allocation"* — **and the checklist's snippet is neither.** ⚠️ **It inherited an environment that only existed inside a `make` target.**
+
+### The fix
+
+**Derive it in the snippet, from the one authority for it:**
+
+```bash
+export $(python3 ../infra/environments.py --exports | grep -v '^#' | xargs)
+export SIGNORA_TEST_ADMIN_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:${SIGNORA_POSTGRES_PORT}/signora"
+```
+
+⛔ **Not a hardcoded port** — 📁 that is [B-1003](#b-1003) and [B-1028](#b-1028), twice. ⚠️ **And [B-1034](#b-1034) still applies to whichever branch this runs from.**
+
+✅ **Reversibility itself PASSED once the variable was supplied**: `head → base → head` on a disposable database, cycle 253.
+
+---
+
 ### B-1034 · 🟠 Certification on a non-lane branch aims its disposable database at port 5432, which is human review's
 
 | | |
@@ -956,7 +999,7 @@ the accounts list
 
 ---
 
-### B-1036 · 🟡 `account-360-research:107` fails alone and passes on re-run, with no change to the tree
+### B-1036 · 🟡 Specs that fail in the full run and pass in isolation, with no change to the tree
 
 | | |
 |---|---|
@@ -969,6 +1012,28 @@ the accounts list
 **Steps.** Run the browser suite. **Actual:** `account-360-research.spec.ts:107` failed in the full run and **passed on an immediate re-run against the identical tree.**
 
 ⚠️ **Recorded as an OBSERVED flake and nothing more.** ⛔ **QE has not established a mechanism**, and naming one it has not measured is what [B-1030](#b-1030) cost: that row recorded rate limiting as *disconfirmed* on one clean run, and rate limiting was the cause.
+
+### ⚡ 2026-08-19, cycle 253 — three more, and this time the timings were measured
+
+**`connections:32` (`@smoke`) · `search-journey:18` (`@journey`) · `top-bar-search:26`** all failed in the full browser run and **all three passed in isolation**, against the identical tree and the identical stack: **`13 passed (19.3s)`**.
+
+| Spec | In the full run | Alone |
+|---|---|---|
+| `connections.spec.ts:32` | **20s — the timeout** | **899ms** |
+| `search-journey.spec.ts:18` | **1.0m** | **1.9s** |
+| `top-bar-search.spec.ts:26` | **16.0s** | **1.4s** |
+
+⚡ **A 10–40× slowdown on identical code is starvation, and the durations are the only part of this that is measured.**
+
+⛔ **No mechanism is named, deliberately.** ⚠️ **Recorded as unproven context and nothing more**: another lane's session held an API, a relay and four `arq` workers on the same machine while this suite ran, and a certification run had released the CPU minutes earlier. **That is a coincidence in time, not a cause**, and this row has already been burned once for naming one it had not measured.
+
+### ⚠️ What it cost, which is the reason the row is broadened rather than duplicated
+
+⛔ **QE reported all three to the implementing lane as possible defects — including asking whether `top-bar-search.spec.ts`, that slice's OWN acceptance spec, was complete.** ✅ **It was, and its own spec passes against its own implementation.** ⚡ **The retraction is in the record because the report was.**
+
+### ⛔ Why this is one row and not four
+
+📁 **The product owner's standing instruction: *"Do not create duplicate tasks."*** ⚡ **`account-360-research:107` and these three are one phenomenon — a spec that passes alone and fails under load — and four rows would have made it look like four problems and one of them look solved when `account-360-research` next goes green.**
 
 ✅ **What would settle it** is `--repeat-each` under the same concurrency the full run uses — **a flake that only appears under load is a statement about load, not about the test**, and a repeat run in isolation can report green for the wrong reason.
 

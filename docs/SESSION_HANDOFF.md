@@ -1,5 +1,25 @@
 # Session Handoff
 
+> ## Cycle 253 — promoted `8a8116d5`, 2026-08-19 · **the top bar against the design, and three failures that were not defects**
+>
+> **`main` = `8a8116d5` = the certified commit.** `pytest` **5435** · coverage **95.03%** · **679 Security Invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · `frontend-suite` **3518/202** · `eslint` · `smoke` 24/228s · **DR passed, 15 checks** · **reversible `head → base → head`** · head **`0066`**. **10 commits, Lane A. ONE attempt.**
+>
+> ⛔ **Five things the next session must not misread.**
+>
+> ⓐ ⚠️ **[B-1036](BUGS.md): three specs failed the full run and passed in isolation** — `connections:32`, `search-journey:18`, `top-bar-search:26`, **`13 passed (19.3s)` alone.** ⚡ **`20s · 1.0m · 16.0s` under load against `899ms · 1.9s · 1.4s` alone — a 10–40× slowdown on identical code.** ⛔ **Do not name a mechanism.** **QE reported all three to Lane A as possible defects, including asking whether TASK-1484's own acceptance spec was a complete slice. It was.** ✅ **Re-run a browser failure in isolation BEFORE reporting it.**
+>
+> ⓑ 🔴 **[B-1040](BUGS.md): `smoke.sh` AND `disaster-recovery.sh` both assert *workers consuming*, and neither measures a worker.** `smoke` tests only *without error*; **`dr` checks `outbox_event WHERE relayed_at IS NULL == 0`, which is the RELAY.** ⛔ **Stages 14b–14k do NOT cover the gap — every one runs `uv run pytest tests/…` straight against the database and never enqueues.** ⚡ **The async dispatch path is asserted end to end by nothing**, which is how [B-1039](BUGS.md) survived 227 runs.
+>
+> ⓒ ⛔ **[B-1041](BUGS.md): the release checklist's reversibility snippet cannot be run as written** — it omits `SIGNORA_TEST_ADMIN_DATABASE_URL`, which only ever existed inside a `make` target. ✅ **Supply it from `infra/environments.py --exports`, never a hardcoded port** ([B-1003](BUGS.md), [B-1028](BUGS.md)).
+>
+> ⓓ ✅ **Name the certification working branch `lane-qe-cycleNNN`.** ⚡ **`environments.py` matches `lane-qe-`, so it derives port 5632 with NO `SIGNORA_ENVIRONMENT` override.** ⛔ **`qe-cycleNNN` matches nothing and falls back to 5432 — human review's** ([B-1034](BUGS.md)). ⚠️ **And do NOT set `SIGNORA_ENVIRONMENT` to work around it: `frontend/lib/auth/config.ts` reads the same variable to mean *which deployment is this*, and setting it fails nine frontend tests.**
+>
+> ⓔ 🔴 **Six QE instrument defects are held on one reasoning** — [B-1034](BUGS.md) · [B-1037](BUGS.md) · [B-1038](BUGS.md) · [B-1039](BUGS.md) · [B-1040](BUGS.md) · [B-1041](BUGS.md), all *"not while a candidate is mid-cycle"*. ⚡ **Correct once; an excuse when it repeats.** ✅ **`lane-qe` is 18 commits ahead and is QE's stated candidate for cycle 254.**
+>
+> **Open and NOT mine:** [B-1035](BUGS.md) — ⚡ **the mechanism is measured now: `frontend/lib/api/client.ts` calls `fetchAccessToken()` on EVERY request, and that is itself a `POST /api/token`. No cache, no expiry check. One data read is two HTTP requests** · [B-1033](BUGS.md) · [B-289](BUGS.md) · [B-283](BUGS.md)'s remainder.
+>
+> **Next candidate:** ⚡ **`lane-qe` at `e0c98ec8`+, unless the product owner directs otherwise.** ✅ **Lane A is level with `main` and holds nothing outstanding.**
+
 > ## Cycle 252 — promoted `7fae6e18`, 2026-08-19 · **the notification bell reaches a customer, and the browser gate finds what eight gates cannot**
 >
 > **`main` = `7fae6e18` = the certified commit.** `pytest` **5435** · coverage **95.03%** · **679 Security Invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · `frontend-suite` **3467/199** · `eslint` · `smoke` 24/192s · **DR passed, 679 invariants** · head **`0066`**. **8 commits, Lane A. ONE attempt.**
