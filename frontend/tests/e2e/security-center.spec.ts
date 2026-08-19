@@ -33,6 +33,7 @@
 import { createHmac } from 'node:crypto';
 
 import { expect, test } from './fixtures/signora';
+import { newestLinkFor } from './pages/mailbox';
 
 /** ⚡ **A fresh identity per run** — registration is not idempotent. */
 function newcomer(): { email: string; password: string } {
@@ -40,14 +41,6 @@ function newcomer(): { email: string; password: string } {
   return { email: `e2e.security.${stamp}@signora.test`, password: 'Correct-Horse-Battery-7!' };
 }
 
-async function newestLinkFor(page: import('@playwright/test').Page, email: string) {
-  await page.goto('/dev/mailbox');
-  const row = page.locator('li, article, tr').filter({ hasText: email }).first();
-  await expect(row, 'nothing was delivered to this address').toBeVisible();
-  const href = await row.getByRole('link').first().getAttribute('href');
-  expect(href, 'the delivered email carried no link').toBeTruthy();
-  return href as string;
-}
 
 async function registerAndVerify(
   page: import('@playwright/test').Page,

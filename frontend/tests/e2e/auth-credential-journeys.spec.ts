@@ -34,6 +34,7 @@
  */
 
 import { expect, test } from './fixtures/signora';
+import { newestLinkFor } from './pages/mailbox';
 
 /** ⚡ **A fresh identity per run**, because registration is not idempotent and
  * a suite that reuses an address tests the second attempt rather than the
@@ -50,16 +51,6 @@ function newcomer(): { email: string; password: string } {
  * is the surface a developer actually has — **a test with a private read is a
  * test of something the product does not offer.**
  */
-async function newestLinkFor(page: import('@playwright/test').Page, email: string) {
-  await page.goto('/dev/mailbox');
-  // ⚠️ **The mailbox is newest-first**, which its own store documents, so the
-  // first row mentioning this address is the one just sent.
-  const row = page.locator('li, article, tr').filter({ hasText: email }).first();
-  await expect(row, 'nothing was delivered to this address').toBeVisible();
-  const href = await row.getByRole('link').first().getAttribute('href');
-  expect(href, 'the delivered email carried no link').toBeTruthy();
-  return href as string;
-}
 
 
 /**

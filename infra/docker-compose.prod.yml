@@ -191,6 +191,19 @@ services:
       # this tier's credential is equally narrow.
       SIGNORA_AUTH_DATABASE_URL: postgresql://signora_auth:signora_auth_local_dev@postgres:5432/signora
       SIGNORA_AUTH_SCHEMA: auth
+      # ⛔ **`console` is the default and stays the default** — this is a
+      # pass-through, so nothing about `make smoke` or `make dr` changes.
+      #
+      # 🔴 **[B-1026](../docs/BUGS.md).** The variable was not passed at all, so
+      # `/dev/mailbox` 404d and six browser journeys across two specs failed
+      # saying *"nothing was delivered to this address"* — true, and naming the
+      # wrong cause. **Those journeys register a real person through `/register`
+      # and verify through the mailbox, which is the only door
+      # [§20e](../CLAUDE.md)'s test-data rule permits.**
+      #
+      # ⚡ **Set `SIGNORA_AUTH_EMAIL_TRANSPORT=mailbox` when running the browser
+      # gate.** A production deployment leaves it alone and gets `console`.
+      SIGNORA_AUTH_EMAIL_TRANSPORT: ${SIGNORA_AUTH_EMAIL_TRANSPORT:-console}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-local-prod-stack-secret}
       SIGNORA_JWT_ISSUER: http://localhost:3100
       SIGNORA_JWT_AUDIENCE: signora-api

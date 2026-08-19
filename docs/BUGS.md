@@ -348,6 +348,47 @@ run 5: 0 failed                     20 passed
 
 ⛔ **This spec was the intended control for the browser gate.** 📁 **Lane A: *"a control that is clean on one stack and not another is not a control"*** — **and the sharper form this row proves: it is not clean on the SAME stack twice.** **A gate whose control is intermittent cannot distinguish a regression from a re-run.**
 
+### B-1026 · 🟠 Six browser journeys said the product sent no email, when the product had nowhere to send one
+
+| | |
+|---|---|
+| **Module** | `infra/docker-compose.prod.yml` + `frontend/tests/e2e/` — **a QE gate and a QE suite** |
+| **Current assignee** | **QE.** 📁 [§20e](../CLAUDE.md) names *the compose files* among the gates QE fixes itself, and the browser suite is QE's |
+| **Severity** | 🟠 — ⛔ **a failure that names the wrong cause, in the gate the certification standard requires** |
+| **Status** | ✅ **`FIXED`** by QE, 2026-08-19. ⛔ **NOT `VERIFIED`** — QE wrote it |
+| **Found** | **2026-08-19 by QE**, attributing what [B-1017](#b-1017)'s fix left behind |
+
+**Steps to reproduce.** Bring up the prod-local stack and run the browser suite. **Six tests fail** — four in `security-center.spec.ts`, two in `auth-credential-journeys.spec.ts`:
+
+```
+Error: nothing was delivered to this address
+Locator: locator('li, article, tr').filter({ hasText: 'e2e.security.1787122195433814@signora.test' })
+```
+
+**Expected.** A journey that registers a person reads their verification link out of the developer's mailbox.
+
+**Actual.** **`/dev/mailbox` 404s**, because `SIGNORA_AUTH_EMAIL_TRANSPORT` was **not passed to the frontend container at all** and `frontend/lib/auth/config.ts:212` defaults it to `console` — which prints and keeps nothing.
+
+### ⛔ The message was true and named the wrong thing
+
+**Nothing *was* delivered to that address.** ⚡ **And a reader takes it as *the product failed to send*, when the product had never been given anywhere to send.** 📁 **Exactly the cost Lane A named an hour earlier in [B-287](#b-287)**: *"it cost a diagnosis to establish that a red line was a port allocation rather than a defect in the slice."*
+
+⚠️ **`auth-journey.spec.ts` already guarded this and the other two did not** — `test.skip(probe?.status() === 404, 'requires SIGNORA_AUTH_EMAIL_TRANSPORT=mailbox')`. ⛔ **But a skip is not the fix for these two**: they use the mailbox as the **door to register a real person**, which is the only door [§20e](../CLAUDE.md)'s test-data rule permits — so skipping them would drop real coverage silently.
+
+### ✅ The fix — pass it through, and make the failure name itself
+
+📁 **`docker-compose.prod.yml`: `SIGNORA_AUTH_EMAIL_TRANSPORT: ${SIGNORA_AUTH_EMAIL_TRANSPORT:-console}`.** ⚡ **`console` stays the default, so nothing about `make smoke` or `make dr` changes** — it is a pass-through, and a production deployment that sets nothing gets what it got before.
+
+📁 **`frontend/tests/e2e/pages/mailbox.ts`** — `newestLinkFor` now probes for a `404` first and throws a message naming the variable, the default, and this row.
+
+⚡ **And it is now ONE copy.** **The helper was duplicated verbatim in both specs**, so the diagnostic would have had to be added twice — which is how two copies of one behaviour begin to disagree ([§2](../CLAUDE.md)).
+
+**Measured**: `/dev/mailbox` **→ 200**, and the six became **three**.
+
+### ⚠️ Four auth failures remain and are NOT this row
+
+**Stable across a parallel run and a `--workers=1` run, so not contention**: `auth-credential-journeys.spec.ts:80` *(registration does not say what happens next)* · `:131` *(forgot-password times out at 60s)* · `security-center.spec.ts:155` *(sign-out-everywhere ends the current session too, and the journey says it must not)* · one varying failure in `auth-journey.spec.ts`. ⛔ **Unattributed, and claimed as nothing.**
+
 ### B-287 · 🟠 A test held `redis://localhost:6379/0` as a literal — slot 0's, which is human review's
 
 | | |

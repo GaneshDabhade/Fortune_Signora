@@ -227,9 +227,9 @@ cd frontend && npm run dev
 
 ## Signing in — the demo accounts
 
-**Four accounts, created through Better Auth's own sign-up and verification routes.** Not a bypass and not a fixture: each was registered by the same handler the browser's form reaches, with a password Better Auth hashed and a verification token Better Auth minted. **They simply already exist.**
+**Five accounts, created through Better Auth's own sign-up and verification routes.** Not a bypass and not a fixture: each was registered by the same handler the browser's form reaches, with a password Better Auth hashed and a verification token Better Auth minted. **They simply already exist.**
 
-**Password for all four: `signora-demo-password`**
+**Password for all five: `signora-demo-password`**
 
 | Email | Persona | Role | What they can do |
 |---|---|---|---|
@@ -237,8 +237,11 @@ cd frontend && npm run dev
 | `marcus.hale@northwind.example` | Sales Manager | member | Read and work accounts; **no Settings** |
 | `priya.nair@northwind.example` | Account Executive | member | Read and work accounts |
 | `sam.okafor@northwind.example` | Sales Development | member | Read and work accounts |
+| `quinn.alvarez@northwind.example` | Revenue Operations | **owner** | ⚠️ **Reserved for the browser suite — sign in as Dana instead** |
 
-All four belong to the **Playground** organization and see the same twelve accounts. Sign in as two of them in different browsers to see an account *held by someone else* after one takes it on.
+> ⚠️ **Quinn is a second owner and exists for one reason: the browser suite** ([B-1017](BUGS.md)). **Two journeys — organization setup and onboarding — create an organization and leave it**, because the product offers no delete. Run on Dana, that growth made her a member of four organizations, `/` resolved to the organization chooser, and **36 of 392 browser tests failed about nothing**. **Quinn's memberships are allowed to grow; nothing else depends on them.** ⛔ **Do not review the product as Quinn** — the organizations she accumulates are test residue.
+
+All five belong to the **Playground** organization and see the same twelve accounts. Sign in as two of them in different browsers to see an account *held by someone else* after one takes it on.
 
 > **The screen says *organization*; the API says `workspace`.** One concept, two vocabularies, and the split is deliberate ([ADR-0034](architecture/adr/0034-ubiquitous-language.md)): a customer's company on Signora, and the tenancy boundary that isolates it. The translation happens in `frontend/` and never travels inward — every path below, the `workspace_id` column, the RLS scope and the JWT claim all keep the internal name, because *workspace* is precise about isolation in a way *organization* is not.
 
@@ -411,6 +414,16 @@ Set `SIGNORA_API_URL` and `BETTER_AUTH_URL` to that lane's ports in its `fronten
 ---
 
 ## Environment variables
+
+### ⚡ The browser gate needs the developer's mailbox
+
+**`SIGNORA_AUTH_EMAIL_TRANSPORT` defaults to `console`, which prints and keeps nothing**, so `/dev/mailbox` 404s and every journey that registers a real person fails.
+
+```bash
+SIGNORA_AUTH_EMAIL_TRANSPORT=mailbox make up
+```
+
+⛔ **`console` remains the default and production is unaffected** — the compose file passes the variable through rather than setting it. 📁 **[B-1026](BUGS.md)**: without it, six journeys reported *"nothing was delivered to this address"* — **true, and naming the wrong cause.**
 
 **Backend** — every one is required; none has a default that would be safe in production.
 
