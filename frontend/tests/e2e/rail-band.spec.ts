@@ -51,6 +51,51 @@ test.describe('the band decides the rail below 1280, and the person decides abov
     expect(await railWidth(page)).toBe(COLLAPSED);
   });
 
+  /**
+   * 🔴 **"However it was left" — and until now nothing had left it anything.**
+   *
+   * ⚠️ **The test above runs on a profile with no stored preference**, so it
+   * asserted that a rail nobody had touched was collapsed. ⛔ **That is the
+   * default, not the override**, and the override is the whole claim: 📁 the
+   * band decides *below* 1280 regardless of what the person chose above it.
+   *
+   * ⚡ **So this leaves it expanded the way a person does** — the control at
+   * 1280, which the last test in this file proves is there — **and then crosses
+   * the band.** ⛔ No `localStorage` poke: the preference is written by the
+   * product, under whatever key the product uses, which is the only version of
+   * this that cannot drift from it.
+   *
+   * ⚠️ **Where this came from, and it is worth keeping.** On 2026-08-19 QE
+   * measured `232` here on `main`, three isolated runs on a rebuilt
+   * environment; Lane A measured `56`, three runs, on a tree whose only shell
+   * change is a shortcut-registry entry. ⛔ **Both were reading a test that
+   * never stored a preference** — so both were measuring the default and
+   * neither was measuring the override, and **nothing in the assertion could
+   * have told them apart.** ✅ This one can.
+   */
+  test('🔴 and it is collapsed even when the person left it OPEN above the band', async ({
+    page,
+  }) => {
+    // Above the band, where the choice is the person's.
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/');
+    await expect(page.getByRole('navigation', { name: 'Primary' })).toBeVisible();
+
+    // ⚡ **Make sure it is genuinely OPEN before crossing** — the control is a
+    // toggle, so acting without checking could close it and prove nothing.
+    if (await page.getByRole('button', { name: 'Expand navigation' }).isVisible()) {
+      await page.getByRole('button', { name: 'Expand navigation' }).click();
+    }
+    await expect(page.getByRole('button', { name: 'Collapse navigation' })).toBeVisible();
+    expect(await railWidth(page), 'the rail was not left open above the band').toBe(EXPANDED);
+
+    // Cross the band. Same session, same stored preference.
+    await page.setViewportSize({ width: 1279, height: 900 });
+    await page.goto('/');
+
+    expect(await railWidth(page)).toBe(COLLAPSED);
+  });
+
   test('🔴 at 1280 the rail is the person’s to decide', async ({ page }) => {
     /**
      * ⚡ **The other side, and it is what stops the fix from over-reaching.**
