@@ -1,5 +1,29 @@
 # Session Handoff
 
+> ## Cycle 252 — promoted `7fae6e18`, 2026-08-19 · **the notification bell reaches a customer, and the browser gate finds what eight gates cannot**
+>
+> **`main` = `7fae6e18` = the certified commit.** `pytest` **5435** · coverage **95.03%** · **679 Security Invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · `frontend-suite` **3467/199** · `eslint` · `smoke` 24/192s · **DR passed, 679 invariants** · head **`0066`**. **8 commits, Lane A. ONE attempt.**
+>
+> ⛔ **Five things the next session must not misread.**
+>
+> ⓐ 🔴 **[B-1035](BUGS.md): 13 access tokens for one page against a deliberate ceiling of 12.** ⚡ **One access token is minted PER DATA REQUEST** — an RS256 signature each, for a token valid for minutes — **and `TASK-495`'s notification `useQuery` (`refetchInterval: 30_000`) is on every authenticated screen.** ⛔ **The ceiling was NOT raised.** 📁 The test states its own purpose: *"set to catch a regression rather than to bless the current number."* ⚠️ **Promoted anyway, and the reasoning is published**: the eight REQUIRED gates are the promotion decision, all eight passed, and `main` already carried five red browser tests. **Holding this candidate to a standard the repository does not apply to itself would have been QE inventing a gate.**
+>
+> ⓑ ⚠️ **Twelve browser failures, and `12` is right where `13` looks right.** **The output carries 13 `✘` markers; `home-a11y:432` carries `test.fail()`** — Lane A's deliberate [B-289](BUGS.md) holder, **passing by failing.** ⛔ **QE counted markers first and was corrected by the summary line.** **Count what the reporter totalled, not what it printed.**
+>
+> ⓒ 🔴 **[B-1034](BUGS.md): certification on a `qe-cycleNNN` branch derives NO environment, and `_exports()` then falls back to port 5432 — human review's.** ⚡ **This is [B-1028](BUGS.md) surviving its own fix**: that row removed the literal `5432` from `database.py`; **the derivation replacing it resolves to `5432` on exactly the branches certification runs from.** ✅ **Workaround: `SIGNORA_ENVIRONMENT=lane-qe`** — ⛔ **which `frontend/lib/auth/config.ts` also reads, where it means *"which deployment is this"*, and setting it failed nine frontend tests. One variable, two meanings.**
+>
+> ⓓ ⛔ **[B-1038](BUGS.md): a failed certification poisons the next attempt and blames the operator.** `append(run)` runs unconditionally, so a failed run dirties `certification/manifest.json`, and attempt two reports *"the working tree was dirty"*. ⚡ **The code comment already calls the required `git checkout -- certification/` a step; [`REPOSITORY_RELEASE_CHECKLIST.md`](REPOSITORY_RELEASE_CHECKLIST.md) does not mention it.** **Run it between attempts.**
+>
+> ⓔ ⚠️ **[B-1037](BUGS.md): `--audit-claims` reads LOCAL refs** and reported *"0 claim(s) awaiting promotion"* while one plainly was. ✅ **`--audit-main` gets it right in the same run and prints the note.** **`git fetch` before believing either.**
+>
+> **Open and mine:** [B-1034](BUGS.md) · [B-1037](BUGS.md) · [B-1038](BUGS.md) · [B-1036](BUGS.md) *(observed flake, no mechanism named — deliberately)* · [B-1032](BUGS.md) · [B-1031](BUGS.md) · [B-1030](BUGS.md) *(**cause established: rate limiting**, which that row had recorded as disconfirmed)* · [B-1027](BUGS.md) · [B-1015](BUGS.md). ⚡ **Six of these are FIXED on `lane-qe` and not yet certified** — **15 commits, and five of this cycle's twelve browser failures are already fixed there.**
+>
+> **Open and NOT mine:** [B-1035](BUGS.md) `frontend/lib/api` · [B-1033](BUGS.md) · [B-289](BUGS.md) · **[B-283](BUGS.md)'s remaining half — FROZEN frontend foundation (§20c), and who does it is not QE's to decide.**
+>
+> **Awaiting the product owner, blocking nothing:** [C-1535](LANE_COORDINATION.md) *(the background tier — relay + arq — is not started by anything in `infra/`, and `notification-journey.spec.ts` is the only spec that needs it)* · [C-1533](LANE_COORDINATION.md) · [C-1534](LANE_COORDINATION.md). ⚠️ **And `C-109` — raised by QE, on `lane-qe`, NOT yet on `main`**: the suite now waits out the product's rate limiter rather than being refused by it, and **whether the product should exempt a test origin instead is the product owner's.** ⛔ **Deliberately not linked: the anchor does not exist in this file's `main` copy, and a link to a row nobody can open is worse than a sentence.**
+>
+> **Next candidate:** ⚡ **`lane-a-product-surface-r2` at `10c671d4` — 11 commits, [TASK-1484](BACKLOG.md) `IN VALIDATION`.** ⚠️ **It arrived while this cycle was closing and was NOT chased** — a branch moving during certification is the normal case.
+
 > ## Cycle 251 — promoted `8ceff5d6`, 2026-08-19 · **Home, and a thirteen-day customer crash the browser gate is why anybody knows about**
 >
 > **`main` = `8ceff5d6` = the certified commit.** `pytest` **5432** · coverage **95.03%** · **676 Security Invariants** · `mypy` **955** · `import-linter` **37/37** · `tsc` · `frontend-suite` **3430/198** · `eslint` · `smoke` 24/166s · **DR passed** · head **`0066`**. **25 commits, Lane A. Two attempts.**

@@ -729,6 +729,188 @@ BLOCKED — the development database is not reachable
 
 **Measured**: `admin_dsn()` → `postgresql://signora:signora@localhost:5632/postgres` on `lane-qe`, and **unset raises a message naming the variable, slot 0 and this row.** ✅ **`tests/certification/` — 155 passed.**
 
+> ⚠️ **Rows [B-1029](#b-1029)–[B-1033](#b-1033) are referenced below and their headings are NOT in this file yet.** ⛔ **They are QE's, they are on `lane-qe`, and they arrive on `main` when that branch is certified.** ✅ **Named here rather than left as five silent dead anchors** — 📁 [§2](../CLAUDE.md), *the repository itself should always tell the truth.* ⚠️ **`main` already carried one such reference before these rows were added.**
+
+### B-1034 · 🟠 Certification on a non-lane branch aims its disposable database at port 5432, which is human review's
+
+| | |
+|---|---|
+| **Module** | `infra/environments.py` — **certification infrastructure**. 📁 [§20e](../CLAUDE.md) names it among the things that *"decide whether a gate passes"* |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — ⛔ **today it is a `ConnectionRefused`; on a workstation where human review is up it is a disposable database CREATED AND DROPPED on the reviewer's server** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-19 by QE**, opening cycle 252 against candidate `7fae6e18` |
+
+**Steps to reproduce.** Check out a certification cycle branch — `qe-cycle252`, which is what every cycle since 87 has used — and run `make certify`.
+
+```
+python3 infra/environments.py --exports
+→ # no environment derived (not on a lane branch) — historical shared stack
+→ SIGNORA_POSTGRES_PORT=5432
+
+make certify
+→ ConnectionRefusedError: [Errno 111] Connect call failed ('127.0.0.1', 5432)
+   backend/tests/certification/database.py:184, in disposable
+```
+
+**Expected.** A run that cannot determine which stack it owns refuses to pick one.
+
+**Actual.** `_exports()` falls back to `POSTGRES_BASE`, and 📁 **`POSTGRES_BASE` is `5432` — the port [`RUNNING.md`](RUNNING.md#running-a-lane) allocates to `review`/slot 0.**
+
+### ✅ `current()` is RIGHT, and the defect is one layer below it
+
+📁 Its docstring is explicit and correct: *"On `integration`, `main`, or a detached head, **this returns `None` rather than guessing.** A wrong guess here points a suite at another lane's database, which is the class of defect the whole change exists to end."*
+
+⛔ **`_exports()` then guesses anyway.** ⚡ **It prints a comment saying it is falling back — and a comment is not a refusal.** 📁 The product owner's standing rule: *"prefer operations that refuse unsafe states over operations that silently recover from them."*
+
+### 🔴 Two stacks are documented as owning one port
+
+| Stack | Port |
+|---|---|
+| `review` / slot 0 — **human review's, and `make smoke` binds it** | **5432** |
+| The *"historical shared stack"* this falls back to | **5432** |
+
+⚡ **So the fallback does not select a stack. It selects *whatever is listening on 5432*.** ⛔ **Which one that is depends on what somebody started this morning.**
+
+### ⚠️ Why every previous cycle passed
+
+📁 A container was up on 5432 and exited on a host restart ten hours before this cycle. **Every certification since the branch convention began has been creating its disposable database on the shared slot-0 server**, and nothing said so because it worked. ⚡ **This is [B-1028](#b-1028) surviving its own fix**: that row removed the *literal* `5432` from `database.py`; **the derivation it was replaced with resolves to `5432` on exactly the branches certification runs from.**
+
+### The workaround, which is the documented mechanism and not a fix
+
+**`SIGNORA_ENVIRONMENT=lane-qe make certify`.** 📁 `current()` names this exactly: *"explicit, and it wins. A lane driving a stack that is not its own must be able to say so out loud."* ⛔ **It has to be typed every time.**
+
+⚠️ **And it has a second cost that cost this cycle a run**: `SIGNORA_ENVIRONMENT` is read by `frontend/lib/auth/config.ts` too, where it means *"which deployment is this"* rather than *"which stack do I own"*. **Setting it to satisfy the database made the frontend believe it was deployed, and nine frontend tests failed.** 📁 **One variable, two meanings** — worth its own row if the fix below does not remove the need for it.
+
+### The fix, and it is deliberately not taken in this cycle
+
+**`_exports()` should refuse when no environment resolves** — printing a diagnostic that names `SIGNORA_ENVIRONMENT` and exiting non-zero — rather than emitting slot 0. ⛔ **Held because it changes what every Makefile target consuming `--exports` does**, and a gate's semantics are not something to change while a candidate is mid-certification.
+
+---
+
+### B-1035 · 🟠 Every authenticated screen mints one access token per data read, and the notification feed pushed it past the ceiling
+
+| | |
+|---|---|
+| **Module** | `frontend/lib/api` · `signora_platform/auth` — **the token-per-request path**. ⛔ **The regression that exposed it is `frontend/components/notifications`** |
+| **Current assignee** | **Lane A** |
+| **Severity** | 🟠 — **an RS256 signature per data request, on every screen a customer opens** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-19 by QE**, browser validation of cycle 252's candidate `7fae6e18` |
+
+**Steps to reproduce.** `npx playwright test perception.spec.ts` against `7fae6e18`.
+
+**Expected.** `perception.spec.ts:75` — at most **12** access-token mints for one page.
+
+**Actual.** **13.**
+
+```
+the accounts list
+   … 13 token mints, 11 data reads
+```
+
+### ⚡ What changed, and it is one legitimate line
+
+**[TASK-495](BACKLOG.md) adds `useQuery` on notifications with `refetchInterval: 30_000`.** **The bell is on every authenticated screen, so that is one more authenticated read everywhere** — ✅ **correct product behaviour, correctly built.**
+
+### 🔴 The defect is underneath it, and it is not Lane A's feature
+
+📁 The test says so in its own words: *"One access token is minted **per data request** — each an RS256 signature on the Next tier — for a token that is valid for minutes. **The target is one.**"*
+
+> ⚡ **Lane A did not make the repository slower per request. They added one request to a screen that was already one request away from a ceiling somebody set deliberately.**
+
+### ⛔ The ceiling was NOT raised, and that is the whole point of it
+
+📁 `perception.spec.ts`: *"the ceiling below is set to **catch a regression** rather than to bless the current number."* ✅ **It caught one.** ⛔ **Raising it to 13 would convert the one instrument that can see this cost into a record of whatever the cost happens to be** — which is [B-1000](#b-1000)'s family, one register over.
+
+### Why it was promoted rather than held
+
+⚡ **The eight REQUIRED gates are the promotion decision** ([ADR-0032](architecture/adr/0032-release-certification.md)), and all eight passed. ⛔ **`main` already carried five red browser tests before this candidate** — **holding this one to a standard the repository does not currently apply to itself would have been QE inventing a gate**, which is not QE's to do. ✅ **Filed, attributed and published in `PROJECT_STATUS.md` instead of blessed.**
+
+---
+
+### B-1036 · 🟡 `account-360-research:107` fails alone and passes on re-run, with no change to the tree
+
+| | |
+|---|---|
+| **Module** | `frontend/tests/e2e/account-360-research.spec.ts` |
+| **Current assignee** | **Lane A** |
+| **Severity** | 🟡 — **survivable, and it costs a diagnosis every time somebody meets it** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-19 by QE**, browser validation of `7fae6e18` |
+
+**Steps.** Run the browser suite. **Actual:** `account-360-research.spec.ts:107` failed in the full run and **passed on an immediate re-run against the identical tree.**
+
+⚠️ **Recorded as an OBSERVED flake and nothing more.** ⛔ **QE has not established a mechanism**, and naming one it has not measured is what [B-1030](#b-1030) cost: that row recorded rate limiting as *disconfirmed* on one clean run, and rate limiting was the cause.
+
+✅ **What would settle it** is `--repeat-each` under the same concurrency the full run uses — **a flake that only appears under load is a statement about load, not about the test**, and a repeat run in isolation can report green for the wrong reason.
+
+---
+
+### B-1037 · 🟡 `--audit-claims` reads local refs and reports "0 awaiting promotion" while one plainly is
+
+| | |
+|---|---|
+| **Module** | `infra/certification-guard.py` — **governance tooling** |
+| **Current assignee** | **QE** |
+| **Severity** | 🟡 — ⛔ **it under-reports, and the thing it under-reports is another lane's claim** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-19 by QE**, cycle 252 |
+
+**Steps.** With `origin/integration` carrying a claim commit the local `integration` does not yet have:
+
+```
+python3 infra/certification-guard.py --audit-claims
+→ 0 claim(s) awaiting promotion
+```
+
+**Expected.** The claim on `origin/integration` is named, or the check says out loud that it is answering about the local clone.
+
+**Actual.** **Silence that reads as *"nothing is waiting"*.**
+
+⚡ **`--audit-main` gets this right in the same run** — it prints *"note — 1 commit(s) on `origin/integration` are not in this clone's `integration`."* ⛔ **Two checks in one file, one of which knows the local ref may be stale and one of which does not.**
+
+📁 **The family this belongs to**: an instrument answering a narrower question than the one asked. **The question is *"what is awaiting promotion?"*; the answer is *"what is awaiting promotion in this clone"*, and only one of those is what a promotion decision needs.**
+
+---
+
+### B-1038 · 🟠 A failed certification poisons the next attempt, and the message blames the operator's tree
+
+| | |
+|---|---|
+| **Module** | `backend/tests/certification/__main__.py` · `store.py` |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — **the second attempt reports a cause that is not the cause** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-19 by QE**, cycle 252, after two failed attempts in a row |
+
+**Steps.** Run `make certify`; let it fail on any gate. Run it again without touching the tree.
+
+**Actual.**
+
+```
+NOT CERTIFIED
+  · the working tree was dirty, so the tree certified was never stored
+```
+
+⛔ **The tree is dirty because the FIRST run wrote into it.** 📁 `__main__.py:555` calls `append(run)` **unconditionally** — a failed run records itself in `certification/manifest.json` — and `tree_is_clean()` then reads that write as an operator's uncommitted work.
+
+### ⚡ The repository already knows, and treats it as a step rather than a defect
+
+📁 The comment at `__main__.py:566`: *"The attempt log is git-ignored, so this survives **the `git checkout --` that a failed run's next attempt requires** — and which deletes the manifest entry recording the failure."*
+
+> ⛔ **A required manual `git checkout --` between attempts is a defect wearing a runbook's clothes.** **It is not documented in [`REPOSITORY_RELEASE_CHECKLIST.md`](REPOSITORY_RELEASE_CHECKLIST.md)**, and the diagnostic that would send somebody to it says something else entirely.
+
+### ⚠️ And it cost a real misdiagnosis in the cycle that found it
+
+**Attempt ③ reported `NOT CERTIFIED — the working tree was dirty` when nothing about the tree had changed since attempt ②.** ⛔ **The reported cause was attempt ③'s tree; the real cause was attempt ②'s write**, and the two are indistinguishable from the output.
+
+### The direction of a fix, not the fix
+
+**Either record a failed run somewhere the next run does not require to be clean** — the attempt log already is exactly that — **or make the dirty-tree diagnostic name `certification/` when `certification/` is the only thing dirty.** ⛔ **Held: it is certification's own semantics, and QE does not change what a gate means mid-candidate.**
+
+---
+
 ### B-1027 · 🟠 A serial spec stops counting the tests it did not run, and the totals still look complete
 
 | | |
