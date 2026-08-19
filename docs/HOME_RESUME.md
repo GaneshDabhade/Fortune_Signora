@@ -10,6 +10,51 @@ local**, pushed to `origin/lane-a-product-surface-r2`.
 
 ---
 
+## 🔴 Correction to this file's own claim — B-1033, reported by QE
+
+⚠️ **This handover said *"Home is done and on `main`"*. That is not quite true**,
+and the correction is recorded rather than the sentence quietly edited.
+
+**QE measured `card.recents` at 37px with 0px spacing against `2.5.8`.** ✅
+**Confirmed here by reading the code rather than taken on report**: the row is a
+`Link` with `py-2` around a 20px tile — **~37px** — and `border-b` with no gap,
+so **0px between adjacent rows.**
+
+### ⛔ Why `home-a11y` is 14/14 green and still missed it
+
+**The Playground's `recently_viewed` is empty**, so no rows render, and the
+`2.5.8` sweep measures **what happened to be on the page**. ⚡ **It is not a
+vacuous guard** — it asserts `measured.length > 0` and did find controls — **it
+is a coverage gap**: the offending controls only exist when there is data.
+⛔ **Same shape as the rail-band finding one file over**: an assertion that
+cannot distinguish *the rule holds* from *the case never arose*.
+
+### ⚠️ And the fix is NOT a one-liner — it is B-286's class
+
+📁 **The design declares `card.recents` as `1fr × 160px`, showing *"last five
+records touched"*.** ⛔ **Five rows at 44px is 220px before padding and a
+header**, against a declared **160px**. **The footprint and the criterion cannot
+both hold.**
+
+⚡ **Reading `2.5.8` precisely narrows what is actually broken today**, and this
+lane established the two clauses earlier in the session:
+
+| Clause | Recents row | |
+|---|---|---|
+| *"every action is at least 24 × 24px"* | 37px | ✅ clears it |
+| *"with 8px separation"* | **0px** | ⛔ **the real desktop defect** |
+| *"on mobile every **primary** action is 44px"* | 37px | ⛔ **if a recents row is primary** |
+
+✅ **So the spacing is this lane's to fix.** ⛔ **The 160px-versus-five-rows
+contradiction is the design's**, exactly as B-286 is — **and it must not be
+resolved by quietly shrinking the row or dropping a record.**
+
+> **First work on resume**, ahead of TASK-495 ⓑ's journey: fix the separation,
+> make `home-a11y` measure a Home that HAS recents so the gap cannot reopen, and
+> raise the footprint contradiction rather than deciding it.
+
+---
+
 ## ✅ Landed on `main` this session
 
 | | |
