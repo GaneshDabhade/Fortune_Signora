@@ -19341,7 +19341,7 @@
       "tree_clean": true
     },
     {
-      "certified_at": "2026-08-19T10:55:38.645361+00:00",
+      "certified_at": "2026-08-19T11:12:52.723408+00:00",
       "commit": "8ceff5d695f66aeb840c3b7dc14e9ce7926c3cbb",
       "conditions": {
         "migration_head": "0066",
@@ -19368,9 +19368,9 @@
           "passed": true
         },
         {
-          "detail": "did not report a total",
+          "detail": "3430 passed in 198 files",
           "name": "frontend-suite",
-          "passed": false
+          "passed": true
         },
         {
           "detail": "37 kept, 0 broken",
@@ -19393,7 +19393,7 @@
           "passed": true
         },
         {
-          "detail": "24 stages in 254s, slowest 1. Build 89s",
+          "detail": "24 stages in 166s, slowest 2. Startup 19s",
           "name": "smoke",
           "passed": true
         },
