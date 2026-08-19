@@ -4,7 +4,10 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
 import { CommandPalette, type CommandItem } from '@/components/ui';
+import { useCopilot } from '@/components/shell/copilot';
 import { useAccountSearch } from '@/lib/query/hooks/search';
+import { useAccountIdentities } from '@/lib/query/hooks';
+import { useRecentlyViewed } from '@/lib/query/hooks/recently-viewed';
 import { RAIL_DESTINATIONS } from '@/components/shell/navigation';
 import { can, guardFor, type Capability, type WorkspaceRole } from '@/lib/state/permissions';
 import { useWorkspaceLabel } from '@/lib/shell/workspace-label';
@@ -23,8 +26,21 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
  * clickable is reachable in the palette."*
  *
  * ⚠️ **Account search is ONE GROUP inside it, not the thing that owns the
- * shortcut.** 📁 The design's groups are `Ask Signora` · `Recents` · `Actions`
- * · `Navigate`, and account results sit among them.
+ * shortcut.**
+ *
+ * ## 🔴 The sentence that stood here was a MISQUOTE, and it is why nothing failed
+ *
+ * ⛔ **It read: *"The design's groups are `Ask Signora` · `Recents` · `Actions` ·
+ * `Navigate`"*** — ⚠️ **four, presented as a quotation.** 📁 **The design names
+ * SEVEN and fixes their order:**
+ *
+ * > 📁 ***"Group order is fixed — Ask Signora, Recents, Records, Reports,
+ * > Actions, Navigate, Settings — with five per group and a keyboard-reachable
+ * > 'show all'."***
+ *
+ * 🔴 **So the palette was not incomplete by omission; it was complete against a
+ * misquote** — 📁 [TASK-1484](../../../docs/BACKLOG.md), and *"a comment that
+ * misstates the design is the defect that produced the code."*
  *
  * ## ⚡ Why the shell owns this and not the search box
  *
@@ -40,6 +56,76 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
  * `guardFor`/`can` pair filters both.**
  */
 
+/**
+ * 📁 **The design's seven, in the design's order** — ***"Group order is
+ * fixed"***.
+ *
+ * ⛔ **Exported so the test asserts the DESIGN's list rather than the code's**,
+ * by name and position. ⚡ **A group with nothing in it is not rendered** — the
+ * order is a statement about where a group sits when it has contents, never a
+ * promise that seven headings appear.
+ */
+export const PALETTE_GROUPS = [
+  'Ask Signora',
+  'Recents',
+  'Records',
+  'Reports',
+  'Actions',
+  'Navigate',
+  'Settings',
+] as const;
+
+/** 📁 ***"…with five per group and a keyboard-reachable 'show all'."*** */
+export const PER_GROUP = 5;
+
+/**
+ * 📁 **The settings surface's own entries, in its own words.**
+ *
+ * ⛔ **Not invented here and not re-worded**: every label is the string
+ * `app/(app)/settings/page.tsx` renders for that link, so the palette and the
+ * page cannot drift into two names for one destination
+ * ([§2](../../../CLAUDE.md)).
+ *
+ * ⚠️ **`/settings` is `workspace:update`-guarded and the guard matches by
+ * prefix**, so a member is offered none of these — the same `guardFor`/`can`
+ * pair the rail and the `Navigate` group already use.
+ */
+const SETTINGS_DESTINATIONS = [
+  { href: '/settings/products', label: 'Change what you sell' },
+  { href: '/settings/organization', label: 'Organization setup' },
+  { href: '/settings/team', label: 'Your team' },
+  { href: '/settings/connections', label: 'Connections' },
+  { href: '/settings/audit', label: 'Audit log' },
+] as const;
+
+/**
+ * ⚡ **Two of the design's seven groups have nothing to put in them TODAY, and
+ * this is the measurement rather than a decision.**
+ *
+ * | Group | Measured |
+ * |---|---|
+ * | **`Reports`** | ⛔ `app/(app)/reports/` holds two files, **neither of which
+ *   issues a query** — `grep -rn "useQuery\|apiRequest"` returns nothing — and
+ *   the screen renders *"No reports yet"*. **There is no report to list.**
+ *   ⚡ This is the same measurement 📁 [TASK-1416](../../../docs/BACKLOG.md) has
+ *   been skipped on five times |
+ * | **`Actions`** | ⛔ The design's examples are *"Export current view"* and
+ *   *"Run renewal risk sweep"*. **Export exists only inside the Companies bulk
+ *   bar and the audit page — it is SELECTION-scoped**, and the palette is
+ *   global and knows no selection. **A global action would be a new one** |
+ *
+ * ⛔ **So neither is rendered**, and 📁 [TASK-1484](../../../docs/BACKLOG.md)'s
+ * own bound is why: *"do not add a search backend to satisfy a heading."* ⚡ **An
+ * empty heading is the false-affordance class this shell has refused three
+ * times** — the bell before it had something to show, the assistant's absent
+ * input, the *"Notification settings"* link to an unbuilt screen.
+ */
+export const GROUPS_WITH_NO_SOURCE_TODAY = ['Reports', 'Actions'] as const;
+
+/** 📁 **`Records`' contents, said in the customer's word for each kind** —
+ *  ⛔ the server's `result_type` is the platform's vocabulary and stops here. */
+const KIND: Record<string, string> = { company: 'Company', technology: 'Technology', person: 'Person' };
+
 export function ShellPalette({ role }: { role: WorkspaceRole | null }) {
   const router = useRouter();
   const { activeWorkspace } = useWorkspaceContext();
@@ -51,6 +137,18 @@ export function ShellPalette({ role }: { role: WorkspaceRole | null }) {
   const workspaceLabel = useWorkspaceLabel();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  /** ⚡ **Which group the reader asked to see in full**, and only ever one. 📁
+   *  *"a keyboard-reachable 'show all'"* — ⛔ it is a row, not a control, so it
+   *  needs no second interaction model. */
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const copilot = useCopilot();
+
+  /** 📁 Session Continuity tier 4, the same read `card.recents` uses. */
+  const recentRecords = useRecentlyViewed(activeWorkspace?.id ?? null);
+  const names = useAccountIdentities(
+    activeWorkspace?.id ?? null,
+    (recentRecords.data ?? []).map((record) => record.entity_id),
+  );
 
   // 📁 *"Search — opens the palette on click or ⌘K."* ⚡ **Bound on the
   // document**, because the whole value is reaching it from wherever you are —
@@ -72,30 +170,64 @@ export function ShellPalette({ role }: { role: WorkspaceRole | null }) {
   } = useAccountSearch(activeWorkspace?.id ?? null, query);
 
   const items = useMemo<CommandItem[]>(() => {
-    // 📁 **`Navigate` — the destinations the shell owns.** ⛔ **Filtered by the
-    // same guard the rail applies**, so the palette is not a second answer to
-    // *what can this person reach*.
-    const navigate: CommandItem[] = RAIL_DESTINATIONS.filter((item) => {
-      const guard = guardFor(item.href);
+    const reachable = (href: string) => {
+      const guard = guardFor(href);
       return guard === undefined || can(role, guard.requires as Capability);
-    }).map((item) => ({
-      id: `nav:${item.href}`,
-      label: item.label,
-      group: 'Navigate',
-      meta: item.href,
-    }));
+    };
 
-    // 📁 **Accounts — ONE group, not the owner of the shortcut.** ⚡ The
-    // palette never sorts, so the server's group order is preserved: *"the
-    // caller's order is the caller's ranking."*
-    //
-    // 🔴 **`coverage` is read before `results`, always.** 📁 The type says why,
-    // and the product owner ruled it on 2026-08-05: *"the absence of results
-    // and the absence of the group represent different business meanings."*
-    // ⛔ **A palette that flattened every group would collapse *nothing
-    // matched* into *we did not look*** — so a group Signora did not search is
-    // skipped entirely rather than contributing an empty stretch of list.
-    const accounts: CommandItem[] = (groups ?? [])
+    /**
+     * 📁 **`Ask Signora`, and it is the affordance that EXISTS rather than the
+     * one the design draws.**
+     *
+     * ⛔ **The design's item is *"Answer: why is EMEA enterprise slipping"***.
+     * ⚠️ **The assistant cannot answer** — 📁
+     * [TASK-482](../../../docs/BACKLOG.md) shipped it with **no input box** on
+     * purpose (*"a field that swallows a question somebody actually typed is
+     * worse than none"*), because [C-334](../../../docs/LANE_COORDINATION.md)
+     * means there is no host credential. ⛔ **So an *Answer:* row would promise
+     * a reply nothing can produce.**
+     *
+     * ✅ **What is offered is the door the rail already offers** — 📁 shell rule
+     * 07: *"anything clickable is reachable in the palette."*
+     */
+    const ask: CommandItem[] =
+      copilot === null
+        ? []
+        : [{ id: 'ask:signora', label: 'Ask Signora', group: 'Ask Signora', glyph: '✦', meta: '⌘⇧A' }];
+
+    /**
+     * 📁 **`Recents` — *"Vantage Logistics · Account"*.**
+     *
+     * ⚡ **The same read `card.recents` uses**, so the palette and Home agree on
+     * what *recent* means without either defining it — 📁 Session Continuity
+     * tier 4 owns that. ⛔ **An account whose name has not resolved is dropped
+     * rather than listed as *"Unnamed account"***: 🔴
+     * [B-290](../../../docs/BUGS.md) is that mistake one surface over, and a
+     * palette row a reader cannot recognise is one they cannot choose.
+     */
+    const recents: CommandItem[] = (recentRecords.data ?? []).flatMap((record) => {
+      const name = names.data?.get(record.entity_id)?.name ?? null;
+      return name === null
+        ? []
+        : [{ id: `account:${record.entity_id}`, label: name, group: 'Recents', meta: 'Account' }];
+    });
+
+    /**
+     * 📁 **`Records` — and it is a RENAME rather than a new read.**
+     *
+     * ⚠️ **[TASK-1484](../../../docs/BACKLOG.md) states this outcome up front**:
+     * *"`Records` may end up as a rename of the existing account-search groups
+     * rather than a new read. That is the correct outcome if so — do not add a
+     * search backend to satisfy a heading."* ⛔ **The two kinds became the
+     * row's `meta`**, so nothing is lost by folding them.
+     *
+     * 🔴 **`coverage` is read before `results`, always.** 📁 The product owner
+     * ruled it on 2026-08-05: *"the absence of results and the absence of the
+     * group represent different business meanings."* ⛔ **A group Signora did
+     * not search is skipped entirely** rather than contributing an empty
+     * stretch of list.
+     */
+    const records: CommandItem[] = (groups ?? [])
       .filter((group) => group.coverage === 'searched')
       .flatMap((group) =>
         group.results.map((result) => ({
@@ -104,19 +236,79 @@ export function ShellPalette({ role }: { role: WorkspaceRole | null }) {
           // the person typed against, and showing a different string would
           // make a correct match look like a wrong one.
           label: result.matched_name,
-          group: group.result_type === 'company' ? 'Companies' : 'Technologies',
-          // ⚡ **Says so when the name has changed**, which is the one fact
-          // that makes a match look wrong when it is right.
-          meta: result.is_renamed ? 'renamed' : undefined,
+          group: 'Records',
+          // ⚡ **The kind, and *renamed* when that is the fact worth saying** —
+          // a changed name is the one thing that makes a right match look wrong.
+          meta: result.is_renamed
+            ? `${KIND[group.result_type]} · renamed`
+            : KIND[group.result_type],
         })),
       );
 
-    return [...accounts, ...navigate];
-  }, [groups, role]);
+    // 📁 **`Navigate` — the destinations the shell owns.** ⛔ **Filtered by the
+    // same guard the rail applies**, so the palette is not a second answer to
+    // *what can this person reach*.
+    const navigate: CommandItem[] = RAIL_DESTINATIONS.filter((item) =>
+      reachable(item.href),
+    ).map((item) => ({
+      id: `nav:${item.href}`,
+      label: item.label,
+      group: 'Navigate',
+      meta: item.href,
+    }));
+
+    /** 📁 **`Settings` — the settings page's own five, guarded the same way.** */
+    const settings: CommandItem[] = SETTINGS_DESTINATIONS.filter((item) =>
+      reachable(item.href),
+    ).map((item) => ({
+      id: `nav:${item.href}`,
+      label: item.label,
+      group: 'Settings',
+      meta: item.href,
+    }));
+
+    const byGroup: Record<string, CommandItem[]> = {
+      'Ask Signora': ask,
+      Recents: recents,
+      Records: records,
+      Navigate: navigate,
+      Settings: settings,
+    };
+
+    /**
+     * 🔴 **The design's order, applied here rather than emerging from the
+     * order the code happens to build things in.**
+     *
+     * 📁 `components/ui/command-palette.tsx` *"groups by first appearance"* and
+     * **never sorts** — *"the caller's order is the caller's ranking"* — so the
+     * fixed order is this caller's to state, and it is stated once.
+     *
+     * ⛔ **Five per group**, with 📁 *"a keyboard-reachable 'show all'"* — ⚡ an
+     * ordinary row in the list, so ↑↓ and ↵ reach it with no second interaction
+     * model.
+     */
+    return PALETTE_GROUPS.flatMap((group) => {
+      const all = byGroup[group] ?? [];
+      if (all.length === 0) return [];
+      if (expanded === group || all.length <= PER_GROUP) return all;
+      return [
+        ...all.slice(0, PER_GROUP),
+        {
+          id: `expand:${group}`,
+          label: `Show all ${all.length}`,
+          group,
+          meta: `${all.length - PER_GROUP} more`,
+        },
+      ];
+    });
+  }, [copilot, expanded, groups, names.data, recentRecords.data, role]);
 
   const close = () => {
     setOpen(false);
     setQuery('');
+    // ⛔ **A group left expanded would still be expanded next time**, which is
+    // a state the reader did not ask to keep across two different questions.
+    setExpanded(null);
   };
 
   return (
@@ -147,7 +339,21 @@ export function ShellPalette({ role }: { role: WorkspaceRole | null }) {
        */
       status={searchFailed ? 'error' : searching ? 'loading' : query === '' ? 'idle' : 'ready'}
       onSelect={(item) => {
+        // 📁 *"a keyboard-reachable 'show all'"* — ⛔ **it expands the group and
+        // the palette stays open.** ⚡ Closing here would make the one row whose
+        // whole purpose is *show me more* the row that shows you less.
+        if (item.id.startsWith('expand:')) {
+          setExpanded(item.id.slice('expand:'.length));
+          return;
+        }
         close();
+        // 📁 **§12's *Ask Signora*** — ⚡ the door the rail already opens, not a
+        // second one. ⛔ **No question is carried**: the panel has no input, by
+        // TASK-482's own refusal.
+        if (item.id === 'ask:signora') {
+          copilot?.open();
+          return;
+        }
         // ⛔ **No `panel` destination yet, and both are treated the same** —
         // 📁 the palette's own contract allows exactly that: *"a caller with
         // nowhere to put a panel simply treats both the same."* ⚡ **Inventing
