@@ -4,9 +4,9 @@
 promoted `8ceff5d6`, **so 25 of this lane's commits are on `main`.** **Two remain
 local**, pushed to `origin/lane-a-product-surface-r2`.
 
-> ⚠️ **First action next session: rebase.** `main` moved after the push, so
-> `main` is no longer an ancestor of the branch. One rebase makes the next
-> promotion a plain fast-forward again. **Then tell QE the tip.**
+> ✅ **Rebased 2026-08-19.** The four commits replayed onto `20fc5c2d` byte for
+> byte (`git range-diff` reports `=` on all four), so **`main` is an ancestor
+> again** and the next promotion is a plain fast-forward.
 
 ---
 
@@ -52,6 +52,17 @@ resolved by quietly shrinking the row or dropping a record.**
 > **First work on resume**, ahead of TASK-495 ⓑ's journey: fix the separation,
 > make `home-a11y` measure a Home that HAS recents so the gap cannot reopen, and
 > raise the footprint contradiction rather than deciding it.
+
+### ✅ All three done, 2026-08-19
+
+| | |
+|---|---|
+| **The separation** | `card.recents` rows now carry **8px** between them. ⛔ **Proved by removing it again**: the seeded test fails with *"Unnamed account" and "Unnamed account" are adjacent* and passes with it — **the fire test this lane learned to insist on**, line-anchored so the edit could not land somewhere else |
+| **The coverage gap** | `home-a11y` opens a Home that **has five recents**, stubbed at the read boundary with **five of the workspace's own named accounts**, and **asserts the rows are on the page** — and that their **names have resolved** — **before it measures anything** |
+| **The contradiction** | Filed as **[B-289](BUGS.md#b-289)** with the arithmetic. ⚡ **It came out wider than reported**: five rows need **185px before any accessibility change**, against **~97px** of usable height — **so the card has drawn three of the five it names since it was built**, and 📁 **Entry §05 draws three while Home's registry asks for five.** **The design disagrees with itself.** ⛔ Held by a `test.fail()`, not a skip |
+
+**`home-a11y` is now 16, of which one is the `test.fail()`.** `home-viewports` and
+`home-composition` re-run green beside it; 781 unit and component tests green.
 
 ---
 

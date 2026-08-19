@@ -122,7 +122,13 @@ export function RecentsCard() {
           Nothing opened yet in this organization.
         </p>
       ) : (
-        <div className="mt-2.5 flex flex-col">
+        /* 📁 **`2.5.8` — *"every action is at least 24 × 24px **with 8px
+           separation**"*.** ⛔ **The rows are the separated targets**: 📁 Entry
+           §05 draws them at `gap:0` with a rule between, which is a *divider*
+           and not a *gap* — **two 37px links flush against one another are one
+           mis-tap**, which is the failure this criterion is about. ⚡ The rule
+           stays; the 8px is added beneath it. */
+        <div className="mt-2.5 flex flex-col gap-2">
           {records.map((record) => (
             <Row
               key={record.entity_id}
@@ -189,6 +195,24 @@ function when(iso: string): string {
  * 📁 **Footprint `1fr × 160px`**, from the registry. ⛔ **A fixed height, so a
  * shorter list does not reflow the grid** — contract 12's rule for skeletons is
  * the same property at load.
+ *
+ * ## 🔴 The footprint and the row count cannot both hold — **raised, not decided**
+ *
+ * 📁 The registry asks for *"the **last five** records touched"* at **160px**.
+ * **Measured**: 160 − 18×2 padding leaves **124px**, and the eyebrow and its
+ * 10px offset take ~27 of it. ⚡ **Five rows need 5 × 45 = 225px** — and needed
+ * **185px before the `2.5.8` separation above**, so **the overflow predates
+ * this change**: the card has always drawn about three of the five it names.
+ *
+ * ⚠️ 📁 **Entry §05, which draws the treatment, draws three**
+ * (`hint-placeholder-count="3"`) — **so the drawing and the registry disagree
+ * with each other**, not just with the code.
+ *
+ * ⛔ **This lane does not resolve it**, and the two ways to make it pass are
+ * both product decisions it must not take quietly: **shrinking the row** below
+ * what `2.5.8` allows, or **dropping a record** the registry names. 📁 Filed —
+ * see `docs/BUGS.md` — and the footprint is left at the declared 160px until it
+ * is answered, because the status quo is the design's own drawing.
  */
 function Frame({ children }: { children: React.ReactNode }) {
   return (

@@ -100,6 +100,83 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-289 · 🟠 `card.recents` cannot hold the five records it names, and no reading of `2.5.8` makes it fit
+
+| | |
+|---|---|
+| **Module** | `workspace_tenancy` — 📁 the design, not the code. `frontend/components/home/recents-card.tsx` renders it |
+| **Current assignee** | ⛔ **Nobody.** **This is a product decision** — 📁 [§20c](../CLAUDE.md) makes the design the authority for a card's footprint, and **both ways to make it pass change what the customer sees** |
+| **Severity** | 🟠 — **the card silently draws fewer records than it names**, today, in every composition that includes it |
+| **Status** | **`OPEN`** · **held by a `test.fail()`**, see below |
+| **Found** | **2026-08-19 by Lane A**, fixing the separation half of [B-1033](HOME_RESUME.md) — ⚡ **the arithmetic came out of the fix, not out of the report** |
+
+**The claim.** 📁 `Fortune Signora Home.dc.html` §04 registry:
+
+> *"Pick up where you left off · `card.recents` · **Last five records touched** ·
+> footprint **`1fr × 160px`** · primary action **Open the record**."*
+
+📁 And §11, `2.5.8`:
+
+> *"Every action is at least 24 × 24px **with 8px separation**; on mobile every
+> **primary** action is **44px** tall."*
+
+**Measured, from the design's own numbers.**
+
+| | |
+|---|---|
+| Declared footprint | **160px** |
+| − padding `18px × 2` | 124px |
+| − the eyebrow and its 10px offset | **~97px of rows** |
+| Five rows **as drawn today** (20px tile · `8px` padding · 1px rule) | **185px** |
+| Five rows **with the 8px separation `2.5.8` states** | **217px** |
+| Five rows **at the 44px mobile figure** | **252px** |
+
+⛔ **Every row of that table exceeds 97px, including the first.** ⚡ **So the
+overflow is not caused by the accessibility criterion** — **the card has drawn
+about three of the five it names since it was built**, and `overflow-hidden` is
+what has kept that invisible.
+
+### ⚠️ The design disagrees with itself, not only with the code
+
+📁 **`Fortune Signora Authenticated Entry.dc.html` §05 draws this card**, and Home
+adopts it *"verbatim"*. ⛔ **Entry draws it with `hint-placeholder-count="3"`** —
+**three rows**, which is exactly what 160px holds. 📁 **Home's registry asks for
+five.** ✅ **160px and three rows are consistent; 160px and five are not.**
+
+### ⛔ Why this lane did not decide it
+
+**Two changes would make the page pass, and both are product decisions:**
+
+1. **Shrink the row** — puts it under the figure `2.5.8` states, and **a repair
+   indistinguishable from a regression is the one a lane must not take quietly.**
+2. **Grow the card** — 📁 the registry is the only fixed footprint in a grid of
+   `auto` cards, so the height is deliberate, and **growing it moves the two
+   columns for everybody.**
+
+⚡ **A third — *"show three and say so"*** — is a change to what Home promises,
+which is the product owner's sentence to write and not this lane's.
+
+### ✅ How it is held meanwhile
+
+📁 **`frontend/tests/e2e/home-a11y.spec.ts` — *"390 — a recents row is 37px
+against the 44px second clause"*, marked `test.fail()`.** ⚡ **It runs, it
+measures, and it turns red the moment the row reaches 44px** — the same device
+[B-286](#b-286) is held by, and the property a skip does not have.
+
+⛔ **The 8px separation clause is NOT held that way — it is fixed**, because that
+half needed no decision: 📁 Entry §05 draws the rows at `gap:0`, and **two 37px
+links flush against one another are one mis-tap.**
+
+### ⚠️ And the reason it was invisible until today
+
+**The Playground's `recently_viewed` is empty**, so the card rendered one line of
+prose and **no rows at all**. ⛔ **`home-a11y` was 14/14 green** while measuring a
+page the offending targets were not on. ✅ **Closed**: the suite now stubs five of
+the workspace's own named accounts at the read boundary and **asserts the rows are
+there before it measures anything** — 📁 the third instance this week of *an
+assertion that cannot distinguish "the rule holds" from "the case never arose"*,
+after `rail-band` and [B-1033](HOME_RESUME.md).
+
 ### B-288 · 🟠 Account search has crashed for every customer since 2026-08-06, and the search box disappears with it
 
 | | |

@@ -47,6 +47,97 @@ async function openActivationHome(page: import('@playwright/test').Page) {
 }
 
 /**
+ * 🔴 **A Home that HAS recents — B-1033, and the reason the suite was 14/14
+ * green while `card.recents` failed `2.5.8`.**
+ *
+ * ⚠️ **The Playground's `recently_viewed` is empty**, so the card renders one
+ * line of prose and **no rows**. ⛔ **`2.5.8` then measured whatever happened to
+ * be on the page** — it is not a vacuous guard, it asserts `measured.length > 0`
+ * and did find controls — **it is a coverage gap: the offending targets only
+ * exist when there is data.** ⚡ **Same shape as the rail-band finding one file
+ * over**: an assertion that cannot distinguish *the rule holds* from *the case
+ * never arose*.
+ *
+ * ## ⛔ Stubbed at the read boundary, with the workspace's own accounts
+ *
+ * ⚡ **Not written into the database**, which would leave every other spec
+ * measuring a different Home depending on what ran first — the flake
+ * `search-journey.spec.ts` already paid for once. **Not fabricated ids
+ * either**: 📁 the card resolves names from the identity surface, so invented
+ * ids would render five *"Unnamed account"* fallbacks and the geometry would be
+ * measured against a state the product only reaches when something is wrong.
+ *
+ * ✅ **Five real accounts, read from the list**, returned by the one endpoint
+ * the card reads — which is exactly what the server returns for somebody who
+ * opened five records.
+ */
+async function openHomeWithRecents(page: import('@playwright/test').Page) {
+  await page.goto('/accounts');
+  const rows = page.locator('main a[href^="/accounts/"]');
+  await expect(rows.first()).toBeVisible({ timeout: 20_000 });
+
+  /**
+   * ⚠️ **Named accounts only, and that is not fastidiousness.** ⛔ The Playground
+   * holds accounts **no source has named** — 📁 the card renders those as
+   * *"Unnamed account"*, which is a legitimate state and **not the one Home
+   * normally shows.** ⚡ The filter is `search-journey.spec.ts`'s, for the same
+   * reason it has one.
+   */
+  const listed = await rows.evaluateAll((els) =>
+    els.map((el) => ({
+      id: (el.getAttribute('href') ?? '').split('/').pop() ?? '',
+      name: ((el.textContent ?? '').trim().split('\n')[0] ?? '').trim(),
+    })),
+  );
+  const opened = listed
+    .filter((row) => /^[0-9a-f]{8}-[0-9a-f-]{27}$/.test(row.id))
+    .filter((row) => /^[A-Za-z][A-Za-z' ]{4,}$/.test(row.name))
+    .slice(0, 5)
+    .map((row) => row.id);
+  // 📁 *"Last five records touched"* — ⛔ **fewer would measure a shorter list
+  // than the design's**, and the separation defect is between adjacent rows.
+  expect(opened.length, 'this workspace has fewer than five named accounts to have opened').toBe(5);
+
+  // ⚡ **An hour apart**, so the right-hand column reads `Today` rather than
+  // five identical strings — the row's width varies with it.
+  const now = Date.now();
+  await page.route('**/api/proxy/**/recently-viewed', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(
+        opened.map((id, index) => ({
+          entity_id: id,
+          kind: 'account',
+          viewed_at: new Date(now - index * 3_600_000).toISOString(),
+        })),
+      ),
+    }),
+  );
+
+  await openHome(page);
+  // ⛔ **The guard that stops this gap reopening.** ⚠️ Without it, a change that
+  // silently emptied the card would turn every assertion below back into a
+  // question nobody asked.
+  const card = page.getByTestId('home-recents');
+  await expect(
+    card.locator('a[href^="/accounts/"]'),
+    'the recents card rendered no rows, so nothing below this measured one',
+  ).toHaveCount(5);
+  /**
+   * ⚠️ **The names arrive after the rows do**, and this waits for them. 📁 The
+   * card resolves names from the identity surface in a second read, so for a
+   * frame every row reads *"Unnamed account"* — ⛔ **measuring there would
+   * measure a card mid-load**, which is the same class of error as measuring
+   * one with no rows at all.
+   */
+  await expect(
+    card.getByText('Unnamed account'),
+    'the recents card is still resolving names, so it was measured mid-load',
+  ).toHaveCount(0);
+}
+
+/**
  * 📁 **`1.3.1`'s structural claims, as one measurement** — *"each card is a
  * `<section>` with its own h2"* — so the two compositions assert the same thing
  * rather than drifting into two nearly-identical copies (§2).
@@ -231,7 +322,9 @@ async function actions(page: import('@playwright/test').Page) {
 test.describe('📁 2.5.8 — target size, everywhere Home renders one', () => {
   test('@a11y every action clears 24 × 24 at the reference viewport', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await openHome(page);
+    // 🔴 **B-1033** — ⛔ **this measured a Home whose recents card had no rows**,
+    // so the five targets the criterion is hardest on were never on the page.
+    await openHomeWithRecents(page);
 
     const measured = await actions(page);
     // ⚠️ **A query that found nothing would assert nothing** — and this one is
@@ -253,7 +346,11 @@ test.describe('📁 2.5.8 — target size, everywhere Home renders one', () => {
    */
   test('@a11y no two actions sit closer than 8px', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await openHome(page);
+    // 🔴 **B-1033, and this is the clause that was actually broken** — 📁 Entry
+    // §05 draws the recents rows at `gap:0` with a rule between them, so five
+    // 37px links sat **flush**. ⚡ **The rows are on the page now**, which is
+    // what makes this assertion a measurement rather than a question.
+    await openHomeWithRecents(page);
 
     const measured = await actions(page);
     for (let a = 0; a < measured.length; a += 1) {
@@ -294,9 +391,19 @@ test.describe('📁 2.5.8 — target size, everywhere Home renders one', () => {
    */
   test('@a11y 390 gives every primary action a 44px touch target', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await openHome(page);
+    await openHomeWithRecents(page);
 
-    const primary = (await actions(page)).filter((action) => action.navigates);
+    const primary = (await actions(page))
+      .filter((action) => action.navigates)
+      // 🔴 **`card.recents` is held by the test below instead, and the reason is
+      // [B-289](../../../docs/BUGS.md) rather than convenience.** 📁 The design
+      // says *"**exactly one** primary per card"* — **the recents card renders
+      // five identical rows**, so whether a row is *the* primary or a list item
+      // governed by the first clause is a product question this lane must not
+      // answer by choosing which assertion to write. ⛔ **Excluding it silently
+      // would be the gap this whole file just closed**, so it is excluded
+      // loudly and measured separately.
+      .filter((action) => action.card !== 'recents');
     expect(primary.length, 'no primary action found on the phone layout').toBeGreaterThan(0);
 
     for (const action of primary) {
@@ -304,6 +411,36 @@ test.describe('📁 2.5.8 — target size, everywhere Home renders one', () => {
         action.height,
         `${action.card} — "${action.name}" is ${action.height}px tall on a phone`,
       ).toBeGreaterThanOrEqual(44);
+    }
+  });
+
+  /**
+   * 🔴 **B-289 — the recents row at 390, under the strictest reading of the
+   * second clause.**
+   *
+   * ⚠️ **`test.fail()`, not a skip and not a lowered figure.** ⚡ **It runs, it
+   * measures, and it turns red the moment the row reaches 44px** — the same
+   * device [B-286](../../../docs/BUGS.md) is held by, and the property a skip
+   * does not have.
+   *
+   * ⛔ **This lane will not make it pass**, because both ways to are product
+   * decisions: 📁 the registry declares `card.recents` at **160px** showing
+   * **five** records, and five rows at 44px need **220px before padding and an
+   * eyebrow**. **Growing the row cuts a record the design names; keeping the
+   * footprint keeps the row under the figure the design states.**
+   */
+  test('@a11y 390 — a recents row is 37px against the 44px second clause', async ({ page }) => {
+    test.fail();
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openHomeWithRecents(page);
+
+    // ⚠️ **Not `toBe(5)`** — `actions()` queries `:visible`, and the card clips
+    // at 160px, which is the very contradiction this test is here to hold.
+    const rows = (await actions(page)).filter((action) => action.card === 'recents');
+    expect(rows.length, 'the recents card rendered no rows on the phone layout').toBeGreaterThan(0);
+
+    for (const row of rows) {
+      expect(row.height, `a recents row is ${row.height}px tall on a phone`).toBeGreaterThanOrEqual(44);
     }
   });
 });
