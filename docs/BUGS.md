@@ -348,6 +348,47 @@ run 5: 0 failed                     20 passed
 
 ⛔ **This spec was the intended control for the browser gate.** 📁 **Lane A: *"a control that is clean on one stack and not another is not a control"*** — **and the sharper form this row proves: it is not clean on the SAME stack twice.** **A gate whose control is intermittent cannot distinguish a regression from a re-run.**
 
+### B-1027 · 🟠 A serial spec stops counting the tests it did not run, and the totals still look complete
+
+| | |
+|---|---|
+| **Module** | `frontend/tests/e2e/` — **the repository-wide browser suite** |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — ⛔ **a silent coverage cap, which is the one thing this repository forbids by name** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-19 by QE**, by adding three numbers that should have matched a fourth |
+
+**Steps to reproduce.** Run the browser suite so that the first test of a `test.describe.configure({ mode: 'serial' })` block fails.
+
+```
+--list      Total: 393 tests in 53 files
+the run     363 passed · 17 failed · 5 skipped   =  385
+                                                    ────
+                                    8 tests never ran, and nothing said so
+```
+
+**Expected.** A run reports what it did not run.
+
+**Actual.** **`onboarding-journey.spec.ts:35` declares `mode: 'serial'`.** Its first test failed, Playwright abandoned the remaining eight **and counted them as neither failed nor skipped.** ⛔ **Every number in the summary is individually true and the set of them is misleading.**
+
+### ⚠️ This is the failure QE refused to build, arriving through another door
+
+📁 **[B-1017](#b-1017)'s rejected design was rejected for exactly this**: *"Playwright skips a dependent project when its dependency fails, so the coverage would vanish exactly when the suite is red."* ⚡ **`mode: 'serial'` does the same thing one level down, and it was already in the tree.**
+
+⛔ **And it hides most where it hurts most** — a serial block abandons its tail **precisely on the runs where something is wrong.**
+
+### ✅ Found by arithmetic, not by reading
+
+**`--list` says 393; `363 + 17 + 5` is 385.** ⚡ **No message, no warning, and the exit code was already non-zero for other reasons** — so nothing distinguished *"eight tests failed to run"* from *"eight tests were not there."* 📁 **The same class as [B-1000](#b-1000)**: the summary answers *"what were the outcomes?"* and the question asked was *"was everything exercised?"*
+
+### ⛔ Not fixed here, and the reason is not effort
+
+**The honest fix is a check that compares the enumerated count against the executed count and fails when they differ** — cheap. ⚠️ **But `mode: 'serial'` is deliberate in that spec and removing it is a decision about what the spec means, not a repair.** **Recorded, and to be fixed with the attribution work rather than folded into a defect it merely revealed.**
+
+### ⚡ Its trigger this run was QE's own process error, and that half is NOT a defect
+
+**Quinn accumulated across two runs — 4 memberships, then 5 — because the environment was rebuilt for run 1 and only the FRONTEND was restarted for run 2.** 📁 **The isolation mandate says one environment per cycle** ([`QUALITY_ENGINEERING.md`](QUALITY_ENGINEERING.md) §0), and QE did not follow it. ⛔ **The reserved persona works; the operator did not rebuild.** ⚡ **Re-measured on a genuinely clean environment before any conclusion is drawn from the counts.**
+
 ### B-1026 · 🟠 Six browser journeys said the product sent no email, when the product had nowhere to send one
 
 | | |
