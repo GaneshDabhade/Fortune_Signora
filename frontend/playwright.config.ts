@@ -124,7 +124,16 @@ export default defineConfig({
   // **Zero.** A retry turns a race condition into an intermittent pass, which
   // is how a real defect becomes a flake nobody investigates.
   retries: 0,
-  reporter: [['list'], ['html', { open: 'never' }]],
+  reporter: [
+    ['list'],
+    ['html', { open: 'never' }],
+    // 🔴 **[B-1027](../docs/BUGS.md): `393` enumerated, `363 + 17 + 5 = 385`
+    // reported, and nothing said where the other eight went.** ⚡ **A
+    // `mode: 'serial'` block abandons its tail on failure and counts it as
+    // neither failed nor skipped** — ⛔ **so a silent coverage cap appears
+    // precisely on the runs where something is already wrong.**
+    ['./tests/e2e/reporters/coverage-reconciliation.ts'],
+  ],
   outputDir: 'test-results',
 
   use: {

@@ -1444,7 +1444,7 @@ resilience                  1 failed   2 passed
 | **Module** | `frontend/tests/e2e/` — **the repository-wide browser suite** |
 | **Current assignee** | **QE** |
 | **Severity** | 🟠 — ⛔ **a silent coverage cap, which is the one thing this repository forbids by name** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` — QE, 2026-08-19**, ⛔ **and this row's stated CAUSE is corrected below rather than left standing.** **`VERIFIED` is not this lane's to set on its own repair** |
 | **Found** | **2026-08-19 by QE**, by adding three numbers that should have matched a fourth |
 
 **Steps to reproduce.** Run the browser suite so that the first test of a `test.describe.configure({ mode: 'serial' })` block fails.
@@ -1473,6 +1473,45 @@ the run     363 passed · 17 failed · 5 skipped   =  385
 ### ⛔ Not fixed here, and the reason is not effort
 
 **The honest fix is a check that compares the enumerated count against the executed count and fails when they differ** — cheap. ⚠️ **But `mode: 'serial'` is deliberate in that spec and removing it is a decision about what the spec means, not a repair.** **Recorded, and to be fixed with the attribution work rather than folded into a defect it merely revealed.**
+
+### 🔴 CORRECTED 2026-08-19 — the cause named above is WRONG, and it was disproven by trying it
+
+**This row said `mode: 'serial'` abandons its tail *"and counts it as neither failed nor skipped"*.** ⛔ **Measured against Playwright 1.62 with a purpose-built serial block whose first test fails:**
+
+```
+✘  the first one fails
+-  the second is abandoned          status=skipped   results=['skipped']
+-  the third is abandoned           status=skipped   results=['skipped']
+```
+
+✅ **They ARE reported, and they ARE counted — as `skipped`.** ⛔ **So serial abandon is not the mechanism**, and the reconciliation check saw no gap in that run, correctly.
+
+### ✅ A mechanism that DOES produce it, and [B-1017](#b-1017) predicted exactly this one
+
+**Fail one `authenticate` setup test and every dependent project is enumerated and never reported:**
+
+```
+2 failed · 2 skipped · 359 did not run · 58 passed
+359 of 421 enumerated tests never ran …
+```
+
+📁 **[B-1017](#b-1017)'s rejected design was rejected in these words**: *"Playwright skips a dependent project when its dependency fails, so the coverage would vanish exactly when the suite is red."* ⚡ **That is the shape; it was one level up rather than one level down.**
+
+### ⚠️ And *"nothing said so"* is imprecise — Playwright prints a count
+
+📁 **`359 did not run` is Playwright's own summary line.** ⛔ **So something did say so.** ⚠️ **Whether the original run printed `8 did not run` and it was missed cannot now be established — that output was not kept** — and this row states that rather than settling it in its own favour.
+
+### ✅ What the fix is therefore FOR, stated honestly
+
+| | |
+|---|---|
+| **Playwright already gives** | **a count** |
+| ✅ **This adds — demonstrated** | **the NAMES.** 📁 The original finding could say *eight* and not *which eight*, which is the whole reason it could not be attributed |
+| ✅ **This adds — defence** | **an exit code.** ⛔ **A run whose every reported outcome passed must not exit `0` while tests it enumerated never ran** — a printed line does not change an exit code. ⚠️ **That combination has NOT been observed in the wild and is stated as defence, not as a repair** |
+
+**`frontend/tests/e2e/reporters/coverage-reconciliation.ts`, registered in `playwright.config.ts`, with five tests in `tests/unit/coverage-reconciliation.test.ts`** — including that a retried test counts once, and that an **interrupted** run is reported but never re-failed, because `--max-failures` stopping the run is the operator's instruction rather than a defect.
+
+⛔ **It does not touch `mode: 'serial'`.** ⚡ **That deferral in this row stands, and is now known to be about something else entirely.**
 
 ### ⚡ Its trigger this run was QE's own process error, and that half is NOT a defect
 
