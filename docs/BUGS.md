@@ -1158,7 +1158,7 @@ This error was caught after test environment was torn down.
 | **Module** | `frontend/tests/e2e/rail-band.spec.ts` — **certification coverage, QE's** |
 | **Current assignee** | **QE** |
 | **Severity** | 🟠 — ⛔ **it fails a certification cycle at random and the product is correct** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` — QE, 2026-08-19.** ⛔ **`VERIFIED` is not this lane's to set on its own repair** |
 | **Found** | **2026-08-19 by QE**, certifying `8ceff5d6` — **and it resolves the `232` QE reported to Lane A as possibly a defect** |
 
 **The received value moved every time it was measured:**
@@ -1184,6 +1184,42 @@ This error was caught after test environment was torn down.
 ### The fix, and the shape it must take
 
 ⛔ **Not a `waitForTimeout`.** ✅ **Wait for the thing** — 📁 Lane A's own words on this class: *"the queue's own `h-16` skeletons … the thing, not a proxy for it."* **Here that is `transitionend` on the rail, or `motion-reduce` in the project so the animation does not exist to be sampled.** ⚡ **`app-shell.tsx` already carries `motion-reduce:transition-none` on sibling elements, so the product already supports the second option.**
+
+### ✅ FIXED — `settledRailWidth`, and it waits for two different things
+
+**`railWidth` is replaced by `settledRailWidth(page, { collapsed })`, which answers the question in two steps because the old read conflated two:**
+
+| | |
+|---|---|
+| ① **`data-collapsed` reaches the expected value** | ⚡ **The STATE the width follows** — React's, applied once the band has run on the client. ⛔ **This is what distinguishes *"232 because the band has not run yet"* from *"232 because the band decided so"***, and the old read could not tell them apart |
+| ② **the width stops moving** | **Two consecutive `requestAnimationFrame`s agreeing.** ⛔ **Never an interval** — a rail that never settles hangs the test, which is the honest outcome rather than a number |
+
+✅ **The assertion it feeds is still an exact `toBe`.** ⛔ **Settling does not make the test easier to pass**: a rail that comes to rest at the wrong width fails, and now reports *the width it came to rest at* rather than a frame of the way there.
+
+### ⛔ `reducedMotion: 'reduce'` was available and was NOT taken
+
+⚠️ **This row's own note said `app-shell.tsx` carries `motion-reduce:transition-none` on sibling elements. It does — but that is not why the option existed.** 📁 **`app/globals.css:344` forces `transition-duration: 0.01ms !important` on `*` under `prefers-reduced-motion: reduce`**, ⚡ **so the animation would have disappeared for every element whether or not the rail carried the utility** — and the width transition on line 271 does *not* carry it. ✅ **The global rule is why there is nothing to file against `app-shell.tsx`: measured before assuming a missing utility was a defect.**
+
+⛔ **Rejected because it would measure the geometry in a mode most customers are not in.** **The claim under test is what the rail is for everybody, and settling measures exactly that — 150ms later, which is when a customer sees it.**
+
+### ✅ The race was reproduced against the OLD code, then not seen against the new
+
+| | Under 14-way CPU load on a 12-core host |
+|---|---|
+| **Old `boundingBox()`** | 🔴 **1 failure in 14 executions — `Expected: 56 · Received: 61`**, a frame of the same animation this row recorded |
+| **`settledRailWidth`** | ✅ **0 failures in 14 executions**, plus a clean 8/8 run of the whole file |
+
+> ⚠️ **1-in-14 against 0-in-14 is not a statistically decisive comparison, and it is not what this fix rests on.** ⛔ **Frequency evidence for a race is nearly worthless — the earlier four-run block reproduced it once and the ten-repeat block reproduced it not at all, on the same code under the same load.** ⚡ **What carries the weight is CONSTRUCTIONAL: the helper cannot return a mid-transition value, because it does not return until two consecutive frames agree.** **The reproduction's job was to prove the mechanism was real, and `61` did that.**
+
+### ✅ And the rest of the suite was checked rather than assumed
+
+**28 `boundingBox()` calls across 12 e2e files.** ⛔ **Only measurements of something that ANIMATES can carry this defect**, and the shell animates three things: the rail's width (150ms), the sheet's transform (200ms), and one opacity (150ms).
+
+- ✅ **`content-width` and `content-grid` measure at 1280 and 2400 only** — **at and above the band the rail is already its server-rendered width, so there is no transition to sample.**
+- ✅ **`navigation-bands` measures the rail at 1024 for COUNT and for fixed-element overlap, never for width**, and its sheet slide already uses `toPass()` — 📁 **with a comment recording this exact defect: *"the single read was asserting against a transient state."***
+- ✅ **`utility-panel` already polls the panel width.**
+
+⚡ **So `rail-band` was the only exposed measurement, and that is now a checked statement rather than an assumption.**
 
 ### B-1033 · 🟠 Home's accessibility assertions pass on an empty list and fail on real data
 

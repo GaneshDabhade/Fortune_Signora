@@ -28,14 +28,76 @@ import { expect, test } from './fixtures/signora';
 const EXPANDED = 232;
 const COLLAPSED = 56;
 
-async function railWidth(page: import('@playwright/test').Page): Promise<number> {
+/**
+ * 🔴 **A single `boundingBox()` here samples a FRAME, not a width** —
+ * [B-1032](../../../docs/BUGS.md).
+ *
+ * 📁 `app-shell.tsx` carries `smalllaptop:transition-[width]
+ * smalllaptop:duration-150`, and the rail's width genuinely changes after
+ * hydration: **the server renders it expanded** — its own comment says so —
+ * **and the band collapses it on the client.** ⛔ So a read taken on arrival
+ * races a 150ms clock, and **a loaded machine loses more often.** QE measured
+ * `232 · 109 · 85 · 61` against an expected `56` and reported it to Lane A as
+ * a possible product defect; **those were four frames of one animation, and
+ * the product was right every time.**
+ *
+ * ## ⛔ Not a `waitForTimeout`, and not `reducedMotion` either
+ *
+ * ⚡ **This waits for the thing.** Two waits, and they answer different
+ * questions:
+ *
+ * ① **`data-collapsed` is the STATE the width follows** — React's, applied
+ *    once the band has been evaluated on the client. Waiting for it is what
+ *    distinguishes *"the rail is 232 because the band has not run yet"* from
+ *    *"the rail is 232 because the band decided so"*, ⛔ **which is exactly
+ *    what the old read could not tell apart.**
+ * ② **Then the width has to STOP MOVING** — two consecutive animation frames
+ *    agreeing. ⛔ **It is never assumed settled after an interval;** a rail
+ *    that never settles hangs the test, which is the honest outcome.
+ *
+ * ⚠️ **`reducedMotion: 'reduce'` would also work** — 📁 `globals.css` forces
+ * `transition-duration: 0.01ms` globally under it, so the animation would not
+ * exist to be sampled. ⛔ **Rejected deliberately: it measures the geometry in
+ * a mode most customers are not in**, and the claim under test is what the
+ * rail is for everybody.
+ *
+ * ✅ **The assertion it feeds stays an exact `toBe`.** Settling does not make
+ * this pass more easily — a rail that comes to rest at the wrong width fails,
+ * and reports the width it came to rest at rather than a frame of the way
+ * there.
+ */
+async function settledRailWidth(
+  page: import('@playwright/test').Page,
+  { collapsed }: { collapsed: boolean },
+): Promise<number> {
   const rail = page.getByRole('navigation', { name: 'Primary' });
   await expect(rail).toBeVisible();
   // ⚡ **The rail element itself carries the width**, and the box is measured
   // rather than the style read — a style that never took effect would still
   // read back correctly.
-  const box = await rail.locator('xpath=ancestor-or-self::*[@data-collapsed][1]').boundingBox();
-  return Math.round(box?.width ?? 0);
+  const element = rail.locator('xpath=ancestor-or-self::*[@data-collapsed][1]');
+
+  await expect(
+    element,
+    `the rail never reached data-collapsed=${collapsed}`,
+  ).toHaveAttribute('data-collapsed', String(collapsed));
+
+  return element.evaluate(
+    (node) =>
+      new Promise<number>((resolve) => {
+        let previous = Number.NaN;
+        const sample = () => {
+          const width = node.getBoundingClientRect().width;
+          if (width === previous) {
+            resolve(Math.round(width));
+            return;
+          }
+          previous = width;
+          requestAnimationFrame(sample);
+        };
+        requestAnimationFrame(sample);
+      }),
+  );
 }
 
 test.describe('the band decides the rail below 1280, and the person decides above it', () => {
@@ -48,7 +110,7 @@ test.describe('the band decides the rail below 1280, and the person decides abov
     await page.setViewportSize({ width: 1279, height: 900 });
     await page.goto('/');
 
-    expect(await railWidth(page)).toBe(COLLAPSED);
+    expect(await settledRailWidth(page, { collapsed: true })).toBe(COLLAPSED);
   });
 
   /**
@@ -87,13 +149,16 @@ test.describe('the band decides the rail below 1280, and the person decides abov
       await page.getByRole('button', { name: 'Expand navigation' }).click();
     }
     await expect(page.getByRole('button', { name: 'Collapse navigation' })).toBeVisible();
-    expect(await railWidth(page), 'the rail was not left open above the band').toBe(EXPANDED);
+    expect(
+      await settledRailWidth(page, { collapsed: false }),
+      'the rail was not left open above the band',
+    ).toBe(EXPANDED);
 
     // Cross the band. Same session, same stored preference.
     await page.setViewportSize({ width: 1279, height: 900 });
     await page.goto('/');
 
-    expect(await railWidth(page)).toBe(COLLAPSED);
+    expect(await settledRailWidth(page, { collapsed: true })).toBe(COLLAPSED);
   });
 
   test('🔴 at 1280 the rail is the person’s to decide', async ({ page }) => {
@@ -106,7 +171,7 @@ test.describe('the band decides the rail below 1280, and the person decides abov
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/');
 
-    expect(await railWidth(page)).toBe(EXPANDED);
+    expect(await settledRailWidth(page, { collapsed: false })).toBe(EXPANDED);
   });
 
   test('✅ the collapse control is absent where it would change nothing', async ({
