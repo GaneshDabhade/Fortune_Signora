@@ -89,6 +89,22 @@ test.describe('Workflow 9 · a person makes Signora theirs', () => {
      * exists rather than that a person can reach their profile.
      */
     await page.goto('/');
+    /**
+     * ⚠️ **Entry resolution settles first, and that wait is 🔴
+     * [B-292](../../../docs/BUGS.md) rather than a precaution.**
+     *
+     * ⛔ **The shell is interactive while `/` resolves**, so a person who opens
+     * the account menu and chooses their profile in that window **lands on Home
+     * instead** — their navigation happens, and the resolver's `replace`
+     * arrives afterwards and discards it. **Measured**: `/` → `/` →
+     * `/w/…/home`, with `/profile` never reached.
+     *
+     * ✅ **Fixed in the resolver** — it no longer moves somebody who has
+     * already moved. ⚡ **The wait stays**, because this test's claim is
+     * *reachable from the shell* and not *the resolver behaves*: the resolver's
+     * own guard is asserted where the resolver is.
+     */
+    await page.waitForURL(/\/w\/[0-9a-f-]{36}\/home$/, { timeout: 30_000 });
 
     await page.getByRole('button', { name: /^Account menu for / }).click();
     await page.getByRole('link', { name: /@/ }).click();
@@ -262,9 +278,52 @@ test.describe('Workflow 9 · a person makes Signora theirs', () => {
       await expect(page.getByRole('radio', { name: label })).toBeVisible();
     }
 
-    await page.getByRole('radio', { name: /^Dark\b/ }).check();
+    /**
+     * 🔴 **The change is chosen against what is stored, and this test used to
+     * assume it.**
+     *
+     * ⚠️ **It checked `Dark` and waited for *"Saved"*.** ⛔ **A radio that is
+     * already checked fires no change event**, so on any run where the stored
+     * theme was already dark, **nothing was sent and nothing said `Saved`.**
+     * 🔴 **Worse: it left `Dark` behind every time it failed**, so after its
+     * first failure it could never pass again without somebody changing the
+     * theme by hand. **A test that poisons its own next run is the sharpest
+     * member of the family this suite keeps meeting** — an assertion whose
+     * subject depends on what ran before it.
+     *
+     * ⛔ **Naming a different starting value would have moved the problem, not
+     * removed it** — whichever one is named can already be current. ✅ **So the
+     * test asks the screen which is checked and changes to one that is not.**
+     */
+    const themes = [/^Light\b/, /^Dark\b/, /^System\b/];
+    let changed = false;
+    for (const theme of themes) {
+      if (await page.getByRole('radio', { name: theme }).isChecked()) continue;
+      await page.getByRole('radio', { name: theme }).check();
+      changed = true;
+      break;
+    }
+    expect(changed, 'no theme was unchecked, so nothing could be changed').toBe(true);
     await expect(page.getByText('Saved').first()).toBeVisible();
+
+    /**
+     * ⚠️ **The reload waits for the WRITE, not for a word.** ⛔ *"Saved"* is
+     * already on screen from the change above, so waiting for it again would
+     * wait for nothing and reload mid-`PATCH` — **and a reload that cancels the
+     * request under test reports a persistence failure that never happened.**
+     *
+     * ⚡ **The claim is that it PERSISTS**, so the thing to wait for is the
+     * persist.
+     */
+    const persisted = page.waitForResponse(
+      (response) =>
+        response.url().includes('/preferences') &&
+        response.request().method() === 'PATCH' &&
+        response.ok(),
+      { timeout: 20_000 },
+    );
     await page.getByRole('radio', { name: /^System\b/ }).check();
+    await persisted;
     await page.reload();
 
     // ⛔ **Still `System` after a round trip.** A screen that read it back as
@@ -277,15 +336,41 @@ test.describe('Workflow 9 · a person makes Signora theirs', () => {
    * labelled region — 📁 the accessibility claim this product makes about
    * itself, checked on the one screen that is about accessibility.
    */
-  test('@journey every section the design keeps is present, and the one it does not is absent', async ({
+  test('@journey every section the design keeps is present, and the ones with no source say so', async ({
     page,
   }) => {
     await page.goto('/profile');
 
-    // ⛔ **Keyboard shortcuts is deliberately NOT here.** 📁 `SHORTCUT_GROUPS`
-    // is already rendered by the shell's Shortcuts overlay, and a second
-    // reference would be two lists of one truth. ⚡ **Asserted so the exclusion
-    // is deliberate rather than forgotten.**
+    /**
+     * 🔴 **Keyboard shortcuts IS here now, and the sentence that stood in this
+     * place was narrower than it looked.**
+     *
+     * ⚠️ **It read: *"deliberately NOT here — `SHORTCUT_GROUPS` is already
+     * rendered by the shell's Shortcuts overlay, and a second reference would
+     * be two lists of one truth."*** ⛔ **The concern was real and the
+     * conclusion did not follow**: 📁 [§2](../../../CLAUDE.md) forbids two
+     * *implementations* of one behaviour, not two surfaces onto one registry.
+     *
+     * ⚡ **And the product was already promising it**: the design's nine-item
+     * rail lists it, `PROFILE_SECTIONS` carries it, and clicking it reached
+     * *"this section is not built yet"*. ✅ **Built by sharing `ShortcutList`
+     * with the overlay** — one rendering, two mount points.
+     */
+    await openSection(page, 'Keyboard shortcuts');
+    /**
+     * ⚠️ **Scoped to the section, and the reason is the point of this slice.**
+     * ⛔ An unscoped `getByText('Command palette')` matches SIX elements —
+     * **the shell's `?` overlay is mounted on every screen and renders the same
+     * registry.** ✅ **That is one component with two mount points**, which is
+     * what makes it correct rather than a duplicate.
+     */
+    const shortcuts = page.getByRole('region', { name: 'Keyboard shortcuts' });
+    await expect(shortcuts.getByRole('heading', { name: 'Keyboard shortcuts' })).toBeVisible();
+    await expect(shortcuts.getByText('Command palette', { exact: true })).toBeVisible();
+    // ⛔ **No editor**: the design's conflict rule describes one and no
+    // preference field or endpoint stores a binding.
+    await expect(shortcuts.getByRole('button')).toHaveCount(0);
+
     // ⛔ **And no CONTROL for writing to the CRM** — the design draws a toggle
     // and Signora has no write path to a connected system. ✅ **The fact is
     // stated instead.**

@@ -77,7 +77,25 @@ export default function EntryPage() {
   useEffect(() => {
     // ⛔ **In an effect, not during render.** Navigating while rendering is a
     // side effect in the render phase, and React may run it twice.
-    if (route !== null) router.replace(route);
+    if (route === null) return;
+    /**
+     * 🔴 **Never move somebody who has already moved** —
+     * [B-292](../../../docs/BUGS.md).
+     *
+     * ⚠️ **The shell is interactive while this resolves.** ⛔ A person who
+     * opens the account menu on `/` and chooses their profile lands on **Home**
+     * instead: their navigation happens first, and this `replace` arrives
+     * afterwards and discards it. **Measured**: `/` → `/` → `/w/…/home`, with
+     * `/profile` never reached at all.
+     *
+     * ⚡ **`replace` is right and unconditional was wrong.** 📁 The design's
+     * rule is about the BACK button — *"entry resolution replaces history
+     * rather than pushing to it… pressing back from Home after login exits to
+     * the sign-in page, not into a loop through the resolver"* — **it says
+     * nothing about overruling a person who chose somewhere else.**
+     */
+    if (window.location.pathname !== '/') return;
+    router.replace(route);
   }, [router, route]);
 
   if (state.status === 'unresolved') {

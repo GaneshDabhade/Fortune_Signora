@@ -2479,3 +2479,58 @@ palette withholds it for about three seconds, because `guardFor`/`can` are hande
 a second answer to *what can this person reach***, which is exactly what its own
 comment says it must never be. **Filed rather than fixed** — the role arrives as
 a prop from the shell, which is outside this row's budget.
+
+---
+
+## ⌨️ The profile's Keyboard shortcuts section — TASK-1478
+
+**Built 2026-08-19**, under the standing programme rather than a row of its own
+([D-229](../DECISION_REGISTER.md): *"let Lane A decide the priorities"*).
+
+📁 **The design's User Profile carries nine sections and five were built.** ⚠️
+**`Keyboard shortcuts` reached *"this section is not built yet"*** — and its own
+placeholder said what it would hold: *"the shortcuts Signora publishes, read
+from the same registry the ⌘-overlay uses."* ✅ **That description was accurate
+and the registry already existed.** ⛔ **What was missing was the component.**
+
+### ⚡ Shared, not copied
+
+✅ **`components/shell/shortcut-list.tsx` renders it, and the `?` overlay uses
+the same component.** 📁 [§2](../../CLAUDE.md): *behaviour exists exactly once*
+— **two renderings of one registry would disagree the first time one of them
+learned something.**
+
+⚠️ **The extraction nearly dropped a correctness property.** The overlay
+resolved `isApplePlatform()` in a `useEffect` because **the server has no
+keyboard**, and the first draft of the shared component called it in the render
+body. 🔴 **A guard living in the CALLER is one an extraction silently
+discards** — it moved with the markup instead.
+
+### ⛔ And a stale exclusion, corrected rather than deleted
+
+⚠️ **`profile-journey.spec.ts` asserted the section was *"deliberately NOT
+here — a second reference would be two lists of one truth."*** ⛔ **The concern
+was real and the conclusion did not follow**: §2 forbids two *implementations*
+of one behaviour, not two surfaces onto one registry. ⚡ **And the product was
+already promising it** — the design's rail lists it, `PROFILE_SECTIONS` carries
+it, and clicking it reached a not-built panel.
+
+⛔ **No *Customise* control is drawn.** 📁 The design's spec line — *"conflicts
+are refused with the name of the command already holding the combination"* —
+**describes an editor**, and `PersonPreferences` carries no shortcut field and no
+endpoint stores a binding.
+
+### 🔴 Two red tests that predated this session, and one was self-poisoning
+
+**Running the profile journey found two failures, and stashing every local change
+proved both predate this work.**
+
+| | |
+|---|---|
+| 🔴 **[B-292](../BUGS.md)** | **Entry resolution overruled a person who had already chosen somewhere else.** From `/`, choosing your profile landed on **Home**: the click navigated and the resolver's `replace` arrived afterwards and discarded it. **Fixed with one guard** — the resolver does not move somebody who has already moved |
+| 🔴 **A self-poisoning test** | *"The theme offers System and keeps it as System"* checked `Dark` and waited for *"Saved"*. **A radio that is already checked fires no change event**, so on any run where the stored theme was already dark nothing was sent — ⛔ **and it left `Dark` behind every time it failed, so after its first failure it could never pass again.** ✅ **It now asks the screen which theme is checked and changes to one that is not**, and waits for the `PATCH` rather than for a word |
+
+⚡ **The general form, and it is the fifth instance this week**: **an assertion
+whose subject depends on what ran before it.** ⛔ Naming a different starting
+value would have moved that problem rather than removed it, because whichever
+value is named can already be current.

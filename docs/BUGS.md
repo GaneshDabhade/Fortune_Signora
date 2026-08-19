@@ -100,6 +100,63 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-292 · 🟡 Entry resolution overrules a person who has already chosen somewhere else
+
+| | |
+|---|---|
+| **Module** | `product_surface` — `app/(app)/page.tsx`, the entry resolver |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — **Lane A** |
+| **Severity** | 🟡 — **a narrow window, and inside it a person's own click is silently discarded** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-19.** ⛔ **`VERIFIED` is QE's** |
+| **Found** | **2026-08-19 by Lane A**, under [TASK-1478](BACKLOG.md), when a green profile journey turned out to have been failing before this session touched it |
+
+**Measured.** From `/`, open the account menu and choose your profile:
+
+| | |
+|---|---|
+| The link's `href` | ✅ `/profile` |
+| Frame navigations | ⛔ `/` → `/` → **`/w/{id}/home`** |
+| `/profile` | ⛔ **never reached** |
+
+⚡ **The shell is interactive while `/` resolves.** 📁 `EntryPage` renders
+`sr-only` content and calls `router.replace(route)` in an effect — **and the
+effect fires after the person has already navigated**, so their choice is
+overwritten by a decision made about a page they had left.
+
+### ⛔ `replace` was right; unconditional was wrong
+
+📁 **The design's rule is about the BACK button** — *"entry resolution replaces
+history rather than pushing to it. Pressing back from Home after login exits to
+the sign-in page, not into a loop through the resolver."* ⚡ **It says nothing
+about overruling somebody who chose a destination.**
+
+✅ **The fix is one guard**: the resolver does not move somebody who has already
+moved.
+
+### ⚠️ It was hidden by two tests that were failing before today
+
+🔴 **`profile-journey.spec.ts` had TWO red tests on `origin`**, and this session
+found them only because it ran the file. **Verified they predate this work** by
+stashing every local change and re-running: both still failed.
+
+⛔ **The second red one was not a product defect at all — it was the sharpest
+test-isolation defect this suite has produced.** *"The theme offers System and
+keeps it as System"* checked `Dark` and waited for *"Saved"*. **A radio that is
+already checked fires no change event**, so on any run where the stored theme
+was already dark, nothing was sent and nothing said *Saved*. 🔴 **And it left
+`Dark` behind every time it failed** — **so after its first failure it could
+never pass again without somebody changing the theme by hand.**
+
+✅ **Both are repaired**: the resolver has its guard, and the test now **asks the
+screen which theme is checked and changes to one that is not** — ⛔ naming a
+different starting value would have moved the problem rather than removed it,
+because whichever value is named can already be current. ⚡ **And the reload now
+waits for the `PATCH` rather than for a word**, since *"Saved"* was already on
+screen from the previous change and waiting for it reloaded mid-write.
+
+**Run twice back to back, green both times**, which is the property the old test
+did not have.
+
 ### B-291 · 🟡 The rail offers Settings and the palette refuses it, for the first three seconds of every session
 
 | | |
