@@ -1102,6 +1102,55 @@ NOT CERTIFIED
 **Either record a failed run somewhere the next run does not require to be clean** — the attempt log already is exactly that — **or make the dirty-tree diagnostic name `certification/` when `certification/` is the only thing dirty.** ⛔ **Held: it is certification's own semantics, and QE does not change what a gate means mid-candidate.**
 
 ---
+### B-1031 · 🟠 A post-teardown exception crashes the frontend reporter, and certification correctly refuses a run it cannot read
+
+| | |
+|---|---|
+| **Module** | `frontend/tests/components/` — **the shared frontend suite, so QE's** |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — ⛔ **it refuses a certification cycle at random, and the candidate is not at fault** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-19 by QE**, certifying [`8ceff5d6`](#) in cycle 251 |
+
+**What certification reported:**
+
+```
+· gate 'frontend-suite' failed: did not report a total
+
+⎯⎯ Uncaught Exception ⎯⎯
+ReferenceError: window is not defined
+ ❯ Object.cleanupBroadcastSetup  better-auth/dist/client/broadcast-channel.mjs:35
+ ❯ Object.cleanup                better-auth/dist/client/session-refresh.mjs:109
+ ❯ Timeout._onTimeout            nanostores/lifecycle/index.js:139
+
+This error originated in "tests/components/companies-workspace.test.tsx".
+This error was caught after test environment was torn down.
+```
+
+### ✅ The tests PASS, and the gate was right to refuse anyway
+
+**Run directly on the same tree, immediately afterwards: `198 files, 3430 passed, exit 0`** — **exactly what Lane A reported from their own gate run.**
+
+⚡ **`did not report a total` is the honest failure.** ⛔ **An uncaught exception killed the reporter before it printed its summary, so the gate genuinely did not know whether the suite passed** — and **refusing beats assuming**, which is the standing rule this repository applies everywhere else.
+
+> ⚠️ **This is an ABORT, not a verdict on the commit.** 📁 *"A failure is a claim about the RUN, not about the code."* **The candidate is unchanged and the certification is simply re-run.**
+
+### ⛔ Not the candidate's
+
+**`git diff --name-only origin/main HEAD` touches NEITHER `companies-workspace.test.tsx` NOR `dead-ends.test.tsx`.** **A leaked timer that fires after teardown is pre-existing and intermittent.**
+
+### The mechanism, and why it is intermittent
+
+**`better-auth`'s session-refresh registers a `nanostores` lifecycle timeout.** When it fires **after** vitest has torn the jsdom environment down, `cleanupBroadcastSetup` touches `window` and there is none. ⚡ **Whether it fires before or after teardown is a race against a real clock**, which is why it is not reproducible on demand: **three runs of the two named files produced zero occurrences.**
+
+⛔ **So the frequency is unmeasured and is stated as unmeasured** — one occurrence in the cycles run so far, and no reproduction in six direct attempts.
+
+### ⚠️ Not fixed here, and the reason is not effort
+
+**The honest fix is for the test that mounts the auth client to cancel its subscription before finishing** — vitest's own message says exactly that. ⛔ **But which test mounts it is not established**: the exception is *attributed* to `companies-workspace.test.tsx` because that file was running, and vitest says in as many words that *"it doesn't mean the error was thrown inside the file itself."*
+
+📁 **Attributing it from that attribution would be [B-1000](#b-1000)'s family again** — **the message answers *"what was running?"* and the question is *"what registered the timer?"*** ✅ **Recorded with the evidence so the next occurrence has something to build on, rather than guessed at now.**
+
 ### B-1030 · 🟡 Four auth-flow journeys fail in isolation, vary between runs, and are not any of the three known classes
 
 | | |
