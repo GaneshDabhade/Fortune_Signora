@@ -1102,6 +1102,43 @@ NOT CERTIFIED
 **Either record a failed run somewhere the next run does not require to be clean** — the attempt log already is exactly that — **or make the dirty-tree diagnostic name `certification/` when `certification/` is the only thing dirty.** ⛔ **Held: it is certification's own semantics, and QE does not change what a gate means mid-candidate.**
 
 ---
+### B-1029 · 🟡 Three browser journeys fail alone, on a clean environment, and are not contamination
+
+| | |
+|---|---|
+| **Module** | `product_surface` — **joined from [`modules.toml`](coordination/modules.toml)** |
+| **Current assignee** | **Lane A** |
+| **Severity** | 🟡 — ⚠️ **and the class is not yet established: a stale spec and a product defect look identical from here** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-19 by QE**, attributing the browser baseline after [B-1017](#b-1017), [B-1026](#b-1026) and [B-1028](#b-1028) |
+
+**Baseline they were found in — a rebuilt environment, and the arithmetic checked:**
+
+```
+373 passed · 16 failed · 4 skipped  =  393 enumerated   ·   UNRUN 0
+```
+
+⚡ **Down from `348 / 36 / 8` before this session's fixes, and the count adding up is itself the check [B-1027](#b-1027) exists for.**
+
+### ✅ Isolated, so they are not contamination
+
+**Re-run alone on the same tree and the same clean environment — `profile-journey signal-center search-journey rail-band`, 16 passed, 3 failed.** ⛔ **`profile-journey`'s two failures DISAPPEARED**, which is what proves the other three are real: the same run separates them.
+
+| Spec | What it asserts | What happened |
+|---|---|---|
+| `rail-band.spec.ts:42` | *"at 1279 the rail is collapsed however it was left"* | **Expected `56`, received `85`** — measured geometry |
+| `search-journey.spec.ts:18` | *"a seller finds an account by name and opens it"* | **`listbox 'Accounts'` has no options** |
+| `signal-center.spec.ts:16` | *"the Signal Center is reachable, and offers the three states"* | **`link 'Review every signal'` not found** |
+
+### ⛔ QE does not decide which of two things these are
+
+**A spec that is stale and a product that regressed produce exactly this evidence**, and telling them apart needs the design and the module's history — 📁 **which is the current assignee's, not QE's.** ⚠️ **`rail-band`'s `56 → 85` is the one most likely to be a moved rail rather than a broken one**, and **`signal-center`'s missing link may be a renamed destination.**
+
+✅ **If any of them turns out to be a stale expectation rather than a defect, that is certification coverage debt and it is QE's to retire** — 📁 **[§20e](../CLAUDE.md): QE creates, maintains and RETIRES repository-wide tests.** **Say which, and the row moves.**
+
+### ⚠️ Separately, and not in this row
+
+**Four auth-flow failures remain** — `auth-journey`, `auth-credential-journeys`, `security-center:155`, `resilience`. ⛔ **`security-center:155` is self-contained** — it registers its own person and opens three contexts as that person, so it cannot be cross-spec contamination. ⚡ **`resilience.spec.ts:88` already documents this hazard and defends against it**: *"signing out revokes the session it names — server-side, for everybody holding it … so it gets its own session."* **Unattributed, and claimed as nothing.**
 
 ### B-1027 · 🟠 A serial spec stops counting the tests it did not run, and the totals still look complete
 
