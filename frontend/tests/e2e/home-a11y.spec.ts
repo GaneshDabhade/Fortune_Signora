@@ -20,58 +20,82 @@ async function openHome(page: import('@playwright/test').Page) {
   await page.waitForLoadState('networkidle');
 }
 
+/**
+ * 🔴 **The same page, composed the other way** — 📁 the activation composition,
+ * which **no structural check had ever covered.**
+ *
+ * ⚠️ **Every assertion below this line used to run against whichever composition
+ * the seeded persona resolved to**, and that is `seller` on the Playground. ⛔
+ * **Activation renders entirely different components** — three step cards, a
+ * progress line, a footer — and `1.3.1` and `2.5.8` are claims about *"Home"*,
+ * not about one composition's cards.
+ *
+ * ⚡ **Nothing connected is the real entry condition**, so it is stubbed at the
+ * production read boundary rather than by reaching past it: 📁 the design
+ * resolves activation from *"a working capability"*, and an empty systems list
+ * is exactly what a workspace that has connected nothing returns.
+ */
+async function openActivationHome(page: import('@playwright/test').Page) {
+  await page.route('**/api/proxy/**/integrations', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }),
+  );
+  await openHome(page);
+  await expect(
+    page.getByTestId('home'),
+    'the integrations stub did not produce the activation composition',
+  ).toHaveAttribute('data-composition', 'activation');
+}
+
+/**
+ * 📁 **`1.3.1`'s structural claims, as one measurement** — *"each card is a
+ * `<section>` with its own h2"* — so the two compositions assert the same thing
+ * rather than drifting into two nearly-identical copies (§2).
+ */
+async function expectCardStructure(page: import('@playwright/test').Page) {
+  const cards = page.locator('[data-card]');
+  const count = await cards.count();
+  expect(count, 'no cards rendered').toBeGreaterThan(0);
+
+  for (let index = 0; index < count; index += 1) {
+    const card = cards.nth(index);
+    const id = await card.getAttribute('data-card');
+    // ⛔ **The card's own element IS the section.**
+    expect(await card.evaluate((el) => el.tagName), `${id} is not a section`).toBe('SECTION');
+    // 🔴 **And it contains no second one.** ⚠️ Several cards rendered their own
+    // `<section>` inside Home's, which made two nested landmarks per card and
+    // left the outer one carrying the name.
+    expect(await card.locator('section').count(), `${id} nests a second section`).toBe(0);
+    // 🔴 **`h2`, not `h3`.** ⛔ Under the page's `h1`, a card heading at `h3`
+    // skips a level — `1.3.1`'s own defect, and what several cards did.
+    //
+    // ⚠️ **A card showing its error or forbidden panel has no h2 of its own** —
+    // 📁 `SystemState` renders a region title as a `<p>` deliberately, *"the
+    // ARIA dialog role carries an expectation this panel does not meet"* being
+    // the same instinct. **Those cards are named by the section instead.**
+    const headings = await card
+      .locator('h1, h2, h3, h4, h5, h6')
+      .evaluateAll((els) => els.map((el) => el.tagName));
+    for (const tag of headings) {
+      expect(tag, `${id} has a ${tag} where the design says h2`).toBe('H2');
+    }
+  }
+}
+
 test.describe('📁 1.3.1 — one main, one h1, and a section per card', () => {
   /**
    * 📁 *"Home is one `<main>` with an **h1 naming the workspace**. Each card is a
    * `<section>` with its own **h2** in DOM order matching visual order at every
    * breakpoint."*
    */
-  test('@a11y every card is exactly one section', async ({ page }) => {
-    await openHome(page);
-
-    const cards = page.locator('[data-card]');
-    const count = await cards.count();
-    expect(count).toBeGreaterThan(0);
-
-    for (let index = 0; index < count; index += 1) {
-      const card = cards.nth(index);
-      const id = await card.getAttribute('data-card');
-      // ⛔ **The card's own element IS the section.**
-      expect(await card.evaluate((el) => el.tagName), `${id} is not a section`).toBe('SECTION');
-      // 🔴 **And it contains no second one.** ⚠️ Several cards rendered their own
-      // `<section>` inside Home's, which made two nested landmarks per card and
-      // left the outer one carrying the name.
-      expect(
-        await card.locator('section').count(),
-        `${id} nests a second section`,
-      ).toBe(0);
-    }
-  });
-
-  /**
-   * 🔴 **`h2`, not `h3`.** ⛔ Under the page's `h1`, a card heading at `h3` skips
-   * a level — which is `1.3.1`'s own defect, and it is what several cards did.
-   */
-  test('@a11y every card heading is an h2 under the page h1', async ({ page }) => {
+  test('@a11y every card is one section, with one h2, under one h1', async ({ page }) => {
     await openHome(page);
 
     await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
-
-    const cards = page.locator('[data-card]');
-    for (let index = 0; index < (await cards.count()); index += 1) {
-      const card = cards.nth(index);
-      const id = await card.getAttribute('data-card');
-      // ⚠️ **A card showing its error or forbidden panel has no h2 of its own** —
-      // 📁 `SystemState` renders a region title as a `<p>` deliberately, *"the
-      // ARIA dialog role carries an expectation this panel does not meet"* being
-      // the same instinct. **Those cards are named by the section instead.**
-      const headings = await card.locator('h1, h2, h3, h4, h5, h6').evaluateAll((els) =>
-        els.map((el) => el.tagName),
-      );
-      for (const tag of headings) {
-        expect(tag, `${id} has a ${tag} where the design says h2`).toBe('H2');
-      }
-    }
+    // ⚡ **Shared with the activation composition below**, which asserts the
+    // same three things about entirely different components — 📁 `1.3.1` is a
+    // claim about *"Home"*, not about one composition's cards, and two copies
+    // of the loop would be two things to keep in step (§2).
+    await expectCardStructure(page);
   });
 
   /**
@@ -301,5 +325,52 @@ test.describe('📁 4.1.3 — entry announces once', () => {
     expect(await live.count()).toBe(1);
     // ⚡ **Polite, never assertive** — arriving somewhere is not an interruption.
     await expect(live.first()).toHaveAttribute('aria-live', 'polite');
+  });
+});
+
+test.describe('📁 the activation composition — the same criteria, the other half of Home', () => {
+  /**
+   * ⛔ **These are not new criteria.** They are `1.3.1`, `2.4.3`, `4.1.3` and
+   * `2.5.8` — every one already asserted above — **measured against the
+   * composition that had never been measured.**
+   *
+   * ⚡ **The gap was invisible because the suite passed.** 📁 A seeded persona
+   * resolves to `seller`, so *"every card is a section"* was a true statement
+   * about four cards and an unasked question about three others.
+   */
+  test('@a11y every activation card is a section with its own h2', async ({ page }) => {
+    await openActivationHome(page);
+
+    await expectCardStructure(page);
+  });
+
+  test('@a11y one h1, one live region, and focus on the heading', async ({ page }) => {
+    await openActivationHome(page);
+
+    await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+    const live = page.locator('main [aria-live]');
+    expect(await live.count()).toBe(1);
+    await expect(live.first()).toHaveAttribute('aria-live', 'polite');
+    // 📁 *"Focus lands on the h1, not the search field."*
+    expect(await page.evaluate(() => document.activeElement?.tagName)).toBe('H1');
+  });
+
+  /**
+   * 📁 **`2.5.8` on the composition with the most controls per card** — three
+   * steps, each with a primary, a secondary and in one case a skip.
+   */
+  test('@a11y every activation action clears 24 × 24', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await openActivationHome(page);
+
+    const measured = await actions(page);
+    expect(measured.length).toBeGreaterThan(0);
+
+    for (const action of measured) {
+      expect(
+        Math.min(action.width, action.height),
+        `${action.card} — "${action.name}" is ${action.width}×${action.height}`,
+      ).toBeGreaterThanOrEqual(24);
+    }
   });
 });
