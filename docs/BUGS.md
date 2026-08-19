@@ -427,53 +427,15 @@ Python and fails if the two part company again**, in both directions. ✅
 
 ---
 
-### B-287 · 🟡 An integration test hardcodes human review's Redis port, so it cannot pass in any lane
+<!-- A duplicate `B-287` heading stood here until 2026-08-19. It is deliberately NOT a heading now: `state-check` counts `### B-nnn`, and a second one under this id is the defect being removed. -->
 
-| | |
-|---|---|
-| **Module** | `backend/tests/integration/test_m1_1_demo_checklist.py` — **a test, not production code** |
-| **Current assignee** | **QE** — it is a repository-wide suite, and 📁 §20e gives QE *"every shared test suite"* |
-| **Severity** | 🟡 · ⛔ **Not a regression.** The line is unchanged since the file was written |
-| **Status** | **`OPEN`** |
-| **Found** | **2026-08-19 by Lane A**, re-running the backend gates after a rebase |
-
-**Line 48 reads `REDIS_DSN = "redis://localhost:6379/0"`.**
-
-📁 [`RUNNING.md`](RUNNING.md#running-a-lane) allocates **Redis `6379 + 100n`** per
-environment — Lane A is **6679**, Lane B **6779**, QE **6579**. ⛔ **6379 is human
-review's**, so `test_item_3_message_appears_on_the_expected_redis_queue` fails
-with `ConnectionRefusedError` in **every lane**, and passes only where slot 0
-happens to be up.
-
-### ⚠️ Why this is worth a row rather than a shrug
-
-⛔ **It is not that one test fails. It is that a lane cannot tell this failure
-from a real one.** ⚡ On 2026-08-19 it took a diagnosis to establish that a red
-line in a 1,833-test run was a port allocation rather than a defect in the slice
-about to be pushed — **which is the exact cost the allocation table exists to
-remove.**
-
-✅ **Everything else in the run passed**: `1832 passed, 1 failed`.
-
-### 📁 The same class is already tracked, one layer down
-
-**`signora_platform/settings.py` declares `redis_url` defaulting to
-`redis://localhost:6379/0`** while the allocation table says no lane invents
-ports — recorded in the Human Review Environment work, and quoted at
-[B-1003](#b-1003)'s discussion. ⚡ **This is that default reaching a test**, where
-it is cheaper to see and cheaper to fix.
-
-### The fix is QE's and is one of two
-
-**Either** read the DSN from `SIGNORA_REDIS_URL` as the rest of the suite does,
-**or** skip the test explicitly when slot 0 is not up. ⛔ **The second is only
-honest if the skip names the reason** — 📁 §11, *a test skipped to make a change
-pass is the anti-pattern*, and a silent skip is worse than the red line.
-
-⚠️ **Lane A has not touched it.** 📁 §20e — *"finding a defect outside your
-assignment is not permission to fix it — it is an obligation to report it."*
-
----
+> ⚠️ **`B-287` was allocated twice, for one defect.** ⛔ **Two `### B-287` headings stood in this file** — this one, and *"A test held `redis://localhost:6379/0` as a literal — slot 0's, which is human review's"* — **both describing `backend/tests/integration/test_m1_1_demo_checklist.py` holding a hardcoded slot-0 Redis port.** 📁 **`infra/state-check.py` has been reporting it: *"B- identifiers are allocated twice: B-287."***
+>
+> ✅ **Consolidated onto [B-287](#b-287--a-test-held-redislocalhost63790-as-a-literal--slot-0s-which-is-human-reviews), which is the authoritative row** — it carries the fix, the severity QE raised after measuring what the test *does* to the Redis it reaches (`await redis.delete(queue)`, before and after — **so on a workstation where human review is up it does not fail, it CONNECTS and deletes a queue in the reviewer's Redis**), and it already quotes this row's one unique sentence verbatim.
+>
+> ⛔ **Nothing is renumbered.** 📁 [§20e](../CLAUDE.md) allows renumbering *"only to break a tie"*, and **five other rows cite `B-287` by number** — moving it would break every one of them to fix a heading. ✅ **Consolidating costs no reference.**
+>
+> ⚡ **And this duplicate was `OPEN` while the defect it describes has been `FIXED` since 2026-08-19** — **so the register was carrying a resolved defect in its active queue**, which is precisely the historical noise a duplicate id produces.
 
 ### B-286 · 🟡 The design's own light warn tag is 4.08:1 against the 4.5:1 the design states
 
@@ -1585,7 +1547,7 @@ resilience                  1 failed   2 passed
 | **Module** | `product_surface` — **joined from [`modules.toml`](coordination/modules.toml)** |
 | **Current assignee** | **Lane A** |
 | **Severity** | 🟡 — ⚠️ **and the class is not yet established: a stale spec and a product defect look identical from here** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`RESOLVED`** — QE, 2026-08-19. ⛔ **This row's own body has carried a *RESOLVED, three different ways* section since the day it was opened, and the Status field never followed.** ⚡ **A register whose row says one thing in its table and another in its body is worse than one that is simply out of date**, because both are visible and only one is read. 📁 **Its lasting value is the THIRD environmental class it named** — *a test that samples before its own read lands* — **which [B-1036](#b-1036) does NOT cover** and which is why this is not folded into it. **Was:** `OPEN` |
 | **Found** | **2026-08-19 by QE**, attributing the browser baseline after [B-1017](#b-1017), [B-1026](#b-1026) and [B-1028](#b-1028) |
 
 **Baseline they were found in — a rebuilt environment, and the arithmetic checked:**
@@ -2082,7 +2044,7 @@ if (input.neverSynced) return 'activation';
 | **Module** | `frontend/tests/e2e/**` · `frontend/tests/components/**` — **certification coverage**, not product |
 | **Current assignee** | **QE** — repository-wide suites |
 | **Severity** | ⏸️ **Not a defect today.** ⛔ **On `main` at `954291ec` every one of these assertions is TRUE** — `/` renders a level-1 heading *Attention* |
-| **Status** | ⏸️ **`PENDING RECONCILIATION`** — **opened on the product owner's explicit instruction to track them, 2026-08-18** |
+| **Status** | ✅ **`RECONCILED`** — QE, 2026-08-19, **measured rather than assumed.** ⚡ **All fifteen assertions are gone from the suite**: `grep -c "name: 'Attention', level: 1"` returns **0** in every one of `navigation-bands`, `content-grid`, `auth-journey`, `interaction-boundaries` and `app-shell-sections`, and all five files pass on `main` at `8a8116d5`. ⛔ **The one surviving `'Attention'` reference in the e2e suite is `attention-route-absence.spec.ts:85`, which asserts the rail does NOT offer such a link** — the opposite assertion, and the correct one. **Was:** ⏸️ **`PENDING RECONCILIATION`** — **opened on the product owner's explicit instruction to track them, 2026-08-18** |
 | **Found** | **2026-08-18**, by the certification audit of the obsolete `/attention` surface |
 
 **The fifteen, by file — all one assertion: `heading { name: 'Attention', level: 1 }` after visiting `/`.**
@@ -2102,6 +2064,8 @@ if (input.neverSynced) return 'activation';
 📁 **The product owner, 2026-08-18:** ***"Do not change the obsolete assertions on main merely to make the current baseline green… do not delete them prematurely from the published branch."***
 
 ⚡ **`main` is not the final implementation state.** **Lane A's route split — `/` becomes the shell's entry resolver and the old screen moves to `/attention` — is on an UNPUSHED branch**, so it cannot be audited and these assertions cannot be reconciled against a contract that is not in the repository.
+
+> ✅ **Closed 2026-08-19, and the prediction was half wrong in a way worth keeping.** ⚡ **`/` did become the entry resolver — and the old screen did NOT move to `/attention`. It was retired outright**: `find frontend/app -ipath '*attention*'` returns nothing. ⛔ **So the fifteen assertions were not reconciled against a new contract; they were removed along with the surface they described.** ⚠️ **The row waited for the right event and named the wrong outcome**, which is why it says *tracking row* rather than *defect* — and why it was right not to guess.
 
 > ⚠️ **When they fail after that lands, they are STALE CERTIFICATION COVERAGE, never a product regression.** 📁 **The product owner's words, and the distinction this row exists to preserve.**
 
@@ -10888,6 +10852,28 @@ def _load_state_check() -> ModuleType:
 ⚠️ **Adding a word to the register without adding it there makes every counter wrong silently** — 🔴 **which is what happened, and the register gains vocabulary naturally as the product owner rules in their own words.**
 
 ### B-431 · 🟠 The workflow registry's task lists are four days stale, and a workflow reads complete because its remaining rows are not in it
+
+> ### ⚠️ 2026-08-19, QE — measured again, and it now advertises PROMOTED work as available
+>
+> **`python3 infra/state-check.py` reports two things about the generated coordination source today:**
+>
+> ```
+> · The canonical coordination source is stale — the published source does not
+>   match what the generator emits today
+> · lane-a: queues TASK-1484 as executable and its row says IN VALIDATION
+>   — finished work advertised as available
+> ```
+>
+> ⛔ **`TASK-1484` was promoted to `main` at `8a8116d5` on 2026-08-19.** ⚡ **A lane polling `origin/coordination` — which [§20e](../CLAUDE.md) makes the FIRST thing a lane reads — is told that shipped work is its next task.**
+>
+> ### 🔴 And the assignee cannot act
+>
+> 📁 **This row names Lane C, and Lane C was retired on 2026-08-18.** ⛔ **QE is NOT reassigning it** — the banner at the head of this file is explicit that rewriting the fifteen Lane C rows would be *"QE assigning 15 defects"*, and that is the product owner's. ✅ **Recorded here, unassigned, exactly as this file's own rule for code that belongs to no lane requires.**
+>
+> ⚡ **What makes it worth measuring again rather than leaving:** ⛔ **the republish is a manual Product Office step ([§20e](../CLAUDE.md): *not on a schedule and not by automation*), and there is no Product Office.** **So this will not self-correct, and every promotion widens the gap.** ⚠️ **`state-check` reports it and does not fail — correctly, because the lane that could clear it cannot push to `integration`.**
+>
+> ✅ **No new row was opened for this.** 📁 **It is the same defect this row already names, measured on a later day, and a second id would make one problem look like two.**
+
 
 | | |
 |---|---|

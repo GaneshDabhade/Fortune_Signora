@@ -395,7 +395,29 @@ test.describe('Workflow 3 · verifying an email', () => {
  * and an unknown address.** That is an account-enumeration property, on the
  * one page nobody has to authenticate to reach.
  */
+
+/**
+ * ⚡ **180 seconds, and it is a budget rather than a tolerance** —
+ * 📁 [B-1030](../../../docs/BUGS.md).
+ *
+ * **These journeys cross `/forget-password` and `/request-password-reset`,
+ * whose Better Auth bucket is `3 per 60 seconds`** — not the 10-second one the
+ * sign-in paths use. ⚡ **The suite's rate-limit fixture waits a refusal out
+ * rather than being refused by it, and its worst case is two waits of
+ * `window + 1`** — **122 seconds before the third attempt**, which cannot fit
+ * in the 60-second default.
+ *
+ * ⛔ **This weakens nothing.** **Every assertion in the block is unchanged**;
+ * only how long the runner is willing to wait for a real control moves. 📁 The
+ * alternative — configuring the window per environment — is product code and
+ * the product owner's ([C-109](../../../docs/LANE_COORDINATION.md) option ②).
+ *
+ * ⚠️ **Cost, stated rather than hidden**: a run that actually hits the limiter
+ * spends that time waiting. **A run that does not is unaffected.**
+ */
 test.describe('Workflow 4 · asking for a reset link', () => {
+  test.describe.configure({ timeout: 180_000 });
+
   test('the screen the design draws is the screen that renders', async ({ page }) => {
     await page.goto('/forgot-password');
 

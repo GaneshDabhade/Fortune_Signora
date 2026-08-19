@@ -253,7 +253,12 @@ test.describe('the token behind every request', () => {
  * **Recorded here rather than skipped silently**, because the absence is the
  * finding: it is the same shape as the two-roles-where-reviewers-asked-for-five
  * observation, and it is an enterprise-readiness gap rather than a defect.
+ *
+ * ⚠️ **This carried an empty `test.skip('…', () => {})` until 2026-08-19.**
+ * ⛔ **A test with no body that is always skipped is a comment wearing a test's
+ * clothes** — it can never fail, so it protects nothing, and it inflated the
+ * suite's count with a case that was never a case (`CLAUDE.md` §2: *a guard
+ * that cannot fail is not protection*). ✅ **The note is kept because the
+ * observation is real; the fake test is gone because it was not.**
  */
-test.describe('a permission change mid-session', () => {
-  test.skip('@journey needs a way to change a permission, and there is none', () => {});
-});
+

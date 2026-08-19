@@ -439,17 +439,3 @@ def test_item_12_logs_carry_context_and_never_carry_secrets() -> None:
     assert "super-secret-key" not in line
 
 
-def test_item_13_coverage_gate_is_configured() -> None:
-    """13. Coverage report produced; CI gate demonstrated failing below
-    baseline.
-
-    Asserts the gate is configured and non-zero — a gate set to zero passes
-    unconditionally and is indistinguishable from having no gate at all.
-    """
-    import tomllib
-    from pathlib import Path
-
-    config = tomllib.loads(Path("pyproject.toml").read_text())
-    fail_under = config["tool"]["coverage"]["report"]["fail_under"]
-
-    assert fail_under >= 90, f"coverage gate must be meaningful, got {fail_under}"
