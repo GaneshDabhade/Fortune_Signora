@@ -15,8 +15,28 @@ import { expect, test } from '@playwright/test';
  */
 test('@journey the Signal Center is reachable, and offers the three states', async ({ page }) => {
   await page.goto('/');
+  await page.waitForURL(/\/w\/[0-9a-f-]{36}\/home$/, { timeout: 30_000 });
 
-  const door = page.getByRole('link', { name: /Review every signal/i });
+  /**
+   * 🔴 **The rail, and it is the door the product GUARANTEES.**
+   *
+   * ⚠️ **This asserted a Home link reading *"Review every signal"* and that copy
+   * no longer exists.** 📁 Home's rebuild against the finalized design replaced
+   * that entrance with the attention card's own rule — *"a sixth becomes 'See
+   * all 8 in Signals'"* — ⛔ **which renders only when there are more than three
+   * items**, so on a quiet workspace it is not there at all.
+   *
+   * ⚡ **That is not a regression, it is where the guarantee moved.** 📁 `Signals`
+   * is one of the App Shell's nine destinations and is always in the rail, so
+   * **the rail is what makes the screen reachable from anywhere** — and the card
+   * link below is an additional convenience rather than the only way in.
+   *
+   * ⛔ **The original point survives intact**: 📁 *"`reachability.py` reads source
+   * and sees a `Link`; it cannot see which branch renders it"* — **and a rail
+   * item is exactly the case a static scan cannot distinguish from one buried in
+   * a populated branch.** This still walks it.
+   */
+  const door = page.getByRole('navigation').getByRole('link', { name: 'Signals' });
   await expect(door).toBeVisible();
   await door.click();
 
@@ -33,6 +53,40 @@ test('@journey the Signal Center is reachable, and offers the three states', asy
     'aria-selected',
     'true',
   );
+});
+
+/**
+ * 📁 **Home's own door, and the rule that governs it** — *"a sixth becomes 'See
+ * all 8 in Signals'"*, and `P-07`: *"Home is a starting point, not a queue. **A
+ * sixth item becomes a link to Signals, which is the surface designed for
+ * triage**."*
+ *
+ * ⚡ **Kept as a separate test from the reachability walk above**, because they
+ * are different claims: **the rail's door is unconditional, this one is the
+ * design's overflow rule** — and conflating them is what made the old spec read
+ * as a reachability guarantee when it was asserting a conditional link.
+ */
+test('@journey Home offers the overflow link when the queue outruns the card', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.waitForURL(/\/w\/[0-9a-f-]{36}\/home$/, { timeout: 30_000 });
+  await expect(page.locator('[data-card]').first()).toBeVisible({ timeout: 30_000 });
+
+  const card = page.locator('[data-card="needs-you-today"]');
+  // ⛔ **The precondition, stated rather than assumed** — 📁 the rule is about a
+  // queue with more items than the card shows, so a spec that did not say so
+  // would pass silently on a workspace with three.
+  await expect(
+    card,
+    'the seller composition\'s attention card — this rule is that card\'s',
+  ).toBeVisible();
+
+  const overflow = card.getByRole('link', { name: /See all \d+ in Signals/ });
+  await expect(overflow).toBeVisible();
+  await overflow.click();
+
+  await expect(page).toHaveURL(/\/signals$/);
 });
 
 /**
@@ -68,6 +122,27 @@ test('@journey a queue row carries its own summary, not its type’s', async ({ 
   for (const tab of ['Needs review', 'Snoozed', 'Closed']) {
     await page.getByRole('tab', { name: tab }).click();
     await expect(page.getByRole('tab', { name: tab })).toHaveAttribute('aria-selected', 'true');
+
+    /**
+     * 🔴 **The panel is COUNTED, so it has to have settled first.**
+     *
+     * ⚠️ **This walked the DOM the moment the tab reported selected**, which is
+     * before the tab's own read has landed — so under load it counted a
+     * half-rendered list, `n > 1` was never observed, and the run ended on
+     * `sawTwoOfOneType` being false. ⛔ **It passed alone and failed in a full
+     * file**, which reads exactly like contamination and is not: **the same
+     * page, sampled earlier.**
+     *
+     * ⚡ **Found by adding a third test to this file** — three concurrent pages
+     * against one API was enough, and two was not.
+     *
+     * ⛔ **`networkidle` was the first fix and it was not enough** — it still
+     * failed two runs in five. ⚡ **The queue's OWN skeleton is the settled
+     * signal**: 📁 `signal-queue.tsx` renders three `h-16` skeletons while
+     * `queue.isPending`, so their absence is the tab's read having landed,
+     * which is the thing being waited for rather than a proxy for it.
+     */
+    await expect(page.locator('.h-16.animate-pulse')).toHaveCount(0, { timeout: 20_000 });
 
     const groups = page.locator('h2').locator('..');
     for (let i = 0; i < (await groups.count()); i += 1) {

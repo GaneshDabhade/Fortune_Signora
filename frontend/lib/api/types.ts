@@ -337,7 +337,20 @@ export interface AccountIdentity {
  * searches companies today; a type it cannot search yet is **absent from the
  * results rather than returned as an empty group**, because an empty group
  * would claim it looked and found nothing. */
-export type SearchResultType = 'company' | 'technology';
+/**
+ * 🔴 **Every kind the graph knows about**, mirroring `EntityKind` in
+ * `backend/modules/knowledge_graph/domain/identity.py`.
+ *
+ * ⚠️ **`person` was added to the backend on 2026-08-06 and not here**, and the
+ * search endpoint returns one group per kind — so every search reached
+ * `KIND_LABEL['person']`, got `undefined`, and **crashed the whole search
+ * region on `.toLowerCase()`** ([B-288](../../../docs/BUGS.md)).
+ *
+ * ⛔ **`tests/unit/search-kinds.test.ts` reads the enum and fails if this drifts
+ * again**, because a hand-mirrored union is a second representation of one
+ * truth and the two will part company.
+ */
+export type SearchResultType = 'company' | 'technology' | 'person';
 
 /** One search result: the account, its type, and **why it is here**.
  *

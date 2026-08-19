@@ -100,6 +100,78 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-288 · 🟠 Account search has crashed for every customer since 2026-08-06, and the search box disappears with it
+
+| | |
+|---|---|
+| **Module** | `product_surface` — [`components/intelligence/account-search.tsx`](../frontend/components/intelligence/account-search.tsx) and [`lib/api/types.ts`](../frontend/lib/api/types.ts) |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — **Lane A** |
+| **Severity** | 🟠 · ⛔ **A named journey does not work.** *Search → Open Result* is one of the two journeys [TASK-484](BACKLOG.md) exists to verify |
+| **Status** | ✅ **`FIXED`** — Lane A, 2026-08-19. **`VERIFIED` is QE's** |
+| **Found** | **2026-08-19 by Lane A**, reproducing one of the three `product_surface` failures QE attributed from the full browser run |
+
+**Steps to reproduce.** Sign in, type **any** two characters into the top-bar
+search.
+
+**Expected.** Matching accounts, or one of the component's three designed
+coverage sentences.
+
+**Actual.** ⛔ **The whole search region is replaced by *"Signora could not load
+account search. Everything else on this page is unaffected — reload to try
+again."*, and the search box goes with it.** ⚡ **There is no way to search again
+without reloading the page.**
+
+### The cause, and it is one missing string
+
+```
+signora.region_failed {subject: account search,
+  message: Cannot read properties of undefined (reading 'toLowerCase')}
+```
+
+📁 `GET /workspaces/{id}/account-search` returns **one group per `EntityKind`**.
+⚠️ **`PERSON` was added to that enum on 2026-08-06** for the `people` context
+([ADR-0400](architecture/adr/0400-person-as-an-entity.md)) — **and the frontend's
+`SearchResultType` union and `KIND_LABEL` map were never extended.**
+
+⛔ **So `KIND_LABEL['person']` was `undefined` and `.toLowerCase()` threw**, on
+every search, for every workspace, since that date.
+
+### ⚠️ The type that should have caught it, and why it did not
+
+📁 `KIND_LABEL` is declared `Record<SearchResultType, string>` — **exactly the
+*"types should make incorrect architecture impossible"* shape**, and it would
+have refused a missing label.
+
+⛔ **But the union was stale too**, so the map was **total over a set that had
+itself gone out of date**, and nothing refused. ⚡ **A hand-mirrored union is a
+second representation of one truth** — 📁 §2, *"duplicated truth eventually
+becomes contradictory truth"* — **and this is what that costs.**
+
+### ✅ The fix, and the guard that matters more
+
+**`person` added to the union and `People` to the labels** — 📁 the customer's
+word, not the graph's ([ADR-0034](architecture/adr/0034-ubiquitous-language.md)).
+
+⚡ **`frontend/tests/unit/search-kinds.test.ts` reads `EntityKind` out of the
+Python and fails if the two part company again**, in both directions. ✅
+**Fire-tested**: removing `person` from the union fails it with *"expected
+['company', 'technology'] to deeply equal ['company', 'person', 'technology']"*.
+
+### ⚠️ Two things this hid, both now fixed in the same change
+
+- **`search-journey.spec.ts` searched for `Databricks`**, which the Playground
+  does not have — its accounts are `Tessellate Security`, `Sandgate Retail
+  Systems` and so on. ⛔ **So the journey could only ever fail**, and it failed in
+  a way that read as a broken search rather than as a query for something absent.
+  ✅ **It now reads a real name from the accounts list first**, which is what a
+  seller does and what survives the next reseed.
+- ⛔ **Nothing asserted the empty-result path at all**, which is why a crash
+  there went unnoticed for thirteen days. ✅ **A second journey now searches for
+  something that cannot match** and asserts the designed sentence, the absence of
+  the failure panel, and that **the search box is still there**.
+
+---
+
 ### B-287 · 🟡 An integration test hardcodes human review's Redis port, so it cannot pass in any lane
 
 | | |

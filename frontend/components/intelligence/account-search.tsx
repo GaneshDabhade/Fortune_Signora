@@ -221,9 +221,21 @@ export function AccountSearch() {
 /** What each kind is called on screen. **The customer's word, not
  * `EntityKind`'s** — a heading reading `company` would be the data model
  * showing through (ADR-0034). */
+/**
+ * ⛔ **A total map, and `Record<SearchResultType, …>` is what makes it total.**
+ *
+ * ⚠️ **It was missing `person` and the union was missing it too**, so nothing
+ * refused — 📁 [B-288](../../../docs/BUGS.md), and the failure was a crash of
+ * the whole region rather than a mislabelled row.
+ *
+ * ⚡ **The customer's word, not the graph's** — 📁 [ADR-0034](../../../docs/architecture/adr/0034-ubiquitous-language.md):
+ * the module is `people`, the enum member is `PERSON`, and a person reads
+ * *People* beside *Accounts* and *Technologies*.
+ */
 const KIND_LABEL: Record<SearchResultType, string> = {
   company: 'Accounts',
   technology: 'Technologies',
+  person: 'People',
 };
 
 /**
