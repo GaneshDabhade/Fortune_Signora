@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `3a18bd96`, 2026-08-18.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `19317ea3`, 2026-08-19.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,7 +12,9 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `3a18bd96`, 2026-08-18.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `19317ea3`, 2026-08-19.** Every figure is read from the repository, never carried forward.
+
+> ⚡ **Cycle 249 is QE's own work again, and it is labelled as such.** **All four commits are QE's** — the `/attention` absence guard, a certification-integrity fix, and the defect register. ⛔ **The independent-review property is ABSENT for this cycle, for the same reason as 247: under the two-lane model QE is the only lane that can write certification infrastructure and the only lane that can certify it.** **The gates are deterministic and they passed; the second pair of eyes did not exist.** **Reported rather than resolved.**
 
 > ⚡ **Cycle 248 is Lane A's Home implementation and the retirement of the standalone Attention surface** — **29 commits, one lane, two certification attempts.** ⛔ **The first was REFUSED on a failing `smoke`**, and the refusal is recorded rather than repaired away.
 
@@ -20,9 +22,13 @@
 
 | | |
 |---|---|
-| **`main`** | **`3a18bd96`** — ⚡ **cycle 248**, `promoted == certified`, verified from the remote after the push. **29 commits, Lane A.** **Was `6eba78bf`:** — ⚡ **cycle 247**, `promoted == certified`, verified from the remote after the push. **7 commits, one lane (QE), one certification attempt.** **Was `0281e08b`:** — ⚡ **the certified commit itself**, `promoted == certified`, **verified against the SHA the guard named, not against `integration`'s head**. **Cycle 238** — ⛔ **and `integration` had already moved to `9023b187` when the promotion ran, for the second cycle running** |
-| **Release candidate** | `integration` = **`9023b187`** — Lane C's three planning commits, rebased onto the pin and ref-pushed **while the gates were running**, so no lane waited and no gate was disturbed |
-| **Certification** | ✅ [`3a18bd964bb2`](certification/reports/3a18bd964bb2.md) · migration head **`0064`** · ⚠️ **eight gates on the SECOND attempt** · **DR passed, 676 invariants against the restarted stack** · **reversible base→head→base→head→base→head on a clean database**. **Was [`6eba78bf925d`](certification/reports/6eba78bf925d.md):** · migration head **`0060`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a CLEAN database** — ⛔ **and NOT on a used one, which is [B-1016](docs/BUGS.md)**. **Was [`0281e08be27d`](certification/reports/0281e08be27d.md):** · migration head **`0060`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** |
+| **`main`** | **`19317ea3`** — ⚡ **cycle 249**, `promoted == certified`, verified from the remote after the push. **4 commits, one lane (QE), two certification attempts.** **Was `3a18bd96`:** — ⚡ **cycle 248**, `promoted == certified`, verified from the remote after the push. **29 commits, Lane A.** **Was `6eba78bf`:** — ⚡ **cycle 247**, `promoted == certified`, verified from the remote after the push. **7 commits, one lane (QE), one certification attempt.** **Was `0281e08b`:** — ⚡ **the certified commit itself**, `promoted == certified`, **verified against the SHA the guard named, not against `integration`'s head**. **Cycle 238** — ⛔ **and `integration` had already moved to `9023b187` when the promotion ran, for the second cycle running** |
+| **Release candidate** | `integration` = **`19317ea3`** — ✅ **equal to `main`; nothing awaits certification.** **Was `9023b187`:** — Lane C's three planning commits, rebased onto the pin and ref-pushed **while the gates were running**, so no lane waited and no gate was disturbed |
+| **Certification** | ✅ [`19317ea3674d`](certification/reports/19317ea3674d.md) · migration head **`0064`** · ⚠️ **eight gates on the SECOND attempt** — ⛔ **the first was DISCARDED by QE, not failed** ([B-1025](docs/BUGS.md)) · **DR passed, 676 invariants against the restarted stack** · ⚡ **browser suite run in full: 348 passed / 36 failed / 8 skipped, every failure pre-existing and attributed** . **Was [`3a18bd964bb2`](certification/reports/3a18bd964bb2.md):** · migration head **`0064`** · ⚠️ **eight gates on the SECOND attempt** · **DR passed, 676 invariants against the restarted stack** · **reversible base→head→base→head→base→head on a clean database**. **Was [`6eba78bf925d`](certification/reports/6eba78bf925d.md):** · migration head **`0060`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a CLEAN database** — ⛔ **and NOT on a used one, which is [B-1016](docs/BUGS.md)**. **Was [`0281e08be27d`](certification/reports/0281e08be27d.md):** · migration head **`0060`** · ✅ **eight gates, first attempt** · **DR passed, 668 invariants against the restarted stack** · **reversible base→head→base→head on a clean database** |
+| **Cycle 249 gates** | ⚡ **EIGHT required, all recorded** — `pytest` **5378** *(+2)* · coverage **95.02%** · **676** security invariants · `mypy` strict over **949** files *(+1)* · `import-linter` **37/37** · `tsc` clean · `frontend-suite` **3324 in 192 files** · `eslint` clean · `smoke` **24 stages in 158s** · scenario **baseline@1, 208 assertions** |
+| ⚡ **Cycle 249 measured beyond the record** | **`make dr`** — PostgreSQL, Redis, API, workers and relay each restarted, **676 invariants against the restarted stack, nothing lost** · **`doc-drift` · `state-check` · `reachability` · `event-catalog` · `runtime-composition`** all clean · ⚡ **the FULL browser suite, 392 tests in 24.2m**, which no certification run has ever included ([B-131](docs/BUGS.md)) |
+| ✅ **The `/attention` retirement is now enforced by the suite, which was the product owner's seventh condition** | **`frontend/tests/e2e/attention-route-absence.spec.ts` — three `@regression` assertions, all passing**: no ordinary flow requests the obsolete endpoint · the route does not serve a page · navigation does not offer it as a destination. ⛔ **Fire-tested by repointing it at a surface that DOES exist**, which turned all three red — **a guard that cannot fail is documentation pretending to be code** |
+| 🔴 **The browser suite's 36 failures are ONE pre-existing defect, measured rather than argued** | 📁 **[B-1017](docs/BUGS.md)** — two specs create organizations the shared persona then owns, and every later spec meets *"You are a member of four organizations"*. ✅ **The decisive test: environment destroyed and rebuilt, then the three worst-hit specs alone — 67 passed, 0 failed, one workspace row afterwards.** ⛔ **Ten of those failed in the full run.** ⚡ **No regression from this candidate; the specs and the product are both right and the FIXTURE STRATEGY is wrong** |
 | **Cycle 248 gates** | ⚡ **EIGHT required, all recorded** — `pytest` **5376** *(+89)* · coverage **95.02%** · **676** security invariants *(+8)* · `mypy` strict over **948** files · `import-linter` **37/37** · `tsc` clean · `frontend-suite` **3324 in 192 files** · `eslint` clean · `smoke` **24 stages in 216s** · scenario **baseline@1, 208 assertions** |
 | ⚠️ **Coverage is 2 basis points above the floor** | **95.02% against 95.0.** ⛔ **Not a breach and not a blocker** — **recorded because [B-1011](docs/BUGS.md) was this shape four cycles before it crossed**, and the cost of noticing late was a refused certification |
 | 🔴 **The first attempt was REFUSED, and the gate was right** | 📁 **[B-1024](docs/BUGS.md)** — `CreateWorkspaceRequest` gained a required `slug` and `infra/smoke.sh` was not told. **Seven gates passed; `smoke` did not**, because it is the only required gate that drives the real API over HTTP |
@@ -36,9 +42,9 @@
 | ⚠️ **What the Security Invariant COUNT measures, and it is narrower than its name** | 🔴 **It counts test ids, and only `IMMUTABLE_TENANT_TABLES` is parametrized** — three sites in `test_tenancy_policy.py`, lines 338, 363 and 391. ⛔ **`TENANT_OWNED_TABLES` is iterated INSIDE single tests**, so registering a tenant-owned table adds **assertions and no ids**. ⚡ **Cycle 231's `+3` was one table entering the immutable set, times three parametrized tests; its three tenant-owned registrations moved the figure by ZERO.** ✅ **Those registrations are still enforced — the checks fail if a registered table lacks its policies — they are simply not counted.** ⛔ **So a cycle can protect more and move this number not at all, and a lane citing it as evidence that its registration is not decorative is citing the one figure insensitive to that.** 📁 **Measured by Lane C, verified independently by QE** |
 | **Measured beyond the record** | ⚡ **QE ran the gates certification names but does not capture** — **Disaster Recovery passed** with **668** invariants against the restarted production stack · **migrations reversible to base and back at head `0059`**, on a disposable clean database. ⛔ **[B-122](docs/BUGS.md): `frontend-suite` and `eslint` have run in **0 of 227** certification runs, and a red frontend suite reached `main` under a CERTIFIED stamp. Both are now REQUIRED and both are recorded above.** **A lane's figure is a claim; QE publishes a measurement** — 🔴 **and this row is where that failed: it carried `443`, `3254/184` and head `0054` forward for three cycles ([B-1008](docs/BUGS.md))** |
 | ⚡ **Proven at runtime, not by reading** | **The `distDir` move ([B-219](docs/BUGS.md)) changed where the production image finds its static assets.** QE warned that copying to `.next/static` would produce **an image that starts and serves no CSS** — silent, and worse than a build failure. **Measured on the built image: `/_next/static/css/d8cb99ad71c03326.css`, `200`, 40 589 bytes.** ⛔ **The predicted failure mode is disproven on the one tree that could have had it** |
-| ⛔ **Promotion** | `promoted == certified` ✓ *(verified from `ls-remote` after the push, not from `rev-parse` before it)* · `--audit-main`: **1906 commits — 209 certified targets, 1697 inside a certified snapshot. None outside one** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN`, on the product owner's explicit override** — **not a resolution, and the severity was not touched** |
+| ⛔ **Promotion** | `promoted == certified` ✓ *(verified from the remote ref after the push, not from `rev-parse` before it)* · `--audit-main`: **2160 commits — 224 certified targets, 1936 inside a certified snapshot. None outside one** · ⚠️ **promoted with [B-1017](docs/BUGS.md) 🔴 `OPEN`, on the product owner's explicit override** — **not a resolution, and the severity was not touched.** ⚡ **QE reported its own conflict of interest rather than exercising it**: QE wrote that row, set it 🔴, and 🔴 was the only thing holding the candidate out, so the reclassification was raised and not taken |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
-| **Blocking Quality Defects** | ✅ **None.** ⚡ **[B-270](docs/BUGS.md) reads 🔴 `FIXED` and does NOT block** — 📁 `registers.py`: *"🔴 **and** unresolved. A fixed 🔴 is a record, not a blocker."* **Lane A's severity escalation is kept with its dated reasoning; QE's demonstrated fix sets the status; §2 satisfied in both directions with no trade.** ⚠️ **QE wrote half the fix, so that half stays `FIXED` rather than `VERIFIED`** — **QE does not stamp its own work, and the model has no third party for a defect in QE's own test infrastructure. Filed for the product owner** |
+| **Blocking Quality Defects** | ⚠️ **One, promoted over on an explicit override — [B-1017](docs/BUGS.md), and it stays 🔴 `OPEN`.** ⛔ **It is a defect in QE's own browser fixture strategy, not in the product** — no customer path is wrong, and the row says so. ✅ **It is QE's next slice.** **Previously: None.** ⚡ **[B-270](docs/BUGS.md) reads 🔴 `FIXED` and does NOT block** — 📁 `registers.py`: *"🔴 **and** unresolved. A fixed 🔴 is a record, not a blocker."* **Lane A's severity escalation is kept with its dated reasoning; QE's demonstrated fix sets the status; §2 satisfied in both directions with no trade.** ⚠️ **QE wrote half the fix, so that half stays `FIXED` rather than `VERIFIED`** — **QE does not stamp its own work, and the model has no third party for a defect in QE's own test infrastructure. Filed for the product owner** |
 | **Customer value this cycle** | ⚡ **Somebody finishing setup now lands in their own workspace rather than a placeholder** — [TASK-1401](docs/BACKLOG.md) gives `resolveEntry` its first production caller, **and the journey assertion got STRONGER: `/$|\/business/` passed for a person routed nowhere; `/\/w\/[^/]+\/home$/` says they were routed into their own workspace.** ⛔ **`machine_credentials` and the simulation invariants are infrastructure and say so** |
 | ⚡ **What QE hunted, because the lane asked** | **The screen carries TWO absences — *the book is empty* and *the narrowing excluded everything* — and Lane A asked QE to find them collapsed.** ✅ **Fire-tested rather than read**: collapsing the filtered title turns **1 red**, and removing the `isError` branch so a failed read falls through turns **3 red**. ⛔ **[P-A](docs/DOMAIN_DISCOVERY_REGISTER.md) is guarded here, not asserted** |
 | **Overall progress** | **~85%** by engineering effort — an estimate, and marked as one |
@@ -47,7 +53,7 @@
 
 > ⚠️ **`Load more` was replaced rather than kept, and that is the standard being applied rather than a preference.** 📁 **The two are different products**: one accumulates the page under somebody scanning it and makes *"which page am I on"* unanswerable. ✅ **`Previous`/`Next` over the existing keyset cursor, with a page number and NO denominator** — **keyset cannot know how many pages exist without reading them, and a total would be fabricated.**
 
-**Repository health:** **5280 backend tests** · ✅ **95.08% coverage** *(floor 95 — **8 basis points**, recovered from a breach)* · **3405 frontend tests** across **192 files** · **668 Security Invariants** · mypy strict over **939 files** · **61 migrations**, `0000`–`0060` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **162s** · **disaster recovery passing** · **migrations reversible on a clean database** · **20 module directories** · **59 ADRs** · **146 numbered architecture documents**.
+**Repository health:** **5378 backend tests** · ⚠️ **95.02% coverage** *(floor 95 — **2 basis points**)* · **3324 frontend tests** across **192 files** · **676 Security Invariants** · mypy strict over **949 files** · **64 migrations**, `0000`–`0064` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **158s** · **disaster recovery passing** · **20 module directories** · **59 ADRs** · **146 numbered architecture documents** · ⚡ **browser suite 392 tests, 348 passing** — **measured 2026-08-19 from `19317ea3`, every figure re-read rather than carried forward.**
 
 > ⚠️ **Two figures on that line were mislabelled rather than stale, and the distinction matters because only one of them is a measurement error.** ⛔ **It read *"60 ADRs"* — `ls adr/*.md`, which counts `README.md`** — **and *"148 numbered architecture documents"*, which counted `ARCHITECTURE_VALIDATION_M1_2.md` and `provider-qualification.md`, neither of them numbered. ✅ **59 and 146 are what the words claim.** ⚡ **The number was right for a question nobody asked** — the same shape as everything else this week, and the reason to re-derive a figure rather than re-read it.
 
@@ -123,6 +129,55 @@
 | **28 others** | various | mixed | — | See the register |
 
 **37 items · 5 closed.** ⚠️ **Four items have now waited five cycles or more, and every one of them needs the same person.** [C-024](docs/LANE_COORDINATION.md) is the sharpest: Timeline's backend was proven live this cycle by `runtime-composition`, so **ten lines of routing separate a working capability from a customer.**
+
+---
+
+## 1d · Release summary — 2026-08-19, cycle 249
+
+### Cycle 249 — the `/attention` guard, and a certification record that named the wrong commit
+
+**Promoted `19317ea3`. Four commits, all QE's.** ⛔ **Two certification attempts, and the first was discarded by QE rather than failed by a gate.**
+
+| | |
+|---|---|
+| ✅ **Delivered** | **The repository's own suite now prevents the retired `/attention` surface returning or being navigable** — the seventh and last of the product owner's certification conditions, and the only one that was not already true |
+| ✅ **Delivered** | **A certification run can no longer name a commit it did not begin on** |
+| ✅ **Verified** | **[B-1024](docs/BUGS.md)** — Lane A's `smoke.sh` slug fix, confirmed on `main` and exercised three times since |
+
+### 🔴 The instrument recorded a commit that did not exist when the run started
+
+**`make certify` on `12c21acb` passed all eight gates and wrote `CERTIFIED 0d61c30a107a`** — a commit QE made *while it was running*. **One run, two commits, and nothing compared them:**
+
+```
+certification/attempts.jsonl → {"commit": "12c21acb…", "event": "started"}
+certification/manifest.json  → {"commit": "0d61c30a…"}
+```
+
+⛔ **`tree_is_clean()` could not catch it and its own docstring says why** — *"whether the tree certified was actually stored"*. **A commit made mid-run leaves the tree clean.** So *working tree clean* passed while the certified tree was not the tree the gates began on.
+
+⚡ **It cost nothing this time, measured: 0 non-docs paths differed and no gate reads the one file that moved.** ⛔ **That is luck, not a property.** **A commit touching `backend/` would have produced a CERTIFIED record for a tree no gate had seen — and `promoted == certified` would have ACCEPTED it, because the SHA it names is real.**
+
+✅ **[B-1025](docs/BUGS.md): `refuse_if_head_moved()`, called before the record is written, fire-tested by mutation.** ⛔ **Not fixed by discipline** — *"prefer operations that refuse unsafe states over operations that silently recover from them"* is the standing rule, and the whole Continuous Certification model rests on a snapshot immutability the instrument could not previously detect.
+
+### ✅ The first full browser run in the repository's history, and its 36 failures are one defect
+
+**392 tests, 24.2m, on an environment destroyed and rebuilt for this cycle** — `down -v` · `up` · `auth:migrate` · `demo:users` · `playground.seed`. **4 members, against the 57 the shared stack has accumulated.**
+
+⚡ **That is the isolation mandate paying for itself on its first cycle.** 📁 **[B-282](docs/BUGS.md), the phantom `e2e-recents` connection and [B-284](docs/BUGS.md) all read as product defects and none of them was.**
+
+**Three workspaces created BY the run, inside twenty seconds, the persona owning all four**, and the failing screen is the chooser saying *"You are a member of four organizations."* ✅ **The decisive test: same tree, environment rebuilt, the three worst-hit specs alone — 67 passed, 0 failed, and exactly one workspace row afterwards.** ⛔ **Ten of those failed in the full run.**
+
+📁 **[B-1017](docs/BUGS.md), and the specs are RIGHT**: `organization-setup.spec.ts`'s own header says *"an organization is created and left, because the product offers no delete and a test asserting one would be asserting a path that does not exist."* **The defect is that a spec which permanently grows the shared persona's membership set shares that persona at all.**
+
+### ⚠️ QE reported a conflict of interest rather than exercising it
+
+**B-1017 is 🔴, QE wrote it, QE set it 🔴, and 🔴 was the only thing holding this candidate out of `main`.** **The argument for 🟠 is strong** — no customer path is wrong and the row says the product is right in bold. ⛔ **Which is exactly why the author does not get to make it.**
+
+**Raised for the product owner, who authorized the promotion.** ⚡ **The override is recorded as an override**: the severity was not lowered, the row is still 🔴 `OPEN`, and it is QE's next slice.
+
+### ⛔ A gate failure that was QE's ordering, and was classified before it was reported
+
+**`make dr` reported `✗ API did not become ready within 90s`.** **There was no stack at all** — certify's `smoke.sh` tears it down on exit, and `disaster-recovery.sh` says *"Run against an already-running stack"* in its own header. ✅ **Classified as a fixture/environment issue and re-run, rather than filed against the candidate.** ⚠️ **Recorded and not filed: the message names the wrong cause** — *"API did not become ready"* reads as a broken API when nothing was running.
 
 ---
 

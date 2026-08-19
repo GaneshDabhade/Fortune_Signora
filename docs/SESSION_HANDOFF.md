@@ -1,5 +1,27 @@
 # Session Handoff
 
+> ## Cycle 249 — promoted `19317ea3`, 2026-08-19 · **the `/attention` guard lands, and a certification record that named a commit the run never began on**
+>
+> **`main` = `19317ea3` = the certified commit.** `pytest` **5378** · coverage **95.02%** · **676 Security Invariants** · `mypy` **949** · `import-linter` **37/37** · `tsc` · `frontend-suite` **3324/192** · `eslint` · `smoke` 24/158s · **DR passed, 676 invariants against the restarted stack** · head **`0064`**. **4 commits, QE.**
+>
+> ✅ **The product owner's seventh certification condition now holds.** `frontend/tests/e2e/attention-route-absence.spec.ts` — three `@regression` assertions, all passing, fire-tested by repointing them at a surface that DOES exist.
+>
+> ⛔ **Four things the next session must not misread.**
+>
+> ⓐ **Two certification attempts, and the first was DISCARDED BY QE rather than failed by a gate.** [B-1025](BUGS.md): `make certify` on `12c21acb` passed all eight gates and recorded `CERTIFIED 0d61c30a107a` — a commit QE made *while it was running*. **`tree_is_clean()` could not catch it**, and its own docstring says why: *"whether the tree certified was actually stored."* A commit mid-run leaves the tree clean. **Fixed by `refuse_if_head_moved()`, which refuses before the record is written.** ⚡ **It cost nothing that time — 0 non-docs paths differed — and that was luck, not a property.**
+>
+> ⓑ **The candidate advanced from the SHA the product owner named.** They named `12c21acb`; `19317ea3` was promoted, and **contains it entirely.** The fix for the defect that certifying `12c21acb` exposed is executable, so it had to be inside the certified tree.
+>
+> ⓒ **[B-1017](BUGS.md) is 🔴 `OPEN` on `main`, promoted over on the product owner's explicit override.** ⛔ **Not a resolution, and the severity was not lowered — not by QE and not by the ruling.** **QE wrote that row, set it 🔴, and 🔴 was the only thing holding the candidate out, so the reclassification was RAISED and not taken.** ⚡ **It is QE's next slice.**
+>
+> ⓓ **The full browser suite ran for the first time in the repository's history — 392 tests, 24.2m, 348 passing.** **All 36 failures are B-1017 and none is a regression.** ✅ **Decisive test: environment destroyed and rebuilt, the three worst-hit specs alone → 67 passed, 0 failed, one workspace row afterwards.** ⛔ **Ten of those failed in the full run.**
+>
+> ⚡ **Per-cycle environment isolation is now mandatory and paid for itself immediately.** `down -v` → `up` → `auth:migrate` → `demo:users` → `playground.seed` gave **4 members** against the **57** the shared stack has accumulated. 📁 **[B-282](BUGS.md), the phantom `e2e-recents` connection and [B-284](BUGS.md) all read as product defects and none of them was.**
+>
+> **Open and mine:** [B-1017](BUGS.md) the browser fixture strategy — **next slice** · [B-1013](BUGS.md) `FIXED` awaiting independent verification · [B-1014](BUGS.md) same · [B-1025](BUGS.md) same · [B-1015](BUGS.md) the prod stack's restart asymmetry · [B-1016](BUGS.md) `0048`'s downgrade, **pre-existing and Lane A's by module**.
+>
+> **Next candidate:** Lane A reported **nine commits on `943ba3ed`, unpushed** — Home states 01/03/04/05/08/09/13, all six viewports, loading floor and ceiling, customisation, **migrations `0065` and `0066`**. **They belong to the next cycle and were not chased.**
+
 > ## Cycle 248 — promoted `3a18bd96`, 2026-08-18 · **Home implemented, the standalone Attention surface retired, and a gate that had been passing on nothing**
 >
 > **`main` = `3a18bd96` = the certified commit.** `pytest` **5376** · coverage **95.02%** · **676 Security Invariants** · `mypy` **948** · `import-linter` **37/37** · `tsc` · `frontend-suite` **3324/192** · `eslint` · `smoke` 24/216s · **DR passed** · **reversible** · head **`0064`**. **29 commits, Lane A.**

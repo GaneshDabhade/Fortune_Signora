@@ -398,7 +398,7 @@ certification/manifest.json   → {"commit": "0d61c30a107a6a2ff5272be410d6a82266
 | **Module** | `backend/modules/workspace_tenancy/interface/schemas.py` + `infra/smoke.sh` |
 | **Current assignee** | **Lane A** — **they changed the contract, and updating its callers is part of the slice.** `infra/` also joins to them through `platform_foundation` |
 | **Severity** | 🔴 · ⛔ **CERTIFICATION BLOCKER.** `make smoke` is one of the eight required gates |
-| **Status** | **`OPEN`** — reported to Lane A **before** their push, so it can land in the same one |
+| **Status** | ✅ **`VERIFIED`** — fixed by Lane A on `main`, confirmed by QE on 2026-08-19 (below) |
 | **Found** | **2026-08-18 by QE**, certifying `lane-a-product-surface-r2` at `2e758310` |
 
 **Steps to reproduce.** `make certify` on the candidate:
@@ -419,6 +419,14 @@ SMOKE FAILED at: 10. Demo flow, authorization, and tenant isolation
 | **`2e758310`** | 🔴 **`name` + `slug`, required, no default** |
 
 📁 **`infra/smoke.sh:304`** posts `{"name":"Smoke Test Workspace"}` — **no slug** — and ⛔ **`git diff origin/main 2e758310 -- infra/` is EMPTY.** The contract moved; its caller did not.
+
+### ✅ VERIFIED on `main`, 2026-08-19 by QE — cycle 249
+
+📁 **`infra/smoke.sh:322`** now derives `SMOKE_SLUG="smoke-test-workspace-$$"` and sends it. ✅ **`slug` stayed REQUIRED** — `CreateWorkspaceRequest` on `main` still declares `slug: str = Field(min_length=…)` with no default, which is the shape this row said the fix must take.
+
+⚡ **The fix carries the second half this row only warned about**, and names why: *"`smoke.sh:135` runs `down -v` before `up -d --wait`, so every run starts on an empty volume. ⛔ `disaster-recovery.sh` does not."* **One habit across both gates rather than remembering which lifecycle each has.**
+
+**`make smoke` has since passed three times over it** — 24 stages, twice inside `make certify` (cycle 248 at `3a18bd96`, cycle 249 at `19317ea3`) and once under `make dr`.
 
 ### ⛔ Not a gate defect
 
@@ -756,6 +764,69 @@ MAIN TEXT: … Welcome to E2E Org 1787050307980 | Signora needs three things
 ✅ **TESTED, 2026-08-18, by Lane A's own protocol — and it does NOT explain their instance.** **Lane A's distinguishing fact: Playwright orders by path, `account-360` sorts FIRST, so nothing precedes it that could switch the workspace — and it failed 3 of 3 for them anyway.** **Run on `main` as they specified — `account-360.spec.ts` first and alone against a freshly seeded Playground: ✅ 5 passed.** ⛔ **By their stated criterion that means B-279 stays open on its own evidence**, and this row's scope stays at what it measured. ⚡ **Two trees, two measurements** — the resemblance was strong and it was not the same instance.
 
 ⛔ **QE does not close another lane's row.** **The evidence is theirs to weigh** — their run was on a different tree and a different stack, so this explains the shape without proving it is the same instance.
+
+### ⛔ STILL LIVE on `19317ea3`, and now measured to the row — QE, 2026-08-19, cycle 249
+
+**A completely fresh environment** — `make down -v` · `make up` · `auth:migrate` · `demo:users` · `playground.seed`. **4 members, not the 57 Lane A's stack has accumulated**, which is the isolation mandate doing its job.
+
+| | |
+|---|---|
+| **Full suite** | 348 passed · 🔴 **36 failed** · 8 skipped · 24.2m |
+| ✅ **The `/attention` guard** | **all three passed** — no failure artifact, not in the 36 |
+
+**Three workspaces were created BY the run, inside twenty seconds, and the persona owns every one:**
+
+```
+Playground              playground-41d62a5c     03:36:48   ← the seed
+Northwind               journey-mszjt4f6        03:45:03   ← created by onboarding-journey
+Northwind               journey-mszjt8fc        03:45:16   ← created by onboarding-journey
+E2E Org 1787111122316   e2e-org-1787111122316   03:45:22   ← created by organization-setup
+```
+
+**The failing screen is the chooser, verbatim from the artifact:**
+
+```
+heading "Choose an organization"
+paragraph: You are a member of four organizations.
+```
+
+### ✅ The decisive test, and it is unambiguous
+
+**Same tree, same stack, environment destroyed and rebuilt, then `workflow` · `utility-panel` · `perception` alone:**
+
+> ## **67 passed. 0 failed. 1.2m. And `select name from workspace` afterwards returns exactly one row.**
+
+⛔ **Ten of those failed in the full run.** ⚡ **The specs are correct, the product is correct, and the fixture strategy is what is wrong** — which is what this row said on 2026-08-18 and is now measured on a clean environment rather than inferred from one.
+
+### 📁 Located: two specs, and the product gives them no way to clean up
+
+**`organization-setup.spec.ts:21`** — `E2E Org ${Date.now()}` · **`onboarding-journey.spec.ts:405`** — `journey-${Date.now()}`. **Both run in the `owner` project on the shared `OWNER` storage state**, and `organization-setup`'s own header says why they cannot undo it:
+
+> *"an organization is created and left, because the product offers no delete and a test asserting one would be asserting a path that does not exist."*
+
+⚡ **They are right.** **The defect is that a spec which permanently grows the shared persona's membership set shares that persona at all.**
+
+### ⛔ Why this was NOT fixed inside cycle 249
+
+**Every cheap variant trades the defect for a silent coverage cap**, which this repository forbids by name. Running them last through `dependencies` means **one failure anywhere in `owner` silently skips both specs** — coverage that disappears exactly when the suite is red. The honest fix is a **fixture-strategy change**: the mutating journeys get a persona of their own, which touches `infra/demo-users.json` — read by the Next script, the backend seeder and `personas.ts` alike.
+
+📁 **That is a slice, not a tweak**, and the product owner's rule decides it: *"Don't turn certification into a separate engineering project."* ✅ **It is QE's next slice, and it is what unblocks the browser gate.**
+
+### ⛔ PROMOTED OVER, 2026-08-19 — product owner's explicit override, and NOT a resolution
+
+**QE reported the conflict of interest and asked. The product owner answered *"please proceed and promote"*.**
+
+| | |
+|---|---|
+| **What was authorized** | **The promotion of `19317ea3`**, with this row 🔴 `OPEN` |
+| ⛔ **What was NOT** | **The severity.** **It was not lowered, not by QE and not by the ruling** — 🔴 `OPEN` is what it still reads |
+| **Precedent** | 📁 **[B-428](#b-428)** — the same shape, recorded the same way. **An override is a decision about one promotion, never a statement about the defect** |
+
+⚡ **So the row stays open and stays QE's next slice.** ⛔ **A promotion authorized over a defect does not make the defect smaller**, and the next cycle inherits it unchanged.
+
+### ⚠️ The severity is the author's conflict of interest, and is therefore not the author's to lower
+
+**QE wrote this row and set it 🔴, and 🔴 is what holds `19317ea3` out of `main`.** ⛔ **So QE does not reclassify it**, however defensible the argument would be — **no customer path is wrong, the product is right, and this row says so in bold.** 📁 **Raised for the product owner instead** (`CLAUDE.md` §20e: severity 🔴 is *"blocks a milestone"*, and this blocks a repository capability).
 
 ### ⚡ The fix works, and it exposed the same defect producing false GREENS — QE, 2026-08-18
 
