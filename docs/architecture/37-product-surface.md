@@ -154,6 +154,25 @@ A brief spans opportunity, score, signals, events, narration, package and resear
 | **B** | A BFF / aggregation service | Rejected **for now**. It is a new platform concept, and the direction is explicit: no platform abstractions until product work proves them necessary. **Trigger to revisit:** measured round-trip latency on the account page, not intuition (§14) |
 | **C** | One module's router aggregating the others | Rejected. It makes `opportunity_engine` the owner of every other module's presentation |
 
+### The same decision, taken a second time — Home's activation registry, 2026-08-19
+
+**Home's contract 5** requires *"the activation registry is fetched from the server; card order comes from its priority integer, not from array position."* It had been a frozen array in the browser bundle, which meant a step could not be withdrawn without shipping a frontend, **and that a registry of zero steps was not a state the product could reach** — so Home's screen state for it was unreachable rather than unimplemented.
+
+**Two endpoints, composed by the query layer. Option A again, and for a sharper reason than latency.**
+
+| | |
+|---|---|
+| **`GET /workspaces/{workspace_id}/integrations/activation-steps`** | `crm_activity` priority 100 · `meetings` 200, both blocking. Published only when the capability is live *and* a catalog entry supplies it — see [44-integrations.md §6](44-integrations.md) |
+| **`GET /workspaces/{workspace_id}/membership/activation-steps`** | `invite_members` priority 300, **not** blocking. A workspace of one still gets conclusions; they are thinner, because what Signora measures is relationships |
+
+**Option C was not merely undesirable here — it was unavailable.** Connecting a system is `integrations`' language and getting colleagues in is `workspace_tenancy`'s, and [04-modules.md](04-modules.md) makes Workspace & Tenancy **the root of the dependency graph**. A single composed endpoint would have required an edge that graph does not have, in whichever direction it was drawn.
+
+**What makes the composition safe is that neither module can see the other's integers.** Each declares a priority; the consumer sorts what it is given. That is the design's own *"a new source declares its own integer; Home does not know the set in advance"*, and it is why the registry is an integer rather than a position.
+
+> ⚡ **The translation stays at the frontend edge** — [ADR-0034](adr/0034-ubiquitous-language.md). The servers speak capabilities and membership; a customer reads *"Connect a CRM"*. ⛔ **A step the consumer has no card for is dropped, from its progress count as well as its page** — a card needs a heading, a reason and a flow, and none can be invented from an identifier. The backend's registry test asserts its exact contents, so adding a step fails a test that says to add a card.
+
+⚠️ **`workspace_tenancy` has no module design document of its own**, so its half is recorded here rather than left unwritten. **That absence is worth closing** the next time that module takes a slice of any size.
+
 ---
 
 ## 8 · Data model changes

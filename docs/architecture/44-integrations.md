@@ -209,14 +209,25 @@ The `state` parameter is **HMAC-signed and single-use**, with a 10-minute TTL, c
 
 ## 6 · The read model, and what the product refuses to say
 
-`IntegrationQueries` answers two questions, and the second is why there are two routes:
+`IntegrationQueries` answers three questions, and the second is why there are two connection routes:
 
 - **`connections()`** — every connection in every state, **including the broken ones**. A revoked Salesforce is the most important row on the screen, and a list that quietly omitted it would leave somebody believing their data was flowing.
 - **`systems()`** — **catalog-first**, so a screen built only from what somebody already did can still answer *"what are we missing?"* A connection whose catalog entry was later withdrawn still belongs to the customer and does not vanish.
+- **`activation_steps()`** — **what a workspace must connect before Signora can say anything.** Added 2026-08-19 for Home's contract 5. **The declaration, never the progress**: it takes no workspace and does not await, because whether a given workspace has *done* a step is what `systems()` already answers. Folding them together would make a reviewed catalog look like per-tenant state.
 
 **`working` is not "has a connection."** A revoked connection is a connection, and answering *"is my CRM connected?"* with *yes* would be this screen's worst possible lie.
 
 **Attention is derived at read time, never stored** — `NONE` / `SOON` / `NOW`, computed from the connection and its grant. A credential that expired overnight reads correctly the next morning without anything having run. This is the least-powerful-author rule: a stored copy of a derivable fact is a defect waiting for the two to disagree.
+
+### The activation registry — `GET /workspaces/{workspace_id}/integrations/activation-steps`
+
+**Two steps, and both are blocking**: `crm_activity` at priority 100 and `meetings` at 200. A CRM is the account and deal record everything scores against, and meetings are most of what the scoring is made of — neither is something Signora can substitute for.
+
+**Priority is an integer a source declares, never a position in a list.** That is what lets a consumer compose this module's steps with another module's without either knowing the other's set. **Home does exactly that**: `workspace_tenancy` declares `invite_members` at 300 from its own route, the two are ordered by integer at the frontend edge, and **neither module imports the other** — `workspace_tenancy` is the root of the dependency graph, so a single composed endpoint would have required an edge that graph does not have.
+
+**A step is published only when its capability is live *and* some catalog entry supplies it.** The same test `live_capabilities` already applies to the Connection Center, for the same reason: asking somebody to connect a calendar Signora cannot act on is the product requesting work it cannot repay.
+
+> ⚠️ **An empty list is a real answer and consumers must handle it.** A platform that can act on nothing it knows how to connect to is misconfigured, and **Home renders a stated fault rather than an empty list of things to do**. ⛔ **This is why the registry is served at all**: it was a frozen array in the browser bundle, so *zero steps* was not a state the product could reach, and the screen state for it was unreachable rather than unimplemented.
 
 **Capabilities listed are only ones Signora can act on today.** Anything waiting on unbuilt work is *absent*, not greyed out — advertising a capability the platform cannot execute is a promise the product cannot keep.
 
@@ -240,7 +251,7 @@ Salesforce is next and was argued for at the time — it is the enterprise defau
 
 | Layer | What |
 |---|---|
-| **Domain** | `ConnectionState`, `ConnectedAccount`, `IntegrationGrant`, `Credential`, `CatalogEntry`, `Capability`, `CATALOG` |
+| **Domain** | `ConnectionState`, `ConnectedAccount`, `IntegrationGrant`, `Credential`, `CatalogEntry`, `Capability`, `CATALOG`, `ActivationStep`, `ACTIVATION_STEPS`, `activation_registry()` |
 | **Application** | `ConnectSystem`, `DisconnectSystem`, `RefreshGrant`, `ResolveExecutionContext`, `IntegrationQueries`; ports `ConnectedAccountRepository` (`get`, `find_identity`, `list_for_workspace`, `save`), `GrantStore`, `SecretStore`, `SecretWriter`, `SecretPurger`, `ProviderRevoker` |
 | **Infrastructure** | `SqlConnectedAccountRepository`, `SqlGrantStore`, `EncryptedSecretStore`, `HttpProviderRevoker`, `HttpTokenRefresher`, `SettingsClientCredentials`, **`HubSpotCompanies`** *(provisionally — see §1)*, `VENDOR_ENDPOINTS`, `IntegrationSettings`, composition |
 | **Interface** | **4 routes**, purpose-built request and response schemas, `ERROR_MAPPING` |
