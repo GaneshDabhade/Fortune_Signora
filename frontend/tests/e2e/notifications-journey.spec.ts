@@ -78,6 +78,28 @@ test('@journey the bell opens a panel, names the workspace, and closes to itself
 test('@journey a workspace with nothing to say draws no badge and says so', async ({
   page,
 }) => {
+  /**
+   * 🔴 **Stubbed empty, and it was NOT before.**
+   *
+   * ⚠️ **This walked the Playground's own emptiness** — true when it was
+   * written, and **false the moment `notification-arrival.spec.ts` ran**: that
+   * journey drives a real research run, so the workspace acquires a real
+   * notification and keeps it. 📁 The table has no `UPDATE` grant and no delete
+   * route, deliberately, so nothing tidies up after it.
+   *
+   * ⛔ **And the deeper reason is the one this repository keeps meeting**: an
+   * emptiness that depends on nothing else having run is an assertion that
+   * **cannot distinguish *the rule holds* from *the case never arose*.** ✅ The
+   * empty case is now stated, so it is measured whatever else the suite did.
+   */
+  await page.route('**/api/proxy/**/notifications', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: '{"notifications":[]}',
+    }),
+  );
+
   await openShell(page);
 
   // ⛔ **No badge at zero.** 📁 A `0` badge is a count nobody acts on wearing
