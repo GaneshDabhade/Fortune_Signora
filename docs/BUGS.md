@@ -4414,6 +4414,71 @@ this row on a resemblance. **Re-measure on the rebased tree.**
 
 ### B-283 · 🟠 Companies and Home both reflow after they load, and the screen that did not is the one just retired
 
+### ✅ Lane A, 2026-08-19 — the cause was the SCROLLBAR, and one declaration fixed the larger half
+
+🔴 **It was not the auto-layout table and it was not the utility panel.**
+⚠️ **Both were the obvious hypotheses and both were wrong**, which is why this
+row insisted on measurement.
+
+**Measured with `PerformanceObserver`, attributing each entry to its sources, and
+then sampling `document.documentElement.clientWidth` at 250ms:**
+
+| | |
+|---|---|
+| Home's single largest event | **0.111 at ~4.3s** |
+| Its sources | both right-column cards, the content wrapper, **and `aside#shell-utility-panel` — all moving together** |
+| `clientWidth` | **1280 → 1265 in the same window** |
+
+⚡ **So the row did not resize. The page grew past the viewport as the last
+card's data landed, the vertical scrollbar arrived, and every element in the
+shell's flex row lost the same 15px at once.** ⛔ **Companies' *"table settling
+its column widths"* was the same 15px reaching an auto-layout table**, which
+then redistributed it across every column — **a dramatic symptom of an
+undramatic cause.**
+
+### ✅ The fix — `scrollbar-gutter: stable` on `html`
+
+```css
+html { scrollbar-gutter: stable; }
+```
+
+⛔ **Not `overflow-y: scroll`**, which draws a dead track on every short page.
+⚠️ **`html`, not `body`** — the document element is the scrolling box.
+
+| Screen | Before | After |
+|---|---|---|
+| **Companies** (`/accounts`) | 🔴 **0.277** | ✅ **0.003 · 0.003 · 0.016** |
+| **Home** | 🟠 **0.154 · 0.166 · 0.167** | 🟠 **0.099 · 0.110 · 0.112 · 0.124** |
+
+✅ **`visual.spec.ts`'s known red is green**, and **the assertion was never
+relaxed** — 📁 [B-279](#b-279)'s precedent is why the number could be measured
+rather than argued.
+
+### ⚠️ What remains is Home's, and it stops at a design gap rather than a fix
+
+**Measured after the fix**, Home's residual ~0.08 is three events:
+
+| | |
+|---|---|
+| **~0.054** | `card.attention` grows from its skeleton to **814px** of loaded content, and **`card.recents` — the next card in that grid column — drops 677px** |
+| **~0.020** | The first-run strip appears when the preference read lands and pushes the card region down **95px** |
+| **~0.023** | Attention rows grow **24px** each as names and commercial values arrive |
+
+🔴 **The first one cannot be fixed without a number nobody has published.** 📁
+**§09's rule is *"each card skeleton uses the height declared in the registry, so
+nothing reflows when data lands"*** — ⛔ **and §04 gives `card.attention`
+`1.45fr × auto` and `card.agentqueue` `1fr × auto`.** ⚡ **There is no declared
+height for a skeleton to use**, and choosing one here would be inventing the
+footprint of the two tallest cards on the screen.
+
+⚠️ **The second has the same shape one element up**: the first-run strip's
+visibility depends on a read, and reserving its height would shift the page for
+everybody who has already dismissed it — **which is the larger population.**
+
+⛔ **Neither is guessed.** **Both are recorded here for the product owner**, with
+the measurement, exactly as [B-289](#b-289)'s footprint contradiction is.
+
+
 ### ⚡ QE, 2026-08-19 — the remaining half is not Lane A's, and it needs an owner
 
 **Lane A diagnosed this properly and then stopped, which is correct.** Their measurement, three runs with `PerformanceObserver` attributing each entry to its sources:

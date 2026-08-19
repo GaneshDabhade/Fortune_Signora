@@ -144,11 +144,25 @@ test.describe('the layout settles', () => {
       () => (window as unknown as { __shift: number }).__shift,
     );
     /**
-     * 🔴 **KNOWN RED — [B-283](../../../docs/BUGS.md), filed 2026-08-18.**
-     * ⛔ **The assertion is NOT relaxed.** Measured on this branch:
-     * **Companies `0.277`, Home `0.153`**, against a boundary of `0.1` — and
-     * the retired Attention screen settled under it, which is why the number
-     * only became visible when the journeys moved.
+     * ✅ **GREEN since 2026-08-19 — [B-283](../../../docs/BUGS.md).**
+     *
+     * ⚠️ **It was red at `0.277` and the assertion was never relaxed**, which
+     * is why the fix could be measured rather than argued: 📁 the precedent is
+     * [B-279](../../../docs/BUGS.md) — *a filed red is a measurement; a widened
+     * threshold is a lost one.*
+     *
+     * 🔴 **The cause was the scrollbar, and it was NOT the auto-layout table.**
+     * The table's columns were *"settling"* because the page grew past the
+     * viewport, the vertical scrollbar arrived, and **every element lost 15px
+     * at once.** ✅ `scrollbar-gutter: stable` reserves it from first paint.
+     *
+     * | | Before | After |
+     * |---|---|---|
+     * | **Companies** | `0.277` | **`0.003` · `0.003` · `0.016`** |
+     * | **Home** | `0.154`–`0.167` | `0.099`–`0.124` |
+     *
+     * ⚠️ **Home is not measured here** — this test navigates to `/accounts`.
+     * **Its residual is its own**, and B-283 records why it stops there.
      *
      * **A list that reflows under the cursor makes a customer click the wrong
      * row.** 0.1 is the web's own "good" boundary; the number is recorded so a
