@@ -155,6 +155,32 @@ changed last week.
 
 ---
 
+## 📁 Home's fourteen states, measured against the implementation — 2026-08-19
+
+| | State | |
+|---|---|---|
+| **01** | First-time workspace | ✅ `HomeGreeting` + activation cards |
+| **02** | Activation in progress | ⛔ **No producer.** 📁 *"a determinate progress bar with the record count so far… real progress, never a fake animation."* **`ConnectionResponse` publishes `state`, `health`, `connected_at` and no count** — and the design forbids inventing the bar in the same sentence that asks for it |
+| **03** | Partially activated | ✅ |
+| **04** | Fully activated | ✅ `SetupCompleteStrip` |
+| **05** | No meaningful business data | ✅ `NoDataStrip` |
+| **06** | Business data available | ✅ |
+| **06b** | Data present, surface empty | ✅ |
+| **07** | Loading | ✅ |
+| **08** | Error | ✅ card-level and page-level |
+| **09** | Permission-limited | ✅ replaced in place, never hidden |
+| **10** | Integration disconnected | ✅ `SourceStrip` |
+| **11** | Integration degraded | ⛔ **No producer.** 📁 *"Salesforce is about 6 hours behind"* — **nothing publishes a sync lag**, and *"about 6 hours"* is exactly the figure a customer would act on |
+| **12** | Empty activation registry | ✅ `NoRegistry` |
+| **13** | Returning user | ✅ `WorkspaceStrip`, first entry only, four seconds |
+| **14** | Returning with outstanding activation | ⛔ **[C-1533](LANE_COORDINATION.md)** — its entry condition and its copy describe different cards |
+
+✅ **Twelve of fourteen are built.** ⛔ **Two are blocked on a producer and one on
+a copy question**, and none of the three is implementable without inventing a
+fact the product does not hold.
+
+---
+
 ## ⛔ Open, and none of it this lane's to decide
 
 | | |
