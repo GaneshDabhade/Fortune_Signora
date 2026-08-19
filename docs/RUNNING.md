@@ -415,6 +415,36 @@ Set `SIGNORA_API_URL` and `BETTER_AUTH_URL` to that lane's ports in its `fronten
 
 ## Environment variables
 
+### ⛔ Do NOT set `SIGNORA_ENVIRONMENT=lane-a` when creating the demo accounts
+
+**`demo:users` refuses it**, and the refusal is correct:
+
+```
+SIGNORA_ENVIRONMENT='lane-a' is a deployed environment, and these accounts
+share a password published in RUNNING.md
+```
+
+⚠️ **One variable name, two vocabularies, and the repository already knows.** 📁 `backend/signora_platform/environment.py` names this exact case: *"`lane-a` — **the value `infra/environments.py` defines, and whose own docstring invites a lane to set it** — read as deployed to both, breaking development twice at once and explaining neither"* ([C-298](LANE_COORDINATION.md), [ADR-0412](architecture/adr/0412-environment-and-secret-safe-logging.md)).
+
+| Who reads `SIGNORA_ENVIRONMENT` | As |
+|---|---|
+| `infra/environments.py` | **which lane's ports and database** — `review` · `lane-a`…`lane-e` · `demo` · `prod-local` |
+| the auth tier · `ai_platform` | **whether this process serves strangers** — an **allow-list** of `local` and `test` |
+
+⛔ **The allow-list is deliberate and must not be widened to make a script run.** 📁 Its own docstring: *"a value outside the vocabulary is DEPLOYED … the safe direction for a name nobody has thought about yet is the one that refuses."* **Adding `lane-a` would diverge from the backend's closed vocabulary and fail the Security Invariant that compares the two tiers.**
+
+✅ **So name the target directly and leave `SIGNORA_ENVIRONMENT` alone:**
+
+```bash
+cd frontend
+set -a; . ../infra/.env.prod-local; set +a          # or your lane's env
+export SIGNORA_AUTH_DATABASE_URL='postgresql://signora:signora@localhost:<your pg port>/signora'
+export SIGNORA_AUTH_SCHEMA=auth SIGNORA_APP_URL=http://localhost:<your web port>
+npm run auth:migrate && npm run demo:users
+```
+
+⚡ **Being explicit about the target is the same lesson as [B-1028](BUGS.md) and [B-287](BUGS.md)** — **the third time in one day that naming the database beat letting something derive it.**
+
 ### ⚡ The browser gate needs the developer's mailbox
 
 **`SIGNORA_AUTH_EMAIL_TRANSPORT` defaults to `console`, which prints and keeps nothing**, so `/dev/mailbox` 404s and every journey that registers a real person fails.
