@@ -1413,6 +1413,44 @@ resilience                  1 failed   2 passed
 
 📁 **[B-1026](#b-1026) was half a fix**: the mailbox was never actually served. **With `/dev/mailbox` answering `200`, the auth family went from 8 failures to 5** — and the 5 are the ones above.
 
+### ✅ 8 → 1, each step measured rather than batched
+
+| Step | Failures |
+|---|---|
+| Clean baseline | **8** |
+| `/dev/mailbox` actually served — [B-1026](#b-1026)'s second half | **5** |
+| The page object honours the limiter | **4** |
+| A transport-level interceptor on `**/api/auth/**` | **3** |
+| `auth-journey` off Playwright's bare `test`; `security-center`'s three hand-made contexts covered | **1** |
+| `newestLinkFor` waits for the email it was ASKED about | **1**, and a different one |
+
+⚡ **Measuring each step is what found the next.** ⛔ **The page-object repair recovered exactly ONE of five** — the other four hand-write their submits — **and that is what justified moving to the transport instead of guessing that it would help.**
+
+### 🔴 Two of QE's own conclusions along the way were wrong, and both were corrected by measuring
+
+**① *"registration and reset share a rate-limit bucket."*** ⛔ **They do not.** 📁 `createRateLimitKey(ip, path)` **includes the path**, so every path has its own.
+
+**② *"the reset journey fails because a 60s window exceeds a 60s test timeout."*** ⚠️ **The arithmetic was right and it was attached to the wrong test.** 📁 `auth-credential-journeys:131` was `newestLinkFor` returning the VERIFICATION link — it now says so out loud: *"no password reset email arrived for this address"*, printing the `verify-email` URL it got instead. ✅ **The window arithmetic is real, and it belongs to `auth-journey.spec.ts:408`**, which requests two resets and takes 1.1 minutes.
+
+### ⛔ What remains, and it is the one thing waiting cannot fix
+
+📁 **`/request-password-reset` is 3 per 60 seconds. The suite legitimately requests four or five.** ⚡ **One refusal costs a 61-second wait inside a 60-second test budget**, so the test dies waiting however correct the waiting is.
+
+**Two honest resolutions, and QE is taking neither unilaterally:**
+
+| | |
+|---|---|
+| ✅ **Raise the timeout on the reset journeys alone** | **QE's, and it weakens nothing** — a journey that must wait out a real 60-second control cannot live in a 60-second budget. ⛔ **Cost: minutes of wall-clock per run, spent waiting** |
+| ⚠️ **[C-109](LANE_COORDINATION.md) option ②** | **Configure the window per environment.** **Removes the cost. Product code, and the product owner's call** |
+
+⛔ **Not taken while a certification candidate waits.** 📁 *Lane A should never wait for QE.* **Recorded with its arithmetic so the decision is taken on evidence.**
+
+### 🔴 And a regression QE introduced, found by the measurement rather than by review
+
+**The interceptor could still be waiting out a refusal when a test ended**, which killed `resilience.spec.ts:185` — **a test whose whole subject is failing requests** — with *"route.fetch: Test ended. while running route callback"*. ✅ **The fixture now calls `page.unrouteAll({ behavior: 'ignoreErrors' })` at teardown**, which is the remedy Playwright names in its own error text. **Verified: 4 passed.**
+
+⚠️ **Second time in one session that a repair of QE's broke something a measurement caught** — 📁 the other was the decorative `cleanStores` in [B-1031](#b-1031). **Both were invisible to reading and obvious to running.**
+
 ### B-1029 · 🟡 Three browser journeys fail alone, on a clean environment, and are not contamination
 
 | | |

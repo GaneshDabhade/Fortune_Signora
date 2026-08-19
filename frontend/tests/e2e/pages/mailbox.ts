@@ -33,15 +33,72 @@ async function refuseWithoutTheMailbox(page: Page): Promise<void> {
   }
 }
 
-/** The newest link the mailbox holds for one address. */
-export async function newestLinkFor(page: Page, email: string): Promise<string> {
+/**
+ * **Which email a caller is waiting for**, when more than one could be there.
+ *
+ * 🔴 **Not optional politeness.** 📁 See `newestLinkFor` — without it, a
+ * caller that has already received one email for an address gets that one back
+ * the instant it asks, whether or not the email it TRIGGERED has arrived.
+ */
+export interface AwaitedEmail {
+  /** What the link carries — `/reset/`, `verify-email`. */
+  readonly matching: RegExp;
+  /** How to name it when it never comes. */
+  readonly describedAs: string;
+}
+
+/**
+ * The newest link the mailbox holds for one address.
+ *
+ * ## 🔴 Pass `awaited` whenever the address may already have mail
+ *
+ * ⛔ **Without it this SAMPLES rather than waits.** ⚡ The mailbox is
+ * newest-first, so the first row for an address is the newest **that has
+ * arrived** — and an email sent a moment ago has not. **A caller that
+ * registered and then requested a reset gets the VERIFICATION link back**,
+ * navigates to it, and fails somewhere else entirely.
+ *
+ * 📁 **Measured on 2026-08-19**: `auth-credential-journeys.spec.ts:131` failed
+ * at `getByLabel('New password')` having landed on *"You are not in an
+ * organization yet"* — **the verification link, followed a second time.**
+ * ⚠️ **It passes alone**, because alone the reset email wins the race.
+ *
+ * 📁 **[B-1029](../../../docs/BUGS.md)'s third class, named by Lane A**: *"a
+ * test that samples before its own read lands, which only shows up when
+ * something else is competing."* ⚡ Same shape as
+ * [B-1032](../../../docs/BUGS.md), different clock.
+ *
+ * ✅ **With `awaited`, this waits for the email the caller actually triggered**
+ * and says which one never came.
+ */
+export async function newestLinkFor(
+  page: Page,
+  email: string,
+  awaited?: AwaitedEmail,
+): Promise<string> {
   await refuseWithoutTheMailbox(page);
 
-  // ⚠️ **The mailbox is newest-first**, which its own store documents, so the
-  // first row mentioning this address is the one just sent.
-  const row = page.locator('li, article, tr').filter({ hasText: email }).first();
-  await expect(row, 'nothing was delivered to this address').toBeVisible();
-  const href = await row.getByRole('link').first().getAttribute('href');
-  expect(href, 'the delivered email carried no link').toBeTruthy();
-  return href as string;
+  const newestFor = () => page.locator('li, article, tr').filter({ hasText: email }).first();
+
+  if (!awaited) {
+    const row = newestFor();
+    await expect(row, 'nothing was delivered to this address').toBeVisible();
+    const href = await row.getByRole('link').first().getAttribute('href');
+    expect(href, 'the delivered email carried no link').toBeTruthy();
+    return href as string;
+  }
+
+  let delivered: string | null = null;
+  await expect(async () => {
+    // ⚡ **Reload, or the mailbox is a snapshot of when this page was opened.**
+    await page.reload();
+    const row = newestFor();
+    await expect(row, 'nothing was delivered to this address').toBeVisible();
+    delivered = await row.getByRole('link').first().getAttribute('href');
+    expect(delivered, `no ${awaited.describedAs} arrived for this address`).toMatch(
+      awaited.matching,
+    );
+  }).toPass({ timeout: 20_000 });
+
+  return delivered as unknown as string;
 }

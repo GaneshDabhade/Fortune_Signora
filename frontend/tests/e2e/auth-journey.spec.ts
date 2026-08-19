@@ -7,7 +7,12 @@
  * and teaching the team to ignore a red suite.
  */
 
-import { expect, test } from '@playwright/test';
+// 🔴 **The suite's own `test`, not Playwright's** —
+// [C-109](../../../docs/LANE_COORDINATION.md). ⛔ **This file signs in on
+// nearly every test and imported the bare object**, so it got none of the
+// suite's fixtures — including the one that waits out the product's rate
+// limiter. ⚡ **Measured: it fails inside the suite and passes alone in 2.7s.**
+import { expect, test } from './fixtures/signora';
 
 import { OWNER, PASSWORD } from './fixtures/personas';
 

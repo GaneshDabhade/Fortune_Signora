@@ -14,9 +14,17 @@
 import { expect, test as setup } from '@playwright/test';
 
 import { MEMBER, MUTATOR, OWNER, storageStatePath, type Persona } from './fixtures/personas';
+import { honourTheRateLimiter } from './fixtures/rate-limit';
 import { chooseOrganization, SignInPage } from './pages/signin';
 
 async function signIn(page: import('@playwright/test').Page, persona: Persona) {
+  // 🔴 **[C-109](../../../docs/LANE_COORDINATION.md): this file signs in THREE
+  // times back to back, which is Better Auth's limit exactly** — so the setup
+  // was the first thing to trip it, and every project depending on it reported
+  // *"authenticate failed"*. ⛔ **This file does not use the suite's `test`**,
+  // so it installs the interceptor itself.
+  await honourTheRateLimiter(page);
+
   // **The destination is the assertion**, and it lives in the page object.
   // Signing in navigated to `/workspaces` — a route that has never existed —
   // for every person who ever used this product, and nothing failed, because

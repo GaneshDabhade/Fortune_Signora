@@ -32,6 +32,7 @@
  */
 import { createHmac } from 'node:crypto';
 
+import { honourTheRateLimiter } from './fixtures/rate-limit';
 import { expect, test } from './fixtures/signora';
 import { newestLinkFor } from './pages/mailbox';
 
@@ -54,7 +55,12 @@ async function registerAndVerify(
   await expect(page.getByText(/verify|check your email|sent/i).first()).toBeVisible({
     timeout: 20_000,
   });
-  await page.goto(await newestLinkFor(page, person.email));
+  await page.goto(
+    await newestLinkFor(page, person.email, {
+      matching: /verify-email/,
+      describedAs: 'verification email',
+    }),
+  );
 }
 
 async function signIn(
@@ -123,6 +129,10 @@ test.describe('workflow 23 · the Security Center', () => {
     // cookie jar and prove nothing about a second token.
     const other = await browser.newContext();
     const otherPage = await other.newPage();
+    // 🔴 **[C-109](../../../docs/LANE_COORDINATION.md)** — a hand-made context
+    // gets none of the suite's fixtures, and **this test signs in on three
+    // pages in a row**, which is Better Auth's limit exactly.
+    await honourTheRateLimiter(otherPage);
     await signIn(otherPage, person);
 
     await page.goto('/profile/security');
@@ -162,10 +172,12 @@ test.describe('workflow 23 · the Security Center', () => {
 
     const second = await browser.newContext();
     const secondPage = await second.newPage();
+    await honourTheRateLimiter(secondPage);
     await signIn(secondPage, person);
 
     const third = await browser.newContext();
     const thirdPage = await third.newPage();
+    await honourTheRateLimiter(thirdPage);
     await signIn(thirdPage, person);
 
     await page.goto('/profile/security');

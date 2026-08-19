@@ -110,7 +110,10 @@ test.describe('journey 4 · email verification — ADR-0406 calls it the blockin
       timeout: 15_000,
     });
 
-    const link = await newestLinkFor(page, person.email);
+    const link = await newestLinkFor(page, person.email, {
+      matching: /verify-email/,
+      describedAs: 'verification email',
+    });
     await page.goto(link);
 
     /**
@@ -149,13 +152,24 @@ test.describe('journeys 6 and 7 · forgot password, then reset it', () => {
      * fails at `/signin` and looks like a broken reset**, which is the most
      * misleading kind of red.
      */
-    await page.goto(await newestLinkFor(page, person.email));
+    await page.goto(
+      await newestLinkFor(page, person.email, {
+        matching: /verify-email/,
+        describedAs: 'verification email',
+      }),
+    );
 
     await page.goto('/forgot-password');
     await page.getByLabel('Work email').fill(person.email);
     await page.getByRole('button', { name: 'Send reset link' }).click();
 
-    const link = await newestLinkFor(page, person.email);
+    // 🔴 **Named, because this address ALREADY has a verification email** —
+    // 📁 without it this returned that one, navigated back to it, and failed
+    // at `New password` on *"You are not in an organization yet"*.
+    const link = await newestLinkFor(page, person.email, {
+      matching: /reset/,
+      describedAs: 'password reset email',
+    });
     await page.goto(link);
 
     const fresh = 'Different-Horse-Battery-9!';

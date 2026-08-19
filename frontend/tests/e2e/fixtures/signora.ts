@@ -24,6 +24,7 @@
 import { test as base, expect, type Page } from '@playwright/test';
 
 import { type Persona } from './personas';
+import { honourTheRateLimiter } from './rate-limit';
 import { AccountsPage } from '../pages/accounts';
 import { BriefPage } from '../pages/brief';
 import { BusinessPage } from '../pages/business';
@@ -74,6 +75,23 @@ function watch(page: Page): ConsoleEvidence {
 }
 
 export const test = base.extend<SignoraFixtures>({
+  /**
+   * 🔴 **[C-109](../../../../docs/LANE_COORDINATION.md)** — every journey's
+   * page honours the product's rate limiter before the journey starts. **See
+   * `rate-limit.ts` for why this is at the transport and not in each flow.**
+   */
+  page: async ({ page }, use) => {
+    await honourTheRateLimiter(page);
+    await use(page);
+    // 🔴 **Measured, not anticipated.** ⛔ `resilience.spec.ts:185` — a test
+    // that fails requests deliberately — died with *"route.fetch: Test ended."
+    // while running route callback*: **this interceptor can still be waiting
+    // out a refusal when the test finishes**, and an unfinished route handler
+    // fails the test that had already passed. ⚡ Playwright names the remedy in
+    // the error text, which is what this is.
+    await page.unrouteAll({ behavior: 'ignoreErrors' });
+  },
+
   console: async ({ page }, use, testInfo) => {
     const evidence = watch(page);
     await use(evidence);

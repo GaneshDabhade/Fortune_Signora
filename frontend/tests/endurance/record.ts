@@ -43,6 +43,7 @@ import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
 import { browserEnvironment, resolveAppUrl } from '../e2e/fixtures/environment';
+import { honourTheRateLimiter } from '../e2e/fixtures/rate-limit';
 import { OWNER } from '../e2e/fixtures/personas';
 import { AccountsPage } from '../e2e/pages/accounts';
 import { BriefPage } from '../e2e/pages/brief';
@@ -218,6 +219,10 @@ async function main(): Promise<void> {
 
   const accounts = new AccountsPage(page);
   const brief = new BriefPage(page);
+  // 🔴 **[C-109](../../../docs/LANE_COORDINATION.md)** — this harness drives
+  // the Playwright *library* rather than the runner, so it gets none of the
+  // suite's fixtures and installs the interceptor itself.
+  await honourTheRateLimiter(page);
   await new SignInPage(page).signIn(OWNER);
 
   const samples: Sample[] = [];
