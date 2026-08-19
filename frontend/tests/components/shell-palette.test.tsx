@@ -67,10 +67,10 @@ function group(over: Partial<SearchGroup> = {}): SearchGroup {
   } as SearchGroup;
 }
 
-function palette(role: 'owner' | 'member' | null = 'owner') {
+function palette(role: 'owner' | 'member' | null = 'owner', roleKnown = true) {
   return render(
     <QueryClientProvider client={new QueryClient()}>
-      <ShellPalette role={role} />
+      <ShellPalette role={role} roleKnown={roleKnown} />
     </QueryClientProvider>,
   );
 }
@@ -405,5 +405,42 @@ describe('📁 the groups this row added', () => {
 
     expect(screen.getByText('Change what you sell')).toBeInTheDocument();
     expect(screen.getByText('Audit log')).toBeInTheDocument();
+  });
+});
+
+describe('🔴 B-291 — an unresolved role offers the destination, never withholds it', () => {
+  /**
+   * ⚠️ **Measured in the browser before it was fixed**: the RAIL offered
+   * `Settings` immediately and the PALETTE refused it for about three seconds,
+   * because `role` was `null` until the viewer-role read returned and
+   * `can(null, …)` is `false`.
+   *
+   * ⛔ **That is the palette being a second answer to *what can this person
+   * reach*** — 📁 exactly what this file's own comment says it must never be.
+   *
+   * ✅ **The rule is `navigation.tsx`'s, ratified by
+   * [B-253](../../../docs/BUGS.md) and decided by the design**: 📁 App Shell
+   * §16 *Cold boot*. ⚡ *"Being briefly generous costs a refusal the server was
+   * always going to give."*
+   */
+  it('✅ offers a guarded destination while the role is still arriving', async () => {
+    palette(null, false);
+    await userEvent.keyboard('{Meta>}k{/Meta}');
+
+    expect(screen.getByText('Your team')).toBeInTheDocument();
+    expect(renderedGroups()).toContain('Settings');
+  });
+
+  /**
+   * ⛔ **And withholds it once the answer is in and the answer is no.** ⚡
+   * Without this the fix would be *"never guard anything"*, which loses the
+   * courtesy the guard exists to give.
+   */
+  it('⛔ and withholds it once the read says no', async () => {
+    palette('member', true);
+    await userEvent.keyboard('{Meta>}k{/Meta}');
+
+    expect(screen.queryByText('Your team')).not.toBeInTheDocument();
+    expect(renderedGroups()).not.toContain('Settings');
   });
 });

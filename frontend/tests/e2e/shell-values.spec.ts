@@ -66,24 +66,21 @@ test.describe('§09 · the command palette', () => {
     await expect(page.getByRole('dialog')).toBeVisible();
 
     /**
-     * ⚠️ **Waiting for the palette's own eventual state, and the reason is a
-     * finding rather than a precaution.**
+     * ✅ **`Settings` is on the page from the first frame** — 🔴
+     * [B-291](../../../docs/BUGS.md), fixed.
      *
-     * 🔴 **Measured**: the RAIL offers `Settings` immediately and the PALETTE
-     * withholds it for ~3 seconds — `guardFor`/`can` are handed `role = null`
-     * until the viewer-role read returns, so a guarded destination is refused
-     * to somebody who has simply not been checked yet. ⛔ **That is the palette
-     * being a second answer to *what can this person reach***, which is exactly
-     * what `shell-palette.tsx`'s own comment says it must never be.
-     *
-     * 📁 **Filed as [B-291](../../../docs/BUGS.md)** and deliberately NOT fixed
-     * here — the role arrives as a prop from the shell, and this row's budget
-     * is `shell-palette.tsx`. ✅ **This test is about ORDER**, so it waits for
-     * the state whose order it measures.
+     * ⚠️ **This wait was a FINDING for an hour and is now an ordinary
+     * assertion.** ⛔ The rail offered `Settings` immediately and the palette
+     * withheld it for ~3 seconds, because `guardFor`/`can` were handed
+     * `role = null` until the viewer-role read returned — **the palette being a
+     * second answer to *what can this person reach*.** ✅ The palette takes
+     * `roleKnown` now, as the rail has since
+     * [B-253](../../../docs/BUGS.md), and 📁 the design's own rule applies to
+     * both: *an unresolved role renders an ordinary row, never a locked one.*
      */
     await expect(
       page.locator('[role="listbox"] > div > p').filter({ hasText: /^Settings$/i }),
-      'the palette never offered a guarded group, so the order below measured a partial list',
+      'the palette offered no guarded group, so the order below measured a partial list',
     ).toBeVisible({ timeout: 30_000 });
 
     /**

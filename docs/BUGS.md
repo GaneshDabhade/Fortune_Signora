@@ -107,7 +107,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | `product_surface` — `components/shell/shell-palette.tsx`, and the `role` it is handed by `components/shell/app-shell.tsx` |
 | **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — **Lane A** |
 | **Severity** | 🟡 — **wrong but survivable**, and it corrects itself. ⛔ **Filed because of what it IS, not what it costs**: the palette contradicting the rail is the one failure `shell-palette.tsx` was written to prevent |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-19**, in the hour it was filed. ⛔ **`VERIFIED` is QE's** |
 | **Found** | **2026-08-19 by Lane A**, extending the shell journey for [TASK-1484](BACKLOG.md) ⓐ — ⚡ **the test failed and the product was the reason** |
 
 **Measured**, as the owner, on the Playground:
@@ -141,25 +141,34 @@ reader they may not open Settings while their role is still arriving.** ⛔ **Th
 second is quieter and worse**: an absent option is not something a person can
 notice being wrong.
 
-### ⛔ Why it was not fixed in the row that found it
+### ✅ Fixed, and the answer already existed one file over
 
-📁 **[TASK-1484](BACKLOG.md)'s Change Budget is `shell-palette.tsx`,
-`offline-status.tsx` and a `lib/query` hook.** ⚡ **The role arrives as a prop
-from `app-shell.tsx`**, which is not in it — and **the palette reading the role
-itself would be a second source for the fact the prop exists to carry**, which
-is the defect one level up from this one.
+⚠️ **It was filed rather than fixed inside [TASK-1484](BACKLOG.md), because the
+role arrives as a prop from `app-shell.tsx` and that file is not in that row's
+Change Budget.** ✅ **Taken immediately afterwards under
+[TASK-1478](BACKLOG.md)**, the standing programme — 📁 [§20e](../CLAUDE.md)'s
+Startup step 4: *"if one belongs naturally to today's work, fix it first, with a
+regression test."*
 
-✅ **The shape of the fix, offered as input**: the shell knows whether the read
-has settled and the palette does not. **A guarded group withheld because the
-answer is *no* and one withheld because there is no answer yet are different
-states**, and the palette can only tell them apart if it is told.
+🔴 **`roleKnown` already existed, and the rail has taken it since
+[B-253](#b-253) on 2026-08-13.** ⛔ **The palette never gained it**, which is the
+whole defect: `role: null` means both *has no role* and *has not come back yet*,
+and the palette could only read it as the first.
 
-### ⚠️ How it is held meanwhile
+📁 **The rule is the design's rather than a lane's** — App Shell §16 *Cold boot*,
+quoted in `navigation.tsx`: ***an unresolved role renders an ORDINARY row, never
+a locked one.*** ⚡ *"Being briefly generous costs a refusal the server was
+always going to give"*, and being briefly restrictive is **a false claim about
+entitlement** on the surface a person reaches for first.
 
-📁 **`tests/e2e/shell-values.spec.ts` waits for the palette's settled state
-before measuring the group order**, and **says in place that the wait is a
-finding rather than a precaution** — ⛔ a bare `waitForTimeout` would have hidden
-it.
+**Held by three tests**: two component tests — offered while the role is
+arriving, withheld once the answer is *no*, ⛔ **because without the second the
+fix would be *never guard anything*** — and the shell journey, whose wait for
+`Settings` **was a finding for an hour and is now an ordinary assertion.**
+
+✅ **Fire-tested in the browser**: pressing ⌘K on the first frame the shell
+allows now returns `["Ask Signora", "Navigate", "Settings"]`, where it returned
+`["Ask Signora", "Navigate"]` before.
 
 ### B-290 · 🟠 Home tells a reader five accounts are *"Unnamed"* for a second, and then renames them
 
