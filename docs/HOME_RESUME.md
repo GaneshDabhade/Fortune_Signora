@@ -1,98 +1,122 @@
-# Home — where the implementation stands
+# Lane A — where the work stands, and what is next
 
-**Written 2026-08-19 by Lane A**, updated at `2d43e87b`, **22 commits above
-`origin/main` (`7f883ea5`).** This is a resumption note, not a status record —
-`PROJECT_STATUS.md` is QE's and is measured from the promoted commit.
+**Written 2026-08-19 at `941f5832`.** ⚡ **`main` is `20fc5c2d`** — QE's cycle 251
+promoted `8ceff5d6`, **so 25 of this lane's commits are on `main`.** **Two remain
+local**, pushed to `origin/lane-a-product-surface-r2`.
 
----
-
-## What is done
-
-**All four compositions render, and all four have now been seen in a browser.**
-Seller and activation routinely; **Executive** at `bd5519fc` and **RevOps** at
-`b7ad4ed3`, each of which had only ever had component tests. Both perturbations
-of the Playground were reverted — `onboarding_run` is empty, as seeded.
-
-**Thirteen of the fourteen states are implemented and browser-verified.** The
-fourteenth is `C-1533` below.
-
-**Contract 5 landed at `60db0cbd`** — the activation registry is served by two
-endpoints rather than frozen in the browser bundle, which is what made **state 12
-and `AC-H09` reachable at all**. Before it, `home.tsx` carried a state-12 branch
-keyed on a client constant that could never be empty.
-
-| | |
-|---|---|
-| **`GET /workspaces/{id}/integrations/activation-steps`** | `crm_activity` 100 · `meetings` 200, both blocking |
-| **`GET /workspaces/{id}/membership/activation-steps`** | `invite_members` 300, not blocking |
-
-**Two endpoints because two modules own the steps**, and `workspace_tenancy` is
-the root of the dependency graph — a single composed endpoint would need an edge
-the graph does not have. Home composes them by the integer each declares.
+> ⚠️ **First action next session: rebase.** `main` moved after the push, so
+> `main` is no longer an ancestor of the branch. One rebase makes the next
+> promotion a plain fast-forward again. **Then tell QE the tip.**
 
 ---
 
-## What is genuinely outstanding, and whose it is
-
-### The product owner's — filed, indexed, and not blocking anything else
+## ✅ Landed on `main` this session
 
 | | |
 |---|---|
-| **[C-1533](LANE_COORDINATION.md)** | **State 14's entry condition and its copy describe different cards.** The corpus was searched and does not resolve it. ⛔ **State 14 alone is stopped.** `HM_COPY_12` stays in the copy table, unrendered |
-| **[C-1534](LANE_COORDINATION.md)** | **Six cards name a dependency no approved document assigns a producer** — `card.forecast`, `card.requests`, `card.dataquality`, `card.briefing`, `card.execsummary`, `card.meetings`. ✅ **Home renders completely without them** |
-
-### This lane's, and open
-
-| | |
-|---|---|
-| **[B-286](BUGS.md)** | The design's own **light warn tag is 4.078:1** against the 4.5:1 the design states. ⛔ **Not an implementation defect** — the token is `#a5691f` exactly. §20c makes the palette the design's authority. Encoded as `it.fails` in `frontend/tests/unit/home-contrast.test.ts`, so it **reddens the day somebody fixes the palette** |
-| **Contract 16** | The stale-figure stamp **has an empty subject**. Measured: no module imports `modules.integrations`, so a disconnected CRM feeds no Home figure. ⛔ **Stamping would be a false claim.** Shares `C-1534`'s root and is recorded there rather than as its own row |
+| **Home contract 5** | The activation registry moved from a frozen array in the browser bundle to **two endpoints, one per owning module**. ⛔ This is what made `AC-H09` and **state 12 reachable rather than unimplemented** — `home.tsx` had carried a branch keyed on a condition a client constant could never produce |
+| **Home `2.5.8`** | Target size across the whole page. Found the criterion has **two clauses with different subjects** — *every* action clears 24×24, only a *primary* action is 44px |
+| **Home `1.4.3`** | The contrast check the design asks for by name. Found **B-286** |
+| **Home a11y × activation** | `1.3.1`, `2.4.3`, `4.1.3` and `2.5.8` measured against the composition that had **never** been measured — a new customer's first screen |
+| **B-288** | 🔴 **Account search had crashed for every customer since 6 August.** `EntityKind.PERSON` was added to the backend and the frontend's mirrored union never was, so `KIND_LABEL['person'].toLowerCase()` threw and **took the search box with it** |
+| **B-283** | Partly diagnosed. **The two screens do not share a cause**, which the row had assumed. Home's own half — the first-run overlay moving the `h1` down 95px — is fixed |
+| **B-287** | An integration test hardcoded human review's Redis port. Filed to QE, who found it was **worse than the red line showed**: it also *deleted* a queue on the reviewer's server |
+| **rail-band** | The band test **never left the rail anything**, so it could not have measured the override it is named for |
 
 ---
 
-## Where to pick up
+## 🔵 In flight — TASK-495 slice ⓑ, the notification bell
 
-1. **Rebase onto `main`** (QE promoted `19317ea3` in cycle 249 and did not touch
-   this branch). Two things arrive: `attention-route-absence.spec.ts` and
-   `refuse_if_head_moved()` in the certification runner.
-2. **Push the 15 commits.** QE snapshots whatever tip exists when the next cycle
-   opens, and has said it will check `0065` and `0066` for reversibility on a
-   **used** database as well as a clean one ([B-1016](BUGS.md)).
-3. **Then the remaining implementation**, in the order below.
-
-### ✅ The 22 contract items have now each been checked, one at a time
-
-⚡ **This was a claim before and is a measurement now.** ⛔ **The audit found two
-things**, and neither was visible from the outside:
+**Two commits, on the branch, not yet promoted.**
 
 | | |
 |---|---|
-| **Contract 6** | *"Completed activation cards collapse in place… none is removed from the DOM"* — **true of the implementation and asserted nowhere.** ⚠️ **Home's activation cards had no component test of their own at all.** ✅ Two tests at `2d43e87b` |
-| **Contract 12** | *"Each card skeleton uses the card's declared height… **so nothing reflows when data lands**"* — ⛔ **the stated purpose is violated**, and it is [B-283](BUGS.md). ✅ **Partly diagnosed and the Home half fixed** at `859b1bbf` |
+| ✅ **`c23a7720`** | **Backend.** The feed left-joins the read row and returns `FeedItem` — the notification and a `read_at`. **The panel could not be built without it**: the badge said how many were unread without anything saying which |
+| ✅ **`941f5832`** | **UI.** The 32×32 bell, badge capped at 99+, the 400px popover, three tabs, day grouping with sticky heads, the 6px unread dot, and *opening an item* marking it read |
 
-**Every other item is implemented and has a check behind it**, except the two the
-product owner holds and the one the design holds.
+### ⛔ What is NOT done, and it is required
 
-### Remaining work, and none of it is a lane's to decide
+> **A Playwright journey and a headed review.** 📁 [§19](../CLAUDE.md) makes both
+> part of the Definition of Done for a customer-visible slice — *"a UI slice is
+> not complete until its scenario is written and passing"*, and the headed run is
+> **continuous product review**, not verification.
 
-| | |
-|---|---|
-| **[C-1533](LANE_COORDINATION.md)** · **[C-1534](LANE_COORDINATION.md)** | ⛔ **Product owner.** State 14's contradiction, and six cards with no producer |
-| **[B-286](BUGS.md)** | ⛔ **The design's palette.** The token is byte-faithful; `it.fails` reddens when the palette is fixed |
-| **[B-283](BUGS.md)**, the rest of it | ⚠️ **Its own slice, not a Home one.** What remains is likely in `components/shell/` — 📁 the frozen foundation, where a change affects every screen and needs its own verification |
+**Neither exists. The slice is not ready for QE until both do.**
 
-> ⚡ **Home is at its design-defined completion boundary for everything
-> resolvable.** ⛔ **Not "done"** — three of the above are open — **but nothing
-> outstanding is waiting on this lane.**
+### ⚠️ Two things worth knowing before continuing it
+
+**The design draws rows that have no producer.** A *system* row (*"Export
+finished — 8,412 rows"* with a `Download`) and an *ai* row distinct from an
+agent's. ⛔ `ActorKind` is `person | agent` and **nothing exports or scores into
+this feed** — they are absent rather than mocked, and a `Download` that downloads
+nothing would be worse than no row.
+
+**Two contract absences are carried through deliberately.** A person's actor has
+**no name** (`C-203`, and Better Auth is the sole Authentication Authority), so a
+row shows an agent's name or none — ⛔ **never an invented *"Someone"***. And
+`subject_id` carries **no title**, because a cached account name renders one that
+changed last week.
 
 ---
 
-## Two things worth not re-learning
+## ⛔ Open, and none of it this lane's to decide
 
-**The backend integration suite truncates every table** ([B-282](BUGS.md)). Run
-it against a disposable database — create, `alembic upgrade head`, run, drop —
-never against the seeded Playground.
+| | |
+|---|---|
+| **C-1533** | Home state 14's entry condition and its copy describe different cards. **Product owner** |
+| **C-1534** | Six Home cards name a dependency no approved document assigns a producer. **Product owner** |
+| **B-286** | The design's own light warn tag is **4.078:1** against the 4.5:1 it states. ⛔ **Not an implementation defect** — the token is byte-faithful, so the palette is the design's. Encoded `it.fails`, so it **reddens the day somebody fixes it** |
+| **B-283**, the rest | Home's remaining ~0.11 is the shell's flex row changing width at ≈4s; Companies' 0.29 is an auto-layout table settling its columns. ⚠️ **Likely in `components/shell/`** — the frozen foundation, where a change touches every screen, **so it is its own slice with its own verification** |
 
-**The lane API does not auto-reload.** New backend routes 404 until
+---
+
+## 📁 The backlog, measured rather than assumed
+
+**Queue order is `TASK-421 · 1416 · 1424 · 1478 · 1484`.**
+
+- ⛔ **TASK-421** needs **ADR-C**, which does not exist. Verified: no masking ADR
+  in `docs/architecture/adr/`. **An architectural blocker, not this lane's to
+  invent.**
+- ⛔ **TASK-1416** — re-measured a **fifth** time: `app/(app)/reports/` still
+  holds two files and **zero** `useQuery`/`apiRequest`. **Drill-down has no
+  figure to drill into.** The row frees itself the moment a report renders one
+  real figure.
+- ⚠️ **TASK-1424** reads `READY` with its work already on `main` — state
+  contested, and **closing it is not this lane's to do by guessing.**
+- ⚠️ **TASK-1478** is a standing programme, **not a task**.
+- ✅ **TASK-1484** is buildable — the palette ships four groups where the design
+  names seven. ⛔ **Deliberately not claimed**: this lane already holds four
+  claims, one `IN PROGRESS`, and **claiming a fifth while holding unstarted ones
+  is hoarding.**
+
+**So the next work is finishing TASK-495 ⓑ**, not claiming anything new.
+
+---
+
+## ⚡ Two operational facts that cost time to rediscover
+
+⛔ **The backend integration suite truncates every table** ([B-282](BUGS.md)).
+Run it against a disposable database — create, `alembic upgrade head`, run, drop.
+
+⛔ **The lane API on 8300 does not auto-reload.** A new route 404s until
 `uv run uvicorn apps.api.main:create_app --factory --port 8300` is restarted, and
 the symptom looks exactly like a frontend bug.
+
+⚠️ **`demo:users` refuses `SIGNORA_ENVIRONMENT=lane-a`** — 📁 that is **ruled**
+([C-298](LANE_COORDINATION.md) / [ADR-0412](architecture/adr/0412-environment-and-secret-safe-logging.md)),
+the allow-list must **not** be widened, and `RUNNING.md` now carries the working
+sequence: **name `SIGNORA_AUTH_DATABASE_URL` directly and leave
+`SIGNORA_ENVIRONMENT` alone.**
+
+---
+
+## 🔴 The one lesson worth carrying forward
+
+**A mutation has to be verified as applied before its result means anything.**
+
+Two fire-tests this session reported *"passed"* and **neither had tested
+anything**: a 12-space `.outerjoin(` is a substring of a 16-space one 550 lines
+earlier, so the mutation landed on an unrelated query and nearly proved a real
+guard decorative. ⚡ **Once targeted properly, one guard was load-bearing and the
+other was not** — and the second is now documented as defence in depth rather
+than claimed as the guarantee.
