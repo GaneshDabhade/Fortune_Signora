@@ -10,7 +10,12 @@ from datetime import datetime
 from typing import Any, Protocol
 from uuid import UUID
 
-from modules.workspace_tenancy.domain.entities import Membership, Workspace, WorkspaceRole
+from modules.workspace_tenancy.domain.entities import (
+    Membership,
+    RoleChange,
+    Workspace,
+    WorkspaceRole,
+)
 from modules.workspace_tenancy.domain.invitation import Invitation
 from modules.workspace_tenancy.domain.onboarding import OnboardingRun
 from modules.workspace_tenancy.domain.preferences import PersonPreferences
@@ -110,6 +115,26 @@ class RoleChangeLog(Protocol):
         changed_by: UUID,
         at: datetime,
     ) -> None: ...
+
+    async def latest_since(
+        self, *, workspace_id: UUID, person_id: UUID, since: datetime | None
+    ) -> RoleChange | None:
+        """The most recent change to this person's role after `since`.
+
+        🔴 **Authenticated Entry rule 21** — *"role changed since last session"* —
+        and 📁 Home's entry-point table hosts the notice: *"adds a notice; the
+        composition itself does not change mid-session."*
+
+        ⛔ **A read on an append-only log, not an update.** ⚡ The log's own
+        docstring says *"no update method exists, and that is the enforcement"*;
+        **reading it takes nothing away from that** — what the grant forbids is
+        rewriting history, not consulting it.
+
+        ⚠️ **`since=None` means never entered**, and answers `None`: 📁 rule 21 is
+        *"changed since last session"*, and somebody who has had no last session
+        has had nothing change since it. **Their role is simply their role.**
+        """
+        ...
 
 
 class InvitationDelivery(Protocol):

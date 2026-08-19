@@ -172,7 +172,7 @@ beforeEach(() => {
   // test is about it.
   outcomes.mockReturnValue({ failed: 0, retryAll: () => {}, report: () => {}, forget: () => {} });
   recordEntry.mockReset();
-  recordEntry.mockResolvedValue({ first_entry_today: false });
+  recordEntry.mockResolvedValue({ first_entry_today: false, role_change: null });
   chooseLayout.mockReset();
 });
 
@@ -300,6 +300,103 @@ describe('🔴 Home always renders', () => {
   });
 });
 
+describe('📁 Entry rule 21 — the role-change notice', () => {
+  /**
+   * 📁 *"Role changed since last session — Home, with a notice naming **what
+   * changed and by whom**. The composition may differ from yesterday and **that
+   * must not be silent**."*
+   */
+  it('🔴 says what changed and who changed it', async () => {
+    ready(true);
+    recordEntry.mockResolvedValue({
+      first_entry_today: false,
+      role_change: {
+        previous_role: 'member',
+        new_role: 'owner',
+        changed_by: 'u2',
+        changed_by_email: 'dana.reyes@northwind.example',
+        at: '2026-08-19T08:00:00Z',
+      },
+    });
+
+    render(<Home />);
+
+    expect(await screen.findByTestId('role-change')).toBeVisible();
+    expect(
+      screen.getByText(/dana\.reyes@northwind\.example made you able to administer Signora\./),
+    ).toBeVisible();
+  });
+
+  /**
+   * ⚡ **The repository's own wording for the other direction** —
+   * `components/team/history.tsx` publishes both sentences, and 📁 ADR-0034 is
+   * why Home does not invent a second phrasing for one event.
+   */
+  it('uses the ratified sentence when somebody is moved to working accounts', async () => {
+    ready(true);
+    recordEntry.mockResolvedValue({
+      first_entry_today: false,
+      role_change: {
+        previous_role: 'owner',
+        new_role: 'member',
+        changed_by: 'u2',
+        changed_by_email: null,
+        at: '2026-08-19T08:00:00Z',
+      },
+    });
+
+    render(<Home />);
+
+    // 📁 **D23's fallback** for an actor with no known address.
+    expect(await screen.findByText(/Somebody moved you to working accounts\./)).toBeVisible();
+  });
+
+  /**
+   * ⛔ **Silent on every ordinary arrival**, which is the overwhelming majority
+   * of them.
+   */
+  it('⛔ and says nothing when nothing changed', async () => {
+    ready(true);
+    recordEntry.mockResolvedValue({ first_entry_today: false, role_change: null });
+
+    render(<Home />);
+    await screen.findByTestId('home');
+
+    expect(screen.queryByTestId('role-change')).not.toBeInTheDocument();
+  });
+
+  /**
+   * 🔴 **Independent of rule 12's strip.** ⚡ Rule 12 needs several memberships
+   * and a first visit; ⛔ **rule 21 needs neither** — somebody whose role changed
+   * must be told on a second visit, and in their only workspace.
+   */
+  it('🔴 shows on a return visit in a single-workspace account', async () => {
+    workspace.mockReturnValue({
+      activeWorkspace: { id: 'w1', name: 'Northwind' },
+      workspaces: [{ id: 'w1', name: 'Northwind' }],
+      isLoading: false,
+      error: null,
+    });
+    integrations.mockReturnValue({ data: [], isPending: false, isError: false, refetch: () => {} });
+    recordEntry.mockResolvedValue({
+      first_entry_today: false,
+      role_change: {
+        previous_role: 'member',
+        new_role: 'owner',
+        changed_by: 'u2',
+        changed_by_email: 'k.bruun@northwind.example',
+        at: '2026-08-19T08:00:00Z',
+      },
+    });
+
+    render(<Home />);
+
+    expect(await screen.findByTestId('role-change')).toBeVisible();
+    // ⛔ **And rule 11 still draws no confirmation strip.**
+    expect(screen.queryByTestId('workspace-confirmation')).not.toBeInTheDocument();
+  });
+});
+
 describe('📁 state 09 — the forbidden card', () => {
   /**
    * 📁 *"The card is **replaced in place** by a same-footprint panel naming the
@@ -386,7 +483,7 @@ describe('📁 hierarchy 2 — the workspace confirmation strip, and state 13', 
   it('✅ confirms which organization on a first entry today', async () => {
     ready(true);
     severalWorkspaces();
-    recordEntry.mockResolvedValue({ first_entry_today: true });
+    recordEntry.mockResolvedValue({ first_entry_today: true, role_change: null });
 
     render(<Home />);
 
@@ -407,7 +504,7 @@ describe('📁 hierarchy 2 — the workspace confirmation strip, and state 13', 
   it('🔴 state 13 · says nothing at all on the second entry of the day', async () => {
     ready(true);
     severalWorkspaces();
-    recordEntry.mockResolvedValue({ first_entry_today: false });
+    recordEntry.mockResolvedValue({ first_entry_today: false, role_change: null });
 
     render(<Home />);
     await screen.findByTestId('home');
@@ -435,7 +532,7 @@ describe('📁 hierarchy 2 — the workspace confirmation strip, and state 13', 
       isError: false,
       refetch: () => {},
     });
-    recordEntry.mockResolvedValue({ first_entry_today: true });
+    recordEntry.mockResolvedValue({ first_entry_today: true, role_change: null });
 
     render(<Home />);
     await screen.findByTestId('home');

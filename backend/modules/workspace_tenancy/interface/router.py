@@ -90,6 +90,7 @@ from modules.workspace_tenancy.interface.schemas import (
     NotificationResponse,
     MembershipResponse,
     HomeCardLayoutPayload,
+    RoleChangePayload,
     ViewerRoleResponse,
     WorkspaceEntryResponse,
     OnboardingRunResponse,
@@ -1108,17 +1109,28 @@ async def record_entry(context: CurrentWorkspace) -> WorkspaceEntryResponse:
     *"gone on the second visit that day"* and state 13 suppresses it — **so the
     answer has to come back from the write, not from a read after it.**
 
+    ⚡ **And rule 21's notice, for the same reason.** 📁 *"Role changed since last
+    session"* is a question about `last_entered_at`, which **this call is about to
+    overwrite** — so *"since last session"* is answerable here and nowhere after.
+    ⛔ **Three of Entry's rules terminate on Home and all three are facts about
+    one arrival**, which is why one call carries them rather than three.
+
     ⛔ **No body, and there could not be one.** *Who* is the caller's verified
     identity, *where* is the path, and *when* is the server's clock. **A
     client-supplied moment would let a browser decide which day it was.**
     """
     context.authorize(Resource.PREFERENCES, Action.UPDATE)
-    first_today = await build_use_cases(context.session).record_entry.execute(
+    entry = await build_use_cases(context.session).record_entry.execute(
         context.workspace_id,
         context.principal.user_id,
         now=datetime.now(UTC),
     )
-    return WorkspaceEntryResponse(first_entry_today=first_today)
+    return WorkspaceEntryResponse(
+        first_entry_today=entry.first_today,
+        role_change=(
+            None if entry.role_change is None else RoleChangePayload.of(entry.role_change)
+        ),
+    )
 
 
 @router.post(

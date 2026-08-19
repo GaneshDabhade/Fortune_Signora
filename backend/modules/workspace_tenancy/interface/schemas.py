@@ -25,6 +25,7 @@ from modules.workspace_tenancy.application.use_cases.organization_history import
 )
 from modules.workspace_tenancy.domain.entities import (
     MAX_WORKSPACE_NAME_LENGTH,
+    RoleChange,
     MAX_WORKSPACE_SLUG_LENGTH,
     MIN_WORKSPACE_SLUG_LENGTH,
     Membership,
@@ -213,6 +214,40 @@ class WorkspaceEntryResponse(BaseModel):
     #: ⛔ **Read before the entry was recorded**, which is the only order in which
     #: the question has a useful answer.
     first_entry_today: bool
+    #: 🔴 **Authenticated Entry rule 21** — *"Home, with a notice naming what
+    #: changed and by whom. The composition may differ from yesterday and **that
+    #: must not be silent**."*
+    #: ⛔ **`None` when nothing changed since this person was last here**, which
+    #: is every ordinary arrival.
+    role_change: RoleChangePayload | None = None
+
+
+class RoleChangePayload(BaseModel):
+    """What somebody's role became, and who changed it — Entry rule 21.
+
+    ⚠️ **`changed_by_email` rather than a name.** 📁 ADR-0026 puts identity in
+    Better Auth, in the Next.js tier, so **the Python API has no name to give** —
+    the same absence `MembershipResponse.member_email` already carries, and
+    `None` for a membership added by identifier.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    previous_role: WorkspaceRole
+    new_role: WorkspaceRole
+    changed_by: UUID
+    changed_by_email: str | None
+    at: datetime
+
+    @classmethod
+    def of(cls, change: RoleChange) -> RoleChangePayload:
+        return cls(
+            previous_role=change.previous_role,
+            new_role=change.new_role,
+            changed_by=change.changed_by,
+            changed_by_email=change.changed_by_email,
+            at=change.at,
+        )
 
 
 class ViewerRoleResponse(BaseModel):

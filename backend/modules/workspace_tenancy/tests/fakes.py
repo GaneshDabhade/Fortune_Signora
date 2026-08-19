@@ -9,7 +9,12 @@ from collections.abc import Sequence
 from typing import Any
 from uuid import UUID
 
-from modules.workspace_tenancy.domain.entities import Membership, Workspace, WorkspaceRole
+from modules.workspace_tenancy.domain.entities import (
+    Membership,
+    RoleChange,
+    Workspace,
+    WorkspaceRole,
+)
 from modules.workspace_tenancy.domain.onboarding import OnboardingRun
 from modules.workspace_tenancy.domain.preferences import PersonPreferences
 from modules.workspace_tenancy.domain.saved_view import SavedView
@@ -150,6 +155,39 @@ class FakeRoleChangeLog:
                 "changed_by": changed_by,
                 "at": at,
             }
+        )
+
+    async def latest_since(
+        self, *, workspace_id: UUID, person_id: UUID, since: Any
+    ) -> RoleChange | None:
+        """🔴 **Entry rule 21's read, answered from the same list `record` writes.**
+
+        ⛔ **Not a stub returning `None`.** ⚡ A fake that answered a different
+        question from the SQL would let a test pass against behaviour the database
+        does not have — 📁 the defect `FakeSavedViewRepository` one class down
+        records in its own header.
+
+        ⚠️ **`membership_id` stands in for the person here.** The SQL joins
+        `membership` to reach the person; **this list has no such table**, so a
+        caller in these tests passes the membership id. 📁 The join is exactly
+        what the integration test exists to cover.
+        """
+        newest: dict[str, Any] | None = None
+        for entry in self.entries:
+            if entry["workspace_id"] != workspace_id or entry["membership_id"] != person_id:
+                continue
+            if since is not None and entry["at"] <= since:
+                continue
+            if newest is None or entry["at"] > newest["at"]:
+                newest = entry
+        if newest is None:
+            return None
+        return RoleChange(
+            previous_role=newest["previous_role"],
+            new_role=newest["new_role"],
+            changed_by=newest["changed_by"],
+            changed_by_email=None,
+            at=newest["at"],
         )
 
 

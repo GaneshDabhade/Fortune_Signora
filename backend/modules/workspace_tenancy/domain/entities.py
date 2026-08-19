@@ -73,6 +73,30 @@ def validate_workspace_slug(candidate: str) -> str:
     return slug
 
 
+@dataclass(frozen=True, slots=True)
+class RoleChange:
+    """What somebody's role became, and who changed it.
+
+    🔴 **Authenticated Entry rule 21** — *"Home, with a notice naming **what
+    changed and by whom**. The composition may differ from yesterday and **that
+    must not be silent**."*
+
+    ⚡ **Read from the append-only log**, never recomputed: the log is the record
+    of what happened, and *"who"* is the one fact nothing else can reconstruct.
+
+    ⛔ **`changed_by_email` is an address rather than a name.** 📁 ADR-0026 puts
+    identity in Better Auth, in the Next.js tier — **the Python API has no name
+    to give** — and `None` for a membership added by identifier is the same
+    absence `Membership.member_email` already carries.
+    """
+
+    previous_role: WorkspaceRole
+    new_role: WorkspaceRole
+    changed_by: UUID
+    changed_by_email: str | None
+    at: datetime
+
+
 class WorkspaceRole(StrEnum):
     """Deliberately minimal today (owner/member). Casbin owns fine-grained,
     resource-level permission evaluation (ADR-0010); this role is the coarse

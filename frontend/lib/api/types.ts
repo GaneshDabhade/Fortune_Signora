@@ -1450,6 +1450,23 @@ export interface PipelineHealth {
  */
 export interface WorkspaceEntry {
   first_entry_today: boolean;
+  /**
+   * 🔴 **Authenticated Entry rule 21** — *"a notice naming what changed and by
+   * whom. The composition may differ from yesterday and **that must not be
+   * silent**."*
+   *
+   * ⛔ **`null` on every ordinary arrival.** ⚡ Answered from the same read that
+   * decides `first_entry_today`, because *"since last session"* is a question
+   * about `last_entered_at` and recording the entry overwrites it.
+   */
+  role_change: {
+    previous_role: 'owner' | 'member';
+    new_role: 'owner' | 'member';
+    changed_by: string;
+    /** ⚠️ **An address, not a name** — ADR-0026 leaves the API no names. */
+    changed_by_email: string | null;
+    at: string;
+  } | null;
 }
 
 export interface PersonPreferences {

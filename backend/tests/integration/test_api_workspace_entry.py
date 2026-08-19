@@ -159,3 +159,152 @@ class TestRecordingAnEntry:
         )
 
         assert response.status_code == 404
+
+
+class TestTheRoleChangeNotice:
+    """🔴 **Authenticated Entry rule 21**, over the full stack.
+
+    📁 *"Role changed since last session — Home, with a notice naming **what
+    changed and by whom**. The composition may differ from yesterday and **that
+    must not be silent**."*
+
+    **The layer a unit test cannot reach.** The read joins `membership` twice —
+    once to find whose role changed and once to find the address of whoever
+    changed it — and 🔴 **the fake cannot exercise a join**.
+    """
+
+    async def test_an_ordinary_arrival_says_nothing(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        owner = uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+
+        first = await client.post(ENTRY.format(workspace=workspace), headers=_auth(key_pair, owner))
+        second = await client.post(
+            ENTRY.format(workspace=workspace), headers=_auth(key_pair, owner)
+        )
+
+        assert first.json()["role_change"] is None
+        assert second.json()["role_change"] is None
+
+    async def test_a_change_since_the_last_session_is_reported(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """🔴 **The whole rule.** ⚡ Enter once, have the role changed, enter
+        again — and the second arrival names what changed and who did it."""
+        owner, colleague = uuid4(), uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+        added = await client.post(
+            f"/workspaces/{workspace}/members",
+            json={"user_id": str(colleague), "role": "member"},
+            headers=_auth(key_pair, owner),
+        )
+        assert added.status_code == 201, added.text
+        membership = added.json()["id"]
+
+        # They were here before the change.
+        await client.post(ENTRY.format(workspace=workspace), headers=_auth(key_pair, colleague))
+        promoted = await client.post(
+            f"/workspaces/{workspace}/members/{membership}/role",
+            json={"role": "owner"},
+            headers=_auth(key_pair, owner),
+        )
+        assert promoted.status_code == 200, promoted.text
+        arrival = await client.post(
+            ENTRY.format(workspace=workspace), headers=_auth(key_pair, colleague)
+        )
+
+        change = arrival.json()["role_change"]
+        assert change is not None, arrival.text
+        assert change["previous_role"] == "member"
+        assert change["new_role"] == "owner"
+        assert change["changed_by"] == str(owner)
+
+    async def test_it_is_reported_once_and_not_again(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """⛔ **`last_entered_at` is what makes it once.** ⚡ The arrival that
+        reports the change also records itself, so the next arrival is *after* it
+        and the change is no longer *since last session*."""
+        owner, colleague = uuid4(), uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+        added = await client.post(
+            f"/workspaces/{workspace}/members",
+            json={"user_id": str(colleague), "role": "member"},
+            headers=_auth(key_pair, owner),
+        )
+        membership = added.json()["id"]
+        await client.post(ENTRY.format(workspace=workspace), headers=_auth(key_pair, colleague))
+        await client.post(
+            f"/workspaces/{workspace}/members/{membership}/role",
+            json={"role": "owner"},
+            headers=_auth(key_pair, owner),
+        )
+
+        told = await client.post(
+            ENTRY.format(workspace=workspace), headers=_auth(key_pair, colleague)
+        )
+        again = await client.post(
+            ENTRY.format(workspace=workspace), headers=_auth(key_pair, colleague)
+        )
+
+        assert told.json()["role_change"] is not None
+        assert again.json()["role_change"] is None
+
+    async def test_somebody_elses_change_is_not_reported_to_you(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """🔴 **The half the join decides.** ⛔ A notice about a colleague's
+        promotion, addressed to somebody else, would be the read answering *"what
+        changed in this workspace"* when the rule asks *"what changed for you"*.
+        """
+        owner, colleague, bystander = uuid4(), uuid4(), uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+        added = await client.post(
+            f"/workspaces/{workspace}/members",
+            json={"user_id": str(colleague), "role": "member"},
+            headers=_auth(key_pair, owner),
+        )
+        await client.post(
+            f"/workspaces/{workspace}/members",
+            json={"user_id": str(bystander), "role": "member"},
+            headers=_auth(key_pair, owner),
+        )
+        await client.post(ENTRY.format(workspace=workspace), headers=_auth(key_pair, bystander))
+        await client.post(
+            f"/workspaces/{workspace}/members/{added.json()['id']}/role",
+            json={"role": "owner"},
+            headers=_auth(key_pair, owner),
+        )
+
+        theirs = await client.post(
+            ENTRY.format(workspace=workspace), headers=_auth(key_pair, bystander)
+        )
+
+        assert theirs.json()["role_change"] is None
+
+    async def test_somebody_who_has_never_been_here_is_told_nothing(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """📁 Rule 21 is *"changed since last session"* — ⚡ **somebody who has had
+        no last session has had nothing change since it.** Their role is simply
+        their role, and a notice would be the product explaining a history they
+        were never part of."""
+        owner, colleague = uuid4(), uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+        added = await client.post(
+            f"/workspaces/{workspace}/members",
+            json={"user_id": str(colleague), "role": "member"},
+            headers=_auth(key_pair, owner),
+        )
+        await client.post(
+            f"/workspaces/{workspace}/members/{added.json()['id']}/role",
+            json={"role": "owner"},
+            headers=_auth(key_pair, owner),
+        )
+
+        first = await client.post(
+            ENTRY.format(workspace=workspace), headers=_auth(key_pair, colleague)
+        )
+
+        assert first.json()["role_change"] is None

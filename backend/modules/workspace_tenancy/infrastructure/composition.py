@@ -246,7 +246,12 @@ def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
         skip_onboarding=SkipOnboardingUseCase(runs=onboarding_repository),
         get_preferences=GetPreferencesUseCase(preferences=preferences_repository),
         change_preferences=ChangePreferencesUseCase(preferences=preferences_repository),
-        record_entry=RecordWorkspaceEntry(preferences=preferences_repository),
+        record_entry=RecordWorkspaceEntry(
+            preferences=preferences_repository,
+            # 📁 **Rule 21's source**, read at entry — the same append-only log
+            # `change_role` writes to.
+            history=SqlAlchemyRoleChangeLog(session),
+        ),
         acknowledge_setup_complete=AcknowledgeSetupCompleteUseCase(
             preferences=preferences_repository
         ),

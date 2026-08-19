@@ -4,6 +4,8 @@ import { X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { cn } from '@/lib/design/cn';
+import { RoleChangeNotice } from '@/components/home/role-change-notice';
+import type { WorkspaceEntry } from '@/lib/api/types';
 import { useRecordEntry } from '@/lib/query/hooks/preferences';
 
 /**
@@ -96,6 +98,12 @@ function useReducedMotion(): boolean {
 export function WorkspaceStrip({ workspaceId, workspaceName, memberships }: WorkspaceStripProps) {
   const record = useRecordEntry(workspaceId);
   const [firstToday, setFirstToday] = useState<boolean | null>(null);
+  /**
+   * 📁 **Rule 21's notice**, from the same call. ⚡ Three of Entry's rules
+   * terminate on Home and all three are facts about one arrival, so one request
+   * carries them — ⛔ and *"since last session"* is unanswerable after the write.
+   */
+  const [roleChange, setRoleChange] = useState<WorkspaceEntry['role_change']>(null);
   const [dismissed, setDismissed] = useState(false);
 
   /**
@@ -114,7 +122,10 @@ export function WorkspaceStrip({ workspaceId, workspaceName, memberships }: Work
     if (workspaceId === null || asked.current) return;
     asked.current = true;
     void fire()
-      .then((entry) => setFirstToday(entry.first_entry_today))
+      .then((entry) => {
+        setFirstToday(entry.first_entry_today);
+        setRoleChange(entry.role_change);
+      })
       // ⛔ **A failed entry record shows no strip.** ⚡ It is a courtesy, and
       // guessing *"probably your first visit"* is the one thing it must not do.
       .catch(() => setFirstToday(false));
@@ -156,9 +167,19 @@ export function WorkspaceStrip({ workspaceId, workspaceName, memberships }: Work
     };
   }, [present, reduceMotion]);
 
-  if (!present || workspaceName === null) return null;
+  /**
+   * ⚡ **The notice is independent of the confirmation strip.** 📁 Rule 12's strip
+   * needs several memberships and a first visit; ⛔ **rule 21's notice needs
+   * neither** — somebody whose role changed must be told on a second visit and in
+   * their only workspace.
+   */
+  const notice = <RoleChangeNotice change={roleChange} />;
+
+  if (!present || workspaceName === null) return notice;
 
   return (
+    <>
+      {notice}
     /**
      * ♿ **`role="status"`** — 📁 4.1.3, *"entry announces once"*, and the greeting
      * already owns that sentence. ⛔ **Not `alert`**: confirming where somebody
@@ -194,5 +215,6 @@ export function WorkspaceStrip({ workspaceId, workspaceName, memberships }: Work
         <X className="h-3.5 w-3.5" aria-hidden />
       </button>
     </div>
+    </>
   );
 }

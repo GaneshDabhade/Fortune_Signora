@@ -23,6 +23,7 @@ from modules.workspace_tenancy.application.use_cases.last_used_workspace import 
     ResolveLastUsedWorkspace,
 )
 from modules.workspace_tenancy.domain.preferences import PersonPreferences
+from modules.workspace_tenancy.tests.fakes import FakeRoleChangeLog
 
 NOW = datetime(2026, 8, 10, 9, 0, tzinfo=UTC)
 PERSON = UUID("11111111-1111-1111-1111-111111111111")
@@ -57,12 +58,12 @@ def preferences() -> FakePreferences:
 
 class TestEnteringAWorkspace:
     async def test_entering_records_the_moment(self, preferences: FakePreferences) -> None:
-        await RecordWorkspaceEntry(preferences).execute(NORTH, PERSON, now=NOW)
+        await RecordWorkspaceEntry(preferences, FakeRoleChangeLog()).execute(NORTH, PERSON, now=NOW)
 
         assert (await preferences.get(NORTH, PERSON)).last_entered_at == NOW
 
     async def test_a_later_entry_wins(self, preferences: FakePreferences) -> None:
-        record = RecordWorkspaceEntry(preferences)
+        record = RecordWorkspaceEntry(preferences, FakeRoleChangeLog())
         await record.execute(NORTH, PERSON, now=NOW)
         await record.execute(NORTH, PERSON, now=NOW + timedelta(hours=1))
 
@@ -77,7 +78,7 @@ class TestEnteringAWorkspace:
         somebody's last-used workspace BACKWARDS** — which is precisely the
         wrong answer at the one moment it matters.
         """
-        record = RecordWorkspaceEntry(preferences)
+        record = RecordWorkspaceEntry(preferences, FakeRoleChangeLog())
         await record.execute(NORTH, PERSON, now=NOW)
         writes_after_first = preferences.writes
 
@@ -99,7 +100,7 @@ class TestEnteringAWorkspace:
             PersonPreferences(workspace_id=NORTH, person_id=PERSON, theme=Theme.DARK)
         )
 
-        await RecordWorkspaceEntry(preferences).execute(NORTH, PERSON, now=NOW)
+        await RecordWorkspaceEntry(preferences, FakeRoleChangeLog()).execute(NORTH, PERSON, now=NOW)
 
         stored = await preferences.get(NORTH, PERSON)
         assert stored.theme is Theme.DARK
@@ -110,7 +111,7 @@ class TestResolvingIt:
     async def test_the_most_recent_of_the_workspaces_they_may_enter(
         self, preferences: FakePreferences
     ) -> None:
-        record = RecordWorkspaceEntry(preferences)
+        record = RecordWorkspaceEntry(preferences, FakeRoleChangeLog())
         await record.execute(NORTH, PERSON, now=NOW)
         await record.execute(SOUTH, PERSON, now=NOW + timedelta(hours=1))
 
@@ -138,7 +139,7 @@ class TestResolvingIt:
     async def test_an_unentered_workspace_never_wins_over_an_entered_one(
         self, preferences: FakePreferences
     ) -> None:
-        await RecordWorkspaceEntry(preferences).execute(SOUTH, PERSON, now=NOW)
+        await RecordWorkspaceEntry(preferences, FakeRoleChangeLog()).execute(SOUTH, PERSON, now=NOW)
 
         answer = await ResolveLastUsedWorkspace(preferences).execute(
             PERSON, frozenset({NORTH, SOUTH})
@@ -161,7 +162,7 @@ class TestTheHazardItself:
         **That is what makes the clearing provable rather than diligent: there
         is nothing to forget to clear.**
         """
-        record = RecordWorkspaceEntry(preferences)
+        record = RecordWorkspaceEntry(preferences, FakeRoleChangeLog())
         await record.execute(NORTH, PERSON, now=NOW)
         await record.execute(THEIRS, PERSON, now=NOW + timedelta(days=1))
 
@@ -178,7 +179,7 @@ class TestTheHazardItself:
         derivation is deleted and everything returns `None`.** ✅ **This is the
         discriminating case**: put the membership back and the same row wins.
         """
-        record = RecordWorkspaceEntry(preferences)
+        record = RecordWorkspaceEntry(preferences, FakeRoleChangeLog())
         await record.execute(NORTH, PERSON, now=NOW)
         await record.execute(THEIRS, PERSON, now=NOW + timedelta(days=1))
 
@@ -191,7 +192,7 @@ class TestTheHazardItself:
     async def test_a_person_with_no_live_memberships_gets_nothing(
         self, preferences: FakePreferences
     ) -> None:
-        await RecordWorkspaceEntry(preferences).execute(NORTH, PERSON, now=NOW)
+        await RecordWorkspaceEntry(preferences, FakeRoleChangeLog()).execute(NORTH, PERSON, now=NOW)
 
         answer = await ResolveLastUsedWorkspace(preferences).execute(PERSON, frozenset())
 

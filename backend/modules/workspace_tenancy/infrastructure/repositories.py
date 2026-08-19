@@ -12,8 +12,14 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import Select, func, literal, select, text, tuple_, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.orm import aliased
 
-from modules.workspace_tenancy.domain.entities import Membership, Workspace, WorkspaceRole
+from modules.workspace_tenancy.domain.entities import (
+    Membership,
+    RoleChange,
+    Workspace,
+    WorkspaceRole,
+)
 from modules.workspace_tenancy.domain.invitation import Invitation
 from modules.workspace_tenancy.domain.notification import (
     Actor,
@@ -414,6 +420,63 @@ class SqlAlchemyRoleChangeLog(SqlAlchemyRepository):
                 created_by=changed_by,
                 updated_by=changed_by,
             )
+        )
+
+    async def latest_since(
+        self, *, workspace_id: UUID, person_id: UUID, since: datetime | None
+    ) -> RoleChange | None:
+        """🔴 **Entry rule 21's read.** ⛔ `SELECT` only, which is all the grant has.
+
+        ⚡ **Joined to `membership` twice, and each join earns its place**: once to
+        find the changes that are about THIS person, and once to find the address
+        of whoever made the change. 📁 ADR-0026 leaves the API no names, so the
+        second join is the only identity available — the same one the members
+        list publishes.
+        """
+        if since is None:
+            return None
+
+        subject = aliased(MembershipModel, name="subject")
+        actor = aliased(MembershipModel, name="actor")
+        row = (
+            await self._session.execute(
+                select(
+                    MembershipRoleChangeModel.previous_role,
+                    MembershipRoleChangeModel.new_role,
+                    MembershipRoleChangeModel.created_by,
+                    MembershipRoleChangeModel.created_at,
+                    actor.member_email,
+                )
+                .join(subject, subject.id == MembershipRoleChangeModel.membership_id)
+                # ⚠️ **An outer join for the actor.** ⛔ Somebody who changed a role
+                # and has since left is still the answer to *"by whom"*, and an
+                # inner join would silently drop the notice rather than the name.
+                .outerjoin(
+                    actor,
+                    (actor.user_id == MembershipRoleChangeModel.created_by)
+                    & (actor.workspace_id == MembershipRoleChangeModel.workspace_id),
+                )
+                .where(
+                    MembershipRoleChangeModel.workspace_id == workspace_id,
+                    subject.user_id == person_id,
+                    MembershipRoleChangeModel.created_at > since,
+                )
+                # 📁 *"A notice naming what changed"* — the LATEST change, because
+                # two promotions in a week are one fact about where somebody now
+                # stands rather than two notices.
+                .order_by(MembershipRoleChangeModel.created_at.desc())
+                .limit(1)
+            )
+        ).first()
+
+        if row is None:
+            return None
+        return RoleChange(
+            previous_role=row.previous_role,
+            new_role=row.new_role,
+            changed_by=row.created_by,
+            changed_by_email=row.member_email,
+            at=row.created_at,
         )
 
 

@@ -45,7 +45,31 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
-from modules.workspace_tenancy.application.ports import PersonPreferencesRepository
+from modules.workspace_tenancy.application.ports import (
+    PersonPreferencesRepository,
+    RoleChangeLog,
+)
+from modules.workspace_tenancy.domain.entities import RoleChange
+
+
+@dataclass(frozen=True, slots=True)
+class Entry:
+    """What Home needs to know about one arrival.
+
+    🔴 **Three of Authenticated Entry's rules terminate on Home and all three are
+    entry-time facts**, which is why one call answers them together:
+    **rule 12** confirms which workspace for four seconds, **Home state 13**
+    suppresses that on a return visit, and **rule 21** *"adds a notice naming what
+    changed and by whom"*.
+
+    ⛔ **All of them are read BEFORE the entry is recorded.** ⚡ Recording it moves
+    `last_entered_at` to now, so *"since last session"* and *"first today"* both
+    become meaningless to anything that asks afterwards.
+    """
+
+    first_today: bool
+    #: 📁 Rule 21 — `None` when nothing changed since this person was last here.
+    role_change: RoleChange | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -58,8 +82,10 @@ class RecordWorkspaceEntry:
     """
 
     preferences: PersonPreferencesRepository
+    #: 📁 **Rule 21's source** — the append-only log, read rather than written.
+    history: RoleChangeLog
 
-    async def execute(self, workspace_id: UUID, person_id: UUID, *, now: datetime) -> bool:
+    async def execute(self, workspace_id: UUID, person_id: UUID, *, now: datetime) -> Entry:
         """Record the entry, and answer **whether it was the first one today.**
 
         🔴 **The answer is read BEFORE the write, and that order is the whole
@@ -76,6 +102,12 @@ class RecordWorkspaceEntry:
         """
         current = await self.preferences.get(workspace_id, person_id)
         first_today = current.first_entry_today(now)
+        # 📁 **Rule 21 — *"role changed since last session"*.** ⛔ Read before the
+        # write, for the same reason `first_today` is: `last_entered_at` IS *last
+        # session*, and recording this arrival overwrites it.
+        role_change = await self.history.latest_since(
+            workspace_id=workspace_id, person_id=person_id, since=current.last_entered_at
+        )
         entered = current.entered(now)
         # ⚡ **Nothing is written when nothing changed.** The aggregate refuses
         # a moment older than the one it holds, so a retried request or a clock
@@ -83,7 +115,7 @@ class RecordWorkspaceEntry:
         # moves somebody's destination backwards.
         if entered is not current:
             await self.preferences.save(entered)
-        return first_today
+        return Entry(first_today=first_today, role_change=role_change)
 
 
 @dataclass(frozen=True, slots=True)
@@ -151,6 +183,7 @@ class ResolveLastUsedWorkspace:
 
 
 __all__ = [
+    "Entry",
     "ForgetWorkspaceEntry",
     "RecordWorkspaceEntry",
     "ResolveLastUsedWorkspace",
