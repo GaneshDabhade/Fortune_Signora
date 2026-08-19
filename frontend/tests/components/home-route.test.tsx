@@ -7,7 +7,7 @@
  * the second property is that it renders no card the platform has not
  * published.**
  */
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -451,6 +451,71 @@ describe('🔴 Home always renders', () => {
     const drawn = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
     expect(drawn.indexOf('Connect a CRM')).toBeGreaterThan(-1);
     expect(drawn.indexOf('Connect a CRM')).toBeLessThan(drawn.indexOf('Invite the team'));
+  });
+});
+
+describe('📁 contract 6 — a completed step collapses in place and stays in the DOM', () => {
+  /**
+   * 📁 **Contract 6** — *"Completed activation cards collapse in place and
+   * retain their position; **none is removed from the DOM**."*
+   *
+   * ⛔ **And the design gives the reason rather than leaving it to taste** — 📁
+   * `P-05`: *"They collapse rather than disappear. **A step that vanishes makes
+   * people doubt they completed it**, and reordering shifts the list under the
+   * cursor."*
+   *
+   * ⚠️ **Removing a finished step is the obvious implementation.** ⚡ It is
+   * also what makes a three-step list look like a two-step one the moment
+   * somebody succeeds at the first, which is precisely when they most need to
+   * see what is left.
+   */
+  it('🔴 a finished step is still rendered, and still first', () => {
+    ready(false);
+    // ⚡ **CRM done, the other two not** — the realistic case. ⛔ *All* complete
+    // is not this state: 📁 a fully activated workspace resolves to a role
+    // composition, so there would be no activation cards to keep.
+    activation({ done: 1 });
+
+    render(<Home />);
+
+    const drawn = screen
+      .getAllByRole('heading', { level: 2 })
+      .map((heading) => heading.textContent);
+
+    expect(drawn).toContain('Connect a CRM');
+    expect(drawn).toContain('Connect calls and calendar');
+    expect(drawn).toContain('Invite the team');
+    // ⚠️ **And the finished one is actually finished.** ⛔ Without this the
+    // assertions above pass on a page where nothing completed, which would make
+    // the test agree with a regression rather than catch it.
+    const crm = screen.getByTestId('home').querySelector('[data-card="connect-a-crm"]');
+    expect(crm).toHaveTextContent('Complete');
+    // 📁 *"retain their position"* — ⛔ **the completed one has NOT sunk**, which
+    // is the reordering `P-05` forbids by name.
+    expect(drawn.indexOf('Connect a CRM')).toBeLessThan(
+      drawn.indexOf('Connect calls and calendar'),
+    );
+  });
+
+  /**
+   * 📁 *"It keeps a secondary action into the owning module, and **loses its
+   * primary**."* ⛔ **Collapsing is not disabling** — the step stays reachable.
+   */
+  it('⛔ and it keeps a way into the module it finished', () => {
+    ready(false);
+    activation({ done: 1 });
+
+    render(<Home />);
+
+    const card = screen.getByTestId('home').querySelector('[data-card="connect-a-crm"]');
+    expect(card, 'the completed step is not in the DOM at all').not.toBeNull();
+    // 📁 *"Review mapping"* — the secondary route it keeps. ⛔ **Not the
+    // primary**, which the design says it loses.
+    expect(within(card as HTMLElement).getByRole('link', { name: 'Review mapping' })).toBeVisible();
+    expect(
+      within(card as HTMLElement).queryByRole('link', { name: 'Connect' }),
+      'the completed step still offers its primary action',
+    ).toBeNull();
   });
 });
 
