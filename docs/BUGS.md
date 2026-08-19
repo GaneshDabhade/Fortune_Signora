@@ -388,6 +388,34 @@ _HOST: Final = "localhost:5432"
 
 > ⚠️ **This is [B-287](#b-287) one level up, and [B-270](#b-270) one level up from that.** **Three defects, one shape: a suite reaching for slot 0 because slot 0 is what a literal spells.** ⛔ **Two were in tests; this one is in the gate that decides what reaches `main`.**
 
+### 🔴 THIRD INSTANCE, found by the fix failing to be enough — `infra/release-preflight.py:215`
+
+**`make certify` still refused after `database.py` was fixed:**
+
+```
+BLOCKED — the development database is not reachable
+  nothing is listening on 127.0.0.1:5432
+```
+
+📁 **`DEV_DATABASE_PORT: Final = 5432`**, and ⚡ **the comment beside it said the right thing while the value did the wrong one**:
+
+> *"Where the suite's database lives. **`RUNNING.md` allocates one per lane**, all in the development PostgreSQL — which the gates need running and never check."*
+
+⛔ **It knew the allocation was per-lane and then named slot 0.** **So `make certify` could not start whenever the reviewer's stack was down** — refusing on a database the lane does not use and must not start.
+
+✅ **Fixed by `_database_port()`, which calls `environments.current()`** — 📁 **the mechanism was one directory away and its own docstring is the warning**: *"a wrong guess here points a suite at another lane's database, which is the class of defect the whole change exists to end."*
+
+⚡ **`None` is not an error there, deliberately.** `environments.py` resolves nothing on `main`, on `integration` and on a detached HEAD, and **a preflight that refused there would block certification on the branches it is meant to run from.** **The check is skipped and the diagnostic names the lane's own port**, which is honest where guessing `5432` was not.
+
+**Measured — slot 0 stopped, lane cluster up:**
+
+```
+=== slot 0 (5432) listening: 0 ===
+  READY — QE Release Mode may begin
+```
+
+> ⛔ **Two fixes were needed and one was found by the other failing.** ⚡ **`database.py` was where the damage was; `release-preflight.py` was where the refusal was** — and fixing only the first would have left certification still unable to start, with a message blaming a stack nobody owns.
+
 ### ✅ The fix — derive it, and refuse rather than guess
 
 **`_host()` parses `SIGNORA_TEST_ADMIN_DATABASE_URL`**, which `make certify` and `make test` both already pass from the lane's own allocation.

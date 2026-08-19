@@ -210,9 +210,30 @@ def _memory_pressure() -> tuple[float, float, list[str]] | None:
     return available_gb, swap_ratio, holders
 
 
-#: Where the suite's database lives. `RUNNING.md` allocates one per lane, all in
-#: the development PostgreSQL — which the gates need running and never check.
-DEV_DATABASE_PORT: Final = 5432
+#: 🔴 **This was `5432` — [B-1028](../docs/BUGS.md), and the comment beside it
+#: said the right thing while the value did the wrong one**: *"`RUNNING.md`
+#: allocates one per lane"* — and then named slot 0, which is **human review's**.
+#:
+#: So `make certify` refused to start whenever the reviewer's stack was down,
+#: naming a database the lane does not use and must not start. **The mechanism
+#: was already imported one directory over**: `environments.py` derives the
+#: lane's port and `current()`'s own docstring warns that guessing *"points a
+#: suite at another lane's database, which is the class of defect the whole
+#: change exists to end."*
+def _database_port() -> int | None:
+    """The lane's own PostgreSQL port, or `None` when no environment resolves.
+
+    **`None` is not an error here.** `environments.py` returns nothing on
+    `main`, on `integration` and on a detached HEAD, and a preflight that
+    refused there would block certification on branches it is meant to run
+    from. **The check is skipped and says so**, which is honest — where
+    guessing `5432` was not.
+    """
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import environments
+
+    resolved = environments.current()
+    return resolved.postgres_port if resolved else None
 
 
 def _development_stack_missing() -> bool:
@@ -226,9 +247,12 @@ def _development_stack_missing() -> bool:
     against an exited container, with no timeout and no diagnostic, and the
     failure looked like a hung suite rather than an absent database.
     """
+    port = _database_port()
+    if port is None:
+        return False
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
         probe.settimeout(0.5)
-        return probe.connect_ex(("127.0.0.1", DEV_DATABASE_PORT)) != 0
+        return probe.connect_ex(("127.0.0.1", port)) != 0
 
 
 def _tree_dirty() -> bool:
@@ -270,13 +294,14 @@ def main() -> int:
             "",
             "  BLOCKED — the development database is not reachable",
             "",
-            f"    nothing is listening on 127.0.0.1:{DEV_DATABASE_PORT}",
+            f"    nothing is listening on 127.0.0.1:{_database_port()} — this lane's own",
             "",
             "  Every gate needs it, and none of them check: `pytest` blocks with no",
             "  timeout and no diagnostic, which reads as a hung suite rather than an",
             "  absent database. That cost 22 minutes once (RE-04).",
             "",
-            "    docker compose -f infra/docker-compose.yml up -d --wait",
+            "    env $(python3 infra/environments.py --exports | grep -v '^#') \\",
+            "      docker compose -f infra/docker-compose.yml up -d --wait",
         )
         return 3
 
