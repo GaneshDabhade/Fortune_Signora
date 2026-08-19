@@ -151,6 +151,21 @@ describe('the platform vocabulary never reaches a customer', () => {
     ).toEqual([]);
   });
 
+  /**
+   * 🔴 **What a customer's address bar shows, not what the source says.**
+   *
+   * ⚠️ **A template literal names its variable, and the variable is engineering's
+   * word.** `router.push(`/w/${workspaceId}/home`)` renders `/w/<uuid>/home` — ⛔
+   * **which contains no platform term** — but the source text contains
+   * `workspaceId`, and both assertions below read source text.
+   *
+   * ⚡ **So an interpolation collapses to `*` before either check**, which is
+   * exactly what the route-existence check already does to `[workspaceId]` on the
+   * filesystem side. ✅ **The term check still bites on the LITERAL segments**:
+   * `/workspace/${id}` normalises to `/workspace/*` and is still caught.
+   */
+  const asRendered = (path: string) => path.replace(/\$\{[^}]*\}/g, '*');
+
   it('routes a customer to no path named after a platform concept', () => {
     // The address bar is user-visible text. `/workspaces` was a redirect
     // target for three slices and never a route — the vocabulary leak and a
@@ -161,7 +176,7 @@ describe('the platform vocabulary never reaches a customer', () => {
           /(?:href|router\.(?:push|replace))[=(\s]+["'`](\/[^"'`]*)/g,
         ),
       ]
-        .map((match) => match[1] ?? '')
+        .map((match) => asRendered(match[1] ?? ''))
         .filter((path) =>
           new RegExp(`\\b(?:${INTERNAL_TERMS.join('|')})`, 'i').test(path),
         )
@@ -191,7 +206,7 @@ describe('the platform vocabulary never reaches a customer', () => {
 
     const offenders = SOURCES.flatMap(({ name, source }) =>
       [...prose(source).matchAll(/router\.(?:push|replace)\(\s*["'`](\/[^"'`?#]*)/g)]
-        .map((match) => (match[1] ?? '').replace(/\/$/, '') || '/')
+        .map((match) => asRendered(match[1] ?? '').replace(/\/$/, '') || '/')
         .filter(
           (path) => !routes.has(path) && !routes.has(path.replace(/\/[^/]+$/, '/*')),
         )

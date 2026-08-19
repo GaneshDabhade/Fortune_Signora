@@ -1451,6 +1451,19 @@ export interface PipelineHealth {
 export interface WorkspaceEntry {
   first_entry_today: boolean;
   /**
+   * 🔴 **Authenticated Entry rule 22** — *"the new workspace becomes active, with
+   * a **welcome strip**"*, and that strip *"replaces the confirmation strip"*.
+   *
+   * ⚡ **`true` on somebody's very first arrival in this workspace**, which is
+   * what tells the two strips apart: **rule 12 confirms a workspace you have been
+   * in before; rule 22 welcomes you to one you have not.**
+   *
+   * ⛔ **Derived server-side from `last_entered_at`, never a flag the client
+   * sends.** A query parameter would survive a bookmark and a share, so a link
+   * could welcome somebody to a workspace they have used for a year.
+   */
+  first_entry_ever: boolean;
+  /**
    * 🔴 **Authenticated Entry rule 21** — *"a notice naming what changed and by
    * whom. The composition may differ from yesterday and **that must not be
    * silent**."*

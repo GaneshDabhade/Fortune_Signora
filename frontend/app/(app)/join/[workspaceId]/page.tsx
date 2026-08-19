@@ -96,14 +96,25 @@ export default function JoinPage() {
               intelligence are yours to read.
             </p>
           </div>
-          {/* **`/` and not `/accounts`, and the reason changed.** ⚠️ This said
-              *"there is no accounts index"* — **there is one now**: Companies
-              lives at `/accounts` and is one of the App Shell's nine
-              destinations. ✅ **`/` is still right, for a better reason**:
-              somebody who has just joined a workspace needs ENTRY RESOLUTION to
-              establish which workspace they are in, and `/` is the shell's
-              resolver. ⛔ Going straight to a list would skip it. */}
-          <Button onClick={() => router.push('/')}>Go to your accounts</Button>
+          {/* 🔴 **Authenticated Entry rule 22, and the destination is the rule's
+              own**: *"Invitation accepted while signed in → **`/w/:new/home`** —
+              **the new workspace becomes active**, with a welcome strip. Never a
+              sign-out, never a lost tab."*
+
+              ⚠️ **This went to `/`, and the reasoning was sound and produced the
+              wrong answer.** ⛔ `/` is the shell's resolver and it resolves to the
+              LAST-USED workspace — 📁 rule 12 — **and a workspace somebody has
+              just joined has never been entered, so it can never be the last
+              used.** ⚡ **The resolver would have sent them back where they
+              came from**, which is the one thing rule 22 names: *the new
+              workspace becomes active*.
+
+              ✅ **Going directly IS making it active**, and Home's own entry
+              table lists this route: *"invitation accepted — new workspace
+              becomes active; welcome strip replaces the confirmation strip."* */}
+          <Button onClick={() => router.push(`/w/${workspaceId}/home`)}>
+            Go to your accounts
+          </Button>
         </CardBody>
       </Card>
     );

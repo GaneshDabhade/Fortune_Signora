@@ -68,6 +68,18 @@ class Entry:
     """
 
     first_today: bool
+    #: 🔴 **Authenticated Entry rule 22** — *"the new workspace becomes active,
+    #: **with a welcome strip**."*
+    #:
+    #: ⚡ **`True` only on somebody's very first arrival in this workspace.** 📁
+    #: Rule 22's strip *"replaces the confirmation strip"*, and this is what tells
+    #: them apart: **rule 12 confirms a workspace you have been in before;
+    #: rule 22 welcomes you to one you have not.**
+    #:
+    #: ⛔ **Derived from `last_entered_at`, not from a flag the client sends.** A
+    #: query parameter would survive a bookmark and a share, so a link could
+    #: welcome somebody to a workspace they have used for a year.
+    first_ever: bool
     #: 📁 Rule 21 — `None` when nothing changed since this person was last here.
     role_change: RoleChange | None
 
@@ -102,6 +114,9 @@ class RecordWorkspaceEntry:
         """
         current = await self.preferences.get(workspace_id, person_id)
         first_today = current.first_entry_today(now)
+        # 📁 **Rule 22.** ⛔ Read before the write, like everything else here:
+        # recording this arrival is precisely what stops it being the first.
+        first_ever = current.last_entered_at is None
         # 📁 **Rule 21 — *"role changed since last session"*.** ⛔ Read before the
         # write, for the same reason `first_today` is: `last_entered_at` IS *last
         # session*, and recording this arrival overwrites it.
@@ -115,7 +130,7 @@ class RecordWorkspaceEntry:
         # moves somebody's destination backwards.
         if entered is not current:
             await self.preferences.save(entered)
-        return Entry(first_today=first_today, role_change=role_change)
+        return Entry(first_today=first_today, first_ever=first_ever, role_change=role_change)
 
 
 @dataclass(frozen=True, slots=True)

@@ -161,6 +161,81 @@ class TestRecordingAnEntry:
         assert response.status_code == 404
 
 
+class TestTheWelcomeThatReplacesTheConfirmation:
+    """🔴 **Authenticated Entry rule 22**, over the full stack.
+
+    📁 *"Invitation accepted while signed in → the new workspace becomes active,
+    **with a welcome strip**. Never a sign-out, never a lost tab."* 📁 And Home's
+    entry table: *"welcome strip **replaces** the confirmation strip."*
+
+    ⚡ **The distinguishing fact is *first ever*, not *first today***, and only a
+    durable row can tell them apart.
+    """
+
+    async def test_a_first_arrival_is_a_first_arrival(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        owner = uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+
+        first = await client.post(ENTRY.format(workspace=workspace), headers=_auth(key_pair, owner))
+
+        assert first.json()["first_entry_ever"] is True
+        assert first.json()["first_entry_today"] is True
+
+    async def test_it_is_never_their_first_arrival_twice(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """⛔ **Once, by the same mechanism that makes rules 12, 13 and 21 once.**
+        ⚡ The arrival that welcomes them records itself — **no flag, no dismissal
+        state, no second column.**"""
+        owner = uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+
+        await client.post(ENTRY.format(workspace=workspace), headers=_auth(key_pair, owner))
+        again = await client.post(ENTRY.format(workspace=workspace), headers=_auth(key_pair, owner))
+
+        assert again.json()["first_entry_ever"] is False
+
+    async def test_a_second_workspace_is_its_own_first_arrival(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """🔴 **The half rule 22 is about.** ⚡ Somebody who has used Signora for a
+        year and joins a new organization **is arriving somewhere for the first
+        time**, and 📁 the welcome is about the workspace rather than the person.
+        """
+        owner = uuid4()
+        established = await _workspace(client, key_pair, owner)
+        await client.post(ENTRY.format(workspace=established), headers=_auth(key_pair, owner))
+        await client.post(ENTRY.format(workspace=established), headers=_auth(key_pair, owner))
+
+        joined = await _workspace(client, key_pair, owner)
+        arrival = await client.post(
+            ENTRY.format(workspace=joined), headers=_auth(key_pair, owner)
+        )
+
+        assert arrival.json()["first_entry_ever"] is True
+
+    async def test_it_is_per_person(self, client: AsyncClient, key_pair: KeyPair) -> None:
+        """⛔ **A colleague's arrival is not yours.** ⚡ The owner having been here
+        for months must not consume the welcome of somebody who just joined."""
+        owner, colleague = uuid4(), uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+        await client.post(ENTRY.format(workspace=workspace), headers=_auth(key_pair, owner))
+        added = await client.post(
+            f"/workspaces/{workspace}/members",
+            json={"user_id": str(colleague), "role": "member"},
+            headers=_auth(key_pair, owner),
+        )
+        assert added.status_code == 201, added.text
+
+        theirs = await client.post(
+            ENTRY.format(workspace=workspace), headers=_auth(key_pair, colleague)
+        )
+
+        assert theirs.json()["first_entry_ever"] is True
+
+
 class TestTheRoleChangeNotice:
     """🔴 **Authenticated Entry rule 21**, over the full stack.
 

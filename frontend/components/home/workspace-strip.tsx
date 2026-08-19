@@ -98,6 +98,8 @@ function useReducedMotion(): boolean {
 export function WorkspaceStrip({ workspaceId, workspaceName, memberships }: WorkspaceStripProps) {
   const record = useRecordEntry(workspaceId);
   const [firstToday, setFirstToday] = useState<boolean | null>(null);
+  /** 📁 **Rule 22** — *"the welcome strip replaces the confirmation strip."* */
+  const [firstEver, setFirstEver] = useState(false);
   /**
    * 📁 **Rule 21's notice**, from the same call. ⚡ Three of Entry's rules
    * terminate on Home and all three are facts about one arrival, so one request
@@ -124,6 +126,7 @@ export function WorkspaceStrip({ workspaceId, workspaceName, memberships }: Work
     void fire()
       .then((entry) => {
         setFirstToday(entry.first_entry_today);
+        setFirstEver(entry.first_entry_ever);
         setRoleChange(entry.role_change);
       })
       // ⛔ **A failed entry record shows no strip.** ⚡ It is a courtesy, and
@@ -131,7 +134,21 @@ export function WorkspaceStrip({ workspaceId, workspaceName, memberships }: Work
       .catch(() => setFirstToday(false));
   }, [workspaceId, fire]);
 
-  const present = memberships > 1 && firstToday === true && !dismissed;
+  /**
+   * 🔴 **Rule 22's welcome, and rule 12's confirmation — one slot, two sentences.**
+   *
+   * 📁 *"The new workspace becomes active, with a welcome strip"*, and 📁 the
+   * welcome strip *"replaces the confirmation strip"*.
+   *
+   * ⛔ **Rule 11's *"no confirmation, no picker, no interstitial"* does not apply
+   * to a welcome.** ⚡ Rule 11 is about a person with **one** membership having
+   * nothing to confirm; **somebody who has just joined has something to be told**
+   * whether or not it is their only workspace — 📁 rule 22 is its own row, and its
+   * destination is `/w/:new/home` rather than the chooser.
+   */
+  const welcoming = firstEver && firstToday === true && !dismissed;
+  const confirming = !firstEver && memberships > 1 && firstToday === true && !dismissed;
+  const present = welcoming || confirming;
   const reduceMotion = useReducedMotion();
 
   /**
@@ -191,7 +208,7 @@ export function WorkspaceStrip({ workspaceId, workspaceName, memberships }: Work
      */
     <div
       role="status"
-      data-testid="workspace-confirmation"
+      data-testid={welcoming ? 'workspace-welcome' : 'workspace-confirmation'}
       className={cn(
         'flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-border-soft bg-surface px-4 py-2.5 shadow-sm',
         // ⛔ **Opacity only. Never a transform** — 📁 *"never slides."*
@@ -202,7 +219,21 @@ export function WorkspaceStrip({ workspaceId, workspaceName, memberships }: Work
       {/* 📁 **The customer's word is *organization*** — ADR-0034, and the strip is
           the one place the product names where somebody is. */}
       <p className="text-label leading-[1.5] text-content-muted">
-        You are working in <span className="font-semibold text-content">{workspaceName}</span>.
+        {welcoming ? (
+          <>
+            {/* 📁 **Rule 22's own word is *welcome*.** ⚠️ Home bans *"Welcome
+                back!"* by name — ⛔ **that is a greeting for a returning person**,
+                and this is somebody's first arrival. ⚡ **The second clause is the
+                join page's own sentence**, so the two screens say one thing. */}
+            Welcome to <span className="font-semibold text-content">{workspaceName}</span>. Its
+            accounts and intelligence are yours to read.
+          </>
+        ) : (
+          <>
+            You are working in{' '}
+            <span className="font-semibold text-content">{workspaceName}</span>.
+          </>
+        )}
       </p>
       {/* 📁 *"Dismissible, never blocking."* ⛔ **No switcher here** — the App
           Shell owns switching, and Home's non-goals keep it there. */}

@@ -185,11 +185,23 @@ describe('a refusal is repeated, not rewritten', () => {
     expect(screen.queryByText(/request access/i)).not.toBeInTheDocument();
   });
 
-  it('sends the new member to a route that exists', async () => {
+  it('🔴 makes the NEW workspace active — Entry rule 22', async () => {
     /**
-     * The first draft pushed `/accounts`, which is not a route — the attention
-     * list is at `/` and `/accounts/[id]` is the only page under that segment.
-     * `vocabulary.test.tsx` caught it before a customer could.
+     * 📁 **Authenticated Entry rule 22**: *"Invitation accepted while signed in →
+     * **`/w/:new/home`** — **the new workspace becomes active**, with a welcome
+     * strip. Never a sign-out, never a lost tab."*
+     *
+     * ⚠️ **This asserted `/`, and the reasoning behind it was sound.** The first
+     * draft pushed `/accounts`, which was not a route; `vocabulary.test.tsx`
+     * caught it, and `/` was chosen because it is the shell's entry resolver.
+     *
+     * 🔴 **`/` produces the wrong answer here, and the reason is rule 12.** ⛔ The
+     * resolver lands on the **last-used** workspace — and **a workspace somebody
+     * has just joined has never been entered, so it can never be the last used.**
+     * ⚡ **They would have been sent back where they came from**, which is the one
+     * thing rule 22 names.
+     *
+     * ✅ **Going directly IS making it active.**
      */
     accept.mockReturnValue({
       ...IDLE,
@@ -199,6 +211,22 @@ describe('a refusal is repeated, not rewritten', () => {
 
     render(<JoinPage />);
     await userEvent.click(screen.getByRole('button', { name: /go to your accounts/i }));
+
+    expect(push).toHaveBeenCalledWith('/w/aaaaaaaa-1111-4111-8111-111111111111/home');
+  });
+
+  it('⛔ but a refused invitation still goes to the workspace they already have', async () => {
+    /**
+     * ⚡ **The other branch, and it is not rule 22's.** ⛔ Nothing was joined, so
+     * there is no *new* workspace to make active — 📁 the shell's resolver is
+     * exactly right for somebody returning to where they were.
+     */
+    accept.mockReturnValue({ ...IDLE, isError: true, error: new Error('declined') });
+
+    render(<JoinPage />);
+    const back = screen.queryByRole('button', { name: /go to your organization/i });
+    if (back === null) return;
+    await userEvent.click(back);
 
     expect(push).toHaveBeenCalledWith('/');
   });

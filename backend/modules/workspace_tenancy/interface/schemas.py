@@ -214,6 +214,11 @@ class WorkspaceEntryResponse(BaseModel):
     #: ⛔ **Read before the entry was recorded**, which is the only order in which
     #: the question has a useful answer.
     first_entry_today: bool
+    #: 🔴 **Authenticated Entry rule 22** — *"the new workspace becomes active,
+    #: with a **welcome strip**"*, and the strip *"replaces the confirmation
+    #: strip"*. ⚡ **`True` on somebody's very first arrival here**, which is what
+    #: tells the two strips apart.
+    first_entry_ever: bool = False
     #: 🔴 **Authenticated Entry rule 21** — *"Home, with a notice naming what
     #: changed and by whom. The composition may differ from yesterday and **that
     #: must not be silent**."*

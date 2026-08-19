@@ -1127,6 +1127,7 @@ async def record_entry(context: CurrentWorkspace) -> WorkspaceEntryResponse:
     )
     return WorkspaceEntryResponse(
         first_entry_today=entry.first_today,
+        first_entry_ever=entry.first_ever,
         role_change=(
             None if entry.role_change is None else RoleChangePayload.of(entry.role_change)
         ),

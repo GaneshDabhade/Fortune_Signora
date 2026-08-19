@@ -133,6 +133,22 @@ function ready(connected: boolean) {
 }
 
 /**
+ * ⚡ **Two memberships**, because rule 12 is *"several memberships"* and
+ * `ready()`'s default is one — which is rule 11's case and draws no strip.
+ */
+function severalWorkspaces() {
+  workspace.mockReturnValue({
+    activeWorkspace: { id: 'w1', name: 'Northwind' },
+    workspaces: [
+      { id: 'w1', name: 'Northwind' },
+      { id: 'w2', name: 'Ashgrove' },
+    ],
+    isLoading: false,
+    error: null,
+  });
+}
+
+/**
  * 📁 **What activation reports**, for the states that read it.
  *
  * ⚡ **`done`/`total` count BLOCKING cards only**, which is the design's own
@@ -172,7 +188,7 @@ beforeEach(() => {
   // test is about it.
   outcomes.mockReturnValue({ failed: 0, retryAll: () => {}, report: () => {}, forget: () => {} });
   recordEntry.mockReset();
-  recordEntry.mockResolvedValue({ first_entry_today: false, role_change: null });
+  recordEntry.mockResolvedValue({ first_entry_today: false, first_entry_ever: false, role_change: null });
   chooseLayout.mockReset();
 });
 
@@ -300,6 +316,95 @@ describe('🔴 Home always renders', () => {
   });
 });
 
+describe('📁 Entry rule 22 — the welcome strip', () => {
+  /**
+   * 📁 *"Invitation accepted while signed in → the new workspace becomes active,
+   * **with a welcome strip**. Never a sign-out, never a lost tab."* 📁 And Home's
+   * entry table: *"welcome strip **replaces** the confirmation strip."*
+   */
+  it('🔴 welcomes somebody arriving in a workspace for the first time', async () => {
+    ready(true);
+    severalWorkspaces();
+    recordEntry.mockResolvedValue({
+      first_entry_today: true,
+      first_entry_ever: true,
+      role_change: null,
+    });
+
+    render(<Home />);
+
+    expect(await screen.findByTestId('workspace-welcome')).toBeVisible();
+    expect(screen.getByText(/Its accounts and intelligence are yours to read/)).toBeVisible();
+    // ⛔ **It REPLACES the confirmation strip** — 📁 the design's own word.
+    expect(screen.queryByTestId('workspace-confirmation')).not.toBeInTheDocument();
+  });
+
+  /**
+   * ⛔ **Rule 11's *"no confirmation, no picker, no interstitial"* is about
+   * having nothing to confirm.** ⚡ Somebody who has just joined has something to
+   * be told whether or not it is their only workspace — 📁 rule 22 is its own row
+   * and its destination is `/w/:new/home` rather than the chooser.
+   */
+  it('🔴 welcomes them even in what is now their only workspace', async () => {
+    workspace.mockReturnValue({
+      activeWorkspace: { id: 'w1', name: 'Northwind' },
+      workspaces: [{ id: 'w1', name: 'Northwind' }],
+      isLoading: false,
+      error: null,
+    });
+    integrations.mockReturnValue({ data: [], isPending: false, isError: false, refetch: () => {} });
+    recordEntry.mockResolvedValue({
+      first_entry_today: true,
+      first_entry_ever: true,
+      role_change: null,
+    });
+
+    render(<Home />);
+
+    expect(await screen.findByTestId('workspace-welcome')).toBeVisible();
+  });
+
+  /**
+   * ⛔ **Once, and the same mechanism makes it once.** ⚡ The arrival that
+   * welcomes them records itself, so the next arrival is no longer their first
+   * ever — no flag, no dismissal state, no second column.
+   */
+  it('⛔ and confirms rather than welcomes on the second visit', async () => {
+    ready(true);
+    severalWorkspaces();
+    recordEntry.mockResolvedValue({
+      first_entry_today: true,
+      first_entry_ever: false,
+      role_change: null,
+    });
+
+    render(<Home />);
+
+    expect(await screen.findByTestId('workspace-confirmation')).toBeVisible();
+    expect(screen.queryByTestId('workspace-welcome')).not.toBeInTheDocument();
+  });
+
+  /**
+   * ⛔ **Home bans *"Welcome back!"* by name.** ⚡ That is a greeting for a
+   * returning person; **this is somebody's first arrival**, and rule 22 calls it
+   * a welcome strip in its own words.
+   */
+  it('⛔ and never says "welcome back"', async () => {
+    ready(true);
+    severalWorkspaces();
+    recordEntry.mockResolvedValue({
+      first_entry_today: true,
+      first_entry_ever: true,
+      role_change: null,
+    });
+
+    render(<Home />);
+    await screen.findByTestId('workspace-welcome');
+
+    expect(screen.queryByText(/Welcome back/i)).not.toBeInTheDocument();
+  });
+});
+
 describe('📁 Entry rule 21 — the role-change notice', () => {
   /**
    * 📁 *"Role changed since last session — Home, with a notice naming **what
@@ -310,6 +415,7 @@ describe('📁 Entry rule 21 — the role-change notice', () => {
     ready(true);
     recordEntry.mockResolvedValue({
       first_entry_today: false,
+      first_entry_ever: false,
       role_change: {
         previous_role: 'member',
         new_role: 'owner',
@@ -336,6 +442,7 @@ describe('📁 Entry rule 21 — the role-change notice', () => {
     ready(true);
     recordEntry.mockResolvedValue({
       first_entry_today: false,
+      first_entry_ever: false,
       role_change: {
         previous_role: 'owner',
         new_role: 'member',
@@ -357,7 +464,7 @@ describe('📁 Entry rule 21 — the role-change notice', () => {
    */
   it('⛔ and says nothing when nothing changed', async () => {
     ready(true);
-    recordEntry.mockResolvedValue({ first_entry_today: false, role_change: null });
+    recordEntry.mockResolvedValue({ first_entry_today: false, first_entry_ever: false, role_change: null });
 
     render(<Home />);
     await screen.findByTestId('home');
@@ -380,6 +487,7 @@ describe('📁 Entry rule 21 — the role-change notice', () => {
     integrations.mockReturnValue({ data: [], isPending: false, isError: false, refetch: () => {} });
     recordEntry.mockResolvedValue({
       first_entry_today: false,
+      first_entry_ever: false,
       role_change: {
         previous_role: 'member',
         new_role: 'owner',
@@ -464,26 +572,10 @@ describe('📁 hierarchy 2 — the workspace confirmation strip, and state 13', 
    * Enter the last used. **The workspace strip confirms which for four
    * seconds.**"*
    */
-  /**
-   * ⚡ **Two memberships**, because rule 12 is *"several memberships"* and
-   * `ready()`'s default is one — which is rule 11's case and draws no strip.
-   */
-  function severalWorkspaces() {
-    workspace.mockReturnValue({
-      activeWorkspace: { id: 'w1', name: 'Northwind' },
-      workspaces: [
-        { id: 'w1', name: 'Northwind' },
-        { id: 'w2', name: 'Ashgrove' },
-      ],
-      isLoading: false,
-      error: null,
-    });
-  }
-
   it('✅ confirms which organization on a first entry today', async () => {
     ready(true);
     severalWorkspaces();
-    recordEntry.mockResolvedValue({ first_entry_today: true, role_change: null });
+    recordEntry.mockResolvedValue({ first_entry_today: true, first_entry_ever: false, role_change: null });
 
     render(<Home />);
 
@@ -504,7 +596,7 @@ describe('📁 hierarchy 2 — the workspace confirmation strip, and state 13', 
   it('🔴 state 13 · says nothing at all on the second entry of the day', async () => {
     ready(true);
     severalWorkspaces();
-    recordEntry.mockResolvedValue({ first_entry_today: false, role_change: null });
+    recordEntry.mockResolvedValue({ first_entry_today: false, first_entry_ever: false, role_change: null });
 
     render(<Home />);
     await screen.findByTestId('home');
@@ -532,7 +624,7 @@ describe('📁 hierarchy 2 — the workspace confirmation strip, and state 13', 
       isError: false,
       refetch: () => {},
     });
-    recordEntry.mockResolvedValue({ first_entry_today: true, role_change: null });
+    recordEntry.mockResolvedValue({ first_entry_today: true, first_entry_ever: false, role_change: null });
 
     render(<Home />);
     await screen.findByTestId('home');
