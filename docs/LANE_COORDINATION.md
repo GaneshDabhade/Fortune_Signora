@@ -354,6 +354,7 @@ databaseUrl: required(
 | Id | What | Requester | Owner | Status | Blocks |
 |---|---|---|---|---|---|
 | [C-1533](#c-1533--home-state-14s-entry-condition-and-its-copy-describe-different-cards) | 🟠 **Home state 14's entry condition and its copy describe different cards** — the sentence is false exactly when the state fires | **Lane A**, 2026-08-19, implementing the fourteen states | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **State 14 only.** ✅ **Thirteen of fourteen states are implemented and browser-verified** |
+| [C-1535](#c-1535--the-first-journey-that-needs-the-background-tier-and-no-environment-starts-one) | 🟠 **The first journey that needs the background tier, and no environment starts one** | **Lane A**, 2026-08-19, writing [TASK-495](BACKLOG.md) ⓑ's required journey | **QE** — 📁 [`RUNNING.md`](RUNNING.md) is QE's file and the environments are QE's | 🟠 **`OPEN`** | ⛔ **One spec — `notification-journey.spec.ts`.** ✅ **Nothing else in the suite touches a worker** |
 | [C-1534](#c-1534--six-home-cards-name-a-dependency-that-no-approved-document-assigns-a-producer) | 🟠 **Six Home cards name a dependency that no approved document assigns a producer** | **Lane A**, 2026-08-19, after extracting all 35 design documents | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Six of sixteen cards, and states 02 and 11.** ✅ **Home renders completely without them** |
 | [C-245](#c-245-screen-13-shows-a-reader-six-facts-they-are-not-permitted-to-see) | 🔴 **Screen `13` shows a reader six facts they are not permitted to see** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⚠️ **Most of screen `13`.** ✅ **Screen `14`'s shape and the accept/decline journey are buildable |
 | [C-246](#c-246-the-onboarding-design-labels-a-step-workspace-and-adr-0034-says-a-customer-reads-organization) | 🟠 **The onboarding design labels a step *Workspace* and ADR-0034 says a customer r** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **What it changes is what the Workflow 8 review is shown** — a reviewer holdin |
@@ -637,6 +638,58 @@ copy table holding a sentence nothing renders is honest in a way a fabricated
 substitute would not be.
 
 ---
+
+## C-1535 · The first journey that needs the background tier, and no environment starts one
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-19, writing the journey [§19](../CLAUDE.md) requires of [TASK-495](BACKLOG.md) ⓑ |
+| **Owner** | **QE** — 📁 [`RUNNING.md`](RUNNING.md) is QE's file and *"development environments"* is its one responsibility |
+| **Type** | **Environment** — ⛔ **not a defect in the product and not a defect in the gate** |
+| **Blocks** | ⛔ **One spec.** ✅ **Nothing else in the suite reaches a worker**, which is exactly why nobody has met this |
+| **Status** | **`OPEN`** |
+
+### What the journey needs, measured rather than assumed
+
+📁 **[TASK-495](BACKLOG.md)'s own testing metadata**: *"**Playwright** — an event
+occurs and the customer sees it without reloading."* ⚡ **The event is a research
+run finishing**, and the chain it travels is:
+
+```
+  click  ─▶  API  ─▶  outbox  ─▶  relay  ─▶  arq (ai_research pool)  ─▶  run
+                                                                          │
+   bell ◀── feed ◀── notification row ◀── workspace_tenancy consumer ◀────┘
+```
+
+⛔ **Two processes in that chain are started by nothing in this repository:**
+
+| | |
+|---|---|
+| **The relay** | `python -m apps.worker.relay_main`, and it needs **`SIGNORA_RELAY_DATABASE_URL`** — 📁 the `signora_relay` identity, because [§8](../CLAUDE.md) gives `signora_app` no read grant on `outbox_event`. ⚠️ **Without it the relay retries a `ProgrammingError` forever and says nothing about which credential is missing** |
+| **A worker per pool** | `arq apps.worker.main.WorkerSettings` with **`SIGNORA_WORKER_POOL`**. ⚠️ **The default pool is not enough** — 📁 `apps/worker/pools.py` partitions by cost, and research runs in **`ai_research`**. ⛔ **A default-pool worker starts cleanly, logs *"worker started"*, and consumes nothing**, which is the most expensive way this can fail |
+
+**Measured on 2026-08-19**: `grep -rn "relay_main\|WorkerSettings" infra/ review/` returns
+**nothing**, and `make review` starts *"both tiers"* — the API and the web app.
+✅ **`infra/docker-compose.prod.yml` has both services and is the shape to copy.**
+
+### ⚠️ What this lane did instead of waiting
+
+⛔ **It did not weaken the journey**, and the two alternatives were both worse:
+**stubbing the arrival** would have removed the only test in the repository that
+crosses the whole mechanism, and **asserting the row directly** would have tested
+the database rather than the customer's screen.
+
+✅ **The journey's failure message names both processes and both variables**, so a
+150-second timeout reads as *"the background tier is not running"* rather than as
+a product defect. ⚡ **That is a legible failure, not a fix** — and the fix is a
+line in [`RUNNING.md`](RUNNING.md) and the review launcher, both QE's.
+
+### ⛔ Why it is not filed as a defect
+
+📁 **[§20e](../CLAUDE.md)**: *a defect is something behaving wrongly today; a
+dependency is something not yet built or agreed.* ⚡ **Nothing is behaving
+wrongly** — **the suite has simply never needed the background tier before**, and
+the first row that does is this one.
 
 ## C-1534 · Six Home cards name a dependency that no approved document assigns a producer
 

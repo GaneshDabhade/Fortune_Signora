@@ -140,12 +140,12 @@ export const queryKeys = {
   notifications: (workspaceId: string) =>
     ['workspace', workspaceId, 'notifications'] as const,
   /**
-   * The badge, **keyed apart from the feed on purpose**: the bell is on every
-   * screen and the panel is opened rarely, so they are read at different rates
-   * and one key would make the badge as expensive as the list.
+   * ⛔ **There is no separate badge key, and the absence is the point.** ⚠️ One
+   * stood here — *"keyed apart from the feed on purpose"* — reading a route that
+   * answers `405` to the verb it was called with. 📁 **The feed carries
+   * `read_at` since slice ⓐ**, so the badge is counted from the list rather than
+   * asked for, and a second key would be a second thing to invalidate.
    */
-  unreadNotifications: (workspaceId: string) =>
-    ['workspace', workspaceId, 'notifications', 'unread'] as const,
 
   /**
    * The activation steps a module declares. **Two modules answer**, so the

@@ -60,6 +60,9 @@ NOW = datetime(2026, 8, 16, 9, 30, tzinfo=UTC)
 WORKSPACE = UUID("11111111-1111-1111-1111-111111111111")
 REQUESTER = UUID("22222222-2222-2222-2222-222222222222")
 OPPORTUNITY = UUID("33333333-3333-3333-3333-333333333333")
+#: ⚡ **Fixed rather than `uuid4()`**, so the notification's subject can be
+#: asserted to be THIS account rather than merely *"not the opportunity"*.
+ENTITY = UUID("55555555-5555-5555-5555-555555555555")
 CORRELATION = UUID("44444444-4444-4444-4444-444444444444")
 
 
@@ -122,7 +125,7 @@ def _a_request() -> ResearchRequest:
     return ResearchRequest(
         id=uuid4(),
         workspace_id=WORKSPACE,
-        entity_id=uuid4(),
+        entity_id=ENTITY,
         opportunity_id=OPPORTUNITY,
         requested_by=REQUESTER,
         requested_at=NOW,
@@ -200,8 +203,18 @@ class TestACompletedRunTellsWhoeverAskedForIt:
             payload=_the_only_notification(publisher).to_payload(),  # type: ignore[attr-defined]
         )
         assert rebuilt.recipient_id == REQUESTER
-        assert rebuilt.subject.kind == "opportunity"
-        assert rebuilt.subject.id == OPPORTUNITY
+        # 🔴 **The ACCOUNT, and this asserted the opportunity until the shell
+        # was built.** 📁 App Shell §10 — *"each item states who or what acted,
+        # **on which record**"* — ⛔ **and an opportunity id is a record the
+        # reader never chose, cannot recognise, and has no route to open.**
+        # ⚡ **It is also not what they did**: they pressed *"Research this
+        # account"* on an account page.
+        assert rebuilt.subject.kind == "account"
+        assert rebuilt.subject.id == ENTITY
+        assert rebuilt.subject.id != OPPORTUNITY, (
+            "the notification names the run's internal artifact rather than the "
+            "record the customer acted on"
+        )
 
     async def test_the_actor_is_an_agent_named_for_its_capability(self) -> None:
         """⛔ **Never a model and never a vendor** — 📁 [§10](../../../CLAUDE.md).

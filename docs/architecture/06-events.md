@@ -541,8 +541,17 @@ notification panel.
 | | |
 |---|---|
 | `GET /workspaces/{id}/notifications` | The feed, newest first, bounded. **Each item carries `read_at`** |
-| `GET /workspaces/{id}/notifications/unread` | The badge — a count, capped at 99 |
+| `POST /workspaces/{id}/notifications/unread` | The badge — a count over **ids the caller names**, capped at 99. ⚠️ **`POST`, and the verb is carrying the question**: a list does not fit in a query string |
 | `POST /workspaces/{id}/notifications/read` | Marks **named ids** read, and answers with the resulting badge |
+
+> 🔴 **The shell does not call the second one, and the row above used to say
+> `GET`.** ⚠️ **The shell's badge was written against that sentence, issued a
+> `GET`, and took a `405` on every authenticated screen** until the journey was
+> written on 2026-08-19. ⛔ **Calling it correctly would have been the wrong
+> repair**: it was built (TASK-480) against a feed that did not carry read state,
+> and slice ⓐ changed that. ✅ **The badge is `read_at === null` counted over the
+> feed** — one read, and no second question whose answer the first already
+> contained.
 
 **`read_at` is on the item and not derived from the badge**, because the design's
 panel draws *"a 6px dot on the right"* per row: **the count says how many without
@@ -562,7 +571,27 @@ load-bearing rather than implying both are.
 
 **Marking is per item and never on open** — the design is explicit: *"opening the
 panel does not mark items read; opening an item does."* **A mark-everything call
-on open would destroy the only signal the badge carries.**
+on open would destroy the only signal the badge carries.** ⚠️ **The panel's
+*"Mark all read"* control is not that**: it is somebody deciding, which is why it
+is a control and not an effect.
+
+### The subject is the record the customer acted on
+
+**Corrected 2026-08-19, slice ⓑ.** `ai_research_engine` addressed its
+notification at the **opportunity** the run belonged to. It now addresses the
+**account**.
+
+**The design's criterion is what forced it** — App Shell §10: *"each item states
+who or what acted, **on which record**, and what is expected of the reader."*
+**The shell cannot turn an opportunity id into anything a person recognises, and
+there is no route to open one.** The account is also what the customer actually
+did: they pressed *"Research this account"* on an account page, and the
+opportunity is an internal artifact of the run.
+
+**The payload shape is unchanged** — `subject_kind` and `subject_id` were always
+a free pair, so this is a change of value rather than of contract, and no version
+bump is owed. **What it establishes for the next producer**: address the record
+the reader would recognise, not the one the work happened to be filed under.
 
 ### A channel with no adapter fails; it never degrades
 

@@ -8,17 +8,34 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { AppNotification } from '@/lib/api/types';
 
-const unread = vi.hoisted(() => vi.fn());
 const feed = vi.hoisted(() => vi.fn());
 const markRead = vi.hoisted(() => vi.fn());
+/** ⚡ **What the identity surface answers**, keyed by subject id. */
+const names = vi.hoisted(() => new Map<string, string>());
 
 vi.mock('@/lib/query/hooks/notifications', () => ({
-  useUnreadNotifications: unread,
   useNotifications: feed,
   useMarkNotificationsRead: () => ({ mutate: markRead, isPending: false }),
+  /**
+   * ⚡ **The real one, not a stub** — 📁 it is four lines of pure arithmetic over
+   * the feed, and **a mocked count would let the badge and the panel disagree**,
+   * which is exactly the defect deriving it from one read removed.
+   */
+  unreadCount: (data: { notifications: AppNotification[] } | undefined) =>
+    (data?.notifications ?? []).filter((one) => one.read_at === null).length,
 }));
 vi.mock('@/lib/state/workspace-provider', () => ({
   useWorkspaceContext: () => ({ activeWorkspace: { id: 'w1', name: 'Northwind' } }),
+}));
+/**
+ * ⚡ **The identity surface, which names the record.** ⛔ Mocked at the hook and
+ * not at `apiRequest`: 📁 the panel's claim is *"it states which record"*, and
+ * where the name came from is `useAccountIdentities`'s own test's question.
+ */
+vi.mock('@/lib/query/hooks', () => ({
+  useAccountIdentities: (_workspaceId: string | null, ids: string[]) => ({
+    data: new Map(ids.map((id) => [id, { account_id: id, name: names.get(id) ?? null }])),
+  }),
 }));
 
 const { Notifications, groupByDay } = await import('@/components/shell/notifications');
@@ -40,15 +57,24 @@ function item(over: Partial<AppNotification> = {}): AppNotification {
   };
 }
 
+/** ⚡ **`n` unread items**, because the badge is now counted from the feed. */
+function unreadItems(count: number): AppNotification[] {
+  return Array.from({ length: count }, (_, index) => item({ id: `u${index}`, read_at: null }));
+}
+
+function loaded(notifications: AppNotification[]) {
+  return { data: { notifications }, isPending: false, isError: false };
+}
+
 beforeEach(() => {
-  unread.mockReturnValue({ data: { unread: 0, capped: false, cap: 99 } });
-  feed.mockReturnValue({ data: { notifications: [] }, isPending: false, isError: false });
+  feed.mockReturnValue(loaded([]));
   markRead.mockReset();
+  names.clear();
 });
 
 describe('📁 "count badge caps at 99+"', () => {
   it('says the count in the control name, not only in a dot', () => {
-    unread.mockReturnValue({ data: { unread: 3, capped: false, cap: 99 } });
+    feed.mockReturnValue(loaded(unreadItems(3)));
 
     render(<Notifications />);
 
@@ -58,7 +84,7 @@ describe('📁 "count badge caps at 99+"', () => {
   });
 
   it('🔴 caps at 99+, which is the shell law the slot was written for', () => {
-    unread.mockReturnValue({ data: { unread: 412, capped: true, cap: 99 } });
+    feed.mockReturnValue(loaded(unreadItems(412)));
 
     render(<Notifications />);
 
@@ -66,6 +92,10 @@ describe('📁 "count badge caps at 99+"', () => {
   });
 
   it('⛔ and draws no badge at all at zero', () => {
+    // ⚡ **Items, but every one of them read** — ⛔ *no notifications* and *none
+    // unread* are different facts, and the badge answers the second.
+    feed.mockReturnValue(loaded([item({ read_at: new Date().toISOString() })]));
+
     render(<Notifications />);
 
     expect(screen.queryByTestId('notification-badge')).not.toBeInTheDocument();
@@ -74,21 +104,30 @@ describe('📁 "count badge caps at 99+"', () => {
 });
 
 describe('📁 "opens a 400px panel, not a page"', () => {
-  it('⛔ reads nothing until it is opened', () => {
-    render(<Notifications />);
+  /**
+   * 🔴 **This asserted the opposite until the journey was written.** ⚠️ It read
+   * *"reads nothing until it is opened"* and checked `feed('w1', false)` — ⛔
+   * **the badge was a second read, and that read issued a `GET` to a `POST`
+   * route and took a `405` on every authenticated screen.**
+   *
+   * ✅ **One read now serves both**, 📁 because slice ⓐ put `read_at` in the
+   * feed. ⚡ **So the assertion is that opening the panel asks for nothing
+   * new** — the panel renders what the bell already counted.
+   */
+  it('⛔ opening the panel issues no second read — the bell already has it', async () => {
+    feed.mockReturnValue(loaded([item()]));
 
-    // ⚡ **The bell is on every screen and the panel is opened rarely** — the
-    // feed's `enabled` is the open state, so a bell nobody clicks costs a count.
-    expect(feed).toHaveBeenCalledWith('w1', false);
-  });
-
-  it('opens on click and asks for the feed then', async () => {
     render(<Notifications />);
+    expect(feed).toHaveBeenCalledWith('w1');
+    const before = feed.mock.calls.length;
 
     await userEvent.click(screen.getByRole('button', { name: /^Notifications/ }));
 
     expect(screen.getByTestId('notification-panel')).toBeVisible();
-    expect(feed).toHaveBeenLastCalledWith('w1', true);
+    // ⚡ **Re-rendered, so called again — with the same argument.** ⛔ There is
+    // no open flag, which is what makes a second request impossible.
+    expect(feed.mock.calls.length).toBeGreaterThan(before);
+    for (const call of feed.mock.calls) expect(call).toEqual(['w1']);
   });
 
   /**
@@ -231,6 +270,156 @@ describe('📁 "unread is a 6px dot on the right, never a coloured row"', () => 
     // ♿ The dot is decorative; the state is said.
     expect(screen.getAllByText('Unread')).toHaveLength(1);
     expect(screen.getAllByText('Read')).toHaveLength(1);
+  });
+});
+
+describe('📁 "agent and AI notifications are marked with the intelligence hue"', () => {
+  /**
+   * 🔴 **The design's reason is in the same sentence** — *"so a generated nudge
+   * never reads as a colleague's request"* — ⛔ and without a mark the two are
+   * the same object.
+   */
+  it('marks an agent, and leaves a colleague unmarked', async () => {
+    feed.mockReturnValue(
+      loaded([
+        item({ id: 'a', actor_kind: 'agent', actor_agent_name: 'Research' }),
+        item({
+          id: 'b',
+          actor_kind: 'person',
+          actor_agent_name: null,
+          actor_person_id: 'p1',
+          summary: 'asked you to look at this',
+        }),
+      ]),
+    );
+
+    render(<Notifications />);
+    await userEvent.click(screen.getByRole('button', { name: /^Notifications/ }));
+
+    // ⛔ **One mark for two items** — ⚡ a mark on both would say nothing, which
+    // is the failure the criterion names.
+    expect(screen.getAllByTestId('agent-mark')).toHaveLength(1);
+  });
+});
+
+describe('📁 "states who or what acted, on which record, and what is expected"', () => {
+  /**
+   * 🔴 **The middle clause is the one that was missing.** ⛔ The row said what
+   * acted and what was expected and **never named the record** — 📁 the
+   * notification carries subject *identity* (*events carry identity; ports carry
+   * payload*), so the shell resolves the name the way every other surface does.
+   */
+  it('names the record beside the expectation', async () => {
+    names.set('a1', 'Vantage Logistics');
+    feed.mockReturnValue(loaded([item({ subject_kind: 'account', subject_id: 'a1' })]));
+
+    render(<Notifications />);
+    await userEvent.click(screen.getByRole('button', { name: /^Notifications/ }));
+
+    expect(screen.getByTestId('notification-record')).toHaveTextContent('Vantage Logistics');
+    expect(screen.getByText(/Review what it found/)).toBeVisible();
+  });
+
+  /**
+   * ⛔ **Dropped, never guessed.** ⚡ *"Unnamed account · Review what it found"*
+   * tells a reader less than the expectation on its own, and 📁 the Playground
+   * holds accounts no source has named.
+   */
+  it('⛔ says nothing about the record when nothing can name it', async () => {
+    feed.mockReturnValue(loaded([item({ subject_kind: 'account', subject_id: 'a1' })]));
+
+    render(<Notifications />);
+    await userEvent.click(screen.getByRole('button', { name: /^Notifications/ }));
+
+    expect(screen.queryByTestId('notification-record')).not.toBeInTheDocument();
+    expect(screen.getByText(/Review what it found/)).toBeVisible();
+  });
+
+  /**
+   * 🔴 📁 **`navigate-to-context`** — [TASK-480](../../../docs/BACKLOG.md)'s own
+   * list of what this capability is, and the one item of it the panel had not
+   * built.
+   */
+  it('✅ opening an item goes to the record, and closes the panel behind it', async () => {
+    names.set('a1', 'Vantage Logistics');
+    feed.mockReturnValue(loaded([item({ subject_kind: 'account', subject_id: 'a1' })]));
+
+    render(<Notifications />);
+    await userEvent.click(screen.getByRole('button', { name: /^Notifications/ }));
+
+    // ⛔ **A link, not a `router.push`** — ⚡ so it opens in a new tab and needs
+    // no router for the shell to render, which is what the first draft cost.
+    const row = screen.getByRole('link');
+    expect(row).toHaveAttribute('href', '/accounts/a1');
+
+    await userEvent.click(row);
+    await waitFor(() => expect(markRead).toHaveBeenCalled());
+    // ⚡ 📁 *"A popover keeps the user in place"* — ⛔ and a popover left open
+    // over the page it just took somebody to is not keeping them anywhere.
+    expect(screen.queryByTestId('notification-panel')).not.toBeInTheDocument();
+  });
+
+  /**
+   * ⛔ **A subject with no route marks read and stays put.** ⚡ **A control that
+   * navigates for one row and not the next is worse than one that never
+   * navigates**, so the row says which it is by whether it names a record.
+   */
+  it('⛔ a subject the shell cannot open is a button, not a link', async () => {
+    feed.mockReturnValue(loaded([item({ subject_kind: 'opportunity', subject_id: 'o1' })]));
+
+    render(<Notifications />);
+    await userEvent.click(screen.getByRole('button', { name: /^Notifications/ }));
+
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByText(/Review what it found/));
+    await waitFor(() => expect(markRead).toHaveBeenCalledWith([expect.any(String)]));
+  });
+});
+
+describe('📁 the panel\'s own head — "Notifications", the count, and "Mark all read"', () => {
+  /**
+   * 🔴 **Not the same act as opening an item.** 📁 *"Opening the panel does not
+   * mark items read; opening an item does"* governs what happens **by itself**
+   * — ⚡ this is somebody deciding, which is why it is a control.
+   */
+  it('marks every unread item, across tabs, in one call', async () => {
+    feed.mockReturnValue(
+      loaded([
+        item({ id: 'a', category: 'needs_you', read_at: null }),
+        item({ id: 'b', category: 'mention', read_at: null }),
+        item({ id: 'c', category: 'needs_you', read_at: new Date().toISOString() }),
+      ]),
+    );
+
+    render(<Notifications />);
+    await userEvent.click(screen.getByRole('button', { name: /^Notifications/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Mark all read' }));
+
+    // ⛔ **`a` and `b`, and never `c`** — ⚡ the *Needs you* tab is showing, and
+    // a control in the panel's head is not the tab's.
+    expect(markRead).toHaveBeenCalledWith(['a', 'b']);
+  });
+
+  it('⛔ and is disabled when there is nothing to mark', async () => {
+    feed.mockReturnValue(loaded([item({ read_at: new Date().toISOString() })]));
+
+    render(<Notifications />);
+    await userEvent.click(screen.getByRole('button', { name: /^Notifications/ }));
+
+    expect(screen.getByRole('button', { name: 'Mark all read' })).toBeDisabled();
+  });
+
+  /**
+   * ⚠️ 📁 **The design draws a *"Notification settings"* footer and it is
+   * deliberately absent.** ⛔ It opens the *Notification Center*, **Workflow
+   * 17's screen, which does not exist** — and a link to an unbuilt screen is
+   * the false-affordance class this slice has refused twice already.
+   */
+  it('⛔ offers no link to a screen that does not exist', async () => {
+    render(<Notifications />);
+    await userEvent.click(screen.getByRole('button', { name: /^Notifications/ }));
+
+    expect(screen.queryByText(/Notification settings/i)).not.toBeInTheDocument();
   });
 });
 

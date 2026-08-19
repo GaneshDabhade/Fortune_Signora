@@ -2301,3 +2301,85 @@ vi.mock('next/navigation', () => ({ usePathname: () => '/' }));
 **Replacing `{ path: '/', name: 'Attention' }` in `tests/e2e/fixtures/layout-invariants.ts` with `{ path: '/business' }` duplicated an entry already below it.** ⛔ **Every responsive invariant would have run twice against one route** — **and reported it as wider coverage.** 📁 **QE's name for that shape is [B-1008](../BUGS.md)'s: *a number that goes up while meaning less.***
 
 ✅ **Removed rather than replaced**, and the list now says in place that whether `/` is retired is a question [D-240](../DECISION_REGISTER.md) did not answer — ⛔ **so it does not decide that by omission either.**
+
+---
+
+## 🔔 The shell's notification slot — TASK-495 ⓑ
+
+**Built 2026-08-19.** 📁 `Fortune Signora App Shell.dc.html` §10, and 📁
+[C-275](../LANE_COORDINATION.md)'s *"slot 4 has no data source"* is closed:
+`ai_research_engine` publishes `notification.requested` when a run settles, and
+`workspace_tenancy` consumes it. **The panel had something to show before it had
+a bell**, which was the condition `components/shell/top-bar.tsx` wrote down.
+
+### 🔴 What the required journey found, and none of it was visible to a test
+
+📁 [§19](../../CLAUDE.md) makes *a Playwright scenario that completes the journey*
+part of Done. **Writing it found two defects in code that already had 18 passing
+component tests**, and both have the same shape: **a test that mocks the hook
+cannot see what the hook asks the server.**
+
+| | |
+|---|---|
+| 🔴 **The badge never worked, for anybody** | `useUnreadNotifications` issued a **`GET`** to `/workspaces/{id}/notifications/unread`. ⛔ **That route is a `POST`** — it takes the candidate ids in a body — so **every authenticated screen took a `405`** and the bell showed no count |
+| 🔴 **`Mark as read` double-encoded its body** | `apiRequest` calls `JSON.stringify` itself; the caller stringified first, so the API received a quoted blob rather than a document |
+
+⚡ **The repair was not to call the endpoint correctly.** 📁 That endpoint was
+built (TASK-480) against a feed that **did not carry read state**, and slice ⓐ
+changed that: `GET /notifications` returns `read_at` per item. ✅ **So the badge
+is `read_at === null` counted over the feed** — one read, and no second question
+whose answer the first already contained. ⛔ **The separate badge query key was
+removed rather than left pointing at nothing.**
+
+### ⚠️ *"Without reloading"* needed a mechanism, and it had none
+
+📁 The row's own acceptance: *"an event occurs and the customer sees it **without
+reloading**."* ⛔ **The feed query settled once**, so the bell described the moment
+the screen was opened and nothing after it. ✅ **It polls every 30 seconds** — the
+client's existing `staleTime`, not `useAccountResearch`'s 4s, **because this one
+runs on every screen for every customer.**
+
+⛔ **The design's *"real-time arrival"* is not claimed.** **The repository has no
+push transport**, and a poll is the honest mechanism rather than a statement about
+latency.
+
+### ⚡ *"On which record"* — the clause that changed a producer
+
+📁 §10: *"each item states who or what acted, **on which record**, and what is
+expected of the reader."*
+
+**The notification carries subject *identity* and no title**, deliberately —
+*events carry identity; ports carry payload*, and a cached account name renders
+one that changed last week. ✅ **So the shell resolves it from the identity
+surface**, exactly as `card.recents` and `card.attention` do.
+
+⛔ **But `ai_research_engine` addressed the notification at the OPPORTUNITY**, and
+the shell can neither name nor open one. ✅ **It now addresses the account** —
+which is also what the customer did: they pressed *"Research this account"* on an
+account page, and the opportunity is an internal artifact of the run. 📁 Recorded
+in [06-events.md](06-events.md).
+
+**That also delivered `navigate-to-context`**, the one item of TASK-480's
+capability list the panel had not built. ⛔ **As an `href`, never a
+`router.push`**: a row that goes somewhere **is** a link, it opens in a new tab,
+and it needs no router for the shell to render. ⚠️ **The first draft used
+`useRouter` and broke two shell test files that had no reason to mock a router** —
+that was the coupling telling on itself, not a testing inconvenience. **A subject
+with no route stays a `<button>`.**
+
+### ⛔ What is deliberately absent
+
+| | |
+|---|---|
+| **The *"Notification settings"* footer** | 📁 Drawn in §10, and it opens the **Notification Center — Workflow 17's screen, which does not exist.** ⛔ A link to an unbuilt screen is the false-affordance class this slice has refused twice already |
+| **A person's avatar or name** | 📁 [C-203](../LANE_COORDINATION.md). **This tier has no name to take initials from**, and a grey circle with a question mark is copy the design never wrote. ✅ **The agent mark is drawn**, because 📁 *"agent and AI notifications are marked with the intelligence hue so a generated nudge never reads as a colleague's request"* |
+| **Email, Slack, digests, quiet hours** | 📁 [ADR-0017](adr/0017-notifications.md)'s vendor, and **Workflow 17's scope.** ⛔ An adapter written for a call nobody makes is the speculative abstraction §6 forbids |
+
+### 🔴 The journey needs the background tier, and no environment starts one
+
+📁 **[C-1535](../LANE_COORDINATION.md).** **It is the first spec in the repository
+that reaches a worker**, and `grep -rn "relay_main\|WorkerSettings" infra/` returns
+nothing. ⚠️ **A default-pool worker starts cleanly, logs *"worker started"*, and
+consumes nothing** — research runs in the **`ai_research`** pool. ✅ **The
+journey's failure message names both processes and both variables**, so a timeout
+reads as an environment gap rather than as a product defect.

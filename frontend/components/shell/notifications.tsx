@@ -1,16 +1,18 @@
 'use client';
 
 import { Bell } from 'lucide-react';
+import Link from 'next/link';
 import { useCallback, useId, useMemo, useRef, useState } from 'react';
 
 import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { Tabs } from '@/components/ui/tabs';
 import { cn } from '@/lib/design/cn';
 import type { AppNotification } from '@/lib/api/types';
+import { useAccountIdentities } from '@/lib/query/hooks';
 import {
   useMarkNotificationsRead,
   useNotifications,
-  useUnreadNotifications,
+  unreadCount,
 } from '@/lib/query/hooks/notifications';
 import { useDismissable } from '@/lib/shell/dismissable';
 import { SLOT_SPEC, badgeLabel } from '@/lib/shell/top-bar';
@@ -109,6 +111,14 @@ function dayLabel(at: Date, today: Date): string {
   return at.toLocaleDateString(undefined, { day: 'numeric', month: 'long' });
 }
 
+/** 📁 The design's *"09:12"* — ⚡ **the hour only**; the day is the group head's. */
+function timeOf(iso: string): string {
+  return new Intl.DateTimeFormat(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(iso));
+}
+
 function startOfDay(at: Date): Date {
   return new Date(at.getFullYear(), at.getMonth(), at.getDate());
 }
@@ -122,21 +132,48 @@ export function Notifications() {
   const trigger = useRef<HTMLButtonElement>(null);
   const panelId = useId();
 
-  const badge = useUnreadNotifications(workspaceId);
-  const feed = useNotifications(workspaceId, open);
+  const feed = useNotifications(workspaceId);
   const markRead = useMarkNotificationsRead(workspaceId);
 
   const dismiss = useCallback(() => setOpen(false), []);
   useDismissable({ open, container, trigger, onDismiss: dismiss });
 
   const items = feed.data?.notifications ?? [];
+
+  /**
+   * 🔴 📁 ***"Each item states who or what acted, **on which record**, and what
+   * is expected of the reader."***
+   *
+   * ⛔ **The notification cannot carry the name and deliberately does not** —
+   * 📁 *events carry identity; ports carry payload*, and a cached account name
+   * would render one that changed last week. ✅ **So the shell resolves it from
+   * the identity surface**, which is how `card.recents` and the attention card
+   * name a record too.
+   *
+   * ⚠️ **Accounts only, and the filter is not a convenience.** A subject of any
+   * other kind has no resolver and no route, and 📁 `ai_research_engine` is the
+   * only producer today — **it addresses the account the reader pressed the
+   * button on.**
+   */
+  const records = useAccountIdentities(
+    workspaceId,
+    items.filter((one) => one.subject_kind === 'account').map((one) => one.subject_id),
+  );
   const shown = useMemo(
     () => (tab === 'all' ? items : items.filter((item) => item.category === tab)),
     [items, tab],
   );
   const groups = useMemo(() => groupByDay(shown, new Date()), [shown]);
+  /** ⚡ **Every unread item, not the visible tab's** — 📁 the control sits in the
+   *  panel's head, above the tabs, and reads *"Mark all read"*. */
+  const unreadIds = useMemo(
+    () => items.filter((one) => one.read_at === null).map((one) => one.id),
+    [items],
+  );
 
-  const label = badgeLabel(badge.data?.unread ?? 0);
+  /** 📁 *"Count badge caps at 99+"* — ⛔ **counted from the feed's own read
+   *  state**, which is what slice ⓐ put there. */
+  const label = badgeLabel(unreadCount(feed.data));
 
   return (
     <div ref={container} className="relative shrink-0" data-slot="notifications">
@@ -194,6 +231,44 @@ export function Notifications() {
           /* 📁 *"400px popover… 12px from the top bar."* */
           className="absolute right-0 top-[calc(100%+12px)] z-20 w-[400px] rounded-lg border border-border-soft bg-surface shadow-lg"
         >
+          {/**
+            * 📁 **The panel's own head — *"Notifications"*, the count, and
+            * *"Mark all read"*.** ⛔ **It had none**, so the only thing naming
+            * the panel was its accessible label.
+            *
+            * ⚠️ 📁 **The design's *"Notification settings"* footer is
+            * deliberately NOT built.** ⛔ It opens the *Notification Center*,
+            * which is **Workflow 17's screen and does not exist** — and a link
+            * to an unbuilt screen is the false-affordance class this slice has
+            * already refused twice.
+            */}
+          <div className="flex items-center gap-2.5 border-b border-border-soft px-4 py-3">
+            <span className="text-sm font-semibold text-content">Notifications</span>
+            {label === null ? null : (
+              <span className="rounded-full bg-danger px-1.5 py-px text-2xs font-semibold text-accent-contrast">
+                {label}
+              </span>
+            )}
+            {/* 🔴 **Not the same act as opening one.** 📁 *"Opening the panel
+                does not mark items read; opening an item does"* governs what
+                happens BY ITSELF — ⚡ this is somebody deciding, which is why
+                it is a control and not an effect. */}
+            <button
+              type="button"
+              disabled={unreadIds.length === 0 || markRead.isPending}
+              onClick={() => markRead.mutate(unreadIds)}
+              className={cn(
+                'ml-auto rounded text-xs font-semibold text-accent transition-colors',
+                'hover:underline disabled:cursor-not-allowed disabled:text-content-subtle',
+                'disabled:no-underline',
+                'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+                'focus-visible:outline-accent',
+              )}
+            >
+              Mark all read
+            </button>
+          </div>
+
           <div className="border-b border-border-soft p-2">
             <Tabs label="Notifications" items={tabsFor(items)} value={tab} onChange={setTab} />
           </div>
@@ -236,7 +311,39 @@ export function Notifications() {
                       <NotificationRow
                         key={item.id}
                         item={item}
-                        onOpen={() => markRead.mutate([item.id])}
+                        record={
+                          item.subject_kind === 'account'
+                            ? (records.data?.get(item.subject_id)?.name ?? null)
+                            : null
+                        }
+                        /**
+                         * 🔴 **Navigate to context** — 📁 the capability
+                         * [TASK-480](../../../docs/BACKLOG.md) names and this
+                         * row had not built: *"badge · panel · read/unread ·
+                         * empty state · **navigate-to-context**"*.
+                         *
+                         * ⛔ **An `href`, not a `router.push`.** ⚡ **A row that
+                         * goes somewhere IS a link** — it opens in a new tab,
+                         * it has a status bar target, and it needs no router
+                         * for the shell to be renderable. ⚠️ **The first draft
+                         * used `useRouter` and broke two shell test files that
+                         * had no reason to mock a router**, which is the shape
+                         * of the coupling rather than a testing inconvenience.
+                         *
+                         * ⛔ **`null` where no route exists**, and the row
+                         * becomes a button: 📁 `ai_research_engine` addresses
+                         * the account, and a subject of another kind has
+                         * nowhere to go.
+                         */
+                        href={
+                          item.subject_kind === 'account'
+                            ? `/accounts/${item.subject_id}`
+                            : null
+                        }
+                        onOpen={() => {
+                          markRead.mutate([item.id]);
+                          setOpen(false);
+                        }}
                       />
                     ))}
                   </ul>
@@ -260,24 +367,58 @@ export function Notifications() {
  */
 function NotificationRow({
   item,
+  record,
+  href,
   onOpen,
 }: {
   readonly item: AppNotification;
+  /** 📁 *"on which record"* — ⛔ `null` when nothing can name it. */
+  readonly record: string | null;
+  /** ⛔ `null` when the shell has no route for this subject. */
+  readonly href: string | null;
   readonly onOpen: () => void;
 }) {
   const unread = item.read_at === null;
-  return (
-    <li className="border-b border-border-soft last:border-b-0">
-      <button
-        type="button"
-        onClick={onOpen}
-        className={cn(
-          'flex w-full items-start gap-3 px-4 py-3 text-left transition-colors',
-          'hover:bg-surface-sunken',
-          'focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2',
-          'focus-visible:outline-accent',
-        )}
-      >
+  const shape =
+    'flex w-full items-start gap-3 px-4 py-3 text-left transition-colors ' +
+    'hover:bg-surface-sunken ' +
+    'focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 ' +
+    'focus-visible:outline-accent';
+  const body = (
+    <>
+        {/**
+          * 🔴 📁 ***"Agent and AI notifications are marked with the
+          * intelligence hue so a generated nudge never reads as a colleague's
+          * request."*** ⛔ **This row had no mark at all**, so an agent's nudge
+          * and a colleague's were the same object.
+          *
+          * ⚡ **A 7px tile, not a circle** — 📁 the design draws
+          * `avatarRadius: '7px'` here, and `components/ui/avatar.tsx` records
+          * why that matters: *"the avatar is the only circle in the shell…
+          * a second circle anywhere in the frame costs that."* ⛔ **So `Avatar`
+          * is deliberately not reused**: reusing it would spend the shell's one
+          * findable shape on a list row.
+          *
+          * ⚠️ **Nothing is drawn for a person**, and the absence is 📁
+          * [C-203](../../../docs/LANE_COORDINATION.md): this tier has no name to
+          * take initials from, and a grey circle with a question mark is copy
+          * the design never wrote.
+          */}
+        {item.actor_kind === 'agent' ? (
+          <span
+            aria-hidden
+            data-testid="agent-mark"
+            /* ⚠️ **`rounded-md` is 8px and the design draws 7px.** 📁 The radius
+               scale has 6 and 8 and no 7 — ⛔ and an arbitrary radius survives a
+               scale change unaltered, which `design-tokens` refuses for exactly
+               that reason. **The 1px is recorded rather than smuggled in.**
+               ⚠️ And the literal is spelled out nowhere above: the gate reads
+               the file, not the JSX, so naming it in prose fails it too. */
+            className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-md bg-ai text-2xs text-accent-contrast"
+          >
+            ✦
+          </span>
+        ) : null}
         <span className="min-w-0 flex-1">
           <span className="block text-sm text-content">
             {/* ⛔ **An agent's name, or nothing** — 📁 `C-203`: a person's name
@@ -288,9 +429,31 @@ function NotificationRow({
             )}
             {item.summary}
           </span>
+          {/**
+            * 📁 **The design's `meta` line** — *"Agent · EMEA enterprise"*,
+            * *"Score change · −24 in three weeks"* — ⚡ **kind · context, joined
+            * by a middot**, and here it carries the two facts the criterion
+            * names that the sentence above does not: **which record**, and
+            * **what is expected.**
+            *
+            * ⚠️ **The record is dropped rather than guessed when it has no
+            * name.** ⛔ *"Unnamed account"* beside *"Review what it found"*
+            * tells a reader less than the expectation alone.
+            */}
           <span className="mt-0.5 block text-2xs text-content-subtle">
+            {record === null ? null : (
+              <>
+                <span data-testid="notification-record">{record}</span>
+                {' · '}
+              </>
+            )}
             {item.expectation}
           </span>
+        </span>
+        {/* 📁 *"the time, right-aligned, tabular"* — ⚡ the day is the group
+            head's, so the row says only the hour. */}
+        <span className="shrink-0 text-2xs tabular-nums text-content-subtle">
+          {timeOf(item.occurred_at)}
         </span>
         {/* 📁 *"Unread is a 6px dot on the right, never a coloured row."* */}
         {unread ? (
@@ -302,7 +465,20 @@ function NotificationRow({
         ) : null}
         {/* ♿ The dot is decorative; the state is said. */}
         <span className="sr-only">{unread ? 'Unread' : 'Read'}</span>
-      </button>
+    </>
+  );
+
+  return (
+    <li className="border-b border-border-soft last:border-b-0">
+      {href === null ? (
+        <button type="button" onClick={onOpen} className={cn(shape)}>
+          {body}
+        </button>
+      ) : (
+        <Link href={href} onClick={onOpen} className={cn(shape)}>
+          {body}
+        </Link>
+      )}
     </li>
   );
 }

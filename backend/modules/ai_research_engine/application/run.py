@@ -283,7 +283,21 @@ class FinishResearchRun:
                 # ⛔ never `MENTION`, which is a colleague naming somebody.
                 category=Category.NEEDS_YOU,
                 actor=Actor(kind=ActorKind.AGENT, agent_name="Research"),
-                subject=Subject(kind="opportunity", id=request.opportunity_id),
+                # 🔴 **The ACCOUNT, and it used to be the opportunity.**
+                #
+                # 📁 **App Shell §10** — *"each item states who or what acted,
+                # **on which record**, and what is expected of the reader"* —
+                # ⛔ **and the shell could not state it**: it has no way to turn
+                # an opportunity id into anything a person recognises, and no
+                # route to open one.
+                #
+                # ⚡ **The account is also what the customer actually did.**
+                # They pressed *"Research this account"* on an account page;
+                # the opportunity is an internal artifact of the run. ⛔ **A
+                # notification naming a record the reader never chose is one
+                # they cannot act on**, which is the failure the criterion is
+                # about.
+                subject=Subject(kind="account", id=request.entity_id),
                 summary=summary,
                 expectation=expectation,
                 channels=frozenset({Channel.IN_APP}),
