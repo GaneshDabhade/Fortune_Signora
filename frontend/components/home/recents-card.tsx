@@ -3,6 +3,7 @@
 import Link from 'next/link';
 
 import { CardFailure } from '@/components/home/card-failure';
+import { Skeleton } from '@/components/ui';
 import { useCardPhase } from '@/lib/home/loading';
 
 import type { ViewedRecord } from '@/lib/api/types';
@@ -134,6 +135,10 @@ export function RecentsCard() {
               key={record.entity_id}
               record={record}
               name={identities.data?.get(record.entity_id)?.name ?? null}
+              /* 🔴 **B-290** — ⛔ the name is a SECOND read and it settles after
+                 the list. **The initials came from the fallback too**, so the
+                 tile read `UA` and then changed letters. */
+              namePending={identities.isPending}
             />
           ))}
         </div>
@@ -142,7 +147,16 @@ export function RecentsCard() {
   );
 }
 
-function Row({ record, name }: { record: ViewedRecord; name: string | null }) {
+function Row({
+  record,
+  name,
+  namePending,
+}: {
+  record: ViewedRecord;
+  name: string | null;
+  namePending: boolean;
+}) {
+  const pending = namePending && name === null;
   const label = name ?? 'Unnamed account';
 
   return (
@@ -156,9 +170,13 @@ function Row({ record, name }: { record: ViewedRecord; name: string | null }) {
         aria-hidden
         className="grid h-5 w-5 flex-none place-items-center rounded-md bg-surface-sunken text-[8.5px] font-bold text-content-muted"
       >
-        {initials(label)}
+        {pending ? null : initials(label)}
       </span>
-      <span className="min-w-0 truncate text-[12.5px] text-content">{label}</span>
+      {pending ? (
+        <Skeleton className="h-4 w-32" />
+      ) : (
+        <span className="min-w-0 truncate text-[12.5px] text-content">{label}</span>
+      )}
       <span className="ml-auto flex-none text-[11px] text-content-subtle">
         {when(record.viewed_at)}
       </span>

@@ -100,6 +100,57 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-290 · 🟠 Home tells a reader five accounts are *"Unnamed"* for a second, and then renames them
+
+| | |
+|---|---|
+| **Module** | `product_surface` — `components/home/attention-card.tsx`, `posture-cards.tsx`, `recents-card.tsx`, `app/(app)/signals/signal-queue.tsx` |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — **Lane A** |
+| **Severity** | 🟠 — **wrong behaviour on the first screen of every session**, on the card the design calls Home's answer |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-19 by Lane A**, performing [TASK-495](BACKLOG.md) ⓑ's headed review — ⚡ **in a screenshot, not in a test** |
+
+**Measured**, on the Playground, as the owner:
+
+| Moment | *"Unnamed account"* rows in `card.attention` |
+|---|---|
+| At `networkidle` | **5** |
+| +1s | **5** |
+| +5s | **0** — every one is a real company |
+
+📁 **The identity endpoint answers correctly**: `account-identities` returns
+*Quillon Labs*, *Northfield Data Systems*, *Porterfield Health Systems* for
+exactly those ids. ⛔ **The card renders its FALLBACK while the second read is in
+flight**, so a reader is told a settled fact — *this account has no name* — and
+then told a different one.
+
+### 🔴 The canonical component already solves this, and none of the four use it
+
+📁 **`components/intelligence/entity-name.tsx` opens with *"How Signora renders a
+company. **The canonical one — every surface uses it**."*** ⚠️ **Four surfaces do
+not**, and each hand-rolls `name ?? 'Unnamed account'`.
+
+✅ **`EntityName` takes `isLoading` and renders a `Skeleton`** — its own words:
+*"reserves the same space the name will occupy, so the row does not rewrite
+itself under the reader — a list that shifts costs more confidence than the extra
+moment saved."* ⛔ **That is this defect, described by the component built to
+prevent it.**
+
+### ⚠️ Two halves, and only one is unambiguous
+
+| | |
+|---|---|
+| ✅ **The pending state** | **A read in flight must not render as a settled answer.** ⚡ Same family as 📁 [P-A](DOMAIN_DISCOVERY_REGISTER.md) — *a failed read must never render as an empty result* — one state along. **This lane's to fix** |
+| ⚠️ **The settled fallback** | 📁 `EntityName` shows **the real identifier** (`0bae6351`) and argues *"a fabricated name is indistinguishable from a real one"*; these four show ***"Unnamed account"***. ⛔ **Both are truthful and they are different copy for one fact** — **a product decision, and not this lane's to take by picking one** |
+
+### ⛔ Why no gate caught it
+
+⚡ **There is nothing wrong with the code at rest.** **The defect exists only
+between two reads**, and every test either mocks the identity hook resolved or
+asserts after it settles. 🔴 **It was found by looking at a screenshot** — the
+same mechanism [§20e](../CLAUDE.md) names: *every defect that has mattered in this
+project was found by using the product, not by the suite.*
+
 ### B-289 · 🟠 `card.recents` cannot hold the five records it names, and no reading of `2.5.8` makes it fit
 
 | | |

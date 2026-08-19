@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { Money, Posture, QueueEntry, SignalTypeName } from '@/lib/api/types';
 import { formatMoney } from '@/lib/accounts/table';
 import { cn } from '@/lib/design/cn';
+import { AccountName } from '@/components/intelligence/account-name';
 import { CardFailure } from '@/components/home/card-failure';
 import { HM_COPY_06 } from '@/lib/home/copy';
 import { useCardPhase } from '@/lib/home/loading';
@@ -231,6 +232,9 @@ export function AttentionCard() {
                */
               hiddenOnPhone={index >= PHONE_MAX}
               name={names.data?.get(entry.entity_id)?.name ?? null}
+              /* 🔴 **B-290** — ⛔ the identity read settles AFTER the queue, so
+                 the fallback was rendering as an answer for over a second. */
+              namePending={names.isPending}
               type={catalog.data?.get(entry.signal_type) ?? null}
               posture={postures.data?.get(entry.signal_type) ?? null}
               value={commercials.data?.get(entry.entity_id)?.open_acv ?? null}
@@ -285,6 +289,7 @@ function Item({
   lead,
   hiddenOnPhone,
   name,
+  namePending,
   type,
   posture,
   value,
@@ -294,6 +299,7 @@ function Item({
   /** 📁 **The 390 viewport's cut list** — rows four and five give way to a link. */
   hiddenOnPhone: boolean;
   name: string | null;
+  namePending: boolean;
   type: SignalTypeName | null;
   posture: Posture | null;
   value: Money | null;
@@ -317,9 +323,12 @@ function Item({
           {/* ⚠️ **The name, or a stated absence — never eight characters of a
               UUID.** 📁 A name is a resolved claim, so *"nobody has named this
               account"* is a real answer the identity surface can give. */}
-          <span className="text-label font-semibold text-content">
-            {name ?? 'Unnamed account'}
-          </span>
+          <AccountName
+            name={name}
+            pending={namePending}
+            absent="Unnamed account"
+            className="text-label font-semibold text-content"
+          />
           {/* 📁 **The tag word, from the catalog** — ⛔ never a title composed
               here, which would be the second vocabulary the catalog exists to
               prevent. */}

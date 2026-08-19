@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 
+import { AccountName } from '@/components/intelligence/account-name';
 import { CardFailure } from '@/components/home/card-failure';
 import { useCardPhase } from '@/lib/home/loading';
 
@@ -193,6 +194,8 @@ function PostureCard({
               lead={i === 0}
               posture={posture}
               name={identities.data?.get(entry.entity_id)?.name ?? null}
+              /* 🔴 **B-290** — the identity read settles after the queue. */
+              namePending={identities.isPending}
               type={catalog.data?.get(entry.signal_type) ?? null}
               value={commercials.data?.get(entry.entity_id)?.open_acv ?? null}
             />
@@ -227,6 +230,7 @@ function Row({
   lead,
   posture,
   name,
+  namePending,
   type,
   value,
 }: {
@@ -234,6 +238,7 @@ function Row({
   lead: boolean;
   posture: Posture;
   name: string | null;
+  namePending: boolean;
   type: SignalTypeName | null;
   value: Money | null;
 }) {
@@ -248,7 +253,12 @@ function Row({
     >
       <div className="min-w-[13rem] flex-1">
         <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
-          <span className="text-label font-semibold text-content">{name ?? 'Unnamed account'}</span>
+          <AccountName
+            name={name}
+            pending={namePending}
+            absent="Unnamed account"
+            className="text-label font-semibold text-content"
+          />
           {type === null ? null : (
             <span
               className={cn(

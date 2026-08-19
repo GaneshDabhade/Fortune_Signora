@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Badge, Button, Card, Dialog, EmptyState, ErrorState, Input, Skeleton, Tabs } from '@/components/ui';
 import type { QueueEntry, QueueState, ResolveOutcome } from '@/lib/api/types';
 import { useSignalCatalog } from '@/lib/query/hooks';
+import { AccountName } from '@/components/intelligence/account-name';
 import { useAccountIdentities } from '@/lib/query/hooks';
 import { useResolveSignal, useWorkspaceTriage } from '@/lib/query/hooks/triage';
 import { cn } from '@/lib/design/cn';
@@ -422,9 +423,15 @@ export function SignalQueue() {
                               nobody has named the account"*. ⛔ The id is not
                               printed as a fallback: an id is not a name, and a
                               seller cannot act on one. */}
-                          <span className="text-sm text-content-muted">
-                            {identity?.name ?? 'Unnamed account'}
-                          </span>
+                          {/* 🔴 **B-290** — ⛔ the identity read settles after
+                              the queue does, so this rendered its fallback as an
+                              answer and then replaced it. */}
+                          <AccountName
+                            name={identity?.name ?? null}
+                            pending={identities.isPending}
+                            absent="Unnamed account"
+                            className="text-sm text-content-muted"
+                          />
                           {/* 🔴 **Per signal, never per type.** The catalog's
                               `why_it_matters` describes the TYPE and would read
                               as right under all fifty rows; `rationale` is

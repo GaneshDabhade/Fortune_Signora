@@ -261,3 +261,45 @@ describe('📁 state 08 — the card fails inside its own footprint', () => {
     expect(screen.getByText(/Everything else on this page is unaffected/)).toBeInTheDocument();
   });
 });
+
+describe('🔴 B-290 — a name that has not arrived is not a name that does not exist', () => {
+  /**
+   * ⚠️ **Measured on the Playground before this was fixed**: five rows read
+   * *"Unnamed account"* for over a second and then became five real companies.
+   * ⛔ **The identity read is a SECOND request** and settles after the queue —
+   * so the card rendered its fallback as a settled fact and then contradicted
+   * it.
+   *
+   * ⚡ **Same family as 📁 `P-A`** — *a failed read must never render as an
+   * empty result* — **one state along.**
+   */
+  it('⛔ says nothing about the name while the identity read is in flight', async () => {
+    triage.mockReturnValue({ ...triage(), data: { items: [entry(1)] }, isPending: false, isError: false });
+    identities.mockReturnValue({ data: undefined, isPending: true });
+
+    render(<AttentionCard />);
+
+    // ⚡ **The row IS rendered** — ⛔ this is not a card-level skeleton, it is
+    // one field of a row whose other fields have arrived.
+    expect(await screen.findByText('Decision maker departed')).toBeVisible();
+    // ⛔ **Not the fallback**, which is an answer this card does not have yet.
+    expect(screen.queryByText('Unnamed account')).not.toBeInTheDocument();
+  });
+
+  /**
+   * ✅ **And it IS the answer once the read settles.** ⛔ Without this the fix
+   * could be *"never say Unnamed account"*, which loses a real state: 📁 the
+   * Playground holds accounts no source has named.
+   */
+  it('✅ and says it once the read settles with no name', async () => {
+    triage.mockReturnValue({ ...triage(), data: { items: [entry(1)] }, isPending: false, isError: false });
+    identities.mockReturnValue({
+      data: new Map([['e1', { account_id: 'e1', name: null }]]),
+      isPending: false,
+    });
+
+    render(<AttentionCard />);
+
+    expect(await screen.findByText('Unnamed account')).toBeVisible();
+  });
+});
