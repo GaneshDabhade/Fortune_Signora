@@ -34,6 +34,27 @@ async function openHome(page: import('@playwright/test').Page) {
   await expect(page.locator('[data-card]').first()).toBeVisible({ timeout: 30_000 });
 }
 
+/**
+ * 🔴 **The composition these assertions are about, stated rather than assumed.**
+ *
+ * ⚠️ **Every test below measured whichever composition the seeded persona
+ * happened to resolve to**, and passed because that was `seller`. ⛔ **Run against
+ * the executive composition they failed for the right reasons and the wrong
+ * message**: no `card.attention` to count, and no wide card, so the columns are
+ * equal by design rather than `1.4fr / 1fr`.
+ *
+ * ⚡ **A precondition asserted out loud fails with the reason.** 📁 The design's
+ * ratios and cut lists are stated per composition — *"attention shows up to five
+ * items"* is the SELLER composition's row — so a spec that does not name one is
+ * measuring an unknown.
+ */
+async function expectSellerComposition(page: import('@playwright/test').Page) {
+  await expect(
+    page.getByTestId('home'),
+    'these assertions are the seller composition\'s — the design states its ratios and cut lists per composition',
+  ).toHaveAttribute('data-composition', 'seller');
+}
+
 /** The resolved column template of Home's card grid, as the browser computed it. */
 async function columns(page: import('@playwright/test').Page): Promise<number[]> {
   const template = await page
@@ -55,6 +76,7 @@ test.describe('📁 the two-column split, and where it starts', () => {
     await page.setViewportSize({ width: 1024, height: 768 });
     await openHome(page);
 
+    await expectSellerComposition(page);
     const [wide, narrow] = await columns(page);
 
     expect(wide, 'no second column at 1024').toBeDefined();
@@ -70,6 +92,7 @@ test.describe('📁 the two-column split, and where it starts', () => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await openHome(page);
 
+    await expectSellerComposition(page);
     const [wide, narrow] = await columns(page);
 
     expect(wide! / narrow!).toBeCloseTo(1.45, 2);
@@ -145,6 +168,7 @@ test.describe('📁 the phone cut list — AC-H12', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await openHome(page);
 
+    await expectSellerComposition(page);
     const card = page.locator('[data-card="needs-you-today"]');
     const rows = card.locator('a[href^="/accounts/"]:visible');
 
@@ -164,6 +188,7 @@ test.describe('📁 the phone cut list — AC-H12', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await openHome(page);
 
+    await expectSellerComposition(page);
     const card = page.locator('[data-card="needs-you-today"]');
     const actions = card.locator('a[href^="/accounts/"]:visible');
     const count = await actions.count();
@@ -211,6 +236,7 @@ test.describe('📁 the reference viewport', () => {
     await page.setViewportSize(REFERENCE);
     await openHome(page);
 
+    await expectSellerComposition(page);
     const rows = page.locator('[data-card="needs-you-today"] a[href^="/accounts/"]:visible');
 
     expect(await rows.count()).toBeLessThanOrEqual(5);

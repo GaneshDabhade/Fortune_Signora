@@ -127,6 +127,12 @@ test.describe('📁 §10 — the keyboard table', () => {
     // Tab into the first card's own controls.
     const card = page.locator('[data-card]').first();
     const control = card.locator('a, button').first();
+    // ⚡ **Not every composition's first card has a control**, and a test that
+    // silently found none would assert nothing. 📁 The arrow rule is about cards
+    // that HAVE controls.
+    await expect(control, 'no focusable control in the first card').toBeVisible({
+      timeout: 20_000,
+    });
     await control.focus();
     const before = await page.evaluate(() => document.activeElement?.outerHTML?.slice(0, 80));
 
@@ -150,6 +156,10 @@ test.describe('📁 §10 — the keyboard table', () => {
   }) => {
     await openHome(page);
 
+    // 🔴 **The seller composition's card**, stated rather than assumed — 📁 the
+    // design gives `card.attention` to `SE` alone, so this row exists on one
+    // composition and a spec that did not say so measured an unknown.
+    await expect(page.getByTestId('home')).toHaveAttribute('data-composition', 'seller');
     const action = page
       .locator('[data-card="needs-you-today"] a[href^="/accounts/"]')
       .first();

@@ -1,3 +1,6 @@
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import { COMPOSITION_QUESTION, type Composition } from '@/lib/home/composition';
@@ -217,5 +220,75 @@ describe('🔴 a card the caller cannot act on is MARKED, never removed', () => 
 
     expect(cardsFor('seller', null, FIXTURE).map((c) => c.id)).toContain('needs-you-today');
     expect(forbidden(card, null)).toBe(true);
+  });
+});
+
+
+/**
+ * 🔴 **Contract item 3, which asks for this in its own words.**
+ *
+ * > 📁 *"No code path navigates away from Home because a card has no data.
+ * > **Grep for redirects in the Home module before merge.**"*
+ *
+ * ⚡ **A contract that names a grep is a contract asking to be a test.** ⛔ *"Before
+ * merge"* is a person remembering, and 📁 `P-03` is what it protects: *"Home never
+ * falls back to another surface… an undocumented alternate Home cannot be tested,
+ * predicted or supported."*
+ *
+ * ⚠️ **`home.tsx` already says *"there is no `router.push` in this file and there
+ * must never be one"*** — **a comment, which is the shape [§2](../../../CLAUDE.md)
+ * calls documentation pretending to be code.**
+ */
+describe('📁 contract 3 — Home never navigates away', () => {
+  const HOME_SOURCES = [
+    ...readdirSync(join(process.cwd(), 'components', 'home'))
+      .filter((file) => file.endsWith('.tsx'))
+      .map((file) => ({
+        name: `components/home/${file}`,
+        source: readFileSync(join(process.cwd(), 'components', 'home', file), 'utf8'),
+      })),
+    ...readdirSync(join(process.cwd(), 'app', '(app)', 'w', '[workspace]', 'home'))
+      .filter((file) => file.endsWith('.tsx'))
+      .map((file) => ({
+        name: `app/(app)/w/[workspace]/home/${file}`,
+        source: readFileSync(
+          join(process.cwd(), 'app', '(app)', 'w', '[workspace]', 'home', file),
+          'utf8',
+        ),
+      })),
+  ];
+
+  /** ⛔ Comments quote the rule; **only code can break it.** */
+  const code = (source: string) =>
+    source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+
+  it('🔴 no file in the Home module calls a router', () => {
+    const offenders = HOME_SOURCES.filter(({ source }) =>
+      /\brouter\s*\.\s*(?:push|replace|back|forward)\s*\(/.test(code(source)),
+    ).map(({ name }) => name);
+
+    expect(
+      offenders,
+      'Home navigating away is the fallback P-03 forbids — a designed empty state, always',
+    ).toEqual([]);
+  });
+
+  it('⛔ and none calls a server redirect either', () => {
+    const offenders = HOME_SOURCES.filter(({ source }) => /\bredirect\s*\(/.test(code(source)))
+      .map(({ name }) => name);
+
+    expect(offenders).toEqual([]);
+  });
+
+  /**
+   * ⚡ **The vacuity guard.** ⛔ If the file list ever came back empty — a renamed
+   * directory, a changed layout — both assertions above would pass while checking
+   * nothing.
+   */
+  it('⚡ and the check is looking at the Home module at all', () => {
+    expect(HOME_SOURCES.length).toBeGreaterThan(10);
+    expect(HOME_SOURCES.map((entry) => entry.name)).toContain(
+      'app/(app)/w/[workspace]/home/home.tsx',
+    );
   });
 });
