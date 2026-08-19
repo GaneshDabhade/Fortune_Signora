@@ -1041,7 +1041,7 @@ paragraph: You are a member of four organizations.
 | **Module** | `action_batch` — `backend/migrations/versions/0048_action_batch_dispatch.py` |
 | **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — `action_batch`, **Lane A** |
 | **Severity** | 🟠 · ⛔ **PRE-EXISTING BASELINE ISSUE, not a regression.** **`0048` long predates the candidate that found it, and that candidate adds no migration** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`CLOSED — NOT A DEFECT`**, QE, 2026-08-19. ⚡ **Filed by QE, disproved by QE, and independently determined by Lane A as the module's assignee.** **The surviving half is a separate finding and is named below** |
 | **Found** | **2026-08-18 by QE**, running migration reversibility during the certification of `6eba78bf925d` — **against a database that had been used**, which is why it had never appeared |
 
 **Steps to reproduce.** Against a database carrying **any `action_batch_transition` row with `transition = 'dispatched'` and a null `actor_id`**:
@@ -1077,6 +1077,14 @@ alembic downgrade base
 > *"**Reversible, and it says what reversing would cost.** ⚠️ Downgrading with any `dispatched` or `application_failed` row stored will fail on the narrowed constraint — **loudly, which is correct**. Those rows are history: an application that was accepted or that failed really happened, and **silently deleting them to make a schema fit would be the falsified history §2 forbids**."*
 
 ✅ **QE's assessment on re-reading: the docstring is right and this row's framing was wrong.** 📁 [§2](../CLAUDE.md) — *immutability is the default for anything that records a fact* — and the alternative to refusing is a downgrade that **destroys operational history to make a schema fit.** ⛔ **A migration that did that quietly would be the worse defect by a wide margin.**
+
+### ✅ CLOSED as NOT A DEFECT — QE, 2026-08-19
+
+**Closed on evidence QE read for itself** — `0048`'s `downgrade` docstring, quoted above — **and independently determined by Lane A**, who read the same docstring rather than taking QE's word for it and recorded it in the row on their own branch.
+
+📁 **§20e: only QE closes.** ⚡ **Lane A determined and deliberately did not close**, which is the rule working in the direction it is least often observed.
+
+⛔ **The surviving finding is NOT closed with it** — see below. 📁 *"No defect disappears because the lane that found it could not fix it"* applies to **the half of a row that outlives it**, and that half is QE's own gate.
 
 ### ⚡ What SURVIVES the correction, and it is the part worth keeping
 
@@ -3680,6 +3688,32 @@ this row on a resemblance. **Re-measure on the rebased tree.**
 ---
 
 ### B-283 · 🟠 Companies and Home both reflow after they load, and the screen that did not is the one just retired
+
+### ⚡ QE, 2026-08-19 — the remaining half is not Lane A's, and it needs an owner
+
+**Lane A diagnosed this properly and then stopped, which is correct.** Their measurement, three runs with `PerformanceObserver` attributing each entry to its sources:
+
+| | |
+|---|---|
+| **Home** | `0.154 / 0.166 / 0.167`. One event at ~4s carries **~0.109**, and its sources — both right-column cards, the content wrapper and `aside#shell-utility-panel` — **move together.** ⚡ **So what changed is the width of the shell's flex row, not anything inside a card** |
+| **Companies** | `0.281 / 0.290`, dominated by `td.relative.border-b` resizing `121x49 → 115x49` — **an auto-layout table settling its column widths as rows arrive.** Reproduced every run |
+
+⛔ **The row's premise was that the two screens shared a cause. They do not.**
+
+✅ **The Home half Lane A owned is fixed**: the first-run overlay rendered **above** the greeting and arrived when the preference read landed, so every first-login Home pushed its own `h1` down 95px several seconds in. **It now sits at the top of the card region and the `h1` holds `y=82` from first paint.**
+
+⚡ **And they reported exactly what that bought**: *"total CLS is essentially unchanged, 0.159–0.170 before and 0.154–0.167 after. It fixed the element a customer reads first, not the number."* ⛔ **A lane reporting a fix that did not move its own metric is the reason this row can still be believed.**
+
+**One negative result, kept because it is the obvious hypothesis**: `#shell-utility-panel`'s own width was **steady at 28px from 1.6s onward**, so *"the panel hydrates its stored open state late"* is **not what the measurement shows.** The panel may be moving *with* the row rather than causing it. **Left open rather than written up as a cause.**
+
+### 🔴 Routing — raised by QE for the product owner, and blocking nobody
+
+**What remains is in `components/shell/` and the Companies table**, which is **frozen frontend foundation** ([§20c](../CLAUDE.md)). ⛔ **Lane A correctly did not start it** — *"not a Home one"* — and QE does not implement.
+
+📁 **§20c admits it on two of its four exceptions**: a **production defect** and an **accessibility issue**. **A CLS of 0.29 on a table a customer reads is both**, and 📁 **§20c says accessibility defects *"never wait for a business milestone to justify them."***
+
+⚠️ **So the question is not whether it is permitted — it is who does it, and QE cannot answer that.** **Documented here rather than raised as a blocker**, because nothing is waiting on the answer: Lane A continues on Home, QE continues on the browser gate, and this row keeps the measurement so whoever takes it starts from data rather than from the obvious hypothesis that the panel is at fault.
+
 
 | | |
 |---|---|
