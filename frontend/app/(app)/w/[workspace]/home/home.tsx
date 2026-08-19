@@ -425,10 +425,6 @@ function HomeContent() {
         loading={resolving}
       />
 
-      {/* 🔴 **Over whichever composition resolved, never instead of one** — 📁
-          Entry rule 20 and Home's own words. ⛔ It is not a fifth composition. */}
-      <FirstRunOverlay composition={composition} />
-
       {/* 📁 Hierarchy 3 — *"name, date, and a count of what needs attention"*,
           and the greeting is never skeletonised. */}
       <div className="flex flex-wrap items-end gap-3.5">
@@ -478,6 +474,21 @@ function HomeContent() {
           ) : null}
         </div>
       </div>
+
+      {/**
+        * 🔴 **Over whichever composition resolved, never instead of one** — 📁
+        * Entry rule 20 and Home's own words. ⛔ It is not a fifth composition.
+        *
+        * ⚠️ **Below the greeting, and the position is load-bearing.** ⛔ It used
+        * to sit ABOVE it, and it arrives when the preference read lands — **so
+        * every first-login Home moved its own `h1` and scope line down 95px
+        * several seconds in**, which is 📁 contract 12's *"nothing reflows when
+        * data lands"* failing on the one element contract 11 says renders
+        * first. ⚡ **The design puts it *over the composition***, and the
+        * composition is the cards — so the top of the card region is where it
+        * belongs, not above the page heading.
+        */}
+      <FirstRunOverlay composition={composition} />
 
       {/* 📁 ***"Progress counts blocking cards only"***, activation only. */}
       {composition === 'activation' && !registryEmpty ? <ActivationProgress /> : null}

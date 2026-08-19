@@ -1245,6 +1245,41 @@ alembic downgrade base
 | reversed | f | 3 |
 | applied | t | 3 |
 
+
+### ✅ The determination — `0048` is behaving as designed, and it says so
+
+⚡ **QE reached this first and reported it against themselves**, on 2026-08-19:
+*"I filed it without reading `0048`'s own `downgrade` docstring."* ✅ **Confirmed
+by reading it. It is four lines and answers the row directly:**
+
+> *"**Reversible, and it says what reversing would cost.** ⚠️ Downgrading with any
+> `dispatched` or `application_failed` row stored will fail on the narrowed
+> constraint — **loudly, which is correct**. Those rows are history: an
+> application that was accepted or that failed really happened, and **silently
+> deleting them to make a schema fit would be the falsified history §2
+> forbids**."*
+
+⛔ **The refusal IS the feature.** 📁 [`CLAUDE.md` §2](../CLAUDE.md) — *"immutability
+is the default for anything that records a fact"*, and *"a record of what was true
+then must not be rewritten to match now."* ⚡ **The only way to make this
+downgrade succeed is to destroy operational history**, which is the thing the
+constraint exists to prevent.
+
+### ⛔ What survives, and it is not about `0048`
+
+> **The reversibility gate runs only against a clean disposable database, so it
+> can never see this class.** It answers *"do these migrations reverse?"* when a
+> release needs *"do these migrations reverse **against data**?"*
+
+⚡ **That is the gate's coverage, and QE has stated it is theirs.** ⛔ **Recorded
+here rather than only in a message**, so it survives this row being closed —
+📁 §20e, *no defect disappears because the lane that found it could not fix it*.
+
+### ⚠️ On the candidate that is waiting
+
+**`0065` and `0066` are both nullable `add_column` → `drop_column`**, which cannot
+violate a constraint against existing rows. ⛔ **That is a prediction, not a
+measurement** — the used-database run is QE's and still decides.
 ### The shape of it
 
 **`0048` RELAXED the constraint** so a `dispatched` transition may be unattributed — **correct, and it is the system rather than a person that dispatches.** ⛔ **Its `downgrade` re-adds the strict form verbatim**, which every row the feature has since produced violates.
@@ -3924,7 +3959,54 @@ SIGNORA_ENVIRONMENT=lane-a npx playwright test --project=owner \
 
 ⚠️ **Neither number is a regression this change caused.** The spec navigated to `/`, which the entry resolver turned into Home some commits ago, and it was named *"the accounts list"* throughout — **so it has been measuring the wrong screen under the right name, and the failure was read as contamination** ([B-1017](#b-1017)'s class).
 
-🔴 **The cause is NOT diagnosed and is deliberately not guessed.** Both screens compose several independent reads that arrive separately — identities, tags, assignments, segments on Companies; cards on Home — and **a plausible cause in this row would be believed** ([B-1000](#b-1000)'s class). ⚡ **What is established is the measurement and the boundary.**
+🔴 **The cause was NOT diagnosed when this row was filed, and was deliberately
+not guessed.** ⚡ **Partially diagnosed 2026-08-19 by Lane A**, below — **and the
+parts that are still hypotheses are marked as such**, because a plausible cause
+in this row would be believed ([B-1000](#b-1000)'s class).
+
+### ✅ What is measured, and reproduced
+
+**Attribution by `PerformanceObserver` on `layout-shift`, summing each entry's
+value across its `sources`. Three runs, at the project's own viewport.**
+
+| Screen | Total | The dominant contributor |
+|---|---|---|
+| **Home** | **0.154 · 0.166 · 0.167** | ⛔ **One event at ≈4s carries ≈0.109 of it.** Its sources are the two right-column cards, the content wrapper **and `aside#shell-utility-panel`** — ⚡ **they move together**, so what changed is the width of the shell's flex row rather than anything inside a card |
+| **Home** | — | A second ≈**0.020–0.032** is `div.grid.grid-cols-1`, **the card grid itself**, growing as cards land |
+| **Companies** | **0.281 · 0.290** | ⛔ **`td.relative.border-b` resizing** — `121×49 → 115×49`, `133 → 159`, `128 → 124` — ⚡ **an auto-layout table settling its column widths as rows arrive.** Reproduced in every run |
+
+⚡ **The two screens do NOT share a cause.** 📁 The row was filed on the
+reasonable assumption that they might; **they do not, and Companies' is the
+simpler of the two.**
+
+### ✅ Fixed, and it is a smaller thing than the number
+
+🔴 **The first-run overlay was rendering ABOVE the greeting** and arrives when
+the preference read lands, **so every first-login Home moved its own `h1` and
+scope line down 95px several seconds in.** ⛔ That is 📁 contract 12's *"nothing
+reflows when data lands"* failing on the one element contract 11 says renders
+first and never skeletonises.
+
+✅ **Moved to the top of the card region**, which is where 📁 rule 20 puts it —
+*"over whichever composition resolved"*, and the composition is the cards.
+**Measured: the `h1` now holds `y=82` from first paint instead of jumping to
+`y=177`.**
+
+⚠️ **Total CLS is essentially unchanged — 0.159–0.170 before, 0.154–0.167
+after.** ⛔ **Stated rather than glossed**: this fixed the element a customer
+reads first, not the number. **The row stays `OPEN`.**
+
+### ⛔ What is still unknown, and must not be guessed
+
+**Why the shell's flex row changes width at ≈4s.** ⚠️ **A trace of
+`#shell-utility-panel`'s own width showed it steady at 28px from 1.6s onward**,
+so the obvious reading — *"the panel hydrates its stored open state late"* — **is
+NOT supported by that measurement**, and the panel may be moving with the row
+rather than causing it. ⛔ **Left open deliberately.**
+
+⚠️ **And the fix, whatever it is, is likely in `components/shell/`** — 📁 the
+frozen foundation ([§20c](../CLAUDE.md)), where a change affects every screen.
+**That makes it its own slice with its own verification, not a Home one.**
 
 ### B-282 · 🟡 `make test` truncates the database `make demo-seed` fills, and the repository already solved this exactly once
 

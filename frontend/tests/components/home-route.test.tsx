@@ -38,6 +38,7 @@ const statedRole = vi.hoisted(() => vi.fn());
  */
 const activationState = vi.hoisted(() => vi.fn());
 const activationRegistry = vi.hoisted(() => vi.fn());
+const preferences = vi.hoisted(() => vi.fn());
 /** ⚡ **State 05's second half** — 📁 *"record count is zero"*. */
 const accountsCount = vi.hoisted(() => vi.fn());
 /** ⚡ **State 08's page half** — what the cards reported. */
@@ -87,16 +88,9 @@ vi.mock('@/lib/query/hooks/preferences', () => ({
   // ⚡ **`setup_complete_seen: false` is *told nobody yet*** — 📁 state 04's strip
   // is silent until the preference is READ, so omitting the field here would
   // hide it for a reason that has nothing to do with the state under test.
-  usePreferences: () => ({
-    data: {
-      first_run_dismissed: true,
-      invite_hidden: false,
-      setup_complete_seen: false,
-      // ⚡ **Never customised by default** — 📁 an absent key renders the
-      // registry's own order, which is what every other test here assumes.
-      home_layout: {},
-    },
-  }),
+  // ⚡ **A `vi.fn` with the same default as before**, so a test about a
+  // preference can state it rather than working around a frozen object.
+  usePreferences: (...a: unknown[]) => preferences(...a),
   useDismissFirstRun: () => ({ mutate: () => {}, isPending: false }),
   useSkipInvite: () => ({ mutate: () => {}, isPending: false }),
   // ⚡ **State 04's strip records that it was shown** — 📁 *"exactly once"*.
@@ -161,6 +155,19 @@ function severalWorkspaces() {
  * rule — so `2 of 2` is state 04 and `0 of 2` is state 01.
  */
 function activation({ done, total = 2 }: { done: number; total?: number }) {
+  preferences.mockReturnValue({
+    data: {
+      first_run_dismissed: true,
+      invite_hidden: false,
+      // ⚡ **`setup_complete_seen: false` is *told nobody yet*** — 📁 state 04's
+      // strip is silent until the preference is READ, so omitting it would hide
+      // the strip for a reason unrelated to the state under test.
+      setup_complete_seen: false,
+      // ⚡ **Never customised by default** — 📁 an absent key renders the
+      // registry's own order, which is what every other test here assumes.
+      home_layout: {},
+    },
+  });
   // 📁 **Contract 5** — the activation registry is a server read now.
   activationRegistry.mockReturnValue({
     resolved: true,
@@ -444,6 +451,45 @@ describe('🔴 Home always renders', () => {
     const drawn = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
     expect(drawn.indexOf('Connect a CRM')).toBeGreaterThan(-1);
     expect(drawn.indexOf('Connect a CRM')).toBeLessThan(drawn.indexOf('Invite the team'));
+  });
+});
+
+describe('📁 Entry rule 20 — the first-run overlay, and where it sits', () => {
+  /**
+   * 🔴 **[B-283](../../../docs/BUGS.md).** ⛔ **The overlay used to render ABOVE
+   * the greeting**, and it arrives when the preference read lands — **so every
+   * first-login Home moved its own `h1` and scope line down 95px several
+   * seconds in.** ⚡ Measured: `y=177` instead of `y=82`.
+   *
+   * 📁 **That is contract 12's *"nothing reflows when data lands"* failing on
+   * the one element contract 11 says renders first and never skeletonises.**
+   *
+   * ✅ **Rule 20 puts it *"over whichever composition resolved"*, and the
+   * composition is the cards** — so the top of the card region is where it
+   * belongs, and a late arrival there cannot move the heading.
+   */
+  it('🔴 renders after the heading in DOM order, so a late arrival cannot move it', () => {
+    ready(true);
+    preferences.mockReturnValue({
+      data: {
+        first_run_dismissed: false,
+        invite_hidden: false,
+        setup_complete_seen: true,
+        home_layout: {},
+      },
+    });
+
+    render(<Home />);
+
+    const overlay = screen.getByText(/Signora reads what your systems already record/);
+    const heading = screen.getByRole('heading', { level: 1 });
+
+    // ⚡ **`DOCUMENT_POSITION_FOLLOWING`** — the overlay comes after the
+    // heading, which is what keeps the heading still.
+    expect(
+      heading.compareDocumentPosition(overlay) & Node.DOCUMENT_POSITION_FOLLOWING,
+      'the first-run overlay renders before the h1 and will push it down',
+    ).toBeTruthy();
   });
 });
 
