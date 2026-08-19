@@ -348,6 +348,54 @@ run 5: 0 failed                     20 passed
 
 ⛔ **This spec was the intended control for the browser gate.** 📁 **Lane A: *"a control that is clean on one stack and not another is not a control"*** — **and the sharper form this row proves: it is not clean on the SAME stack twice.** **A gate whose control is intermittent cannot distinguish a regression from a re-run.**
 
+### B-1028 · 🔴 Every certification run this repository has performed created its database on human review's server
+
+| | |
+|---|---|
+| **Module** | `backend/tests/certification/database.py` — **QE's own instrument** |
+| **Current assignee** | **QE** |
+| **Severity** | 🔴 · ⛔ **`make certify` cannot run at all when human review's stack is down**, which is most of the time |
+| **Status** | ✅ **`FIXED`** by QE, 2026-08-19. ⛔ **NOT `VERIFIED`** — QE wrote it |
+| **Found** | **2026-08-19 by QE**, running the backend suite after fixing [B-287](#b-287) — **the same defect, one file over, in the gate itself** |
+
+**Steps to reproduce.** Stop the slot-0 stack. Run `make test` or `make certify`.
+
+```
+FAILED tests/certification/test_disposable_database.py::test_it_creates_and_then_destroys
+FAILED tests/certification/test_disposable_database.py::test_it_is_destroyed_even_when_the_run_fails
+```
+
+**Two literals**, `database.py:71` and `:79`:
+
+```python
+ADMIN: Final = "postgresql://signora:signora@localhost:5432/postgres"
+_HOST: Final = "localhost:5432"
+```
+
+📁 **`RUNNING.md` allocates PostgreSQL as `5432 + 100n`, so `5432` is slot 0 — human review's.**
+
+### ⛔ The failing tests are the mild half
+
+**`disposable()` runs `CREATE DATABASE` and `DROP DATABASE … WITH (FORCE)`**, and it ran them **on the reviewer's server.**
+
+> ⚡ **Cycle 249's own record says so and nobody read it**: *"database `signora_certify_19317ea3674d` (created for this run, dropped afterwards)"* — **created on `localhost:5432`, which is not the lane's.**
+
+⛔ **So every certification this repository has ever performed created and dropped a database on slot 0.** ⚠️ **Nothing was lost — the names are `signora_certify_<sha>` and never `signora`** — **and that is luck rather than design.** ⚡ **The blast radius of a bad `name_for()` was another lane's server the whole time.**
+
+### 🔴 And it makes certification impossible when review is down
+
+**`make certify` cannot create its database if slot 0 is not running**, so the gate fails for a reason that has nothing to do with the commit. 📁 **The exact inversion of [ADR-0027](architecture/adr/0027-local-first-development.md)'s premise** — the local run is the only run, and it depended on a stack the lane does not own and must not start.
+
+> ⚠️ **This is [B-287](#b-287) one level up, and [B-270](#b-270) one level up from that.** **Three defects, one shape: a suite reaching for slot 0 because slot 0 is what a literal spells.** ⛔ **Two were in tests; this one is in the gate that decides what reaches `main`.**
+
+### ✅ The fix — derive it, and refuse rather than guess
+
+**`_host()` parses `SIGNORA_TEST_ADMIN_DATABASE_URL`**, which `make certify` and `make test` both already pass from the lane's own allocation.
+
+⛔ **No default.** 📁 The same rule `signora_platform/settings.py` applies to `SIGNORA_REDIS_URL`: *"it has no default"* — **guessing a host is precisely what produced this.**
+
+**Measured**: `admin_dsn()` → `postgresql://signora:signora@localhost:5632/postgres` on `lane-qe`, and **unset raises a message naming the variable, slot 0 and this row.** ✅ **`tests/certification/` — 155 passed.**
+
 ### B-1027 · 🟠 A serial spec stops counting the tests it did not run, and the totals still look complete
 
 | | |

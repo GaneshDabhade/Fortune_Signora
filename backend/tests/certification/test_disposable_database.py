@@ -65,7 +65,7 @@ def _exists(name: str) -> bool:
     """
 
     async def query() -> bool:
-        connection = await asyncpg.connect(disposable_database.ADMIN)
+        connection = await asyncpg.connect(disposable_database.admin_dsn())
         try:
             return bool(
                 await connection.fetchval("SELECT 1 FROM pg_database WHERE datname = $1", name)

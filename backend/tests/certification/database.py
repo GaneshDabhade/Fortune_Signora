@@ -57,6 +57,7 @@ runs and certification never does.
 from __future__ import annotations
 
 import asyncio
+import os
 import re
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -65,18 +66,53 @@ from typing import Final
 
 import asyncpg
 
-#: Where a disposable database is created. **The admin identity**, because
-#: `CREATE DATABASE` is owner-only — and the same identity migrations run under
-#: (`CLAUDE.md` §8: schema changes execute only under the migration identity).
-ADMIN: Final = "postgresql://signora:signora@localhost:5432/postgres"
-
 #: The runtime identity the suite connects as. **Never the owner**: a service
 #: connected as the owner is exempt from RLS on every table it touches, which
 #: would make the tenancy invariants pass vacuously.
 APP_ROLE: Final = "signora_app"
 APP_PASSWORD: Final = "signora_app_local_dev"
 
-_HOST: Final = "localhost:5432"
+#: 🔴 **`ADMIN` and `_HOST` were `localhost:5432` literals — [B-1028](../../../docs/BUGS.md).**
+#:
+#: **`5432` is slot 0, which is human review's** (`RUNNING.md` allocates
+#: `5432 + 100n`). So **every certification run this repository has ever
+#: performed created and dropped its disposable database on the reviewer's
+#: server**, not on the lane's — and when human review is *not* running,
+#: `make certify` cannot create a database at all.
+#:
+#: ⛔ **No default.** Guessing a host is what produced the defect, and
+#: `signora_platform/settings.py` already refuses a missing database URL for
+#: the same reason. **The Makefile passes this to every gate; a run that
+#: reaches here without it was started some other way and must say so rather
+#: than reach for slot 0.**
+_ADMIN_URL_VARIABLE: Final = "SIGNORA_TEST_ADMIN_DATABASE_URL"
+
+
+def _host() -> str:
+    """`host:port` of the server disposable databases are created on."""
+    url = os.environ.get(_ADMIN_URL_VARIABLE)
+    if not url:
+        raise RuntimeError(
+            f"{_ADMIN_URL_VARIABLE} is not set, so there is no server to create a "
+            "disposable database on. It has NO default: `localhost:5432` is slot "
+            "0 — human review's — and defaulting to it is B-1028. `make certify` "
+            "and `make test` both set this from the lane's own allocation."
+        )
+    match = re.search(r"@([^/@]+)/", url)
+    if not match:
+        raise RuntimeError(f"{_ADMIN_URL_VARIABLE} names no host: {url!r}")
+    return match.group(1)
+
+
+def admin_dsn() -> str:
+    """Where a disposable database is created. **The admin identity**, because
+    `CREATE DATABASE` is owner-only — and the same identity migrations run under
+    (`CLAUDE.md` §8: schema changes execute only under the migration identity).
+
+    **`postgres`, the maintenance database**, because `CREATE DATABASE` cannot
+    run from inside the database being created or dropped.
+    """
+    return f"postgresql://signora:signora@{_host()}/postgres"
 
 
 @dataclass(frozen=True, slots=True)
@@ -117,7 +153,7 @@ def _valid(name: str) -> str:
 
 
 async def _execute(statement: str) -> None:
-    connection = await asyncpg.connect(ADMIN)
+    connection = await asyncpg.connect(admin_dsn())
     try:
         await connection.execute(statement)
     finally:
@@ -150,8 +186,8 @@ def disposable(name: str) -> Iterator[Disposable]:
     try:
         yield Disposable(
             name=safe,
-            app_url=f"postgresql+asyncpg://{APP_ROLE}:{APP_PASSWORD}@{_HOST}/{safe}",
-            admin_url=f"postgresql+asyncpg://signora:signora@{_HOST}/{safe}",
+            app_url=f"postgresql+asyncpg://{APP_ROLE}:{APP_PASSWORD}@{_host()}/{safe}",
+            admin_url=f"postgresql+asyncpg://signora:signora@{_host()}/{safe}",
         )
     finally:
         asyncio.run(_drop(safe))
