@@ -23,6 +23,32 @@
 > ✅ **[C-306](#-c-306--the-one-that-argues-against-work-and-it-collides-with-d-128) is `CLOSED` — Lane C, 2026-08-11, no product decision required.** **It argued *against* rebuilding a screen and predates [D-128](DECISION_REGISTER.md), which made the design the authority. Kept below as a record.**
 >
 > **This is the healthy state, not an empty document.** *"Our objective is not to close the maximum number of governance items. Our objective is to maximize engineering throughput."*
+## 🟠 C-1533 · Home state 14's entry condition and its copy describe different cards
+
+> ⚡ **Found by Lane A IMPLEMENTING the fourteen states, not by reading them** — thirteen went in; this one cannot.
+
+📁 **The entry condition**: *"fully activated for blocking cards, but a **non-blocking** card was skipped."* 📁 **The sentence it renders, `HM-COPY-12`**: *"**Calls** are still not connected."* ⛔ **Home says three times that calls is BLOCKING**, so the only skippable card is invite — and if the blocking set is complete then calls *is* connected. **The sentence is false exactly when the state fires.**
+
+⛔ **`U-01` decides which DOCUMENT wins, not which SENTENCE to show**, and contract item 18 forbids composing one: *"every string is used verbatim from the copy table."*
+
+> ## **Either one sentence for the state that can occur — blocking complete, invite skipped, 30 days elapsed — or a ruling that calls is non-blocking after all.**
+
+⚠️ **The second is the larger answer**: calls cannot be connected by anybody today, so making it blocking-and-uncompletable is what currently makes states 02, 03 and 04 unreachable.
+
+✅ **Shipped meanwhile: thirteen of fourteen states.** `HM_COPY_12` stays in the copy table unrendered, exactly as `HM_COPY_10` does for state 11. ⛔ **Nothing else is blocked.**
+
+## 🟠 C-1534 · Six Home cards name a dependency that no approved document assigns a producer
+
+> ⚡ **All 35 design documents extracted and searched**, not just Home — and one assumption was wrong on the way: `sales_engagement` owns a prompt called `executive_summary@1`, and **it briefs a seller on one account**. The name collides; the scope does not.
+
+⛔ **`card.briefing` · `card.execsummary` · `card.meetings` · `card.forecast` · `card.dataquality` · `card.requests`.** Each has a defined *presentation* and an undefined *producer*: no plan entity, no access-request lifecycle, no connectable calendar, no workspace-scope prompt, and *"stale stages"* names no threshold anywhere.
+
+⚡ **Two of them are close.** *"Unmapped fields"* is fully defined by CRM Integrations and needs the unbuilt CRM read runner; *"missing owners"* is derivable today — **but a card promising three counts and showing one is the product asserting something untrue.**
+
+> ## **Which of the six is worth defining first, and what does its producer say?**
+
+✅ **Shipped meanwhile: ten of sixteen cards.** The six are absent from `RENDERERS` rather than drawn empty. ⛔ **Home renders completely without them** — *"cards degrade individually."*
+
 ## 🟠 C-250 · When entry is unremarkable, what does the diagnostic code say? *(point ③ of three)*
 
 > ⚡ **Found by Lane A BUILDING the entry engine, not by reading the design** — the third of three disagreements it reported, and **the only one that is a product question.**
@@ -542,6 +568,8 @@
 
 | | The decision | Why it is here rather than higher |
 |---|---|---|
+| **[C-1533](LANE_COORDINATION.md)** | 🟠 **Home state 14's entry condition and its copy name different cards** — the sentence is false exactly when the state fires | ⚡ **One sentence unblocks it.** ⛔ **Thirteen of fourteen states shipped without it** |
+| **[C-1534](LANE_COORDINATION.md)** | 🟠 **Six Home cards name a producer no approved document defines** — no plan entity, no access-request lifecycle, no connectable calendar, no workspace-scope prompt | ⚡ **Ten of sixteen cards shipped.** ⛔ **Home renders completely without them** — *"cards degrade individually"* |
 | **[C-211](LANE_COORDINATION.md)** | 🔴 **Where does an approach brief live?** **It reads the buying committee, signals, business events, validation, narration and the opportunity — and *no existing module may read all six*** | ⚡ **The most architectural of the twelve.** **A new bounded context or a widened contract; both are 🔴** |
 | **[C-212](LANE_COORDINATION.md)** | 🟠 **Which product is an opportunity about?** **The buying committee is declared *per product*; an opportunity has no product** | ⛔ ***"Which committee applies to this account?"* is unanswerable, so role ranking cannot start** |
 | **[C-203](LANE_COORDINATION.md)** | **Nothing in the product can render a person's name** | **Narrowed 2026-08-02. Grouped with People Intelligence** |

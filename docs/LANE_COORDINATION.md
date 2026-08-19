@@ -353,6 +353,8 @@ databaseUrl: required(
 
 | Id | What | Requester | Owner | Status | Blocks |
 |---|---|---|---|---|---|
+| [C-1533](#c-1533--home-state-14s-entry-condition-and-its-copy-describe-different-cards) | 🟠 **Home state 14's entry condition and its copy describe different cards** — the sentence is false exactly when the state fires | **Lane A**, 2026-08-19, implementing the fourteen states | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **State 14 only.** ✅ **Thirteen of fourteen states are implemented and browser-verified** |
+| [C-1534](#c-1534--six-home-cards-name-a-dependency-that-no-approved-document-assigns-a-producer) | 🟠 **Six Home cards name a dependency that no approved document assigns a producer** | **Lane A**, 2026-08-19, after extracting all 35 design documents | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Six of sixteen cards, and states 02 and 11.** ✅ **Home renders completely without them** |
 | [C-245](#c-245-screen-13-shows-a-reader-six-facts-they-are-not-permitted-to-see) | 🔴 **Screen `13` shows a reader six facts they are not permitted to see** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⚠️ **Most of screen `13`.** ✅ **Screen `14`'s shape and the accept/decline journey are buildable |
 | [C-246](#c-246-the-onboarding-design-labels-a-step-workspace-and-adr-0034-says-a-customer-reads-organization) | 🟠 **The onboarding design labels a step *Workspace* and ADR-0034 says a customer r** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **What it changes is what the Workflow 8 review is shown** — a reviewer holdin |
 | [C-247](#c-247-a-person-in-two-organizations-gets-two-themes-and-task-470s-row-says-otherwise) | 🟠 **A person in two organizations gets two themes, and TASK-470's row says otherwi** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **What it changes is a customer's experience of belonging to two organizations |
@@ -572,6 +574,112 @@ databaseUrl: required(
 **③** **Neither yet** — ⚡ **the second pin waits for a column worth pinning.** **The design's example is the score, and until something produces one, a customer pinning a second column is choosing between Segment, Renewal, Owner and Tags — none of which the design says needs it.**
 
 ⚡ **Lane A's recommendation is ③**, on 📁 [§6](../CLAUDE.md): *do not add generalization for cases that do not exist yet*. ⛔ **It is a recommendation and not a decision** — 📁 [§20e](../CLAUDE.md): *proposing a direction is expected; proceeding on it is not*.
+
+---
+
+## C-1533 · Home state 14's entry condition and its copy describe different cards
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-19, implementing Home's fourteen states |
+| **Owner** | 🔴 **Product owner** — **one approved document contradicts itself, and the fix is a sentence a customer reads** |
+| **Type** | **An internal contradiction in one design document** |
+| **Blocks** | ⛔ **State 14 only.** ✅ **Every other Home state is implemented.** |
+| **Status** | **`OPEN`** |
+
+### The contradiction, at its smallest
+
+📁 **State 14's entry condition**: *"Fully activated for blocking cards, but a
+**non-blocking** card was skipped and its 30 days have elapsed."*
+
+📁 **`HM-COPY-12`, the sentence it renders**: *"**Calls** are still not connected.
+Signora is scoring on CRM fields alone."*
+
+⛔ **Under Home's own model those cannot both be true.** 📁 The document states
+three times that **calls is BLOCKING**: `P-06` — *"Calls is blocking; invite is
+not"*; the dismissibility rule — *"blocking cards — CRM and calls — cannot be
+dismissed"*; and the priority table. ⚡ **So the only skippable card is invite**,
+and if the blocking set is complete then calls **is** connected — which makes the
+sentence false exactly when the state fires.
+
+### ⛔ The corpus was searched and it does not resolve this
+
+| Document | What it says | Does it resolve it? |
+|---|---|---|
+| **Home** | Calls is blocking, three times. Invite is the only optional card | ⛔ **It is the document that contradicts itself** |
+| **System States** | Draws its own activation sequence — CRM, **invite**, then calls — and calls ***"Optional"*** | ⚠️ **This is `U-01`**, and Home's own interim already rules: *"implement from this document; leave System States untouched"* |
+| **Onboarding · Settings · CRM Integrations** | Connection steps, no skip semantics | ⛔ No |
+| **`policy.csv` · permissions** | Nothing about activation | ⛔ No |
+| **`0050_invite_skipped_at`** | Implements the 30-day skip for **invite alone** | ⚡ **Corroborates Home's model** |
+
+✅ **`U-01` decides which DOCUMENT wins. It does not decide which SENTENCE to
+show**, and 📁 **contract item 18 forbids composing one**: *"every string is used
+verbatim from the copy table. **No message is assembled from fragments at
+runtime.**"*
+
+### The smallest decision that unblocks it
+
+> ## **Either: one sentence for the state that CAN occur — blocking complete, invite skipped, 30 days elapsed.**
+>
+> ## **Or: a ruling that calls is NON-blocking after all**, which would also make states 02 and 03 reachable and would resolve `U-01` in System States' favour.
+
+⚠️ **The second is the larger answer.** ⛔ It changes which composition a workspace
+resolves to: **calls cannot be connected by anybody today** — every calendar entry
+in the catalog is `connectable=False` — **so making it blocking-and-uncompletable
+is what currently makes states 02, 03 and 04 unreachable.**
+
+### ✅ Shipped meanwhile — nothing else waits on this
+
+**Thirteen of Home's fourteen states are implemented and browser-verified.** ⛔
+**`HM_COPY_12` stays in the copy table, unrendered**, exactly as `HM_COPY_10` does
+for state 11 — 📁 the string is ready the day a producer or a ruling exists, and a
+copy table holding a sentence nothing renders is honest in a way a fabricated
+substitute would not be.
+
+---
+
+## C-1534 · Six Home cards name a dependency that no approved document assigns a producer
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-19, after extracting all 35 design documents and searching each |
+| **Owner** | 🔴 **Product owner** — **each needs a product meaning that does not exist yet, not an engineering decision** |
+| **Type** | **Registry dependencies with no named producer** |
+| **Blocks** | ⛔ **Six of sixteen cards, and states 02 and 11.** ✅ **Home renders completely without them** — 📁 *"cards degrade individually; the composition never changes shape because one card has nothing."* |
+| **Status** | **`OPEN`** |
+
+### What each one needs, and what is already there
+
+| Card | Registry dependency | What the corpus DOES define | What is missing |
+|---|---|---|---|
+| **`card.briefing`** | `ai.briefing.v1` | ⚡ **The presentation contract** — AI Copilot's *scoped · cited · calibrated · proposing · reversible*, and `ai_reasoning_engine` implements it at **account** scope | ⛔ **No workspace-scope producer, and no prompt.** 📁 §10 requires a versioned artifact evaluated against its `(model, dataset)` pairs before release — **so this needs a prompt, a dataset and a decision about what a daily briefing SAYS** |
+| **`card.execsummary`** | `ai.execsummary` | ⚠️ **`sales_engagement` owns a prompt called `executive_summary@1`** — authored, measured, deliberately unreleased | ⛔ **It briefs a seller on ONE ACCOUNT.** ⚡ **Read it before assuming**: the name collides and the scope does not. The Executive Dashboard's card is *"a period-bounded narrative of the quarter"* |
+| **`card.meetings`** | `calendar.events` | ⚡ **The integration boundary** — `Capability.MEETINGS`, supplied by `google_calendar`, `outlook_calendar`, `google_workspace`, `microsoft_365`. Account 360 draws the same rows | ⛔ **Every catalog entry is `connectable=False`**, there is no meetings ingest, and *"prep state"* is a second AI artifact |
+| **`card.forecast`** | `forecast.committed` | ⚡ The Executive Dashboard **draws** `$68.0M plan`, commit, coverage and attainment pace | ⛔ **No document says where a plan comes from.** Searched Settings, Onboarding, ICP Builder, Reports: nothing sets one. **The only `quota` in the backend is provider rate-limit quota** |
+| **`card.dataquality`** | `quality.summary` | ⚡ ***"Unmapped fields"* IS defined** — CRM Integrations draws the whole field-mapping screen, `StageName → Stage`, *"2 values unmapped"* | ⛔ **It needs the CRM read runner** (epic `E1`, explicitly unbuilt). ⛔ ***"Stale stages"* names no threshold anywhere.** ✅ *"Missing owners"* alone is derivable |
+| **`card.requests`** | `access.requests` | ⚡ **System States defines the RULES** — *"disabled, not hidden"*, *"the request carries context"*, *"always answered"* | ⛔ **No document defines the entity, its states, or who approves.** *"Access request"* appears in **zero** design documents |
+
+### ⛔ Why a partial card is worse than an absent one
+
+📁 **The prohibition table**: *"Emptiness is legible — every empty card names what
+was checked and when."* ⚡ **`card.dataquality` is the worked example**: one of its
+three counts is derivable today, and **a card promising missing owners, stale
+stages and unmapped fields while showing one of them is the product asserting
+something untrue** — which is [C-017](#)'s permanent principle.
+
+### ⚠️ Two keyboard rules are downstream of `card.briefing`, not separate
+
+📁 *"**Jump to the first action** — the primary action of the **answer card** is
+the first tab stop after the heading"*, and 📁 `2.4.3`'s *"focus order is heading,
+**answer card action**, then cards in visual order."* ⚡ **Hierarchy 4 names the
+answer card as the briefing on data compositions** — **so the rule has no subject
+on any composition today.**
+
+### ✅ Shipped meanwhile
+
+**Ten of sixteen cards render**, and the six above are absent from the registry's
+`RENDERERS` rather than drawn empty — 📁 *"a registered card with no renderer is
+skipped, not drawn empty."*
 
 ---
 
