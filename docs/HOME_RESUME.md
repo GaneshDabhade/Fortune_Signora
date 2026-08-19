@@ -1,6 +1,6 @@
 # Home — where the implementation stands
 
-**Written 2026-08-19 by Lane A**, at `60db0cbd`, **15 commits above `origin/main`
+**Written 2026-08-19 by Lane A**, at `1ac3921a`, **17 commits above `origin/main`
 (`7f883ea5`), unpushed.** This is a resumption note, not a status record —
 `PROJECT_STATUS.md` is QE's and is measured from the promoted commit.
 
@@ -65,9 +65,11 @@ the graph does not have. Home composes them by the integer each declares.
 - **The `@a11y` and `@regression` Home specs have not been run against the
   activation composition since contract 5 landed.** They resolve to seller on the
   Playground. ⚡ Worth one run with the integrations read stubbed empty.
-- **`docs/architecture/` has not been updated for the two new endpoints.** §12
-  makes that part of the slice rather than a follow-up — **it is the one item
-  below that is owed rather than optional.**
+- ✅ **`docs/architecture/` is updated** — `1ac3921a`. `44-integrations.md` §6 and
+  §8 carry the registry; `37-product-surface.md` §7 carries the composition
+  decision, **because `workspace_tenancy` has no module design document of its
+  own.** ⚠️ **That absence is itself worth closing** the next time that module
+  takes a slice of any size.
 - **Everything else that is resolvable is built.** What is left is `C-1533`,
   `C-1534` and `B-286`, and none of them is this lane's to decide.
 
