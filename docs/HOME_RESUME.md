@@ -1,7 +1,7 @@
 # Home — where the implementation stands
 
-**Written 2026-08-19 by Lane A**, at `1ac3921a`, **17 commits above `origin/main`
-(`7f883ea5`), unpushed.** This is a resumption note, not a status record —
+**Written 2026-08-19 by Lane A**, updated at `2d43e87b`, **22 commits above
+`origin/main` (`7f883ea5`).** This is a resumption note, not a status record —
 `PROJECT_STATUS.md` is QE's and is measured from the promoted commit.
 
 ---
@@ -60,18 +60,30 @@ the graph does not have. Home composes them by the integer each declares.
    **used** database as well as a clean one ([B-1016](BUGS.md)).
 3. **Then the remaining implementation**, in the order below.
 
-### Remaining implementation, as it stands today
+### ✅ The 22 contract items have now each been checked, one at a time
 
-- **The `@a11y` and `@regression` Home specs have not been run against the
-  activation composition since contract 5 landed.** They resolve to seller on the
-  Playground. ⚡ Worth one run with the integrations read stubbed empty.
-- ✅ **`docs/architecture/` is updated** — `1ac3921a`. `44-integrations.md` §6 and
-  §8 carry the registry; `37-product-surface.md` §7 carries the composition
-  decision, **because `workspace_tenancy` has no module design document of its
-  own.** ⚠️ **That absence is itself worth closing** the next time that module
-  takes a slice of any size.
-- **Everything else that is resolvable is built.** What is left is `C-1533`,
-  `C-1534` and `B-286`, and none of them is this lane's to decide.
+⚡ **This was a claim before and is a measurement now.** ⛔ **The audit found two
+things**, and neither was visible from the outside:
+
+| | |
+|---|---|
+| **Contract 6** | *"Completed activation cards collapse in place… none is removed from the DOM"* — **true of the implementation and asserted nowhere.** ⚠️ **Home's activation cards had no component test of their own at all.** ✅ Two tests at `2d43e87b` |
+| **Contract 12** | *"Each card skeleton uses the card's declared height… **so nothing reflows when data lands**"* — ⛔ **the stated purpose is violated**, and it is [B-283](BUGS.md). ✅ **Partly diagnosed and the Home half fixed** at `859b1bbf` |
+
+**Every other item is implemented and has a check behind it**, except the two the
+product owner holds and the one the design holds.
+
+### Remaining work, and none of it is a lane's to decide
+
+| | |
+|---|---|
+| **[C-1533](LANE_COORDINATION.md)** · **[C-1534](LANE_COORDINATION.md)** | ⛔ **Product owner.** State 14's contradiction, and six cards with no producer |
+| **[B-286](BUGS.md)** | ⛔ **The design's palette.** The token is byte-faithful; `it.fails` reddens when the palette is fixed |
+| **[B-283](BUGS.md)**, the rest of it | ⚠️ **Its own slice, not a Home one.** What remains is likely in `components/shell/` — 📁 the frozen foundation, where a change affects every screen and needs its own verification |
+
+> ⚡ **Home is at its design-defined completion boundary for everything
+> resolvable.** ⛔ **Not "done"** — three of the above are open — **but nothing
+> outstanding is waiting on this lane.**
 
 ---
 
@@ -81,6 +93,6 @@ the graph does not have. Home composes them by the integer each declares.
 it against a disposable database — create, `alembic upgrade head`, run, drop —
 never against the seeded Playground.
 
-**The lane API does not auto-reload.** New routes need
-`uv run uvicorn apps.api.main:create_app --factory --port 8300` restarted, or the
-browser sees a 404 and the cause looks like a frontend bug.
+**The lane API does not auto-reload.** New backend routes 404 until
+`uv run uvicorn apps.api.main:create_app --factory --port 8300` is restarted, and
+the symptom looks exactly like a frontend bug.
