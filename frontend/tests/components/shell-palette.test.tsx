@@ -5,7 +5,12 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { ShellPalette } from '@/components/shell/shell-palette';
+import {
+  GROUPS_WITH_NO_SOURCE_TODAY,
+  PALETTE_GROUPS,
+  PER_GROUP,
+  ShellPalette,
+} from '@/components/shell/shell-palette';
 import type { SearchGroup } from '@/lib/api/types';
 
 /**
@@ -27,6 +32,16 @@ vi.mock('@/lib/state/workspace-provider', () => ({
   }),
 }));
 vi.mock('@/lib/query/hooks/search', () => ({ useAccountSearch: () => ({ data: searchData }) }));
+let recents: { entity_id: string; kind: string; viewed_at: string }[] = [];
+let recentNames = new Map<string, { account_id: string; name: string | null }>();
+vi.mock('@/lib/query/hooks/recently-viewed', () => ({
+  useRecentlyViewed: () => ({ data: recents }),
+}));
+vi.mock('@/lib/query/hooks', () => ({
+  useAccountIdentities: () => ({ data: recentNames }),
+}));
+const openCopilot = vi.fn();
+vi.mock('@/components/shell/copilot', () => ({ useCopilot: () => ({ open: openCopilot }) }));
 
 function group(over: Partial<SearchGroup> = {}): SearchGroup {
   return {
@@ -62,8 +77,48 @@ function palette(role: 'owner' | 'member' | null = 'owner') {
 
 afterEach(() => {
   push.mockClear();
+  openCopilot.mockClear();
   searchData = undefined;
+  recents = [];
+  recentNames = new Map();
 });
+
+/** ⚡ `n` recently-viewed accounts, all named, in the order the server returns. */
+function seenRecently(count: number) {
+  recents = Array.from({ length: count }, (_, index) => ({
+    entity_id: `r${index}`,
+    kind: 'account',
+    viewed_at: new Date(2026, 7, 19, 9, count - index).toISOString(),
+  }));
+  recentNames = new Map(
+    recents.map((record, index) => [
+      record.entity_id,
+      { account_id: record.entity_id, name: `Record ${index}` },
+    ]),
+  );
+}
+
+/**
+ * The group HEADINGS the palette rendered, top to bottom.
+ *
+ * ⚠️ **`p`, not any element with the text.** ⛔ The first draft matched
+ * `textContent`, so the *Navigate* row labelled *Reports* counted as a
+ * `Reports` heading and the *Ask Signora* row as its own — **the test would
+ * have reported a group that does not exist.** 📁 The palette renders a heading
+ * as a `<p>` and a row as `role="option"`.
+ */
+function renderedGroups(): string[] {
+  return Array.from(document.querySelectorAll('[role="listbox"] > div > p')).map(
+    (el) => el.textContent!.trim(),
+  );
+}
+
+/** The rows the palette rendered, in order, as `label`. */
+function renderedRows(): string[] {
+  return Array.from(document.querySelectorAll('[role="option"]')).map(
+    (el) => el.querySelector('span.flex-1')!.textContent!.trim(),
+  );
+}
 
 describe('🔴 ⌘K opens the palette, which is what the design binds it to', () => {
   it('✅ it opens from anywhere, and it was closed before', async () => {
@@ -142,7 +197,12 @@ describe('📁 account search is ONE GROUP inside it, not the owner of the short
     palette();
     await userEvent.keyboard('{Meta>}k{/Meta}');
     expect(screen.getByText('Vantage Freight')).toBeInTheDocument();
-    expect(screen.getByText('renamed')).toBeInTheDocument();
+    // ⚡ **The kind rides the same line since [TASK-1484](../../../docs/BACKLOG.md)**
+    // folded Companies and Technologies under the design's `Records` heading —
+    // ⛔ so the assertion is that the row SAYS renamed, not that the line is
+    // only that word.
+    expect(screen.getByText(/renamed/)).toBeInTheDocument();
+    expect(screen.getByText(/^Company/)).toBeInTheDocument();
   });
 });
 
@@ -189,5 +249,161 @@ describe('✅ selecting navigates', () => {
     await userEvent.keyboard('{Meta>}k{/Meta}');
     await userEvent.click(screen.getByText('Vantage Logistics'));
     expect(push).toHaveBeenCalledWith('/accounts/a1');
+  });
+});
+
+describe('🔴 TASK-1484 ⓐ — the design names seven groups and fixes their order', () => {
+  /**
+   * 🔴 **The palette was complete against a MISQUOTE.** ⛔ `shell-palette.tsx`
+   * stated the requirement as *"the design's groups are `Ask Signora` ·
+   * `Recents` · `Actions` · `Navigate`"* — **four, presented as a quotation** —
+   * and nothing had ever failed because the code matched the comment.
+   *
+   * ✅ **So this reads the DESIGN, not the code.** ⚡ The sentence is in the
+   * snapshot, which 📁 [D-138](../../../docs/DECISION_REGISTER.md) makes the
+   * implementation authority — **a test that asserted the constant against
+   * itself would pass on the next misquote too.**
+   */
+  it('✅ the seven, by name and position, read out of the design document', () => {
+    const design = readFileSync(
+      join(
+        process.cwd(),
+        '..',
+        'docs/design-snapshot/screens/Fortune Signora App Shell.dc.html',
+      ),
+      'utf8',
+    );
+
+    const sentence = /Group order is fixed\s*&mdash;|Group order is fixed\s*—\s*([^.]+?)\s*&mdash;|Group order is fixed\s*—\s*([^—]+?)\s*—/;
+    const match = design.match(/Group order is fixed\s*—\s*([^—]+?)\s*—/);
+    expect(match, 'the design no longer states a fixed group order').toBeTruthy();
+    void sentence;
+
+    const named = match![1]!.split(',').map((word) => word.trim());
+    expect(named).toEqual([...PALETTE_GROUPS]);
+  });
+
+  /**
+   * ⛔ **Order is a statement about where a group SITS, never a promise that
+   * seven headings appear.** ⚡ A heading with nothing under it is the
+   * false-affordance class this shell has refused three times.
+   */
+  it('✅ renders the groups it has, in that order, and no empty headings', async () => {
+    seenRecently(2);
+    searchData = [group()];
+    palette();
+    await userEvent.keyboard('{Meta>}k{/Meta}');
+
+    const shown = renderedGroups();
+    expect(shown).toEqual(['Ask Signora', 'Recents', 'Records', 'Navigate', 'Settings']);
+    // ⛔ **The order is the design's, with the absent groups closed up** —
+    // never re-sorted by how many results each happened to return.
+    expect(shown).toEqual(PALETTE_GROUPS.filter((g) => shown.includes(g)));
+  });
+
+  /**
+   * ⚡ **Two of the seven have no source in this product today, and it is a
+   * MEASUREMENT.** 📁 `app/(app)/reports/` issues no query and the screen reads
+   * *"No reports yet"*; the design's `Actions` examples are selection-scoped and
+   * the palette is global. ⛔ 📁 TASK-1484: *"do not add a search backend to
+   * satisfy a heading."*
+   */
+  it('⛔ and the two with no source are absent rather than empty', async () => {
+    seenRecently(1);
+    palette();
+    await userEvent.keyboard('{Meta>}k{/Meta}');
+
+    for (const group of GROUPS_WITH_NO_SOURCE_TODAY) {
+      expect(renderedGroups()).not.toContain(group);
+    }
+  });
+});
+
+describe('📁 "five per group and a keyboard-reachable show all"', () => {
+  it('✅ caps a group at five and offers the rest as a row', async () => {
+    seenRecently(9);
+    palette();
+    await userEvent.keyboard('{Meta>}k{/Meta}');
+
+    expect(screen.getAllByText(/^Record \d$/)).toHaveLength(PER_GROUP);
+    // ⚡ **A row, not a control** — ↑↓ and ↵ reach it with no second
+    // interaction model, which is what *keyboard-reachable* asks for.
+    expect(screen.getByText('Show all 9')).toBeInTheDocument();
+    expect(screen.getByText('4 more')).toBeInTheDocument();
+  });
+
+  it('✅ and choosing it expands that group without closing the palette', async () => {
+    seenRecently(9);
+    palette();
+    await userEvent.keyboard('{Meta>}k{/Meta}');
+    await userEvent.click(screen.getByText('Show all 9'));
+
+    expect(screen.getAllByText(/^Record \d$/)).toHaveLength(9);
+    // ⛔ **Closing here would make the one row whose purpose is *show me more*
+    // the row that shows you less.**
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it('⛔ a group of exactly five offers no show all', async () => {
+    seenRecently(PER_GROUP);
+    palette();
+    await userEvent.keyboard('{Meta>}k{/Meta}');
+
+    // ⚠️ **Scoped to the count that is five.** ⛔ `Navigate` has more than five
+    // destinations for an owner, so an unscoped assertion would fail on a row
+    // this test is not about.
+    expect(screen.queryByText(`Show all ${PER_GROUP}`)).not.toBeInTheDocument();
+    expect(renderedRows().filter((label) => /^Record \d$/.test(label))).toHaveLength(PER_GROUP);
+  });
+});
+
+describe('📁 the groups this row added', () => {
+  /**
+   * ⛔ **Not the design's *"Answer: why is EMEA enterprise slipping"***. 📁
+   * [TASK-482](../../../docs/BACKLOG.md) shipped the assistant with **no input
+   * box** on purpose, so an *Answer:* row would promise a reply nothing can
+   * produce. ✅ **The door the rail already offers is what the palette offers.**
+   */
+  it('✅ Ask Signora opens the assistant rather than promising an answer', async () => {
+    palette();
+    await userEvent.keyboard('{Meta>}k{/Meta}');
+    // ⚠️ **The heading and the row share the label**, which is what the design
+    // draws — so this clicks the ROW.
+    const row = screen
+      .getAllByRole('option')
+      .find((el) => el.textContent?.includes('Ask Signora'));
+    await userEvent.click(row!);
+
+    expect(openCopilot).toHaveBeenCalledTimes(1);
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it('✅ Recents names the record, and drops one nothing can name', async () => {
+    seenRecently(2);
+    recentNames.set('r1', { account_id: 'r1', name: null });
+    palette();
+    await userEvent.keyboard('{Meta>}k{/Meta}');
+
+    expect(screen.getByText('Record 0')).toBeInTheDocument();
+    // 🔴 **[B-290](../../../docs/BUGS.md) one surface over**: a palette row a
+    // reader cannot recognise is one they cannot choose.
+    expect(screen.queryByText('Record 1')).not.toBeInTheDocument();
+  });
+
+  it('🔴 Settings is withheld from a member, like every other guarded door', async () => {
+    palette('member');
+    await userEvent.keyboard('{Meta>}k{/Meta}');
+
+    expect(renderedGroups()).not.toContain('Settings');
+    expect(screen.queryByText('Your team')).not.toBeInTheDocument();
+  });
+
+  it('✅ and an owner is offered the settings page\'s own five, in its own words', async () => {
+    palette('owner');
+    await userEvent.keyboard('{Meta>}k{/Meta}');
+
+    expect(screen.getByText('Change what you sell')).toBeInTheDocument();
+    expect(screen.getByText('Audit log')).toBeInTheDocument();
   });
 });

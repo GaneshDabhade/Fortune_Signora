@@ -15,6 +15,17 @@ const context = vi.hoisted(() => vi.fn());
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock('@/lib/state/workspace-provider', () => ({ useWorkspaceContext: context }));
+/**
+ * ⚠️ **Added by [TASK-1484](../../../docs/BACKLOG.md).** ⛔ The palette gained a
+ * `Recents` group, so it now reads two more hooks — **and this file renders it
+ * without a `QueryClientProvider`**, which turned into *"No QueryClient set"*
+ * rather than into anything about a workspace label. ✅ Mocked at the hooks
+ * rather than wrapped, so this file keeps asserting the ONE thing it is about.
+ */
+vi.mock('@/lib/query/hooks/recently-viewed', () => ({
+  useRecentlyViewed: () => ({ data: [] }),
+}));
+vi.mock('@/lib/query/hooks', () => ({ useAccountIdentities: () => ({ data: new Map() }) }));
 vi.mock('@/lib/query/hooks/search', () => ({
   useAccountSearch: () => ({ data: undefined, isFetching: false, isError: false }),
 }));
