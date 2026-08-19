@@ -2534,3 +2534,76 @@ proved both predate this work.**
 whose subject depends on what ran before it.** ⛔ Naming a different starting
 value would have moved that problem rather than removed it, because whichever
 value is named can already be current.
+
+---
+
+## 📐 The four responsive regimes, implemented as regimes — TASK-1478
+
+**2026-08-19.** 📁 `Fortune Signora App Shell.dc.html` **§20**, `Fortune Signora
+Home.dc.html` **§09**, Design System v2 **§17**.
+
+🔴 **The shell responded to five widths rather than to width.** ⛔ **Not a
+collection of wrong numbers — a layout model that had no rule for the widths
+between the numbers**, and three regimes the design states that were never
+built.
+
+### 🔴 Root causes, each measured before it was changed
+
+| | |
+|---|---|
+| **The collapsed rail was not a layout state** | ⚠️ Measured at 1024×900: a row was **`16 × 32` at `x = 12` inside a 56px rail**, so every icon sat **8px left of centre** and the target was 16px wide against the shell's own *"32px target"*. ⚡ **`justify-center` was already there and could not help** — it centres within the ROW, and the row had shrunk to its icon. 🔴 **The cause was the tooltip wrapper**: a collapsed row is wrapped in `Tooltip`'s `inline-flex` span, which made the link a flex ITEM sized to its content instead of a stretched block |
+| **The filter strip had one behaviour where the design names three** | 📁 ≥1280 the strip · 1024–1279 *"chips scroll horizontally"* · <1024 *"collapses to one **Scope** button with a count"*. ⛔ **One desktop row was wrapping instead**, so a phone carried four full-width pills above a table it could not show |
+| **The table had one presentation** | 📁 *"Tables become row cards; pinned columns become the card head."* ⚠️ At 390 the table was **826px inside a 375px column** — `Company`, the pinned one, off-screen the moment a reader looked at `Open ACV` |
+| **A `display: grid` with no explicit columns** | ⚠️ The card grid declared `grid` and its column rules only from 1024 up. ⛔ **The implicit track is `auto` — max-content — and max-content does not shrink**, which put 305px cards in a 273px column and scrolled the page at 320 |
+| **The breadcrumb was not in the top bar** | 📁 §04 *"Left: breadcrumb only."* ⛔ The slot measured **`617 × 0`** while `nav[aria-label="Breadcrumb"]` sat inside the page's own content |
+
+### ✅ What owns the width now, at each level
+
+```
+viewport → shell row (flex) → rail (232 | 56 | out of flow)
+                            → main (flex-1, min-w-0)
+                              → Container (mx-auto, max-w 1600, gutters)
+                                → page (w-full)
+                                  → grid (fr tracks / minmax(0,1fr))
+                            → utility panel (360 | 300 | 28 | absent)
+```
+
+⚡ **One owner per level, and every one of them fluid between the regimes.**
+**The only fixed numbers left in that path are the ones the design names** —
+1600px content maximum, 232/56px rail, 360/300/28px panel — ⛔ **and none of
+them is used to make anything line up.**
+
+### ⚠️ `useBand` has exactly two callers, and that is the point
+
+⛔ **A component that reads the band to choose a padding has taken a breakpoint
+the layout already had.** ✅ **It is read only where CSS cannot express the
+answer** — a *state transition*, where one set of controls is replaced by a
+different one:
+
+| Caller | 📁 |
+|---|---|
+| `accounts/toolbar.tsx` | *"Filter strip collapses to one Scope button with a count"* |
+| `accounts/page.tsx` | *"Tables become row cards"* |
+
+⚡ **The 1024–1279 chip scroll is CSS**, because it is a change of overflow
+rather than of controls. **The rail's own sheet/collapse states remain
+`use-rail-collapse`'s, unchanged.**
+
+### ✅ Verified by resizing, not by reloading
+
+**Sixteen widths — 320 · 360 · 390 · 430 · 600 · 768 · 820 · 900 · 1024 · 1100 ·
+1200 · 1280 · 1366 · 1440 · 1600 · 1920 — driven 1920 → 320 and back on ONE page
+instance**, across seven screens. ⛔ **A fresh load at each width would never
+have asked whether the layout recovers.**
+
+**Eight of those widths are not breakpoints**, which is the measurement that
+answers the question directly: **the layout has intrinsic rules, not a set of
+numbers that happen to work at five sizes.**
+
+⚠️ **Two design documents disagree below 1024 and the conflict is recorded
+rather than resolved**: App Shell §20 says *"tables become row cards"*, and the
+Companies screen draws its own table at `overflow-x: auto; min-width: 1044px`.
+✅ **§20 is implemented** — it is the shell's responsive law and the Companies
+document is silent about that band — **and the reader's chosen view mode is
+untouched**: the design says the *table* becomes row cards, not that a person's
+choice is overridden.

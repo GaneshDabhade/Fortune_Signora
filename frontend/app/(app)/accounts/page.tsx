@@ -51,7 +51,6 @@ import { EntityName } from '@/components/intelligence/entity-name';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
 import {
-  Breadcrumb,
   Button,
   Card,
   EmptyState,
@@ -99,6 +98,8 @@ import { cn } from '@/lib/design/cn';
 import { useAccountsCount } from '@/lib/query/hooks/accounts-count';
 import { useSavedViews, useSaveView } from '@/lib/query/hooks/saved-views';
 import { PAGE_SIZE, useAccountsList } from '@/lib/query/hooks/accounts-list';
+import { usePublishBreadcrumb } from '@/components/shell/breadcrumb-trail';
+import { useBand } from '@/lib/shell/use-band';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -153,6 +154,31 @@ const PAGER =
   'focus-visible:outline-accent';
 
 export default function CompaniesPage() {
+  /**
+   * 📁 **The design's breadcrumb** — *"Accounts / Companies"*, and 📁 **§04
+   * puts it in the top bar**: *"Left: breadcrumb only."*
+   *
+   * 🔴 **It was drawn here instead, inside the page's own header** — measured
+   * at `@281,107` while the shell's slot rendered `617 × 0`. ⚡ **Same trail,
+   * same rule** — *"mandatory below the first level"*, and this is the second —
+   * **published to the slot the design names rather than drawn a second time.**
+   *
+   * ⛔ **The trail still mirrors the data hierarchy, not the click path**, so a
+   * deep link from Slack reads the same as a click from the rail.
+   */
+  usePublishBreadcrumb([
+    { label: 'Accounts', kind: 'link', href: '/accounts' },
+    { label: 'Companies', kind: 'current' },
+  ]);
+
+  /**
+   * 📁 **§20 — *"Tables become row cards"* below 1024.** ⚡ **The one place
+   * this page reads the band**, and it is a state transition rather than a
+   * width: a table and a list of cards are different structures, which is
+   * exactly what CSS cannot express.
+   */
+  const rowCards = useBand() === 'phone';
+
   const { activeWorkspace } = useWorkspaceContext();
   const workspaceId = activeWorkspace?.id ?? null;
   const accounts = useAccountsList(workspaceId);
@@ -402,19 +428,6 @@ export default function CompaniesPage() {
     <>
       <PageHeader
         title="Companies"
-        /* 📁 **The design's breadcrumb** — *"Accounts / Companies"*. ⚡ Shell
-           rule 6: *"mandatory below the first level"*, and this is the second.
-           ⛔ **The trail mirrors the data hierarchy, not the click path** —
-           `Breadcrumb`'s own rule, so a deep link from Slack reads the same as
-           a click from the rail. */
-        eyebrow={
-          <Breadcrumb
-            trail={[
-              { label: 'Accounts', kind: 'link', href: '/accounts' },
-              { label: 'Companies', kind: 'current' },
-            ]}
-          />
-        }
         /* 🔴 **The design's header actions, and only the one that exists.**
            📁 It draws *Import · Export · New company*. ⚡ **Export has a
            contract and is rendered here, in the design's position** — it was
@@ -667,6 +680,23 @@ export default function CompaniesPage() {
                 />
               }
             />
+            {/**
+              * 🔴 **§20 — *"Tables become row cards; pinned columns become the
+              * card head."*** ⛔ **Below 1024 the table was 826px wide inside a
+              * 375px column**, scrolling horizontally: measured at 390 × 844,
+              * with `Company` — the pinned column — off-screen the moment a
+              * reader looked at `Open ACV`.
+              *
+              * ⚡ **The card presentation this renders is the DESIGN'S OWN**,
+              * the one the `Cards` view mode already draws — ⛔ **not a second
+              * card invented for the phone**, which would be the duplicate
+              * [§20c](../../../../CLAUDE.md) forbids. **The chosen view mode is
+              * unchanged**: the design says the *table* becomes row cards, not
+              * that a person's choice is overridden.
+              */}
+            {rowCards ? (
+              <CardGrid rows={shown} density={density} />
+            ) : (
             <Table>
               <THead>
                 <TR>
@@ -962,6 +992,7 @@ export default function CompaniesPage() {
                 ))}
               </TBody>
             </Table>
+            )}
             </>
           )}
 
@@ -1159,7 +1190,18 @@ function CardGrid({
       data-testid={board ? undefined : 'accounts-cards'}
       className={cn(
         'grid gap-3',
-        board ? 'grid-cols-1' : 'smalllaptop:grid-cols-2 laptop:grid-cols-3',
+        /**
+         * 🔴 **`grid-cols-1` is the BASE, and its absence was an overflow.**
+         *
+         * ⚠️ **Measured at 320 × 800**: the cards were `305px` inside a `273px`
+         * column and the page scrolled horizontally by 16px. ⛔ **A `display:
+         * grid` with no explicit columns creates one IMPLICIT track sized
+         * `auto`** — which is max-content, and max-content does not shrink.
+         * ⚡ **`grid-cols-1` is `repeat(1, minmax(0, 1fr))`**, and the `0`
+         * minimum is the whole difference.
+         */
+        'grid-cols-1',
+        board ? null : 'smalllaptop:grid-cols-2 laptop:grid-cols-3',
         density === 'compact' && 'gap-2',
       )}
     >

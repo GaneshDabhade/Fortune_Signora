@@ -55,8 +55,28 @@ export function Breadcrumb({ trail, className }: { trail: readonly Crumb[]; clas
     >
       <ol className="flex min-w-0 items-center gap-1.5">
         {shown.map((crumb, i) => {
+          /**
+           * 🔴 **§05's priority, and it was not implemented** — 📁 *"Crumbs
+           * truncate from the middle out — **the current record is the last
+           * thing to lose characters.**"*
+           *
+           * ⚠️ **Measured at 390 × 844 once the trail reached the top bar**:
+           * every crumb carried `min-w-0 truncate`, so they shrank EQUALLY and
+           * the bar read **`A… / C…`** — ⛔ **both segments destroyed, and the
+           * one that matters destroyed first.** ⚡ **`shrink-0` on the current
+           * crumb is that sentence as a rule**: the leading segments give up
+           * their characters before it gives up any of its own, and it
+           * truncates only when it alone exceeds the bar.
+           */
+          const current = i === shown.length - 1;
           return (
-            <li key={`${crumb.label}-${i}`} className="flex min-w-0 items-center gap-1.5">
+            <li
+              key={`${crumb.label}-${i}`}
+              className={cn(
+                'flex min-w-0 items-center gap-1.5',
+                current ? 'shrink-0 max-w-full' : 'shrink',
+              )}
+            >
               {i > 0 ? (
                 <span aria-hidden className="text-content-subtle">
                   /

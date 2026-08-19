@@ -19,6 +19,7 @@ import {
   ReadingValidity,
   ScoreArithmetic,
 } from '@/components/intelligence/contributions';
+import { usePublishBreadcrumb } from '@/components/shell/breadcrumb-trail';
 import { useUtilityPanel } from '@/components/shell/utility-panel';
 import { AbsentSection, OnThisPage } from '@/components/accounts/sections';
 import { AccountSectionShell } from '@/components/accounts/section';
@@ -295,6 +296,30 @@ export default function AccountBriefPage() {
     accountId,
   ]);
   const identity = identities?.get(accountId);
+
+  /**
+   * 📁 **§05 — *"Mandatory below the first level, because most sessions start
+   * from a deep link in Slack or email."*** 🔴 **This screen had none at all**,
+   * and it is the deep-linked one: the design draws *Accounts / Enterprise /
+   * Vantage Logistics* in the top bar.
+   *
+   * ⛔ **Two crumbs rather than the design's three.** ⚠️ **The middle one is a
+   * SEGMENT** — *Enterprise* — and 📁 [C-221](../../../../docs/LANE_COORDINATION.md)'s
+   * neighbouring rule applies: **nothing publishes an account's segment**, and
+   * the table beside it prints *"No segment"* for every row. **A trail cannot
+   * name a level the product does not hold.**
+   *
+   * ⚡ **The current crumb is the account's own name**, which is exactly why
+   * the trail is published by the screen and never derived in the shell
+   * ([D-193](../../../../docs/DECISION_REGISTER.md)) — **only this module knows
+   * it.** ⛔ **And it waits**: `EntityName`'s identifier is the honest label
+   * until the identity read lands, the same rule
+   * [B-290](../../../../docs/BUGS.md) settled for every other surface.
+   */
+  usePublishBreadcrumb([
+    { label: 'Accounts', kind: 'link', href: '/accounts' },
+    { label: identity?.name ?? 'This account', kind: 'current' },
+  ]);
   // **The same query the attention page holds**, same cache key, so this costs
   // no request — the brief reads the ranked order rather than fetching it, and
   // *next* therefore means *next most pressing* (D41).

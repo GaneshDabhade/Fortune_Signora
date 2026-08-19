@@ -10,6 +10,7 @@ import { Notifications } from '@/components/shell/notifications';
 import { Breadcrumb, OfflineStatus, SystemStatus } from '@/components/ui';
 import { RegionBoundary } from '@/components/ui/region-boundary';
 import { cn } from '@/lib/design/cn';
+import { useBreadcrumbTrail } from '@/components/shell/breadcrumb-trail';
 import type { Crumb } from '@/lib/shell/breadcrumb';
 import { bandFor } from '@/lib/shell/rail';
 import { SEARCH_WIDTH, SLOT_SPEC } from '@/lib/shell/top-bar';
@@ -109,6 +110,13 @@ export function TopBar({
   navigationOpen = false,
 }: TopBarProps) {
   /**
+   * ⚡ **What the screen published**, which wins over the shell's own default
+   * because it is more specific: the shell knows the frame, the screen knows
+   * where it sits.
+   */
+  const published = useBreadcrumbTrail();
+
+  /**
    * 🔴 **§07: *"Search … widens to 320px on focus at ≥1600px."*** ⚡ **Two
    * conditions, and both are needed** — 📁 the design widens the field only on
    * the band that has room for it, **so a laptop focusing the search must NOT
@@ -189,8 +197,15 @@ export function TopBar({
           it is placed and not rewritten — 📁 [D-217](../../../docs/DECISION_REGISTER.md)
           §6 cuts both ways, and existing code being right IS an argument for
           keeping it. */}
+      {/* 📁 **§04 — *"Left: breadcrumb only."*** 🔴 **This slot measured
+          `617 × 0` on every screen**: `AppShell`'s `breadcrumb` prop had no
+          caller, and the one screen with a trail drew it inside its own
+          content instead. ⚡ **A screen publishes through
+          [`usePublishBreadcrumb`](breadcrumb-trail.tsx)** — ⛔ the shell still
+          never DERIVES a trail from the path, which is
+          [D-193](../../../docs/DECISION_REGISTER.md)'s rule and unchanged. */}
       <div className="flex min-w-0 flex-1 items-center" data-slot="breadcrumb">
-        <Breadcrumb trail={breadcrumb} />
+        <Breadcrumb trail={published.length > 0 ? published : breadcrumb} />
       </div>
 
       {/* ── Slot 2 · Search ────────────────────────────────────────────────

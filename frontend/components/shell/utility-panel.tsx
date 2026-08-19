@@ -31,8 +31,9 @@
  * both at once.**
  */
 
+import { Activity, NotebookPen, Sparkles } from 'lucide-react';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 
 import { cn } from '@/lib/design/cn';
 import {
@@ -46,6 +47,20 @@ import {
 } from '@/lib/shell/utility-panel';
 import { bandFor } from '@/lib/shell/rail';
 import { UTILITY_PANEL_TARGET } from './skip-links';
+
+/**
+ * 📁 **§13 — *"a 28px rail with the tab icons"*.** ⛔ **One icon per tab, and
+ * the map is exhaustive by its type**: a fourth tab cannot be added without an
+ * icon, which is what stops the rail quietly falling back to a letter again.
+ *
+ * ⚡ **`lucide-react` is already this product's icon set** — the rail, the
+ * account menu and Home all draw from it — **so this adds no dependency.**
+ */
+const TAB_ICON: Readonly<Record<PanelTab, ComponentType<{ className?: string }>>> = {
+  Insights: Sparkles,
+  Activity,
+  Notes: NotebookPen,
+};
 
 interface PanelContract {
   readonly state: PanelState;
@@ -316,34 +331,63 @@ export function UtilityPanel({
         'flex-col transition-[width] duration-150',
       )}
     >
+      {/**
+        * 🔴 **The collapsed rail is ICONS at 24 × 24, and it was LETTERS at
+        * 19 × 26** — 📁 §13: *"Collapsing leaves a **28px rail with the tab
+        * icons**."*
+        *
+        * ⚠️ **Measured on `/accounts` at 1440 × 900**: the three controls were
+        * `19 × 26` with a 4px gap, rendering `I`, `A`, `N`. ⛔ **That fails
+        * `2.5.8` twice over** — 📁 Design System v2 §17: *"Targets ≥ 24px with
+        * 8px separation"* — **and a bare initial is not the *icon* the design
+        * names**: `I` and `A` say nothing a person can learn from.
+        *
+        * ⚡ **The accessible name is unchanged and still carries the word**, so
+        * nothing is lost to a screen reader by the letters going.
+        */}
       <div
         role="tablist"
         aria-label="Utility panel sections"
-        className={cn('flex gap-1 border-b border-border-soft p-1', !open && 'flex-col')}
+        className={cn(
+          'flex border-b border-border-soft',
+          // 📁 **8px separation, both ways** — `2.5.8`, and the same gap
+          // whether the rail is a column or a row.
+          'gap-2',
+          open ? 'p-1' : 'flex-col items-center px-0 py-2',
+        )}
       >
-        {PANEL_TABS.map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            role="tab"
-            aria-selected={tab === activeTab}
-            // ⚡ **The tab rail is 28px wide, so the label cannot show** —
-            // ♿ but it must still be the accessible name, or the control is a
-            // button called nothing.
-            aria-label={tab}
-            title={tab}
-            onClick={() => onTab(tab)}
-            className={cn(
-              'rounded px-2 py-1 text-xs transition-colors',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-              tab === activeTab
-                ? 'bg-surface-sunken font-semibold text-content'
-                : 'text-content-muted hover:text-content',
-            )}
-          >
-            {open ? tab : tab.charAt(0)}
-          </button>
-        ))}
+        {PANEL_TABS.map((tab) => {
+          const Icon = TAB_ICON[tab];
+          return (
+            <button
+              key={tab}
+              type="button"
+              role="tab"
+              aria-selected={tab === activeTab}
+              // ⚡ **The tab rail is 28px wide, so the label cannot show** —
+              // ♿ but it must still be the accessible name, or the control is a
+              // button called nothing.
+              aria-label={tab}
+              title={tab}
+              onClick={() => onTab(tab)}
+              className={cn(
+                'rounded transition-colors',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                // ⛔ **24 × 24 when collapsed, and that is the floor rather
+                // than a preference**: the panel is 28px, so a larger target
+                // would not fit and a smaller one is the defect this replaced.
+                open
+                  ? 'px-2 py-1 text-xs'
+                  : 'flex h-6 w-6 shrink-0 items-center justify-center',
+                tab === activeTab
+                  ? 'bg-surface-sunken font-semibold text-content'
+                  : 'text-content-muted hover:text-content',
+              )}
+            >
+              {open ? tab : <Icon className="h-3.5 w-3.5" aria-hidden />}
+            </button>
+          );
+        })}
       </div>
 
       {open ? (

@@ -15,6 +15,7 @@ import { UtilityPanelDock, UtilityPanelProvider } from '@/components/shell/utili
 import { WorkspaceSwitcher } from '@/components/shell/workspace-switcher';
 import { Container, ShellBanners, type ShellBanner } from '@/components/ui';
 import { cn } from '@/lib/design/cn';
+import { BreadcrumbTrailProvider } from '@/components/shell/breadcrumb-trail';
 import type { Crumb } from '@/lib/shell/breadcrumb';
 import { RAIL_WIDTH } from '@/lib/shell/rail';
 import { useIsRefreshing } from '@/lib/shell/refreshing';
@@ -196,6 +197,12 @@ export function AppShell({
        ⛔ **The module segment is the FIRST path segment, not the route** —
        📁 *"remembers its open state per module"*, and a per-ROUTE memory would
        forget the moment somebody opened a different account. */
+    /* 🔴 **The channel that fills the top bar's breadcrumb slot** — 📁 §04
+       *"Left: breadcrumb only"*. ⛔ **The slot rendered `617 × 0` on every
+       screen** because a page is `children` and children cannot pass props
+       upward; ⚡ the `breadcrumb` prop below still works and is still the
+       shell's own default. */
+    <BreadcrumbTrailProvider>
     <UtilityPanelProvider userId={userId ?? null} module={moduleOf(pathname)}>
     <ShortcutsReference>
     {/* 🔴 **The assistant's state lifts to a provider** —
@@ -489,6 +496,7 @@ export function AppShell({
     </Copilot>
     </ShortcutsReference>
     </UtilityPanelProvider>
+    </BreadcrumbTrailProvider>
   );
 }
 
