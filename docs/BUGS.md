@@ -1136,6 +1136,38 @@ NOT CERTIFIED
 
 ✅ **If any of them turns out to be a stale expectation rather than a defect, that is certification coverage debt and it is QE's to retire** — 📁 **[§20e](../CLAUDE.md): QE creates, maintains and RETIRES repository-wide tests.** **Say which, and the row moves.**
 
+### ✅ RESOLVED, three different ways — 2026-08-19, and the row was right to exist
+
+**Lane A took all three. None of them was the same kind of thing.**
+
+| | |
+|---|---|
+| `search-journey` | 🔴 **A LIVE PRODUCTION DEFECT — [B-288](#b-288), thirteen days old.** **Account search crashed for every customer in every workspace since 2026-08-06** |
+| `signal-center` | ✅ **Stale — and the guarantee MOVED rather than disappeared.** *"See all 8 in Signals"* renders only above three items; Signals is always in the rail. **The walk goes through the rail now, and Home's conditional link is asserted separately** |
+| `rail-band` | ⚠️ **Unreproduced by Lane A, 6/6 green on their tree.** **Reproducible here 3/3 on `main`** — see the correction below |
+
+⛔ **This is exactly why the row was filed rather than retired.** 📁 QE wrote *"a stale spec and a regressed product produce exactly this evidence"* — ⚡ **and one of the three was a customer-facing crash that only this failing spec pointed at.**
+
+### 🔴 QE quoted a figure measured on a broken environment
+
+**This row said `rail-band` gave *"expected 56, received 85"*. ⛔ It did not.** **QE had downgraded prod-local to `base` and back for the used-database migration check, so the Playground seed was gone and the app was answering `307`.**
+
+✅ **Rebuilt and re-measured — three isolated runs, identical:** **`Expected: 56 (COLLAPSED)` · `Received: 232 (EXPANDED)`**, at **`1279 × 900`**, project `owner`, measured on the `[data-collapsed]` ancestor's `boundingBox()`.
+
+⚡ **And the trees are not the same**: QE runs `main`; Lane A runs `main` + 24, and `git diff --name-only` between them touches `frontend/lib/shell/shortcuts.ts`. ⛔ **So *"environmental"* is not established — certifying their candidate is what settles it.**
+
+> 📁 **A failure is a claim about the RUN, not about the code, until the conditions the run needed are checked.** **QE published a number without checking them.**
+
+### ⚡ A THIRD environmental class, named by Lane A — and the decisive test cannot see it
+
+> **NOT contamination — a test that samples before its own read lands, and which only shows up when something else is competing for the API.**
+
+**Two of the three were this**: `signal-center` counted the queue the moment the tab reported `selected`, before its read landed; `search-journey` took `rows.first()` where some Playground accounts render a hex id fragment and ordering varies under load. **Both green alone, red beside each other — which reads exactly like contamination and is not.**
+
+⛔ **QE's decisive test — *run it alone, does it pass?* — returns the same answer for all three classes.** ✅ **It separates a real defect from an environmental one and CANNOT separate the environmental ones from each other.**
+
+📁 **`networkidle` still failed two runs in five; waiting for the queue's own `h-16` skeletons to clear fixed it — the thing rather than a proxy for it.**
+
 ### ⚠️ Separately, and not in this row
 
 **Four auth-flow failures remain** — `auth-journey`, `auth-credential-journeys`, `security-center:155`, `resilience`. ⛔ **`security-center:155` is self-contained** — it registers its own person and opens three contexts as that person, so it cannot be cross-spec contamination. ⚡ **`resilience.spec.ts:88` already documents this hazard and defends against it**: *"signing out revokes the session it names — server-side, for everybody holding it … so it gets its own session."* **Unattributed, and claimed as nothing.**
