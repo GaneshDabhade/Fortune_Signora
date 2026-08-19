@@ -65,6 +65,32 @@ QE is the only lane that may merge into `integration`, certify, move `main`, wri
 
 **Separate three things and report them separately** — **implemented and certifiable** → certify · **implemented but blocked** → document the exact blocker · **not yet implemented** → outside this certification. ⛔ **Do not reject a whole candidate for unfinished work in it.**
 
+### A blocker is a finding against a candidate, never a command to freeze development
+
+**Ratified 2026-08-19, product owner, extending this section.**
+
+> ⛔ **A QE blocker stops a *promotion*. It does not stop Lane A.**
+
+**When certification finds a regression, a failing test, an implementation defect, a migration problem, a design inconsistency, a security or data issue, a browser failure or a governance violation:** ✅ **document it · name the exact candidate SHA · capture the evidence · classify the severity · tell the product owner and Lane A · keep the result attached to that candidate.**
+
+⛔ **And then nothing else.** **Lane A goes on building unrelated slices**, and a finding against `X` is not a reason to touch their branch, their environment or their sequencing.
+
+### Say which SHA, rather than that something moved
+
+⛔ **Never:** *"Lane A pushed a new commit, so I need to restart."*
+
+✅ **Always:** *"This cycle is validating `X`. Lane A has since pushed `Y`. `Y` is the next cycle's candidate."*
+
+⚡ **The distinction is not tone — it is reproducibility.** A cycle that oscillates between `X` and `Y` certifies neither, and its record describes a tree that never existed.
+
+### Classify a failure before reporting it, and never fix it by weakening a test
+
+⛔ **Never weaken, delete, skip or rewrite a product test because it failed certification.** **First decide which of five things it is:**
+
+**candidate defect · pre-existing defect · test defect · fixture or environment issue · genuine design ambiguity.**
+
+**Then report it as that.** ⚡ **QE changes certification infrastructure when QE needs it to; it does not change product implementation to make a gate pass** — that is Lane A's, and the loop is *QE detects → QE documents → Lane A fixes → a new SHA → the next cycle.*
+
 ### Every cycle reports the same shape
 
 **Candidate SHA · Environment · Result (CERTIFIED / BLOCKED / FAILED) · Tests · Browser · Governance · Migration · Regression · Promotion (PROMOTED / NOT PROMOTED) · Next candidate.**
