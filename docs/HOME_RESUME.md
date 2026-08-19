@@ -81,7 +81,47 @@ resolved by quietly shrinking the row or dropping a record.**
 
 ---
 
-## 🔵 In flight — TASK-495 slice ⓑ, the notification bell
+## ✅ TASK-495 slice ⓑ — DONE, and `IN VALIDATION`
+
+**2026-08-19.** ⚡ **The journey and the headed review, which were the two things
+[§19](../CLAUDE.md) still owed, both exist and are green.** 📁 `d539605c`.
+
+### 🔴 Writing the journey found two defects that 18 green tests could not
+
+| | |
+|---|---|
+| **The badge had never worked, for anybody** | `useUnreadNotifications` issued a **`GET`** to `/notifications/unread`, which is a **`POST`** — it takes the candidate ids in a body — so **every authenticated screen took a `405`** |
+| **`Mark as read` double-encoded its body** | `apiRequest` stringifies; the caller stringified first |
+
+⛔ **Both are the same shape: a test that mocks the hook cannot see what the hook
+asks the server.** ✅ **This is the §19 argument with two fresh instances rather
+than a restatement.**
+
+⚡ **The repair was not to call that endpoint correctly.** It was built (TASK-480)
+against a feed with **no read state**, and slice ⓐ changed that — **the badge is
+`read_at === null` counted over the feed.** One read, and no second question whose
+answer the first already contained.
+
+### 🔴 *"On which record"* changed a producer
+
+📁 App Shell §10 — *"each item states who or what acted, **on which record**, and
+what is expected of the reader."* ⛔ `ai_research_engine` addressed the
+notification at the **opportunity**, which the shell can neither name nor open,
+**and which is not what the customer did**. ✅ **It addresses the account now**,
+and the shell resolves the name from the identity surface. **That also delivered
+`navigate-to-context`** — as an `href`, never a `router.push`.
+
+### 🟠 What is filed rather than built
+
+| | |
+|---|---|
+| **[C-1535](LANE_COORDINATION.md)** | **The first spec that needs the background tier**, and `grep -rn "relay_main\|WorkerSettings" infra/` returns nothing. ⚠️ **A default-pool worker starts cleanly and consumes nothing** — research is the `ai_research` pool |
+| **[B-290](BUGS.md)** | ✅ **Fixed** — found in a screenshot during the headed review. **Home told a reader five accounts were *"Unnamed"* for a second and then renamed them** |
+| **The *"Notification settings"* footer** | 📁 Drawn in §10 and **refused**: it opens Workflow 17's screen, which does not exist |
+
+---
+
+## 🔵 Was in flight — TASK-495 slice ⓑ, the notification bell
 
 **Two commits, on the branch, not yet promoted.**
 
