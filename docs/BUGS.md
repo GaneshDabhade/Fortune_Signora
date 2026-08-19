@@ -1151,6 +1151,73 @@ This error was caught after test environment was torn down.
 
 📁 **Attributing it from that attribution would be [B-1000](#b-1000)'s family again** — **the message answers *"what was running?"* and the question is *"what registered the timer?"*** ✅ **Recorded with the evidence so the next occurrence has something to build on, rather than guessed at now.**
 
+### B-1032 · 🟠 `rail-band` measures a rail mid-animation, and the number it reports is a frame
+
+| | |
+|---|---|
+| **Module** | `frontend/tests/e2e/rail-band.spec.ts` — **certification coverage, QE's** |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — ⛔ **it fails a certification cycle at random and the product is correct** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-19 by QE**, certifying `8ceff5d6` — **and it resolves the `232` QE reported to Lane A as possibly a defect** |
+
+**The received value moved every time it was measured:**
+
+```
+232 · 109 ·  85 ·  61      against an expected 56
+```
+
+⚡ **Those are not five results. They are five frames of one animation.**
+
+📁 **`components/shell/app-shell.tsx:271`** — `smalllaptop:transition-[width] smalllaptop:duration-150`. **The rail animates its width over 150ms**, and `1279` is inside `smalllaptop` (1024+). ⛔ **`boundingBox()` samples whatever the width is at that instant**, so the assertion races a real clock — and **a loaded machine loses more often.**
+
+### ✅ The product is right, and Lane A's 6/6 was right too
+
+**Lane A measured `56` repeatedly and could not reproduce `232`.** ⛔ **Both measurements were correct.** ⚡ **They sampled after the transition settled; QE sampled during it**, on a workstation that had been running browser suites all day.
+
+> 📁 **This is [B-1029](#b-1029)'s third environmental class, named by Lane A**: *"NOT contamination — a test that samples before its own read lands, which only shows up when something else is competing."* ⚡ **Their example was a queue's skeletons; this is a CSS transition. Same shape, different clock.**
+
+### ⛔ And QE reported the `232` to Lane A as a possible defect
+
+**Published with the viewport and the method — correct — and framed as *"reproducible here 3/3 on `main`, possibly fixed in your 24."*** ⚠️ **It was reproducible, and it was never about the trees.** 📁 **Three identical runs looked like determinism and were three samples of one race.**
+
+### The fix, and the shape it must take
+
+⛔ **Not a `waitForTimeout`.** ✅ **Wait for the thing** — 📁 Lane A's own words on this class: *"the queue's own `h-16` skeletons … the thing, not a proxy for it."* **Here that is `transitionend` on the rail, or `motion-reduce` in the project so the animation does not exist to be sampled.** ⚡ **`app-shell.tsx` already carries `motion-reduce:transition-none` on sibling elements, so the product already supports the second option.**
+
+### B-1033 · 🟠 Home's accessibility assertions pass on an empty list and fail on real data
+
+| | |
+|---|---|
+| **Module** | `product_surface` — **joined from [`modules.toml`](coordination/modules.toml)** |
+| **Current assignee** | **Lane A** |
+| **Severity** | 🟠 — ⛔ **a real WCAG 2.5.8 failure on real data, and the assertion written for it was passing** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-19 by QE**, certifying `8ceff5d6` |
+
+**`home-a11y.spec.ts` — 2 failures here, `14/14` green on Lane A's own run:**
+
+```
+recents — "PHPorterfield Health SystemsToda" is 37px tall on a phone
+  expected >= 44, received 37                            WCAG 2.5.8
+
+"PHPorterfield Health Systems…" and "APArvely Payments…" are adjacent
+  expected >= 8, received 0
+```
+
+### ⚡ The difference is DATA, not code — measured
+
+| | |
+|---|---|
+| **QE's environment** | **`recently_viewed` = 3 rows** — the browser suite had used the product, so Home renders a recents list |
+| **Lane A's** | **empty** — a freshly seeded Playground has nothing recently viewed |
+
+⛔ **So the assertion iterates an empty list and passes.** ⚡ **It cannot fail in the case it exists for** — 📁 **precisely the criticism Lane A levelled at `rail-band` an hour earlier**: *"nothing in that assertion can distinguish 'the override works' from 'there was nothing to override'."* **The same defect, in the tests written to replace it.**
+
+✅ **And the finding underneath is real**: a **37px** touch target and **0px** spacing between two adjacent actions, on a phone, in a section a customer sees on every visit.
+
+> ⚠️ **Two rows deliberately, not one.** **[B-1032](#b-1032) is QE's and is a test that measures wrongly. B-1033 is Lane A's and is a product defect a test failed to see.** ⛔ **Filing them together would have hidden that one of them is a customer's problem.**
+
 ### B-1030 · 🟡 Four auth-flow journeys fail in isolation, vary between runs, and are not any of the three known classes
 
 | | |
