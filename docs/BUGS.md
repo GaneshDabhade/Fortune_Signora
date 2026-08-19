@@ -1102,6 +1102,49 @@ NOT CERTIFIED
 **Either record a failed run somewhere the next run does not require to be clean** — the attempt log already is exactly that — **or make the dirty-tree diagnostic name `certification/` when `certification/` is the only thing dirty.** ⛔ **Held: it is certification's own semantics, and QE does not change what a gate means mid-candidate.**
 
 ---
+### B-1030 · 🟡 Four auth-flow journeys fail in isolation, vary between runs, and are not any of the three known classes
+
+| | |
+|---|---|
+| **Module** | `frontend/tests/e2e/` — **the repository-wide browser suite** |
+| **Current assignee** | **QE** |
+| **Severity** | 🟡 — ⚠️ **and the class is genuinely unestablished. This row exists so it stops being rediscovered** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-19 by QE**, attributing what survived [B-1017](#b-1017), [B-1026](#b-1026) and [B-1028](#b-1028) |
+
+**Each spec run ALONE on a freshly rebuilt environment** — `down -v` · `up` with the mailbox · `auth:migrate` · `demo:users` · `playground.seed`:
+
+```
+auth-credential-journeys    1 failed   7 passed
+security-center             2 failed   5 passed
+auth-journey                1 failed   1 skipped  30 passed
+resilience                  1 failed   2 passed
+```
+
+⛔ **So they are NOT cross-spec contamination.** ⚡ **And WHICH test fails moves between runs** — `security-center` gave 1 in the full suite and 2 alone; `auth-journey` gave `:162` once and `:211` on the next.
+
+### ⛔ Rate limiting — the obvious hypothesis, and it is DISCONFIRMED
+
+📁 **`lib/auth/server.ts:147` — `rateLimit: { enabled: true }`.** ⚡ **A suite that registers and signs in dozens of times in minutes is exactly what that defends against**, so it was the first candidate.
+
+**Measured in the frontend container's own log rather than assumed:**
+
+| | |
+|---|---|
+| `"status":429` · `TOO_MANY` · `rate limit exceeded` | ⛔ **zero occurrences** |
+| `AUTH_TOKEN_ISSUED · success` | **633** |
+| `AUTH_TOKEN_REJECTED · failure` | **3** |
+
+> 🔴 **And QE nearly published the opposite.** **A first grep for `429|rate.?limit` returned 3 hits and QE read them as rate limiting.** ⛔ **They were incidental hex inside a `userId`, in lines whose event was `AUTH_TOKEN_ISSUED · success`.** ⚡ **The grep answered *"does this string appear?"* when the question was *"was a request refused?"*** — 📁 **[B-1000](#b-1000)'s family, committed while investigating it.**
+
+### What is established, and it is not much
+
+✅ **Not contamination** — each fails alone. ✅ **Not the mailbox** — `/dev/mailbox` returns `200` and the transport is `mailbox`. ✅ **Not rate limiting** — measured above. ✅ **Not `security-center` reaching another persona** — it registers its own person and opens three contexts as that person. 📁 **And `resilience.spec.ts:88` already documents the shared-session hazard and defends against it.**
+
+⚠️ **The common shape is a NAVIGATION that does not complete**: `page.waitForURL` timing out, a sign-in that lands back on `/signin`, a 60-second test timeout. **`auth.setup.ts >> sign in as a member` timed out at 20s on one run**, which puts it in the setup rather than in any one spec.
+
+⛔ **QE is not naming a cause.** 📁 *"A 'cannot reproduce' is a claim about the reproduction attempt, not about the defect"* — **and a cause asserted from four varying symptoms would be the same error in the other direction.**
+
 ### B-1029 · 🟡 Three browser journeys fail alone, on a clean environment, and are not contamination
 
 | | |
