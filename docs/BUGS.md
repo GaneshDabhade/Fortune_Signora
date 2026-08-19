@@ -1037,6 +1037,27 @@ the accounts list
 
 📁 `perception.spec.ts`: *"the ceiling below is set to **catch a regression** rather than to bless the current number."* ✅ **It caught one.** ⛔ **Raising it to 13 would convert the one instrument that can see this cost into a record of whatever the cost happens to be** — which is [B-1000](#b-1000)'s family, one register over.
 
+### ⚡ The mechanism, measured after the row was filed — `frontend/lib/api/client.ts`
+
+📁 **`apiRequest()` calls `fetchAccessToken(workspaceId)` on EVERY request, unconditionally:**
+
+```ts
+const token = await fetchAccessToken(workspaceId);
+const response = await fetch(`${baseUrl}${path}`, { … });
+```
+
+📁 **and `fetchAccessToken` is a network round trip of its own:**
+
+```ts
+const response = await fetch(url, { method: 'POST' });   //  POST /api/token
+```
+
+⛔ **There is no cache, no reuse and no expiry check anywhere in the path.** ⚡ **So one data read is TWO HTTP requests** — a `POST /api/token` to the Next tier, which performs an RS256 signature, and then the proxied `GET`. **13 mints for 11 data reads is 24 requests where 12 would do.**
+
+> ✅ **The comment beside it is correct and is not the problem**: *"the private signing key stays on the server; the browser only ever sees the token."* ⛔ **That argues for minting on the server. It does not argue for minting once per request** — and the token is valid for minutes.
+
+⚠️ **This is measurement, not a prescription.** **The shape of a fix — an in-memory cache keyed on `workspaceId` and the token's own expiry, or a token attached once per page — is the current assignee's to choose**, and QE writes no production code.
+
 ### Why it was promoted rather than held
 
 ⚡ **The eight REQUIRED gates are the promotion decision** ([ADR-0032](architecture/adr/0032-release-certification.md)), and all eight passed. ⛔ **`main` already carried five red browser tests before this candidate** — **holding this one to a standard the repository does not currently apply to itself would have been QE inventing a gate**, which is not QE's to do. ✅ **Filed, attributed and published in `PROJECT_STATUS.md` instead of blessed.**
