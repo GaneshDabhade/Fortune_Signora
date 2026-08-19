@@ -182,23 +182,21 @@ function Row({ connection }: { connection: Connection }) {
 
 function Frame({ count, children }: { count?: number; children: React.ReactNode }) {
   return (
-    <section
-      aria-labelledby="home-integration-health-heading"
+    <div
       data-testid="home-integration-health"
       className="overflow-hidden rounded-xl border border-border-soft bg-surface shadow-e1"
     >
       <div className="flex items-center gap-2 border-b border-border-soft px-[18px] py-3">
-        <h3
-          id="home-integration-health-heading"
+        <h2
           className="text-label font-semibold text-content"
         >
           Integration health
-        </h3>
+        </h2>
         {count === undefined ? null : (
           <span className="text-2xs font-semibold tabular-nums text-content-subtle">{count}</span>
         )}
       </div>
       {children}
-    </section>
+    </div>
   );
 }

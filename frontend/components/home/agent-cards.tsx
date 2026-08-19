@@ -341,17 +341,15 @@ function skeleton(phase: CardPhase) {
 
 function QueueFrame({ children }: { children: React.ReactNode }) {
   return (
-    <section
-      aria-labelledby="home-agent-queue-heading"
+    <div
       data-testid="home-agent-queue"
       className="overflow-hidden rounded-xl border border-border-soft bg-surface shadow-e1"
     >
-      <h3
-        id="home-agent-queue-heading"
+      <h2
         className="border-b border-border-soft px-[18px] py-[14px] text-label font-semibold text-content"
       >
         Signora worked overnight
-      </h3>
+      </h2>
       {children}
       {/**
        * 📁 **The design's closing line, verbatim, and it is not decoration.**
@@ -362,25 +360,23 @@ function QueueFrame({ children }: { children: React.ReactNode }) {
       <p className="px-[18px] py-3 text-[11.5px] leading-[1.5] text-content-subtle">
         Nothing here was sent or written. Agent output waits for a person.
       </p>
-    </section>
+    </div>
   );
 }
 
 function RunsFrame({ children }: { children: React.ReactNode }) {
   return (
-    <section
-      aria-labelledby="home-agent-runs-heading"
+    <div
       data-testid="home-agent-runs"
       className="overflow-hidden rounded-xl border border-border-soft bg-surface shadow-e1"
     >
-      <h3
-        id="home-agent-runs-heading"
+      <h2
         className="border-b border-border-soft px-[18px] py-[14px] text-label font-semibold text-content"
       >
         Agent runs
-      </h3>
+      </h2>
       {children}
-    </section>
+    </div>
   );
 }
 

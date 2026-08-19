@@ -131,7 +131,7 @@ export function InviteTheTeamCard() {
           >
             {done ? <Check className="h-3 w-3" /> : '3'}
           </span>
-          <h3 className="text-sm font-semibold text-content">Invite the team</h3>
+          <h2 className="text-sm font-semibold text-content">Invite the team</h2>
           <span className="text-2xs text-content-subtle">{done ? 'Complete' : 'Optional'}</span>
         </div>
 
@@ -233,7 +233,7 @@ function Step({ id }: { id: 'connect-a-crm' | 'connect-calls' }) {
           >
             {done ? <Check className="h-3 w-3" /> : id === 'connect-a-crm' ? '1' : '2'}
           </span>
-          <h3 className="text-sm font-semibold text-content">{copy.title}</h3>
+          <h2 className="text-sm font-semibold text-content">{copy.title}</h2>
           {done ? <span className="text-2xs text-success">Complete</span> : null}
         </div>
 

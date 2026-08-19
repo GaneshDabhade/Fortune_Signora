@@ -192,19 +192,17 @@ function when(iso: string): string {
  */
 function Frame({ children }: { children: React.ReactNode }) {
   return (
-    <section
-      aria-labelledby="home-recents-heading"
+    <div
       data-testid="home-recents"
       className="h-[160px] overflow-hidden rounded-xl border border-border-soft bg-surface p-[18px] shadow-e1"
     >
       {/* 📁 Entry §05's uppercase eyebrow, not a card title bar. */}
-      <h3
-        id="home-recents-heading"
+      <h2
         className="text-2xs font-semibold uppercase tracking-[0.05em] text-content-subtle"
       >
         Pick up where you left off
-      </h3>
+      </h2>
       {children}
-    </section>
+    </div>
   );
 }

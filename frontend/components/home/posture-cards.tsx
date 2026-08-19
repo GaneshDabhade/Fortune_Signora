@@ -300,15 +300,15 @@ function Frame({
   children: React.ReactNode;
 }) {
   return (
-    <section
+    <div
       aria-labelledby={`${testId}-heading`}
       data-testid={testId}
       className="overflow-hidden rounded-xl border border-border-soft bg-surface shadow-e1"
     >
       <div className="flex items-center gap-2 border-b border-border-soft px-[18px] py-3">
-        <h3 id={`${testId}-heading`} className="text-label font-semibold text-content">
+        <h2 id={`${testId}-heading`} className="text-label font-semibold text-content">
           {title}
-        </h3>
+        </h2>
         {/* 📁 *"with the population each was derived from"* — ⚡ the size of the
             set this card ranked, not the number of rows it drew. */}
         {count === undefined ? null : (
@@ -316,6 +316,6 @@ function Frame({
         )}
       </div>
       {children}
-    </section>
+    </div>
   );
 }
