@@ -100,6 +100,63 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-286 · 🟡 The design's own light warn tag is 4.08:1 against the 4.5:1 the design states
+
+| | |
+|---|---|
+| **Module** | `design_system` — the palette, `frontend/app/globals.css` and the design's own `tokens()` |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — **Lane A** ⚠️ **but see *Whose fix this is* below** |
+| **Severity** | 🟡 · ⛔ **Not a regression and not an implementation defect.** **The tokens are byte-faithful to the design** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-19 by Lane A**, building the `1.4.3` check the design asks for by name |
+
+**The claim.** 📁 `Fortune Signora Home.dc.html` §11, criterion `1.4.3`:
+
+> *"Briefing text on the AI tint measures 6.9:1. **Every tag pairs a 600-weight
+> label with a tint clearing 4.5:1, verified per composition per theme in CI.**"*
+
+**Measured, from the design's own token values:**
+
+| Pair | Light | Dark |
+|---|---|---|
+| risk `#a83329` on `#fcefed` | ✅ **5.90** | ✅ clears |
+| positive `#1f7a5c` on `#e8f5f0` | ✅ **4.69** | ✅ clears |
+| **warn `#a5691f` on `#fbf2e4`** | 🔴 **4.08** | ✅ **6.73** |
+
+⛔ **One pair, one theme.** ⚡ **The implementation is faithful**:
+`--color-warning: 165 105 31` is `#a5691f` exactly and `--color-warning-subtle:
+251 242 228` is `#fbf2e4` exactly. **What fails is the design's claim about its own
+palette**, not the transcription of it.
+
+**Where it shows.** 📁 `card.attention`'s warn tag — *"second slip"*, *"champion
+left"* — and the same tint carries state 05's and state 11's strips. ⚡ **11px at
+weight 600 is normal text under WCAG** (large is ≥18.66px bold), so `4.5:1` is the
+right floor and the design names it.
+
+### ⛔ Whose fix this is
+
+⚠️ **Not this lane's to change.** 📁 [§20c](../CLAUDE.md) makes the design the
+authority for the palette — *"a theme change must be a token edit"* — and **a
+token that quietly diverged from the design would be worse than the gap**, because
+the next conformance audit would report the divergence as the defect.
+
+✅ **What would fix it is one design decision**: darken `--warn` a little in the
+light theme, or lighten `--warn-tint`. **`#8f5a1a` on the same tint measures 4.9**,
+which is offered as an illustration of the size of the change rather than as a
+proposal.
+
+### ✅ How it is held meanwhile
+
+📁 `tests/unit/home-contrast.test.ts` computes every pair Home renders, **in both
+themes, from `globals.css` rather than from a table** — a table would be a second
+representation of the palette and would go stale on the first token edit, which is
+the edit the check exists to catch.
+
+⚡ **The warn/light pair is marked `it.fails`, not skipped and not lowered.**
+**It turns red the moment somebody fixes the palette**, which is the property a
+skip does not have — the same device `interaction-boundaries.spec.ts` used for
+[B-312](#b-312) and deleted when it was fixed.
+
 ### B-285 · 🟠 `make dr` proved nothing about three of its four recovery checks, and would have passed while doing it
 
 | | |
