@@ -173,6 +173,117 @@ test.describe('📁 §10 — the keyboard table', () => {
   });
 });
 
+/**
+ * ⚡ **Every actionable element Home renders, measured** — not one card's.
+ *
+ * 📁 *"Every action is at least 24 × 24px with 8px separation; on mobile every
+ * primary action is 44px tall."* ⛔ **A control is an action wherever it sits** —
+ * inside a card, inside a strip, or in the page's own header — so this queries
+ * `main` rather than `[data-card]`, and it is deliberately **composition-agnostic**:
+ * `2.5.8` is a statement about the rendered page, not about one composition's
+ * cut list.
+ */
+async function actions(page: import('@playwright/test').Page) {
+  return page
+    .locator('main a:visible, main button:visible, main [role="button"]:visible')
+    .evaluateAll((els) =>
+      els.map((el) => {
+        const rect = el.getBoundingClientRect();
+        return {
+          name: (el.textContent ?? '').trim().slice(0, 32) || el.getAttribute('aria-label') || el.tagName,
+          card: el.closest('[data-card]')?.getAttribute('data-card') ?? 'the page',
+          // 📁 *"opening the owning module's flow"* — the design's own definition
+          // of a card's one primary action, and what separates it from a dismiss.
+          navigates: el.tagName === 'A' && !!el.getAttribute('href'),
+          width: Math.round(rect.width),
+          height: Math.round(rect.height),
+          x: Math.round(rect.left),
+          y: Math.round(rect.top),
+        };
+      }),
+    );
+}
+
+test.describe('📁 2.5.8 — target size, everywhere Home renders one', () => {
+  test('@a11y every action clears 24 × 24 at the reference viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await openHome(page);
+
+    const measured = await actions(page);
+    // ⚠️ **A query that found nothing would assert nothing** — and this one is
+    // broad enough that an empty result means the page did not render.
+    expect(measured.length).toBeGreaterThan(0);
+
+    for (const action of measured) {
+      expect(
+        Math.min(action.width, action.height),
+        `${action.card} — "${action.name}" is ${action.width}×${action.height}`,
+      ).toBeGreaterThanOrEqual(24);
+    }
+  });
+
+  /**
+   * ⚡ **The second clause, and it is a separate requirement.** 📁 *"…with 8px
+   * separation"* — ⛔ two controls that each clear 24px but sit flush against one
+   * another are still one mis-tap, which is the failure `2.5.8` is about.
+   */
+  test('@a11y no two actions sit closer than 8px', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await openHome(page);
+
+    const measured = await actions(page);
+    for (let a = 0; a < measured.length; a += 1) {
+      for (let b = a + 1; b < measured.length; b += 1) {
+        const one = measured[a]!;
+        const two = measured[b]!;
+        // ⚡ **Rectangle distance, not centre distance** — two tall rows in one
+        // column are far apart by centre and adjacent by edge.
+        const dx = Math.max(0, one.x - (two.x + two.width), two.x - (one.x + one.width));
+        const dy = Math.max(0, one.y - (two.y + two.height), two.y - (one.y + one.height));
+        expect(
+          Math.hypot(dx, dy),
+          `"${one.name}" and "${two.name}" are adjacent`,
+        ).toBeGreaterThanOrEqual(8);
+      }
+    }
+  });
+
+  /**
+   * 📁 *"…on mobile every **primary** action is 44px tall."* ⚡ **`AC-H12` states
+   * the same figure independently**, and `home-viewports.spec.ts` asserts it for
+   * the attention card's rows. ⛔ **This is the page-wide half.**
+   *
+   * ## ⚠️ Why this queries links and the test above queries everything
+   *
+   * 🔴 **The design's two clauses have different subjects, and reading them as one
+   * fails a control the design does not govern.** 📁 The first is *"**every**
+   * action is at least 24 × 24px"*; the second is *"every **primary** action is
+   * 44px tall"* — and the design defines the difference itself: *"**Exactly one
+   * primary per card, opening the owning module's flow**"*, against a `Secondary`
+   * that is *"at most one"* and a strip dismiss bound to `Esc`.
+   *
+   * ⚡ **Opening the owning module's flow is a navigation**, so the anchors are
+   * the primary actions and the buttons are Home's own chrome — dismiss, skip,
+   * customise, switch composition. ⛔ **Asserting 44px across both classes failed
+   * the degraded strip's `Dismiss` at exactly 24px**, which is a control the
+   * design sizes by the *first* clause and the test above still measures.
+   */
+  test('@a11y 390 gives every primary action a 44px touch target', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openHome(page);
+
+    const primary = (await actions(page)).filter((action) => action.navigates);
+    expect(primary.length, 'no primary action found on the phone layout').toBeGreaterThan(0);
+
+    for (const action of primary) {
+      expect(
+        action.height,
+        `${action.card} — "${action.name}" is ${action.height}px tall on a phone`,
+      ).toBeGreaterThanOrEqual(44);
+    }
+  });
+});
+
 test.describe('📁 4.1.3 — entry announces once', () => {
   /**
    * 📁 *"Entry announces once: workspace, composition, attention count.
