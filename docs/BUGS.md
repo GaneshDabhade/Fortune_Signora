@@ -1070,6 +1070,24 @@ alembic downgrade base
 
 > ⚡ **So the down-migration is reversible only on a database that never used the feature it added** — **which is exactly the database a reversibility gate runs against.**
 
+### 🔴 CORRECTION, 2026-08-19 by QE — the migration anticipated this and argues it is CORRECT
+
+**QE filed this row without reading `0048`'s own `downgrade` docstring.** It is four lines long and answers the row directly:
+
+> *"**Reversible, and it says what reversing would cost.** ⚠️ Downgrading with any `dispatched` or `application_failed` row stored will fail on the narrowed constraint — **loudly, which is correct**. Those rows are history: an application that was accepted or that failed really happened, and **silently deleting them to make a schema fit would be the falsified history §2 forbids**."*
+
+✅ **QE's assessment on re-reading: the docstring is right and this row's framing was wrong.** 📁 [§2](../CLAUDE.md) — *immutability is the default for anything that records a fact* — and the alternative to refusing is a downgrade that **destroys operational history to make a schema fit.** ⛔ **A migration that did that quietly would be the worse defect by a wide margin.**
+
+### ⚡ What SURVIVES the correction, and it is the part worth keeping
+
+⛔ **The reversibility gate runs only against a clean disposable database, so it can never see this class of failure at all.** ⚠️ **That is not a statement about `0048`** — it is [B-1000](#b-1000)'s family in the gate: **it answers *"do these migrations reverse?"* when the question a release needs answered is *"do these migrations reverse against data?"***
+
+⚡ **Both questions are worth asking and only one is asked.** **The residual finding is the gate's coverage, not `0048`'s behaviour**, and it belongs to QE rather than to `action_batch`.
+
+> ⛔ **Not reclassified or closed by QE, because the row is Lane A's by module.** ✅ **The correction is recorded here so the next reader sees the argument rather than the accusation**, and Lane A may close it, keep it, or split the surviving half.
+
+**Assessed for the current candidate, 2026-08-19**: `0065` and `0066` are both **nullable `add_column` → `drop_column`**, which **cannot violate a constraint against existing rows.** ⚠️ **The used-database check still runs — structure is a prediction and the run is the measurement** — but this class is not expected there.
+
 ### ✅ Why the gate was not wrong to pass
 
 **Re-run on a clean disposable database at the same commit: `base → head → base → head → base → head`, every step exit 0, head `0060`.** ✅ **That is a true statement about the migrations and it is the question the gate asks.**
