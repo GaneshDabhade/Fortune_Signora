@@ -354,6 +354,7 @@ databaseUrl: required(
 | Id | What | Requester | Owner | Status | Blocks |
 |---|---|---|---|---|---|
 | [C-1533](#c-1533--home-state-14s-entry-condition-and-its-copy-describe-different-cards) | 🟠 **Home state 14's entry condition and its copy describe different cards** — the sentence is false exactly when the state fires | **Lane A**, 2026-08-19, implementing the fourteen states | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **State 14 only.** ✅ **Thirteen of fourteen states are implemented and browser-verified** |
+| [C-1536](#c-1536--the-people-intelligence-screen-is-drawn-entirely-in-named-people-and-the-domain-is-anonymous-by-specification) | 🔴 **ARCHITECTURAL BLOCKER** · **The People Intelligence screen is drawn entirely in named people, and the domain is anonymous by specification** | **Lane A**, 2026-08-19, starting [TASK-430](BACKLOG.md) | ⛔ **Product Owner** — 📁 **[D-074](DECISION_REGISTER.md) already says *"I am not approving the full People Intelligence feature set"*** | 🔴 **`OPEN`** | ⛔ **[TASK-430](BACKLOG.md)'s screen half.** ✅ **Its Global Search half is already DELIVERED and needs nothing** |
 | [C-1535](#c-1535--the-first-journey-that-needs-the-background-tier-and-no-environment-starts-one) | 🟠 **The first journey that needs the background tier, and no environment starts one** | **Lane A**, 2026-08-19, writing [TASK-495](BACKLOG.md) ⓑ's required journey | **QE** — 📁 [`RUNNING.md`](RUNNING.md) is QE's file and the environments are QE's | 🟠 **`OPEN`** | ⛔ **One spec — `notification-journey.spec.ts`.** ✅ **Nothing else in the suite touches a worker** |
 | [C-1534](#c-1534--six-home-cards-name-a-dependency-that-no-approved-document-assigns-a-producer) | 🟠 **Six Home cards name a dependency that no approved document assigns a producer** | **Lane A**, 2026-08-19, after extracting all 35 design documents | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Six of sixteen cards, and states 02 and 11.** ✅ **Home renders completely without them** |
 | [C-245](#c-245-screen-13-shows-a-reader-six-facts-they-are-not-permitted-to-see) | 🔴 **Screen `13` shows a reader six facts they are not permitted to see** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⚠️ **Most of screen `13`.** ✅ **Screen `14`'s shape and the accept/decline journey are buildable |
@@ -638,6 +639,84 @@ copy table holding a sentence nothing renders is honest in a way a fabricated
 substitute would not be.
 
 ---
+
+## C-1536 · The People Intelligence screen is drawn entirely in named people, and the domain is anonymous by specification
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-19, on picking up its own claimed [TASK-430](BACKLOG.md) |
+| **Owner** | ⛔ **Product owner** — 📁 **[D-074](DECISION_REGISTER.md) is already the ruling on this exact question** |
+| **Type** | 🔴 **Architectural blocker** — 📁 [§20e](../CLAUDE.md): *a dependency on a decision nobody has made is architectural however small the code would be* |
+| **Blocks** | ⛔ **TASK-430's *"People Intelligence screen"*.** ✅ **Nothing else** — its second deliverable, *Global Search's people group*, **is already built and correct** |
+| **Status** | 🔴 **`OPEN`** |
+
+### ✅ The half that is already delivered, measured before anything was claimed about the other
+
+📁 **TASK-430 `Delivers`: *"The People Intelligence screen · Global Search's people group."*** ⚡ **The second is DONE:**
+
+| | |
+|---|---|
+| **Backend** | `SEARCH_COVERAGE[EntityKind.PERSON] = NOT_APPLICABLE`, with the reason in place — *"search matches a legal name; a `Person` in this repository has none by specification"* |
+| **Frontend** | `account-search.tsx` renders the group and its sentence — ***"Signora does not search people by name."*** ⚡ **Reachable since [B-288](BUGS.md)**, which fixed the mirrored union that crashed the whole search box |
+
+⛔ **So this item is about the screen alone**, and the row does not need re-scoping — it needs the screen's premise ruled on.
+
+### 🔴 The problem, stated as the gap between two documents
+
+| 📁 The design draws | 📁 The domain publishes |
+|---|---|
+| *"Jonas Hald · VP Operations · advocated in 6 of 8 calls, replies within a day"* | ⛔ **`PersonView`: an `id` and a `workspace_id`. That is all** |
+| *"Peter Sørensen · Blocker · two objections on record · 3 touches · 24 days"* | ⛔ **`AffiliationView`: `title`, `seniority`, `started_on`, `ended_on`** |
+| *"Mette Bruun · Signer · never emailed, never met, not on any call"* | ⛔ **No engagement record of any kind exists in this repository** |
+| *"Committee · 6 · All · 24 · Changed · 2 · Gaps · 1"* | ⛔ **`BuyingCommittee` records SEATS, not people** — its own header: *"No person is named here"* |
+
+⚡ **Every row of the screen is a person's name, their stance, and how often we
+have spoken to them.** ⛔ **The product holds none of the three**, and
+`modules/people/` opens by saying so: ***"No name. No email. No phone. No
+provider identifier"*** — 📁 **[C-221](#c-221) *"is not a constraint on this
+module — it is its specification"*.**
+
+⚠️ **And `people/` has no `interface/` layer at all**, so there is no read
+surface either. **That half is ordinary work; the premise is not.**
+
+### 🔴 The ruling that already exists, and why it is the blocker rather than the answer
+
+📁 **[D-074](DECISION_REGISTER.md), product owner:**
+
+> *"I approve moving the **People domain** implementation earlier in the
+> roadmap. **I am not approving the full People Intelligence feature set.**"*
+
+⛔ **TASK-430 is the full feature set as drawn.** ⚡ **Its own `Position` cell
+says *"the anonymous surface is buildable from S3"*** — **and there is no design
+for an anonymous surface.** 📁 [D-138](DECISION_REGISTER.md) makes the snapshot
+the implementation authority, and the snapshot draws the named one.
+
+### ⚖️ The alternatives, with what each costs
+
+| | | |
+|---|---|---|
+| **①** | **Build the screen as drawn** | ⛔ **Not available.** It needs names (📁 [C-203](#c-203), `DEFERRED`), per-person engagement (**no producer**), and a lawful basis 📁 `committee.py` says has never been declared. ⚡ **And D-074 declined it** |
+| **②** | **Build an anonymous surface** — seats, appointments, departures, tenure, gaps | ⚠️ **Buildable from what `people` publishes today** — ⛔ **but no design draws it**, so the lane would be designing a screen, which [D-138](DECISION_REGISTER.md) forbids |
+| **③** | **Commission the anonymous design**, then build ② | ✅ **The only path that breaks nothing.** ⛔ **Commissioning a design document is the product owner's** — 📁 [C-1405](#c-1405--the-entry-coverage-review-recommends-four-documents-and-three-of-them-block-work-already-released) established exactly that |
+| **④** | **Rule on C-203 and build ①** | 🔴 **The largest of the four.** 📁 C-203 decides Timeline, comments, audit history, AI attribution and mentions **at the same time**, which is why it has stayed open |
+
+### ✅ Recommendation, offered as input and not as authority
+
+**③.** ⚡ **The domain shipped early on D-074's own instruction, and it is
+sound** — six modules run role changes through production without a name. ⛔ **What
+is missing is a drawn surface for the intelligence the product actually holds**,
+and that is a smaller commission than either ① or ④.
+
+⚠️ **Recommending is not deciding** — 📁 [§20e](../CLAUDE.md): *a lane's
+recommendation is architectural input and never implementation authority.*
+
+### ⚡ Implementation impact
+
+⛔ **Nothing is half-built and nothing is reverted.** ✅ **TASK-430's search half
+is on `main` and correct.** ⚠️ **The row stays `CLAIMED` rather than moving to
+`IN VALIDATION`** — 📁 marking it delivered would say a screen exists that does
+not, which is the class [§2](../CLAUDE.md) exists to prevent. ✅ **The lane moved
+to the next eligible row rather than idling or inventing an anonymous design.**
 
 ## C-1535 · The first journey that needs the background tier, and no environment starts one
 
