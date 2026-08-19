@@ -100,6 +100,54 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-287 · 🟡 An integration test hardcodes human review's Redis port, so it cannot pass in any lane
+
+| | |
+|---|---|
+| **Module** | `backend/tests/integration/test_m1_1_demo_checklist.py` — **a test, not production code** |
+| **Current assignee** | **QE** — it is a repository-wide suite, and 📁 §20e gives QE *"every shared test suite"* |
+| **Severity** | 🟡 · ⛔ **Not a regression.** The line is unchanged since the file was written |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-19 by Lane A**, re-running the backend gates after a rebase |
+
+**Line 48 reads `REDIS_DSN = "redis://localhost:6379/0"`.**
+
+📁 [`RUNNING.md`](RUNNING.md#running-a-lane) allocates **Redis `6379 + 100n`** per
+environment — Lane A is **6679**, Lane B **6779**, QE **6579**. ⛔ **6379 is human
+review's**, so `test_item_3_message_appears_on_the_expected_redis_queue` fails
+with `ConnectionRefusedError` in **every lane**, and passes only where slot 0
+happens to be up.
+
+### ⚠️ Why this is worth a row rather than a shrug
+
+⛔ **It is not that one test fails. It is that a lane cannot tell this failure
+from a real one.** ⚡ On 2026-08-19 it took a diagnosis to establish that a red
+line in a 1,833-test run was a port allocation rather than a defect in the slice
+about to be pushed — **which is the exact cost the allocation table exists to
+remove.**
+
+✅ **Everything else in the run passed**: `1832 passed, 1 failed`.
+
+### 📁 The same class is already tracked, one layer down
+
+**`signora_platform/settings.py` declares `redis_url` defaulting to
+`redis://localhost:6379/0`** while the allocation table says no lane invents
+ports — recorded in the Human Review Environment work, and quoted at
+[B-1003](#b-1003)'s discussion. ⚡ **This is that default reaching a test**, where
+it is cheaper to see and cheaper to fix.
+
+### The fix is QE's and is one of two
+
+**Either** read the DSN from `SIGNORA_REDIS_URL` as the rest of the suite does,
+**or** skip the test explicitly when slot 0 is not up. ⛔ **The second is only
+honest if the skip names the reason** — 📁 §11, *a test skipped to make a change
+pass is the anti-pattern*, and a silent skip is worse than the red line.
+
+⚠️ **Lane A has not touched it.** 📁 §20e — *"finding a defect outside your
+assignment is not permission to fix it — it is an obligation to report it."*
+
+---
+
 ### B-286 · 🟡 The design's own light warn tag is 4.08:1 against the 4.5:1 the design states
 
 | | |
