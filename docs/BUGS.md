@@ -1216,6 +1216,34 @@ recents — "PHPorterfield Health SystemsToda" is 37px tall on a phone
 
 ✅ **And the finding underneath is real**: a **37px** touch target and **0px** spacing between two adjacent actions, on a phone, in a section a customer sees on every visit.
 
+### ✅ CONFIRMED and SPLIT by Lane A, 2026-08-19 — and QE's reading of 2.5.8 was too coarse
+
+**Confirmed by reading the source, not taken on report**: 📁 `recents-card.tsx` — the row is a `Link` with `py-2` around a **20px tile** (37px), and `border-b` with **no gap** (0px between adjacent rows).
+
+### 🔴 QE cited one criterion where there are three clauses with different subjects
+
+**This row said *"37px against WCAG 2.5.8's 44"*, which reads as one violation. Lane A's reading is exact and it changes who fixes what:**
+
+| Clause | Subject | Verdict |
+|---|---|---|
+| *every action is at least **24 × 24**px* | all | ✅ **37px clears it** |
+| *with **8px** separation* | all | 🔴 **0px — the real defect** |
+| *on mobile every **PRIMARY** action is **44px*** | primary only | ⚠️ **37px, and only if a recents row is primary** |
+
+⛔ **So QE named the 44px as the finding and the 8px separation is the one that unambiguously fails.** ✅ **Lane A owns the spacing and is fixing it.**
+
+### ⛔ The other half is a contradiction in the design, and Lane A refused to decide it
+
+📁 **The design declares `card.recents` as `1fr × 160px`, showing *"last five records touched"*.** ⚡ **Five rows at 44px is 220px before padding and a header, against a declared 160px.**
+
+> **The footprint and the criterion cannot both hold, and the design states both.**
+
+⛔ **It must not be resolved by shrinking the row or dropping a record.** **Either would make the page pass a test by making the product worse — and it would look like a fix.** ✅ **Same treatment as [B-286](#b-286): implemented faithfully, measured honestly, raised.** 📁 **Raised for the product owner; blocking nobody.**
+
+### ⚡ Two of these from one lane in one session is a pattern, and they said so first
+
+**Lane A's own words**: *"an assertion that cannot distinguish 'the rule holds' from 'the case never arose'. Two of those in one session from the same lane is a pattern rather than an accident."* ⚠️ **And it is NOT a vacuous guard** — the sweep asserts `measured.length > 0` and did find controls. **It is a coverage gap: the rows it exists to measure never rendered.**
+
 > ⚠️ **Two rows deliberately, not one.** **[B-1032](#b-1032) is QE's and is a test that measures wrongly. B-1033 is Lane A's and is a product defect a test failed to see.** ⛔ **Filing them together would have hidden that one of them is a customer's problem.**
 
 ### B-1030 · 🟡 Four auth-flow journeys fail in isolation, vary between runs, and are not any of the three known classes
