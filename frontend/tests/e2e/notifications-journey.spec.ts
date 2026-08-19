@@ -17,6 +17,20 @@ import { expect, test } from './fixtures/signora';
  * ⚡ **The populated path is stubbed at the production read boundary** — the
  * feed endpoint, returning the shape the server returns — which verifies the
  * rendering without pretending the workspace has data it does not.
+ *
+ * ## ⚠️ Corrected 2026-08-19 — *"nothing runs it"* was true of SEEDING only
+ *
+ * 🔴 **`notification-arrival.spec.ts` runs the producer end to end** and proves
+ * the whole chain: a click → the outbox → the relay → an `arq` worker on the
+ * **`ai_research`** pool → the row → the badge, on a page nobody reloaded.
+ * ⛔ **What is true is narrower than the paragraph above implies**: the
+ * PLAYGROUND SEEDER drains no outbox, and 📁
+ * [C-1535](../../../docs/LANE_COORDINATION.md) is that **no environment in this
+ * repository starts the background tier at all.**
+ *
+ * ✅ **This file stays stubbed and that is still correct** — it is about the
+ * panel's RENDERING, and a spec that had to run a minute of agent work to
+ * assert a dot would be paying a pipeline's price for a component's question.
  */
 
 async function openShell(page: import('@playwright/test').Page) {

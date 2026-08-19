@@ -100,6 +100,67 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-291 · 🟡 The rail offers Settings and the palette refuses it, for the first three seconds of every session
+
+| | |
+|---|---|
+| **Module** | `product_surface` — `components/shell/shell-palette.tsx`, and the `role` it is handed by `components/shell/app-shell.tsx` |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — **Lane A** |
+| **Severity** | 🟡 — **wrong but survivable**, and it corrects itself. ⛔ **Filed because of what it IS, not what it costs**: the palette contradicting the rail is the one failure `shell-palette.tsx` was written to prevent |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-19 by Lane A**, extending the shell journey for [TASK-1484](BACKLOG.md) ⓐ — ⚡ **the test failed and the product was the reason** |
+
+**Measured**, as the owner, on the Playground:
+
+| | |
+|---|---|
+| The rail's `Settings` link | ✅ **Visible immediately** |
+| The palette's `Settings` group | ⛔ **Absent for ~3 seconds**, then present |
+| The palette's `Navigate` group | ⛔ **One destination short** over the same window |
+
+### 🔴 It is the exact failure the file was written to prevent
+
+📁 **`shell-palette.tsx`'s own comment:**
+
+> *"`navigation.tsx` already refuses to render a destination the caller cannot
+> reach; **a palette that offered the same destination would be a second answer
+> to *what can this person reach*** — exactly what the rail's own comment warns
+> about. ✅ **So the same `guardFor`/`can` pair filters both.**"*
+
+⚡ **The same pair, and a different input.** ⛔ **The palette is handed
+`role = null` until the viewer-role read returns**, and `can(null, …)` is
+`false` — so **a guarded destination is refused to somebody who has simply not
+been checked yet.** ⚠️ **The rail reaches its answer sooner**, so for those
+seconds the two disagree.
+
+### ⚡ Why it is the same class as B-290, one surface along
+
+🔴 **A pending read rendered as a settled answer.** 📁 [B-290](#b-290) told a
+reader an account had no name while the name was still arriving; **this tells a
+reader they may not open Settings while their role is still arriving.** ⛔ **The
+second is quieter and worse**: an absent option is not something a person can
+notice being wrong.
+
+### ⛔ Why it was not fixed in the row that found it
+
+📁 **[TASK-1484](BACKLOG.md)'s Change Budget is `shell-palette.tsx`,
+`offline-status.tsx` and a `lib/query` hook.** ⚡ **The role arrives as a prop
+from `app-shell.tsx`**, which is not in it — and **the palette reading the role
+itself would be a second source for the fact the prop exists to carry**, which
+is the defect one level up from this one.
+
+✅ **The shape of the fix, offered as input**: the shell knows whether the read
+has settled and the palette does not. **A guarded group withheld because the
+answer is *no* and one withheld because there is no answer yet are different
+states**, and the palette can only tell them apart if it is told.
+
+### ⚠️ How it is held meanwhile
+
+📁 **`tests/e2e/shell-values.spec.ts` waits for the palette's settled state
+before measuring the group order**, and **says in place that the wait is a
+finding rather than a precaution** — ⛔ a bare `waitForTimeout` would have hidden
+it.
+
 ### B-290 · 🟠 Home tells a reader five accounts are *"Unnamed"* for a second, and then renames them
 
 | | |

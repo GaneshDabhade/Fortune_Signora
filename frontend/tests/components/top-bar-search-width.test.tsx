@@ -24,7 +24,10 @@ vi.mock('@/components/shell/account-menu', () => ({ AccountMenu: () => null }));
 vi.mock('@/components/shell/notifications', () => ({ Notifications: () => null }));
 vi.mock('@/components/ui', async () => {
   const actual = await vi.importActual<Record<string, unknown>>('@/components/ui');
-  return { ...actual, OfflineStatus: () => null };
+  // ⚡ **`SystemStatus` joined slot 3 in [TASK-1484](../../../docs/BACKLOG.md) ⓑ**
+  // and reads `/ready` through the query client — ⛔ **same reason as the two
+  // above: this suite is about the FRAME's widths**, not about what fills it.
+  return { ...actual, OfflineStatus: () => null, SystemStatus: () => null };
 });
 
 import { TopBar } from '@/components/shell/top-bar';

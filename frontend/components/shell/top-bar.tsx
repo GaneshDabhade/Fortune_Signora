@@ -7,7 +7,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { AccountSearch } from '@/components/intelligence/account-search';
 import { AccountMenu } from '@/components/shell/account-menu';
 import { Notifications } from '@/components/shell/notifications';
-import { Breadcrumb, OfflineStatus } from '@/components/ui';
+import { Breadcrumb, OfflineStatus, SystemStatus } from '@/components/ui';
 import { RegionBoundary } from '@/components/ui/region-boundary';
 import { cn } from '@/lib/design/cn';
 import type { Crumb } from '@/lib/shell/breadcrumb';
@@ -261,15 +261,24 @@ export function TopBar({
           pill… a pill whose only content is everything is fine is chrome that
           costs a slot every screen inherits."*
 
-          🔴 **So the design's healthy pill is genuinely absent, and nothing
-          publishes the state it would show.** 📁 The design lists five
-          subsystems — Application, CRM sync, Scoring service, Conversation
-          ingest, Exports — ✅ **and none of them is published by any module.**
-          ⛔ **Raised as [C-275](../../../docs/LANE_COORDINATION.md) with slot 4;
-          `statusLabelVisible` stays uncalled until there is a source, rather
-          than gaining a caller that invents one.** */}
-      <div data-slot="system-status" className="shrink-0">
+          ✅ **The pill is BUILT** — [TASK-1484](../../../docs/BACKLOG.md) ⓑ,
+          and `statusLabelVisible` has its first caller.
+
+          ⚠️ **The comment that stood here said the state had no source**, and
+          it was right about the FIVE subsystems the design draws — Application,
+          CRM sync, Scoring service, Conversation ingest, Exports — **none of
+          which any module publishes.** 🔴 **It was wrong that nothing did**:
+          📁 `GET /ready` has reported the database and the authentication
+          subsystem since the platform shipped, and 📁 the row's own bound is
+          *"render what `/ready` returns and nothing else."*
+
+          ⚡ **Two components, two facts, one slot.** `OfflineStatus` answers
+          *is this browser online*; `SystemStatus` answers *is Signora
+          degraded*. ⛔ **Neither is the other**, and each renders nothing when
+          it has nothing to say. */}
+      <div data-slot="system-status" className="flex shrink-0 items-center gap-2">
         <OfflineStatus />
+        <SystemStatus />
       </div>
 
       {/* ── Slot 4 · Notifications ─────────────────────────────────────────
