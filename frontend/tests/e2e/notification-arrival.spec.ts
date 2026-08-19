@@ -23,6 +23,19 @@
  * mocked the hook**, and both are the reason §19 makes the journey part of Done
  * rather than a nicety after it.
  */
+/**
+ * ## ⚠️ Two specs, and the names were one letter apart
+ *
+ * 🔴 **This file was `notification-journey.spec.ts` for an hour**, beside the
+ * existing `notifications-journey.spec.ts` — ⛔ **a plural apart, which is a
+ * name nobody can use to say which one they mean.** ✅ **Renamed for what it
+ * measures: the ARRIVAL.**
+ *
+ * | | |
+ * |---|---|
+ * | `notifications-journey.spec.ts` | **The panel, stubbed at the read boundary** — its states, its dot, its empty case |
+ * | **this file** | **The arrival**, unstubbed, end to end through the worker and the relay |
+ */
 import { expect, test } from './fixtures/signora';
 
 /**

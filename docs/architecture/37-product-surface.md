@@ -2383,3 +2383,99 @@ nothing. ⚠️ **A default-pool worker starts cleanly, logs *"worker started"*,
 consumes nothing** — research runs in the **`ai_research`** pool. ✅ **The
 journey's failure message names both processes and both variables**, so a timeout
 reads as an environment gap rather than as a product defect.
+
+---
+
+## ⌘K and the status pill — TASK-1484
+
+**Built 2026-08-19.** 📁 `Fortune Signora App Shell.dc.html` **§09** and **§07**.
+⛔ **No new capability, no new contract, no new endpoint** — both halves were
+built from a partial reading of the design, and both surfaces looked finished.
+
+### 🔴 ⓐ The palette was complete against a MISQUOTE
+
+⚠️ **`shell-palette.tsx` stated the requirement as *"the design's groups are
+`Ask Signora` · `Recents` · `Actions` · `Navigate`"*** — **four, presented as a
+quotation.** 📁 **The design names seven and fixes their order:**
+
+> 📁 ***"Group order is fixed — Ask Signora, Recents, Records, Reports, Actions,
+> Navigate, Settings — with five per group and a keyboard-reachable 'show
+> all'."***
+
+🔴 **So the palette was not incomplete by omission; it was complete against the
+comment.** ⚡ **That is why it read as finished and why nothing had ever
+failed** — and it is the general form worth keeping: **a comment that misstates
+the design is the defect that produced the code.**
+
+| Now built | |
+|---|---|
+| **The fixed order** | Stated once in the caller, because 📁 the primitive *"groups by first appearance"* and **never sorts** — *"the caller's order is the caller's ranking"* |
+| **`Recents`** | The same read `card.recents` uses, so the palette and Home agree on what *recent* means without either defining it |
+| **`Records`** | ⚡ **The RENAME the row predicted**, not a new read — the `Companies`/`Technologies` kinds became the row's `meta` |
+| **`Settings`** | The settings page's own five entries **in its own words**, behind the same guard the rail applies |
+| **`Ask Signora`** | The door the rail already opens |
+| **Five per group** | With *"show all"* as an ordinary row, so ↑↓ and ↵ reach it with **no second interaction model** |
+
+⛔ **`Ask Signora` is NOT the design's *"Answer: why is EMEA enterprise
+slipping"*.** 📁 [TASK-482](../BACKLOG.md) shipped the assistant with **no input
+box** on purpose — *"a field that swallows a question somebody actually typed is
+worse than none"* — because [C-334](../LANE_COORDINATION.md) means there is no
+host credential. **An *Answer:* row would promise a reply nothing can produce.**
+
+### ⚠️ Two of the seven render nothing, and it is a measurement
+
+| Group | Measured |
+|---|---|
+| **`Reports`** | `app/(app)/reports/` holds two files and **neither issues a query**; the screen renders *"No reports yet"*. **There is no report to list** |
+| **`Actions`** | The design's examples are *"Export current view"* and *"Run renewal risk sweep"*. **Export exists only inside the Companies bulk bar and the audit page — it is SELECTION-scoped**, and the palette is global |
+
+⛔ **Neither is rendered.** 📁 The row's own bound: *"do not add a search backend
+to satisfy a heading."* ⚡ **An empty heading is the false-affordance class this
+shell has refused three times** — the bell before it had something to show, the
+assistant's absent input, and the *"Notification settings"* link to an unbuilt
+screen.
+
+### 🔴 ⓑ The status slot answered a narrower question than §07 asks
+
+✅ **`offline-status.tsx` is correct and stays.** ⚡ It cites §07 to justify its
+placement and the citation is right — ⛔ **but it answers *is this browser
+online*, and §07 asks *is Signora degraded*.** ⚠️ **Two facts were sharing one
+slot and the shipped one was the narrower**, so on a healthy connection the slot
+was empty on every screen a customer has ever seen.
+
+✅ **`GET /ready` has published the state since the platform shipped**, and this
+row adds no endpoint and no field. **Two services are rendered** — the database
+and the authentication subsystem — because 📁 the row says *"render what
+`/ready` returns and nothing else"* and *"do not invent a service the payload
+does not report."* ⚠️ **The design draws five**; the other three are published by
+nothing.
+
+⚠️ **The hook does not go through `apiRequest`, and the reason is stated in
+it**: 📁 `/ready` answers **`503` when it is degraded, deliberately** — *"every
+orchestrator routes on the status code and never reads the body"* — and
+`apiRequest` throws on a non-2xx and parses the body as the API's **error
+envelope**. ⛔ **The degraded answer, which is the whole point of the pill, would
+arrive as `unknown_error` with the per-service rows discarded.** ⚡ **This is the
+one read in the product whose failure status IS its payload.**
+
+⛔ **Not the design's *"Updated 2m ago"*.** The pill re-reads on a fixed
+interval, and **a relative time nothing recomputes is the one thing on that
+panel that could lie** — it says the interval instead, which is a fact about the
+product.
+
+### ⚠️ What the headed review found that the assertions did not
+
+🔴 **The detail row's state stopped being right-aligned.** The service's sentence
+carries `basis-full` to start a new line, and **the row had no `flex-wrap`**, so
+*"the signing key is more than 90 days old"* sat beside *"Degraded"* instead of
+under the row. ⛔ **Every assertion about that panel was about its TEXT**, and
+all of them passed. ✅ **Found by looking at it** — 📁 [§20e](../../CLAUDE.md):
+*every defect that has mattered in this project was found by using the product,
+not by the suite.*
+
+🟡 **And [B-291](../BUGS.md)**: the rail offers `Settings` immediately while the
+palette withholds it for about three seconds, because `guardFor`/`can` are handed
+`role = null` until the viewer-role read returns. ⛔ **That is the palette being
+a second answer to *what can this person reach***, which is exactly what its own
+comment says it must never be. **Filed rather than fixed** — the role arrives as
+a prop from the shell, which is outside this row's budget.
