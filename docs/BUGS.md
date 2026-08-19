@@ -2328,6 +2328,33 @@ ss -ltn | grep 8100
 
 ⛔ **Held, because it changes what the stack does on boot and therefore what `make smoke` and `make dr` run against.** ⚡ **A gate's semantics are not something to adjust while clearing a blocker** — 📁 [§20e](../CLAUDE.md), *the authority is to make the documented gate runnable, never to make it pass.* **Recorded first, decided separately.**
 
+### ⚠️ SECOND OCCURRENCE — 2026-08-19, and it cost the first twenty minutes of the session
+
+**The host restarted again. The stack came back in exactly the predicted shape:**
+
+```
+signora-prod-api-1        Up 3 minutes (unhealthy)   0.0.0.0:8100->8000/tcp
+signora-prod-worker-1     Up 18 seconds              ← crash-looping
+signora-prod-relay-1      Up 18 seconds              ← crash-looping
+signora-prod-postgres-1   Exited (255)
+signora-prod-redis-1      Exited (255)
+signora-prod-frontend-1   Exited (255)
+```
+
+⚡ **`curl localhost:3100` returned `000` and `docker ps` said `Up`** — 📁 **point ② above, observed rather than predicted.** ⛔ **The recovery was `make down && make up`, a full rebuild**, because a stack in this state cannot be reasoned about incrementally.
+
+### ✅ The objection that held the fix is measured, and it does not hold
+
+**The concern was that a restart policy changes what `make smoke` and `make dr` run against. Read rather than assumed:**
+
+| Gate | What it does to a container | Effect of `restart: unless-stopped` |
+|---|---|---|
+| **`make dr`** | 📁 `disaster-recovery.sh:100 · 134 · 163` — **`docker compose restart <service>`, three times, never `stop`** | ✅ **None.** `restart` brings the container back itself; no policy is consulted |
+| **`make smoke`** | 📁 `smoke.sh:251` — **`docker compose stop postgres`**, then asserts `/health` green and `/ready` `503` with the database down | ✅ **None.** ⚡ **`unless-stopped` means precisely *"do not restart a container the user stopped"*** — that is the difference between it and `always`, and it is why it is the correct policy here rather than a compromise |
+| **`make smoke`** | 📁 `smoke.sh:135 · 79` — **`down -v --remove-orphans`** | ✅ **None.** A removed container has no policy to apply |
+
+⛔ **Still not applied in this commit** — **the fix is worth only what its evidence is, and the evidence has to be `make smoke` and `make dr` actually passing with the policy in place**, not three readings of what Docker documents. **Recorded here so the decision is taken on measurement.**
+
 ### B-1014 · 🔴 The browser suite runs against port 80 on a detached HEAD, and reports it as ordinary test failures
 
 | | |
