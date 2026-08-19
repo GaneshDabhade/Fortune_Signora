@@ -928,6 +928,12 @@ pass "workers resumed consuming"
 
 ### B-1042 · 🟠 Two certification runs happened and the repository has no record of them
 
+> ## ✅ Ruled by the product owner, 2026-08-19 — **preserve, and the condition for release is named**
+>
+> ⛔ **`qe-candidate` is NOT to be deleted.** **Keep it until the certification history is formally reconciled.** ⛔ **And explicitly: *do not alter or hand-edit the certification manifest just to make the branch disappear*** — which is the ruling QE asked for and the answer it expected.
+>
+> ⚡ **Branch cleanup is evidence preservation first, deletion second.** 📁 **The product owner's test, and it now binds every future cleanup**: *is every commit represented elsewhere · is the actual WORK represented even where the SHA changed through rebase · do reports, certification records, migrations, fixes or fixtures exist only there · is the work tied to an open finding · is the branch a retired lane's · could deleting it destroy historical evidence?* **If any answer is uncertain, preserve and report.**
+
 | | |
 |---|---|
 | **Module** | `certification/` — **the operational record** ([ADR-0032](architecture/adr/0032-release-certification.md)) |
@@ -2003,6 +2009,12 @@ accounts.openFirstAccount()          ← the FIRST row, which is:
 | ⛔ **UNVALIDATED** | **None remaining in this set** |
 
 ### B-1022 · 🟠 The Playground seeds a workspace that has never synced, so Home's seller composition cannot be exercised by any journey
+
+> ## ✅ Ruled by the product owner, 2026-08-19 — **preserve, and the condition for release is named**
+>
+> ⛔ **`qe-validate` is NOT to be deleted.** **Keep it until B-1022 is explicitly resolved and this work is either promoted or formally rejected.** ⚡ **The product owner's words: *retirement of a lane does not mean its work can be discarded*, and the same logic binds an unmerged fix — a branch is not stale merely because nothing has merged it.**
+>
+> ⚡ **Branch cleanup is evidence preservation first, deletion second.** 📁 **The product owner's test, and it now binds every future cleanup**: *is every commit represented elsewhere · is the actual WORK represented even where the SHA changed through rebase · do reports, certification records, migrations, fixes or fixtures exist only there · is the work tied to an open finding · is the branch a retired lane's · could deleting it destroy historical evidence?* **If any answer is uncertain, preserve and report.**
 
 > ### 🔴 2026-08-19, QE — **a fix for this row exists and has never been merged.** Found by branch reconciliation, not by looking for it.
 >

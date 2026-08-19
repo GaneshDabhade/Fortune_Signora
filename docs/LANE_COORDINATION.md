@@ -718,6 +718,37 @@ is on `main` and correct.** ⚠️ **The row stays `CLAIMED` rather than moving 
 not, which is the class [§2](../CLAUDE.md) exists to prevent. ✅ **The lane moved
 to the next eligible row rather than idling or inventing an anonymous design.**
 
+## C-110 · Lane C is retired and three of its branches hold 75 commits that exist nowhere else
+
+> ⚠️ **Allocated `C-1536` on first write and corrected within the minute.** ⛔ **`1500+` is LANE A's second range and `C-1536` was already theirs** — *"TASK-430's screen is drawn in named people"*, on `main`. 📁 **QE's block is `C-100+`; `C-109` was the highest in use and this is `C-110`.** ⚡ **§20e: the later claim moves, and this was the later claim.**
+>
+> ⛔ **The slip is kept rather than tidied away, because it is the third instance of one shape in this register**: 📁 [B-263](BUGS.md) — a free-identifier scan that endorsed a collision — and [C-210](#c-210), where two lanes held one id for an hour. **Allocating from the wrong block is not rare and is not carelessness; it is what happens when a range is remembered rather than checked.**
+
+| | |
+|---|---|
+| **Raised by** | **QE**, 2026-08-19, reconciling every branch in the repository before deleting any |
+| **Owner** | ⛔ **Product owner.** **Classifying another lane's unpromoted work is a product decision, not a QE cleanup decision** — the product owner's ruling, in those words |
+| **Type** | **Disposition** — ⛔ **not a defect and not a blocker.** **Nothing is waiting on it** |
+| **Status** | ✅ **`READY FOR PRODUCT DECISION`** — **preserved by ruling, 2026-08-19, pending classification** |
+
+**Measured, not assumed** — `git cherry origin/main <ref>`, then every unique commit's subject checked against all 2 386 subjects on `origin/main`:
+
+| Branch | Tip | Unique | Subjects NOT on `main` |
+|---|---|---|---|
+| `origin/lane-c-product-office` | `5ecd2dac` | 59 | 🔴 **58** |
+| `origin/lane-c-sync` | `c05023cc` | 14 | 🔴 **14** |
+| `origin/lane-c-webhook` | `1322dc0b` | 3 | 🔴 **3** |
+
+⚡ **75 commits exist on exactly one ref each.** ⛔ **Lane C was retired on 2026-08-18 and its work was not.**
+
+### ✅ The ruling, and it is already in force
+
+> 📁 **Product owner, 2026-08-19:** ***"Retirement of Lane C does not mean its work can be discarded. Preserve them until their work is explicitly classified as: promoted, superseded, intentionally abandoned, or transferred to another active lane. That is a product/project decision, not a QE cleanup decision."***
+
+⛔ **QE has deleted nothing on `origin` and will not.** ✅ **This item exists so the classification is a decision somebody takes rather than an omission nobody notices** — 📁 which is the same reason [`BUGS.md`](BUGS.md) exists.
+
+⚠️ **It blocks no lane and no cycle.** ⚡ **It is recorded because a branch nobody is responsible for is exactly the thing a future cleanup deletes**, and the next reconciliation should find this row before it finds the branches.
+
 ## C-1535 · The first journey that needs the background tier, and no environment starts one
 
 | | |
