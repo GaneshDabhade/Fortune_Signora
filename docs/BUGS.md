@@ -926,6 +926,54 @@ pass "workers resumed consuming"
 
 ---
 
+### B-1042 · 🟠 Two certification runs happened and the repository has no record of them
+
+| | |
+|---|---|
+| **Module** | `certification/` — **the operational record** ([ADR-0032](architecture/adr/0032-release-certification.md)) |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — ⛔ **history that cannot be added back once the branch holding it is gone** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-19 by QE**, reconciling 75 local branches before deleting any of them. ⚠️ **Not by looking for it** |
+
+**Branch `qe-candidate`, tip `1867758b`, 2026-08-17:**
+
+```
+1867758b  Certification records — cycle 244's refusal and cycle 245's dirty-tree refusal
+          certification/manifest.json           +176
+          certification/reports/8a6427fca800.md  +38
+          certification/reports/a837ebd5c62f.md  +38
+```
+
+**Measured against `origin/main`:**
+
+| | |
+|---|---|
+| `certification/reports/8a6427fca800.md` | 🔴 **absent** |
+| `certification/reports/a837ebd5c62f.md` | 🔴 **absent** |
+| Manifest entries for either commit | 🔴 **0**, of 251 runs |
+| The commit's subject anywhere in `main`'s 2 386 commits | 🔴 **absent** |
+
+### ⚡ What is missing, in its own words
+
+📁 **The commit body**: *"Both are records of runs that happened. **244 failed on coverage 94.98%**; **245 passed all eight gates at 95.05% and refused to certify because the working tree was dirty** — with 244's own uncommitted outputs, which is what made it dirty. The preflight said so on line 4 and I read READY on line 2."*
+
+⚡ **That second run is [B-1038](#b-1038) happening two days before B-1038 was filed** — **a failed run poisoning the next attempt** — **and the record of it never reached the repository.**
+
+### 🔴 Why this is a defect and not a tidy-up
+
+📁 [§2](../CLAUDE.md): ***"Observability is a product capability, not an operational afterthought… the record cannot be added retroactively — the runs that would have explained the problem are gone."*** ⛔ **Two runs are missing from the repository's account of its own behaviour**, and one of them is direct evidence for a defect filed later from scratch.
+
+📁 **And [§2](../CLAUDE.md)'s other half binds the fix**: *"a record of what was true then must not be rewritten to match now."* ⚡ **These are records of what was true then**, so the question is publishing them, not editing anything.
+
+### ⛔ Why QE has not simply published them
+
+**The manifest is written by `store.append()` and read by the promotion guard.** ⚠️ **Hand-editing it is the one thing certification's design forbids** — 📁 *"nothing can be marked certified by hand"* — **and although both entries are REFUSALS and grant nothing, QE is not the right authority to decide that appending historical entries by hand is safe.** ✅ **Raised for the product owner.**
+
+⚡ **`qe-candidate` is PRESERVED and was excluded from the cleanup that removed 73 branches.** 📁 The rule: *if a branch contains unique work not represented elsewhere, do not delete it to make the repository cleaner.* ⛔ **Deleting it would have destroyed the only copy, and nothing would have reported the loss** — **which is the whole reason the cleanup reconciled at commit level rather than by name and age.**
+
+---
+
 ### B-1041 · 🟠 The release checklist's migration-reversibility step cannot be run as written
 
 | | |
@@ -1955,6 +2003,27 @@ accounts.openFirstAccount()          ← the FIRST row, which is:
 | ⛔ **UNVALIDATED** | **None remaining in this set** |
 
 ### B-1022 · 🟠 The Playground seeds a workspace that has never synced, so Home's seller composition cannot be exercised by any journey
+
+> ### 🔴 2026-08-19, QE — **a fix for this row exists and has never been merged.** Found by branch reconciliation, not by looking for it.
+>
+> **Branch `qe-validate`, tip `7ae036c3`, two commits, both dated 2026-08-18:**
+>
+> ```
+> 763b4083  B-1022 — the Playground connects a system, through the door the flow will use
+>           backend/tests/playground/seed.py  +92 -3
+> 7ae036c3  B-1022 — a second workspace, so both Home states are representable
+>           backend/tests/playground/seed.py  +62 -2
+>           frontend/tests/e2e/connections.spec.ts  +25
+> ```
+>
+> ⛔ **Neither subject appears anywhere in `origin/main`'s 2 386 commits, and `main`'s `seed.py` contains none of their marker strings** (`second workspace` **0**, `never synced` **0**). ⚡ **So this is not a rebase artifact — the work exists on exactly one ref.**
+>
+> ✅ **`qe-validate` is therefore PRESERVED and was excluded from the branch cleanup that removed 73 others.** 📁 The rule it was kept under: *if a branch contains unique work that is not represented elsewhere, do not delete it to make the repository cleaner.*
+>
+> ⚠️ **QE is not landing it unilaterally.** ⛔ **`seed.py` is `platform_foundation`, which [`modules.toml`](coordination/modules.toml) joins to Lane A** — and this row already names Lane A as the current assignee. **The commits are QE's own authorship from 2026-08-18 and QE does not own the module**, so the honest state is *available, attributed, and not merged*.
+>
+> ⚡ **What it appears to do, from the diff and nothing more**: connect a system through the flow's own door — 📁 which is the only route [§20e](../CLAUDE.md)'s test-data rule permits — and seed a **second** workspace so both Home compositions are representable. **That is the shape this row asks for.** ⛔ **It has not been run, measured or validated by anybody**, and this note claims nothing beyond what the diff shows.
+
 
 | | |
 |---|---|
