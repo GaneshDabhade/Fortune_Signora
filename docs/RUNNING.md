@@ -447,13 +447,20 @@ npm run auth:migrate && npm run demo:users
 
 ### ⚡ The browser gate needs the developer's mailbox
 
-**`SIGNORA_AUTH_EMAIL_TRANSPORT` defaults to `console`, which prints and keeps nothing**, so `/dev/mailbox` 404s and every journey that registers a real person fails.
+✅ **`infra/.env.prod-local.example` now sets `SIGNORA_AUTH_EMAIL_TRANSPORT=mailbox`, so a stack built from the template serves `/dev/mailbox` and nothing has to be remembered.**
+
+⚠️ **A `.env.prod-local` created before 2026-08-19 does NOT have the line** — the real file is gitignored, so it does not gain it. **Add it, or export it for the run:**
 
 ```bash
-SIGNORA_AUTH_EMAIL_TRANSPORT=mailbox make up
+grep -q EMAIL_TRANSPORT infra/.env.prod-local \
+  || echo 'SIGNORA_AUTH_EMAIL_TRANSPORT=mailbox' >> infra/.env.prod-local
 ```
 
-⛔ **`console` remains the default and production is unaffected** — the compose file passes the variable through rather than setting it. 📁 **[B-1026](BUGS.md)**: without it, six journeys reported *"nothing was delivered to this address"* — **true, and naming the wrong cause.**
+🔴 **Check the door rather than trusting the variable** — `curl -s -o /dev/null -w '%{http_code}' http://localhost:3100/dev/mailbox` must print `200`. ⛔ **`console` prints the verification link to a container's stdout and keeps nothing**, so `/dev/mailbox` 404s and every journey that registers a real person fails.
+
+⛔ **`docker-compose.prod.yml` still defaults to `console`, deliberately** — that file describes a production-shaped stack, and production does not serve a developer's mailbox. **The local value belongs in the local env file, which is why it is there and not in the compose default.**
+
+📁 **[B-1026](BUGS.md)**: without it, six journeys reported *"nothing was delivered to this address"* — **true, and naming the wrong cause.** ⚠️ **And its first fix passed the variable through without anyone setting it**, which is how the same six failed again on 2026-08-19 — **this time saying exactly what was wrong, to an operator who had not done it.**
 
 **Backend** — every one is required; none has a default that would be safe in production.
 

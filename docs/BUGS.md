@@ -1524,7 +1524,7 @@ the run     363 passed · 17 failed · 5 skipped   =  385
 | **Module** | `infra/docker-compose.prod.yml` + `frontend/tests/e2e/` — **a QE gate and a QE suite** |
 | **Current assignee** | **QE.** 📁 [§20e](../CLAUDE.md) names *the compose files* among the gates QE fixes itself, and the browser suite is QE's |
 | **Severity** | 🟠 — ⛔ **a failure that names the wrong cause, in the gate the certification standard requires** |
-| **Status** | ✅ **`FIXED`** by QE, 2026-08-19. ⛔ **NOT `VERIFIED`** — QE wrote it |
+| **Status** | ✅ **`FIXED`** by QE, 2026-08-19, ⚠️ **in TWO parts — and the first part alone changed nothing observable.** ⛔ **NOT `VERIFIED`** — QE wrote it |
 | **Found** | **2026-08-19 by QE**, attributing what [B-1017](#b-1017)'s fix left behind |
 
 **Steps to reproduce.** Bring up the prod-local stack and run the browser suite. **Six tests fail** — four in `security-center.spec.ts`, two in `auth-credential-journeys.spec.ts`:
@@ -1557,6 +1557,31 @@ Locator: locator('li, article, tr').filter({ hasText: 'e2e.security.178712219543
 ### ⚠️ Four auth failures remain and are NOT this row
 
 **Stable across a parallel run and a `--workers=1` run, so not contention**: `auth-credential-journeys.spec.ts:80` *(registration does not say what happens next)* · `:131` *(forgot-password times out at 60s)* · `security-center.spec.ts:155` *(sign-out-everywhere ends the current session too, and the journey says it must not)* · one varying failure in `auth-journey.spec.ts`. ⛔ **Unattributed, and claimed as nothing.**
+
+### 🔴 The first fix was HALF of one, and QE's own refusal said so twelve minutes into a baseline
+
+**Part one made the variable *passable*** — `docker-compose.prod.yml` gained `SIGNORA_AUTH_EMAIL_TRANSPORT: ${SIGNORA_AUTH_EMAIL_TRANSPORT:-console}`. ⛔ **And nothing then SET it.** ⚡ **So `/dev/mailbox` went on returning `404` and the six journeys went on failing** — this time with the message [B-1026](#b-1026) added, naming the cause and a fix nobody had performed:
+
+```
+Error: /dev/mailbox is not served, so no email can be read. … Set
+SIGNORA_AUTH_EMAIL_TRANSPORT=mailbox on the frontend — the transport
+defaults to 'console', which prints and keeps nothing (B-1026).
+```
+
+📁 **Found on 2026-08-19 in a full clean baseline, by QE, reading its own refusal.** ⚠️ **The operator who had not set it was QE** — the documented step existed in [`RUNNING.md`](RUNNING.md) and the baseline script did not carry it. ⛔ **A prerequisite that has to be remembered is one that will be forgotten**, which is the whole reason this row exists.
+
+### ✅ Part two — in the LOCAL env file, deliberately not in the compose default
+
+**`infra/.env.prod-local.example` now carries `SIGNORA_AUTH_EMAIL_TRANSPORT=mailbox`.**
+
+| | |
+|---|---|
+| ⛔ **NOT the compose default** | 📁 `docker-compose.prod.yml` describes a **production-shaped** stack, and **production does not serve a developer's mailbox.** `console` is correct there and stays |
+| ✅ **The local env file** | ⚡ **There is no local scenario where `console` is right**: it prints the verification link to a container's stdout and keeps nothing, and **no test and no human reads it there.** **This stack exists to run the gates and to be reviewed, and both need the link back** |
+
+⚠️ **A `.env.prod-local` created before 2026-08-19 does not gain the line** — the real file is gitignored (§13). [`RUNNING.md`](RUNNING.md) carries the one-line repair and, more importantly, **the check that is not the variable**: `/dev/mailbox` must answer `200`.
+
+✅ **Verified live: `200`, and three of the eight auth-family failures went with it.**
 
 ### B-287 · 🟠 A test held `redis://localhost:6379/0` as a literal — slot 0's, which is human review's
 
