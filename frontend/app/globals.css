@@ -327,6 +327,31 @@
     border-color: rgb(var(--color-border));
   }
 
+  /**
+   * 🔴 **B-283 — the scrollbar's 15px was the whole of Home's layout shift.**
+   *
+   * ⚠️ **Measured with `PerformanceObserver`, three runs**: Home's CLS is ~0.156
+   * and **a single event at ~4.3s carries 0.111**. Its sources are both
+   * right-column cards, the content wrapper and `aside#shell-utility-panel` —
+   * ⛔ **all moving together, which is a row changing width rather than anything
+   * inside a card.** ✅ **And what changed it, measured directly**:
+   * `documentElement.clientWidth` goes **1280 → 1265** as the last card's data
+   * lands and the page grows past the viewport. **The scrollbar arrives and
+   * takes 15px from every element in the shell's flex row at once.**
+   *
+   * ⚡ **`stable` reserves the gutter from first paint**, so the scrollbar's
+   * arrival changes no geometry. ⛔ **Not `overflow-y: scroll`**, which draws a
+   * dead track on every short page — the gutter is reserved either way and only
+   * one of them also shows a scrollbar that scrolls nothing.
+   *
+   * ⚠️ **`html`, not `body`.** The document element is the scrolling box; a
+   * gutter reserved on `body` reserves it inside a container that is not the
+   * one scrolling.
+   */
+  html {
+    scrollbar-gutter: stable;
+  }
+
   body {
     background-color: rgb(var(--color-canvas));
     color: rgb(var(--color-content));
