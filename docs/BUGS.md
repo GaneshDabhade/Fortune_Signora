@@ -862,7 +862,7 @@ BLOCKED — the development database is not reachable
 
 | | |
 |---|---|
-| **Module** | `infra/smoke.sh` stage 12 — ⛔ **a gate, and [§20e](../CLAUDE.md) puts `smoke.sh` among the things that decide whether one passes** |
+| **Module** | `infra/smoke.sh` stage 12 **and `infra/disaster-recovery.sh:203`** — ⛔ **both gates, and [§20e](../CLAUDE.md) puts them among the things that decide whether one passes** |
 | **Current assignee** | **QE** |
 | **Severity** | 🟠 — **the assertion passes in exactly the case it exists to catch** |
 | **Status** | **`OPEN`** |
@@ -889,6 +889,20 @@ pass "workers consuming without error"
 ### 🔴 Why this is the [§2](../CLAUDE.md) class rather than a missing test
 
 📁 ***"A guard that cannot fail is not protection — it is documentation pretending to be code."*** ⚠️ **This one can fail — on a crashing worker — so it is not wholly decorative.** ⛔ **But the property its message CLAIMS (`consuming`) is not the property it TESTS (`not erroring`)**, and the gap is invisible to every reader, which is the more expensive half: 📁 *"it gives engineers confidence that something is enforced when it is not — and the comment beside it is then a false claim that survives review."*
+
+### 🔴 A SECOND instance, found the same day, and its message is worse
+
+📁 **`infra/disaster-recovery.sh:203`:**
+
+```bash
+[[ "$($PSQL 'SELECT count(*) FROM outbox_event WHERE relayed_at IS NULL')" == "0" ]] \
+  || fail "workers did not resume consuming after restart"
+pass "workers resumed consuming"
+```
+
+⛔ **`relayed_at` is set by the RELAY when it publishes to Redis.** ⚡ **The assertion names *workers* and measures the relay** — **and `make dr` printed `✓ workers resumed consuming` on 2026-08-19 against a stack whose single worker was bound to a queue four of the five populated pools never reach** ([B-1039](#b-1039)).
+
+> ⚠️ **The three lines directly above it are a [B-1024](#b-1024) repair to this very assertion** — *"Checked rather than discarded. This was `-o /dev/null`, so a refused request left the outbox empty and the assertion below passed on a workspace that was never created."* ⛔ **Somebody read this line closely enough to fix one vacuity in it and did not notice the subject was wrong.** ⚡ **That is the strongest argument in this row: the gap is not carelessness, it is genuinely invisible.**
 
 ### ⚠️ And nothing else covers the gap
 
