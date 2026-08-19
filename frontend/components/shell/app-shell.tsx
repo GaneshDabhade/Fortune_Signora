@@ -471,7 +471,11 @@ export function AppShell({
           search instead. ⚡ **Mounted at the shell because it must reach
           destinations no single module knows** — which is exactly why C-259
           found that neither candidate row could mount it alone. */}
-      <ShellPalette role={role} />
+      {/* 🔴 **`roleKnown` too** — [B-291](../../../docs/BUGS.md). ⛔ The rail
+          has taken it since [B-253](../../../docs/BUGS.md) and the palette did
+          not, **so the two disagreed about what a person could reach for the
+          first seconds of every session.** */}
+      <ShellPalette role={role} roleKnown={roleKnown} />
       {/* ⚡ **[TASK-482](../../../docs/BACKLOG.md) — §12's assistant entry.**
           ⛔ **Mounted beside the palette rather than floating over the content**:
           📁 the design refuses a corner bubble by name, *"a persistent circle

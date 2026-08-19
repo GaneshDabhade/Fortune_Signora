@@ -126,7 +126,27 @@ export const GROUPS_WITH_NO_SOURCE_TODAY = ['Reports', 'Actions'] as const;
  *  ⛔ the server's `result_type` is the platform's vocabulary and stops here. */
 const KIND: Record<string, string> = { company: 'Company', technology: 'Technology', person: 'Person' };
 
-export function ShellPalette({ role }: { role: WorkspaceRole | null }) {
+export function ShellPalette({
+  role,
+  roleKnown = true,
+}: {
+  role: WorkspaceRole | null;
+  /**
+   * 🔴 **Whether the role has ARRIVED**, which `role: null` cannot say —
+   * 📁 [B-253](../../../docs/BUGS.md), and 🔴 [B-291](../../../docs/BUGS.md) is
+   * what its absence cost HERE.
+   *
+   * ⚠️ **The rail has taken this since 2026-08-13 and the palette did not**, so
+   * for the first seconds of every session **the rail offered `Settings` and
+   * the palette refused it** — ⛔ **the palette being a second answer to *what
+   * can this person reach***, which is exactly what this file's own comment
+   * says it must never be.
+   *
+   * ⚡ **Defaulted to `true`** so the prop is additive: a caller that does not
+   * know behaves as every caller did before.
+   */
+  roleKnown?: boolean;
+}) {
   const router = useRouter();
   const { activeWorkspace } = useWorkspaceContext();
   // 📁 **§19 — the workspace name, and only when the reader has more than
@@ -170,7 +190,20 @@ export function ShellPalette({ role }: { role: WorkspaceRole | null }) {
   } = useAccountSearch(activeWorkspace?.id ?? null, query);
 
   const items = useMemo<CommandItem[]>(() => {
+    /**
+     * 🔴 **An unresolved role offers the destination, never withholds it** —
+     * 📁 `navigation.tsx`'s own rule, ratified by
+     * [B-253](../../../docs/BUGS.md) and decided by the design rather than by a
+     * lane: 📁 App Shell §16 *Cold boot*.
+     *
+     * ⚡ **Being briefly generous costs a refusal the server was always going
+     * to give**; being briefly restrictive is *"a false claim about
+     * entitlement"* on the surface a person reaches for first. ⛔ And
+     * [§20c](../../../CLAUDE.md) already says this check is *"presentational…
+     * never enforcement"*.
+     */
     const reachable = (href: string) => {
+      if (!roleKnown) return true;
       const guard = guardFor(href);
       return guard === undefined || can(role, guard.requires as Capability);
     };
@@ -301,7 +334,7 @@ export function ShellPalette({ role }: { role: WorkspaceRole | null }) {
         },
       ];
     });
-  }, [copilot, expanded, groups, names.data, recentRecords.data, role]);
+  }, [copilot, expanded, groups, names.data, recentRecords.data, role, roleKnown]);
 
   const close = () => {
     setOpen(false);
