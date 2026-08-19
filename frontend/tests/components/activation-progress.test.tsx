@@ -31,6 +31,28 @@ vi.mock('@/lib/state/workspace-provider', () => ({
 vi.mock('@/lib/query/hooks/team', () => ({
   useWorkspaceMembers: () => ({ data: { items: [{ user_id: 'me', role: 'owner' }] } }),
 }));
+/**
+ * ⚡ **The registry is a READ, so it is stubbed like the other three** — 📁
+ * contract 5 moved it to the server, and a component test has no server.
+ *
+ * ⛔ **`useActivationState` is still real**, which is this file's whole point:
+ * what is under test is that the count comes from real connections measured
+ * against the declared set, and stubbing the derivation would leave nothing
+ * asserting it.
+ */
+vi.mock('@/lib/query/hooks/home', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/query/hooks/home')>()),
+  useActivationRegistry: () => ({
+    resolved: true,
+    failed: false,
+    registry: [
+      { card: 'connect-a-crm', priority: 100, blocking: true },
+      { card: 'connect-calls', priority: 200, blocking: true },
+      { card: 'invite-the-team', priority: 300, blocking: false },
+    ],
+    refetch: () => {},
+  }),
+}));
 
 const { ActivationProgress } = await import('@/components/home/activation-progress');
 

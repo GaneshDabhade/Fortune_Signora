@@ -9,7 +9,13 @@ from typing import Protocol
 from uuid import UUID
 
 from modules.integrations.application.ports import ConnectedAccountRepository, GrantStore
-from modules.integrations.domain.catalog import CATALOG, Capability, entry_for
+from modules.integrations.domain.catalog import (
+    CATALOG,
+    ActivationStep,
+    Capability,
+    activation_registry,
+    entry_for,
+)
 from modules.integrations.domain.connection import ConnectedAccount, ConnectionState
 from modules.integrations.domain.health import (
     CONSECUTIVE_FAILURES_FOR_DEGRADED,
@@ -237,6 +243,18 @@ class IntegrationQueries:
             for slug, views in by_integration.items()
         )
         return systems
+
+
+    def activation_steps(self) -> tuple[ActivationStep, ...]:
+        """The steps this module currently asks a workspace to take.
+
+        **No workspace and no await, deliberately.** The registry is what the
+        product knows how to ask for; whether a given workspace has *done* a
+        step is derived from that workspace's connections, which
+        :meth:`systems` already answers. Two questions, and folding them into
+        one read would make the declaration look like per-tenant state.
+        """
+        return activation_registry()
 
 
 def _attention(

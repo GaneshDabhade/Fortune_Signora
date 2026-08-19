@@ -37,6 +37,7 @@ const statedRole = vi.hoisted(() => vi.fn());
  * boundaries, so a new dependency cannot arrive silently.
  */
 const activationState = vi.hoisted(() => vi.fn());
+const activationRegistry = vi.hoisted(() => vi.fn());
 /** ⚡ **State 05's second half** — 📁 *"record count is zero"*. */
 const accountsCount = vi.hoisted(() => vi.fn());
 /** ⚡ **State 08's page half** — what the cards reported. */
@@ -72,6 +73,10 @@ vi.mock('@/lib/query/hooks/triage', () => ({ useWorkspaceTriage: triage }));
 vi.mock('@/lib/query/hooks/home', () => ({
   useStatedRole: statedRole,
   useActivationState: activationState,
+  // 📁 **Contract 5** — the activation registry is a server read now, and this
+  // file's comment above is the reason it must be listed: a new dependency
+  // cannot arrive silently.
+  useActivationRegistry: activationRegistry,
 }));
 vi.mock('@/lib/query/hooks/accounts-count', () => ({ useAccountsCount: accountsCount }));
 vi.mock('@/components/home/card-outcomes', async () => {
@@ -109,6 +114,7 @@ vi.mock('@/lib/query/hooks/preferences', () => ({
   useChangePreferences: () => ({ mutate: () => {}, isPending: false }),
 }));
 
+import { activationRegistry as composeRegistry } from '@/lib/home/activation';
 import { Home } from '@/app/(app)/w/[workspace]/home/home';
 
 /**
@@ -155,6 +161,17 @@ function severalWorkspaces() {
  * rule — so `2 of 2` is state 04 and `0 of 2` is state 01.
  */
 function activation({ done, total = 2 }: { done: number; total?: number }) {
+  // 📁 **Contract 5** — the activation registry is a server read now.
+  activationRegistry.mockReturnValue({
+    resolved: true,
+    failed: false,
+    registry: [
+      { card: 'connect-a-crm', priority: 100, blocking: true },
+      { card: 'connect-calls', priority: 200, blocking: true },
+      { card: 'invite-the-team', priority: 300, blocking: false },
+    ],
+    refetch: () => {},
+  });
   activationState.mockReturnValue({
     resolved: true,
     complete: {
@@ -304,7 +321,23 @@ describe('🔴 Home always renders', () => {
    */
   it('📁 an activation composition with no cards renders HM-COPY-11 and no progress bar', () => {
     ready(false);
-    cardsFor.mockReturnValue([]);
+    /**
+     * 🔴 **`AC-H09`, exactly as it is written** — 📁 *"return the activation
+     * registry as an empty array: HM-COPY-11 renders and no progress bar is
+     * present."*
+     *
+     * ⛔ **This used to stub `cardsFor` instead**, because the registry was a
+     * frozen array in this bundle and could not be empty — so the test drove
+     * the state through a door the product did not have. ⚡ **Now it is the
+     * server's answer**, which is the one a customer's platform could
+     * actually give.
+     */
+    activationRegistry.mockReturnValue({
+      resolved: true,
+      failed: false,
+      registry: [],
+      refetch: () => {},
+    });
 
     render(<Home />);
 
@@ -313,6 +346,104 @@ describe('🔴 Home always renders', () => {
     // to do* rather than *we could not ask*.
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     expect(screen.queryByText(/0 of 0/)).not.toBeInTheDocument();
+  });
+
+  /**
+   * 🔴 **[P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md)** — *"a failed read
+   * must never render as an empty result."*
+   *
+   * ⚡ **Home satisfies it by rendering neither as an empty result.** ⛔ A
+   * registry that could not be read and one that arrived empty are both faults,
+   * and the design gives both the same sentence — what it forbids is the third
+   * option, **an activation composition with nothing in it.**
+   */
+  it('🔴 a registry that could NOT be read is a fault, never an empty page', () => {
+    ready(false);
+    activationRegistry.mockReturnValue({
+      resolved: false,
+      failed: true,
+      registry: [],
+      refetch: () => {},
+    });
+
+    render(<Home />);
+
+    expect(screen.getByText('Setup steps could not be loaded.')).toBeInTheDocument();
+  });
+
+  /**
+   * 🔴 **The greeting must not assert a count it could not obtain either.**
+   *
+   * ⚠️ **Found in the browser, not by a test.** ⛔ With the registry empty the
+   * greeting read ***"Let us get Playground connected. Zero steps."*** — 📁
+   * which is *"a progress bar at 0 of 0"* wearing a sentence, and the design
+   * forbids that by name. ⚡ **The time-of-day greeting is never false**, and
+   * the strip below it says what actually happened.
+   */
+  it('⛔ and the greeting does not say "zero steps" when the registry is empty', () => {
+    ready(false);
+    activation({ done: 0, total: 0 });
+    activationRegistry.mockReturnValue({
+      resolved: true,
+      failed: false,
+      registry: [],
+      refetch: () => {},
+    });
+
+    render(<Home />);
+
+    const greeting = screen.getByRole('heading', { level: 1 }).textContent ?? '';
+    expect(greeting).not.toMatch(/zero steps/i);
+    expect(greeting).toMatch(/Good (morning|afternoon|evening)/);
+  });
+
+  /**
+   * ⛔ **And the symmetric refusal**: an unread registry looks exactly like an
+   * empty one, and saying *"could not be loaded"* while it is still in flight
+   * would be the page inventing a fault on every slow connection.
+   */
+  it('⛔ says nothing at all while the registry is still in flight', () => {
+    ready(false);
+    activationRegistry.mockReturnValue({
+      resolved: false,
+      failed: false,
+      registry: [],
+      refetch: () => {},
+    });
+
+    render(<Home />);
+
+    expect(screen.queryByText('Setup steps could not be loaded.')).not.toBeInTheDocument();
+  });
+
+  /**
+   * 🔴 **Contract 5's second half, on the array the product actually renders**
+   * — 📁 *"card order comes from its priority integer, not from array
+   * position."*
+   */
+  it('📁 renders the activation cards in the priority order the server declared', () => {
+    ready(false);
+    /**
+     * ⚡ **The real composition function, fed the two servers' steps
+     * BACKWARDS** — ⛔ a hand-written `registry` array would have been sorted
+     * by whoever wrote the fixture, so the assertion would have been about the
+     * mock rather than about the product.
+     */
+    activationRegistry.mockReturnValue({
+      resolved: true,
+      failed: false,
+      registry: composeRegistry(
+        [{ id: 'invite_members', priority: 300, blocking: false }],
+        [{ id: 'crm_activity', priority: 100, blocking: true }],
+      ),
+      refetch: () => {},
+    });
+
+    render(<Home />);
+
+    const drawn = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
+    expect(drawn.indexOf('Connect a CRM')).toBeGreaterThan(-1);
+    expect(drawn.indexOf('Connect a CRM')).toBeLessThan(drawn.indexOf('Invite the team'));
   });
 });
 
@@ -820,7 +951,23 @@ describe('📁 the activation greeting — states 01 and 03', () => {
 
     render(<Home />);
 
-    expect(screen.queryByText(/about \d+ minutes/i)).not.toBeInTheDocument();
+    /**
+     * ⚠️ **Scoped to the GREETING, and the scope is the whole point.**
+     *
+     * ⛔ **This assertion used to be page-wide and passed for the wrong
+     * reason** — the activation cards were not rendering, because the
+     * composition came from a mocked `cardsFor`. 📁 **The cards carry their own
+     * estimate verbatim from the design** — *"About 4 minutes · needs admin
+     * consent"* — **and that one is a reviewed design string, not a guess.**
+     *
+     * ⚡ **The rule is about the greeting alone**: `HM-COPY-01`'s estimate
+     * *"comes from measured p50 completion time, not a guess"*, and nothing
+     * measures one, so Home omits the clause rather than inventing a number
+     * that would carry the copy table's authority.
+     */
+    expect(screen.getByRole('heading', { level: 1 }).textContent).not.toMatch(
+      /about \d+ minutes/i,
+    );
   });
 
   /**

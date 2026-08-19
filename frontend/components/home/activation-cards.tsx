@@ -77,7 +77,10 @@ function useActivation() {
   const workspaceId = activeWorkspace?.id ?? null;
   return {
     query: useIntegrations(workspaceId),
-    complete: useActivationState(workspaceId).complete,
+    // ⚡ **An empty registry is the right argument here**: this reads only
+    // `complete`, which is derived from what the workspace HAS rather than
+    // from what it was asked to do, so the registry would change nothing.
+    complete: useActivationState(workspaceId, []).complete,
   };
 }
 

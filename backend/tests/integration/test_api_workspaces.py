@@ -341,6 +341,120 @@ class TestTheViewerCanAlwaysLearnTheirOwnRole:
         assert "role" not in response.text
 
 
+class TestTheActivationRegistryIsServed:
+    """📁 Home contract 5 — *"the activation registry is fetched from the server."*
+
+    ⛔ **It used to be a frozen array in the browser bundle**, which made two
+    things impossible: a step could not be added without shipping a frontend,
+    and `AC-H09` — *"return the activation registry as an empty array"* — could
+    not happen at all, so Home's state 12 was unreachable and untested.
+
+    ⚡ **Two modules answer, because two modules own the steps.** Connecting a
+    system is the connections module's; getting colleagues in is membership's.
+    **Neither imports the other**, and the surface composes them by the integer
+    each one declares.
+    """
+
+    async def test_membership_declares_its_one_step(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        owner = uuid4()
+        workspace = await _create_workspace(client, key_pair, owner)
+
+        response = await client.get(
+            f"/workspaces/{workspace['id']}/membership/activation-steps",
+            headers=_auth(key_pair, owner),
+        )
+
+        assert response.status_code == 200, response.text
+        assert response.json() == [
+            {"id": "invite_members", "priority": 300, "blocking": False}
+        ]
+
+    async def test_a_member_is_told_the_same_thing_as_an_owner(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """📁 `P-11` — the step is never withheld from somebody who cannot act.
+
+        ⛔ **A person who may not invite anybody still needs to know the
+        workspace is short of people**, so they can ask somebody who can. What
+        they may *do* is settled when they try.
+        """
+        owner, member = uuid4(), uuid4()
+        workspace = await _create_workspace(client, key_pair, owner)
+        await client.post(
+            f"/workspaces/{workspace['id']}/members",
+            json={"user_id": str(member), "role": "member"},
+            headers=_auth(key_pair, owner),
+        )
+
+        response = await client.get(
+            f"/workspaces/{workspace['id']}/membership/activation-steps",
+            headers=_auth(key_pair, member),
+        )
+
+        assert response.status_code == 200, response.text
+        assert [step["id"] for step in response.json()] == ["invite_members"]
+
+    async def test_the_connections_module_declares_its_two(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        owner = uuid4()
+        workspace = await _create_workspace(client, key_pair, owner)
+
+        response = await client.get(
+            f"/workspaces/{workspace['id']}/integrations/activation-steps",
+            headers=_auth(key_pair, owner),
+        )
+
+        assert response.status_code == 200, response.text
+        assert response.json() == [
+            {"id": "crm_activity", "priority": 100, "blocking": True},
+            {"id": "meetings", "priority": 200, "blocking": True},
+        ]
+
+    async def test_a_stranger_reads_neither(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """⛔ **404, never 403** — 📁 §7, because 403 confirms the workspace."""
+        owner, stranger = uuid4(), uuid4()
+        workspace = await _create_workspace(client, key_pair, owner)
+
+        for path in ("membership", "integrations"):
+            response = await client.get(
+                f"/workspaces/{workspace['id']}/{path}/activation-steps",
+                headers=_auth(key_pair, stranger),
+            )
+            assert response.status_code == 404, f"{path}: {response.text}"
+
+    async def test_the_two_registries_declare_disjoint_priorities(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """🔴 **The property that makes composing them safe.**
+
+        📁 *"CRM 100, calls 200, invite 300."* ⚡ Neither module can see the
+        other's integers, so nothing stops two of them colliding except this
+        assertion — and a collision would make Home's card order depend on
+        which response arrived first.
+        """
+        owner = uuid4()
+        workspace = await _create_workspace(client, key_pair, owner)
+        headers = _auth(key_pair, owner)
+
+        priorities = [
+            step["priority"]
+            for path in ("membership", "integrations")
+            for step in (
+                await client.get(
+                    f"/workspaces/{workspace['id']}/{path}/activation-steps",
+                    headers=headers,
+                )
+            ).json()
+        ]
+
+        assert len(priorities) == len(set(priorities)), priorities
+
+
 class TestErrorContract:
     async def test_every_error_carries_a_correlation_id_in_body_and_header(
         self, client: AsyncClient

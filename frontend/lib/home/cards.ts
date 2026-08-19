@@ -371,9 +371,29 @@ export function cardsFor(
   role: WorkspaceRole | null,
   registry: readonly CardContract[] = REGISTRY,
 ): readonly CardContract[] {
+  return contractsFor(COMPOSITION_CARDS[composition], registry);
+}
+
+/**
+ * 🔴 **The same resolution, for a set somebody else decided.**
+ *
+ * ⚡ **Activation's order is the SERVER'S** — 📁 contract 5, *"the activation
+ * registry is fetched from the server; card order comes from its priority
+ * integer"* — so the ids arrive from outside this file while everything else
+ * about a card still comes from the design's registry inside it.
+ *
+ * ⛔ **An id nothing has contributed is dropped, exactly as it is for a
+ * composition.** ⚡ That is the same rule in both directions: **Home shows only
+ * what exists**, and a step declared for a card no module has shipped is a
+ * promise the page cannot keep.
+ */
+export function contractsFor(
+  ids: readonly CardId[],
+  registry: readonly CardContract[] = REGISTRY,
+): readonly CardContract[] {
   const contributed = new Map(registry.map((card) => [card.id, card]));
 
-  return COMPOSITION_CARDS[composition]
+  return ids
     .map((id) => contributed.get(id))
     .filter((card): card is CardContract => card !== undefined);
 }

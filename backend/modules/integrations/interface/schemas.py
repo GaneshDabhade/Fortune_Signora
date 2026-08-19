@@ -15,6 +15,7 @@ from pydantic import BaseModel, ConfigDict, Field, SecretStr
 from modules.integrations.application.connect import ConnectInput
 from modules.integrations.application.disconnect import DisconnectResult
 from modules.integrations.application.queries import ConnectionView, SystemView
+from modules.integrations.domain.catalog import ActivationStep
 from modules.integrations.domain.grant import Credential
 
 
@@ -257,3 +258,32 @@ class ConnectRequest(BaseModel):
             expires_at=self.expires_at,
             refreshable=self.refreshable,
         )
+
+
+class ActivationStepResponse(BaseModel):
+    """One step a workspace must take, as the surfaces that ask for it read it."""
+
+    model_config = ConfigDict(frozen=True)
+
+    id: str = Field(
+        description=(
+            "The capability this step obtains. Stable, and the identifier a "
+            "client keys its own presentation from."
+        )
+    )
+    priority: int = Field(
+        description=(
+            "Lower is earlier. Clients order by this integer rather than by "
+            "array position, so a step added later lands where it belongs."
+        )
+    )
+    blocking: bool = Field(
+        description=(
+            "Whether Signora can conclude anything without it. A non-blocking "
+            "step makes conclusions weaker rather than impossible."
+        )
+    )
+
+    @classmethod
+    def from_domain(cls, step: ActivationStep) -> ActivationStepResponse:
+        return cls(id=step.capability.value, priority=step.priority, blocking=step.blocking)

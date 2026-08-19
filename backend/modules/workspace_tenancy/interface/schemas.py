@@ -23,6 +23,7 @@ from modules.workspace_tenancy.application.use_cases.organization_history import
     HistoryEntry,
     HistoryKind,
 )
+from modules.workspace_tenancy.domain.activation import ActivationStep
 from modules.workspace_tenancy.domain.entities import (
     MAX_WORKSPACE_NAME_LENGTH,
     RoleChange,
@@ -1055,3 +1056,38 @@ class ViewedRecordResponse(BaseModel):
         return cls(
             entity_id=record.entity_id, kind=record.kind, viewed_at=record.viewed_at
         )
+
+
+class ActivationStepResponse(BaseModel):
+    """One step this module asks a new workspace to take.
+
+    **The same three fields the connections surface publishes**, deliberately:
+    a client composes several modules' steps into one ordered list, and it can
+    only do that if every module answers the question the same way. 📁 §7 —
+    *"do not invent a new response envelope per module."*
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    id: str = Field(
+        description=(
+            "Stable, and the identifier a client keys its own presentation "
+            "from."
+        )
+    )
+    priority: int = Field(
+        description=(
+            "Lower is earlier. Clients order by this integer rather than by "
+            "array position."
+        )
+    )
+    blocking: bool = Field(
+        description=(
+            "Whether Signora can conclude anything without it. A non-blocking "
+            "step makes conclusions weaker rather than impossible."
+        )
+    )
+
+    @classmethod
+    def from_domain(cls, step: ActivationStep) -> ActivationStepResponse:
+        return cls(id=step.id, priority=step.priority, blocking=step.blocking)

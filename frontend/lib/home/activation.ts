@@ -10,35 +10,42 @@
  * function that can fail a test, not a comment in a component.**
  */
 
-import type { IntegrationSystem } from '@/lib/api/types';
+import type { ActivationStep, IntegrationSystem } from '@/lib/api/types';
 
 /**
- * 📁 ***"CRM 100, calls 200, invite 300. Lower is earlier. A new source
- * declares its own integer; Home does not know the set in advance."***
+ * 🔴 **The card each declared step is drawn as.**
  *
- * ⚡ **The last sentence is why this is an integer and not an array index** —
- * **a source declares where it belongs**, and Home sorts what it is given.
+ * 📁 **The registry now comes from the server** — contract 5, *"the activation
+ * registry is fetched from the server; card order comes from its priority
+ * integer, not from array position"* — so this file no longer holds the set,
+ * the order or which steps block. ⚡ **What stays here is the translation**: the
+ * server speaks capabilities and membership, a customer reads *"connect a
+ * CRM"*, and 📁 [ADR-0034](../../../docs/architecture/adr/0034-ubiquitous-language.md)
+ * puts that at the frontend edge and nowhere further in.
+ *
+ * ⚠️ **A step with no entry here is dropped rather than guessed at.** ⛔ A card
+ * needs its own heading, its reason and the flow it opens, and none of those
+ * can be invented from an identifier. **The backend's own registry test asserts
+ * its exact contents**, so adding a step there fails a test that says to add a
+ * card here.
  */
-export const ACTIVATION_PRIORITY = {
-  'connect-a-crm': 100,
-  'connect-calls': 200,
-  'invite-the-team': 300,
-} as const;
+export const CARD_FOR_STEP: Readonly<Record<string, ActivationCardId>> = {
+  crm_activity: 'connect-a-crm',
+  meetings: 'connect-calls',
+  invite_members: 'invite-the-team',
+};
 
-export type ActivationCardId = keyof typeof ACTIVATION_PRIORITY;
+export type ActivationCardId = 'connect-a-crm' | 'connect-calls' | 'invite-the-team';
 
 /**
- * 📁 **The activation composition's whole set**, in the registry's order.
- *
- * ⚠️ **Two components each held a private copy of this array** and a third was
- * about to. ⛔ A set that must agree with {@link ACTIVATION_PRIORITY}'s keys and
- * is written out by hand beside it is the duplication §2 names.
+ * 🔴 **The registry as Home reads it** — the two servers' declarations,
+ * translated, ordered, and with anything Home cannot draw removed.
  */
-export const ACTIVATION_CARDS: readonly ActivationCardId[] = Object.freeze([
-  'connect-a-crm',
-  'connect-calls',
-  'invite-the-team',
-]);
+export interface ActivationEntry {
+  readonly card: ActivationCardId;
+  readonly priority: number;
+  readonly blocking: boolean;
+}
 
 /**
  * 🔴 **Ordering, and the rule that makes it safe.**
@@ -50,14 +57,30 @@ export const ACTIVATION_CARDS: readonly ActivationCardId[] = Object.freeze([
  *
  * ⛔ **Sinking completed steps is the obvious implementation and the design
  * forbids it by name.** ⚡ A person who has just finished step 1 would watch it
- * move while their pointer was on it.
+ * move while their pointer was on it — which is also why this takes no
+ * completion argument at all: it has nothing to sink them with.
+ *
+ * ⚡ **Two modules declare, and neither can see the other's integers.** 📁 The
+ * design's *"a new source declares its own integer; Home does not know the set
+ * in advance"* is exactly what makes composing them safe — Home sorts what it
+ * is given rather than knowing where anything belongs.
  */
-export function activationOrder(
-  cards: readonly ActivationCardId[],
-): readonly ActivationCardId[] {
-  // ⚠️ **A stable sort, and `toSorted` would be fine too** — what matters is
-  // that ties keep registry order rather than becoming arbitrary.
-  return [...cards].sort((a, b) => ACTIVATION_PRIORITY[a] - ACTIVATION_PRIORITY[b]);
+export function activationRegistry(
+  ...declarations: readonly (readonly ActivationStep[] | undefined)[]
+): readonly ActivationEntry[] {
+  const entries = declarations
+    .flatMap((steps) => steps ?? [])
+    .flatMap((step) => {
+      const card = CARD_FOR_STEP[step.id];
+      // ⛔ **A step Home has no card for is dropped, and it is dropped from the
+      // COUNT as well** — 📁 progress that included a step nobody could see
+      // would read *"1 of 3"* beside two cards, which is worse than the step
+      // being absent.
+      return card === undefined ? [] : [{ card, priority: step.priority, blocking: step.blocking }];
+    });
+  // ⚠️ **A stable sort**, so ties keep the order the declarations arrived in
+  // rather than becoming arbitrary.
+  return entries.sort((a, b) => a.priority - b.priority);
 }
 
 /**
@@ -118,19 +141,6 @@ export function primaryEnabled(
 }
 
 /**
- * 🔴 **Which cards can be dismissed, and the answer is a property of the card
- * rather than a preference.**
- *
- * 📁 ***"Blocking cards — CRM and calls — cannot be dismissed. Non-blocking
- * cards can be skipped."***
- */
-export const BLOCKING: Readonly<Record<ActivationCardId, boolean>> = {
-  'connect-a-crm': true,
-  'connect-calls': true,
-  'invite-the-team': false,
-};
-
-/**
  * 📁 ***"Progress counts blocking cards only. 'Step 2 of 3' with an optional
  * card present reads 'Step 2 of 2 · 1 optional'."***
  *
@@ -144,13 +154,17 @@ export interface ActivationProgress {
 }
 
 export function activationProgress(
-  cards: readonly ActivationCardId[],
+  registry: readonly ActivationEntry[],
   complete: Readonly<Record<ActivationCardId, boolean>>,
 ): ActivationProgress {
-  const blocking = cards.filter((card) => BLOCKING[card]);
+  // 📁 *"Blocking cards — CRM and calls — cannot be dismissed."* ⚡ **Which
+  // cards those are is the declaring module's answer now**, not a constant
+  // here, so a step that stops blocking stops being counted without Home
+  // shipping.
+  const blocking = registry.filter((entry) => entry.blocking);
   return {
-    done: blocking.filter((card) => complete[card]).length,
+    done: blocking.filter((entry) => complete[entry.card]).length,
     total: blocking.length,
-    optional: cards.length - blocking.length,
+    optional: registry.length - blocking.length,
   };
 }

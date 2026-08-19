@@ -11,6 +11,7 @@ import {
   InviteTheTeamCard,
 } from '@/components/home/activation-cards';
 import { ActivationProgress } from '@/components/home/activation-progress';
+import { NoRegistry } from '@/components/home/no-registry';
 import { AgentQueueCard, AgentRunsCard } from '@/components/home/agent-cards';
 import { AttentionCard } from '@/components/home/attention-card';
 import { FirstRunOverlay } from '@/components/home/first-run-overlay';
@@ -28,13 +29,22 @@ import { NoDataStrip } from '@/components/home/no-data-strip';
 import { SetupCompleteStrip } from '@/components/home/setup-complete-strip';
 import { SourceStrip } from '@/components/home/source-strip';
 import { WorkspaceStrip } from '@/components/home/workspace-strip';
-import { HM_COPY_11 } from '@/lib/home/copy';
-import { applyLayout, cardsFor, forbidden, type CardContract } from '@/lib/home/cards';
+import {
+  applyLayout,
+  cardsFor,
+  contractsFor,
+  forbidden,
+  type CardContract,
+} from '@/lib/home/cards';
 import { PERMISSION_NAME } from '@/lib/state/permissions';
 import { resolveComposition } from '@/lib/home/composition';
 import { useSession } from '@/lib/auth/client';
 import { useAccountsCount } from '@/lib/query/hooks/accounts-count';
-import { useActivationState, useStatedRole } from '@/lib/query/hooks/home';
+import {
+  useActivationRegistry,
+  useActivationState,
+  useStatedRole,
+} from '@/lib/query/hooks/home';
 import { useIntegrations } from '@/lib/query/hooks/integrations';
 import { useWorkspaceTriage } from '@/lib/query/hooks/triage';
 import { useChooseHomeLayout, usePreferences } from '@/lib/query/hooks/preferences';
@@ -190,6 +200,17 @@ function HomeContent() {
   const resolving = isLoading || integrations.isPending;
 
   /**
+   * 🔴 **Contract 5** — 📁 *"the activation registry is fetched from the
+   * server; card order comes from its priority integer, not from array
+   * position."*
+   *
+   * ⛔ **Read on every composition, not only activation**, because a hook
+   * cannot be called conditionally — and it costs nothing: the two reads are
+   * a reviewed catalog with a ten-minute `staleTime`.
+   */
+  const registry = useActivationRegistry(workspaceId);
+
+  /**
    * 🔴 **States 01, 03, 04, 05 and 14 all read from here** — 📁 activation's
    * completion, derived from the source of truth and never stored on Home.
    *
@@ -197,7 +218,7 @@ function HomeContent() {
    * are *data* compositions that need to know what activation did: 04 announces
    * that setup just finished, and 14 says the optional step is still outstanding.
    */
-  const activationState = useActivationState(workspaceId);
+  const activationState = useActivationState(workspaceId, registry.registry);
 
   /**
    * 📁 **State 05's second half** — *"record count is zero"*. ⚡ **The
@@ -244,8 +265,18 @@ function HomeContent() {
    * answers *how did this person leave them*, which is theirs** — and the second
    * must never be able to introduce a card the first did not name (`U-05`).
    */
+
   const cards = applyLayout(
-    cardsFor(composition, role),
+    /**
+     * ⚡ **The activation composition's set is the SERVER'S**, and every other
+     * composition's is the design's registry in this bundle. ⛔ The two are
+     * different kinds of thing: 📁 activation's steps are *"a new source
+     * declares its own integer"* and can be withdrawn by a release, while
+     * `card.attention` and its siblings are a fixed design document.
+     */
+    composition === 'activation'
+      ? contractsFor(registry.registry.map((entry) => entry.card))
+      : cardsFor(composition, role),
     preferences.data?.home_layout?.[composition],
   );
   /**
@@ -268,7 +299,19 @@ function HomeContent() {
    * design is explicit about what must NOT happen**: *"Never a progress bar at 0
    * of 0, and never an empty activation composition."*
    */
-  const registryEmpty = composition === 'activation' && rendered.length === 0 && !resolving;
+  /**
+   * ⚠️ **`registry.resolved || registry.failed`, and the pair is the point.**
+   * ⛔ **An unread registry is indistinguishable from an empty one**, and
+   * telling somebody their setup steps could not be loaded while they were
+   * merely in flight would be the page inventing a fault. ⚡ **A read that
+   * FAILED is a real answer** — 📁 `P-A`, *"a failed read must never render as
+   * an empty result"*, and here it renders the fault instead.
+   */
+  const registryEmpty =
+    composition === 'activation' &&
+    (registry.resolved || registry.failed) &&
+    registry.registry.length === 0 &&
+    !resolving;
 
   /**
    * ⚠️ **A data composition that could compose nothing at all.**
@@ -401,9 +444,18 @@ function HomeContent() {
           /* 📁 **States 01 and 03**, and only on the activation composition —
              ⛔ every other composition greets by the clock. ⚡ **`null` until
              activation has resolved**, so the sentence never opens with *"let us
-             get you connected"* to somebody who already has. */
+             get you connected"* to somebody who already has.
+
+             🔴 **And `null` on state 12**, which is the same rule as the design's
+             *"never a progress bar at 0 of 0"* applied to the sentence above it:
+             ⚠️ **`HM-COPY-01` with a total of zero reads *"Let us get Playground
+             connected. Zero steps."*** — ⛔ **a count asserted from a registry
+             that could not be read.** ⚡ The time-of-day greeting is never false,
+             and the strip below it says what actually happened. */
           activation={
-            composition === 'activation' && activationState.resolved
+            composition === 'activation' &&
+            activationState.resolved &&
+            activationState.progress.total > 0
               ? { done: activationState.progress.done, total: activationState.progress.total }
               : null
           }
@@ -505,20 +557,8 @@ function HomeContent() {
           </p>
         </section>
       ) : registryEmpty ? (
-        /* 📁 State 12's copy, verbatim, with a retry and no progress bar. */
-        <section
-          aria-label="Setup steps"
-          className="rounded-lg border border-border-soft bg-surface p-5 shadow-sm"
-        >
-          <p className="text-sm font-semibold text-content">{HM_COPY_11}</p>
-          <button
-            type="button"
-            onClick={() => void integrations.refetch()}
-            className="mt-3 inline-flex h-control-sm items-center rounded-md border border-border px-3 text-xs font-semibold text-content transition-colors hover:border-accent hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-          >
-            Try again
-          </button>
-        </section>
+        /* 📁 **State 12** — its copy verbatim, a retry, and no progress bar. */
+        <NoRegistry onRetry={registry.refetch} />
       ) : (
         /**
          * 📁 **Two columns, `1.45fr / 1fr`, 14px gap at the reference viewport**

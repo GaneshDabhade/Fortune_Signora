@@ -15,6 +15,7 @@ from apps.api.composition.integrations import (
     IntegrationRead,
 )
 from modules.integrations.interface.schemas import (
+    ActivationStepResponse,
     ConnectionResponse,
     ConnectRequest,
     DisconnectResponse,
@@ -88,6 +89,36 @@ async def list_systems(
     context.authorize(Resource.INTEGRATION, Action.READ)
     systems = await queries.systems(context.workspace_id, at=datetime.now(UTC))
     return [SystemResponse.from_domain(system) for system in systems]
+
+
+@router.get(
+    "/workspaces/{workspace_id}/integrations/activation-steps",
+    response_model=list[ActivationStepResponse],
+    summary="What has to be connected before Signora can say anything",
+)
+async def list_activation_steps(
+    context: CurrentWorkspace,
+    queries: IntegrationRead,
+) -> list[ActivationStepResponse]:
+    """*"What do we have to do before this product does anything for us?"*
+
+    The steps themselves, in the order they should be taken — **not how far
+    this organization has got**, which is answered by what they have actually
+    connected. Keeping the two apart is what lets a step be added without
+    every screen that shows progress being changed.
+
+    **A step appears only if Signora can act on what it obtains.** Asking
+    somebody to connect a calendar whose meetings nothing yet reads would be
+    the product requesting work it cannot repay, which is the rule the
+    capability catalog already applies to the Connection Center.
+
+    **An empty list is a real answer and means something is wrong** — a
+    platform that can act on nothing it knows how to connect to is
+    misconfigured. Clients say so rather than showing an empty list of things
+    to do, because a customer reading "0 of 0 steps" learns nothing.
+    """
+    context.authorize(Resource.INTEGRATION, Action.READ)
+    return [ActivationStepResponse.from_domain(step) for step in queries.activation_steps()]
 
 
 @router.post(

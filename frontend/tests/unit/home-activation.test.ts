@@ -8,14 +8,28 @@ import { describe, expect, it } from 'vitest';
 import type { IntegrationSystem } from '@/lib/api/types';
 import { COMPOSITION_CARDS } from '@/lib/home/cards';
 import {
-  ACTIVATION_PRIORITY,
-  BLOCKING,
-  activationOrder,
+  CARD_FOR_STEP,
   activationProgress,
+  activationRegistry,
   hasWorkingCapability,
   primaryEnabled,
-  type ActivationCardId,
 } from '@/lib/home/activation';
+import type { ActivationStep } from '@/lib/api/types';
+
+/**
+ * 🔴 **What the two servers declare**, verbatim from the API tests that pin
+ * them — 📁 contract 5, *"the activation registry is fetched from the server."*
+ *
+ * ⛔ **Written out rather than imported**, because the point of these
+ * assertions is what Home does with a declaration it did not choose.
+ */
+const CONNECTIONS: readonly ActivationStep[] = [
+  { id: 'crm_activity', priority: 100, blocking: true },
+  { id: 'meetings', priority: 200, blocking: true },
+];
+const MEMBERSHIP: readonly ActivationStep[] = [
+  { id: 'invite_members', priority: 300, blocking: false },
+];
 
 const NONE = {
   'connect-a-crm': false,
@@ -23,23 +37,52 @@ const NONE = {
   'invite-the-team': false,
 } as const;
 
-const ALL = ['connect-a-crm', 'connect-calls', 'invite-the-team'] as const;
+const ALL = activationRegistry(CONNECTIONS, MEMBERSHIP);
 
 describe('🔴 the list never reshuffles under the cursor', () => {
   /** 📁 *"Never by completion state — a completed card holds its position."* */
   it('orders by declared priority, ascending', () => {
-    expect(activationOrder(['invite-the-team', 'connect-calls', 'connect-a-crm'])).toEqual([
+    // ⚡ **Deliberately handed to it backwards**, and from the membership
+    // module first — 📁 *"card order comes from its priority integer, not from
+    // array position"*, so the arrival order must not survive.
+    expect(activationRegistry(MEMBERSHIP, CONNECTIONS).map((entry) => entry.card)).toEqual([
       'connect-a-crm',
       'connect-calls',
       'invite-the-team',
     ]);
   });
 
-  it('⛔ and a completed step does NOT sink to the bottom', () => {
+  it('⛔ takes no completion argument at all, so it cannot sink a finished step', () => {
     // ⚡ **The obvious implementation is to sort completed last**, and the
-    // design forbids it by name. This is the assertion that fails if somebody
-    // adds it.
-    expect(activationOrder(ALL)).toEqual(['connect-a-crm', 'connect-calls', 'invite-the-team']);
+    // design forbids it by name. ✅ **Made unrepresentable rather than
+    // asserted**: the function has nothing to sink them with.
+    expect(activationRegistry(CONNECTIONS, MEMBERSHIP)).toEqual(
+      activationRegistry(MEMBERSHIP, CONNECTIONS),
+    );
+  });
+
+  it('⛔ a step Home has no card for is dropped rather than guessed at', () => {
+    // ⚠️ **And dropped from the COUNT as well** — progress that included a
+    // step nobody could see would read "1 of 3" beside two cards.
+    const registry = activationRegistry(
+      [...CONNECTIONS, { id: 'something_new', priority: 150, blocking: true }],
+      MEMBERSHIP,
+    );
+
+    expect(registry.map((entry) => entry.card)).toEqual([
+      'connect-a-crm',
+      'connect-calls',
+      'invite-the-team',
+    ]);
+  });
+
+  it('🔴 an empty registry is empty, which is what makes state 12 reachable', () => {
+    // 📁 `AC-H09` — *"return the activation registry as an empty array:
+    // HM-COPY-11 renders and no progress bar is present."* ⛔ **A frozen
+    // client-side array made this impossible**, which is why the design puts
+    // the registry on the server.
+    expect(activationRegistry([], [])).toEqual([]);
+    expect(activationRegistry(undefined, undefined)).toEqual([]);
   });
 });
 
@@ -107,11 +150,13 @@ describe('📁 progress counts blocking cards only', () => {
   });
 
   it('🔴 the two blocking steps are the two the design names', () => {
-    // ⚠️ **Dismissibility follows from this**, so it is pinned rather than left
-    // to a component: *"blocking cards — CRM and calls — cannot be dismissed."*
-    expect(BLOCKING['connect-a-crm']).toBe(true);
-    expect(BLOCKING['connect-calls']).toBe(true);
-    expect(BLOCKING['invite-the-team']).toBe(false);
+    // ⚠️ **Dismissibility follows from this** — *"blocking cards — CRM and
+    // calls — cannot be dismissed"* — ⚡ **and it is the declaring module's
+    // answer now**, so what this pins is that Home carries it through rather
+    // than deciding it.
+    const blocking = ALL.filter((entry) => entry.blocking).map((entry) => entry.card);
+
+    expect(blocking).toEqual(['connect-a-crm', 'connect-calls']);
   });
 });
 
@@ -120,64 +165,49 @@ describe('🔴 the ordering rule is in force, not merely written', () => {
    * ⛔ **This is the guard that was missing, and its absence let a real defect
    * ship** — [TASK-1424](../../../docs/BACKLOG.md).
    *
-   * ⚠️ **`activationOrder` sorts by priority and NOTHING CALLED IT.** Home
-   * renders `cardsFor`'s output, which is `COMPOSITION_CARDS` order — and that
-   * array read `connect-a-crm, invite-the-team, connect-calls`, **so the
-   * optional step rendered ahead of a blocking one.** ⚡ **The rule was
-   * written, tested, and not in force**, which is the unreachable-primitive
-   * class turned inside out: not a helper with no caller, but a helper whose
-   * caller used something else.
+   * ⚠️ **The order helper sorted by priority and NOTHING CALLED IT.** Home
+   * rendered `COMPOSITION_CARDS` order, and that array read `connect-a-crm,
+   * invite-the-team, connect-calls`, **so the optional step rendered ahead of a
+   * blocking one.** ⚡ **The rule was written, tested, and not in force.**
    *
-   * ✅ **So the assertion is on the array the PRODUCT reads**, with the law as
-   * the oracle.
+   * ✅ **Now the product reads exactly what this function returns**, so the
+   * assertion and the render path are the same thing.
    */
-  it('the activation composition renders in declared priority order', () => {
-    const activation = COMPOSITION_CARDS.activation.filter(
-      (id): id is ActivationCardId => id in ACTIVATION_PRIORITY,
-    );
-
-    expect(activation).toEqual(activationOrder(activation));
-  });
-
-  it('⛔ and the optional card is never ahead of a blocking one', () => {
-    // 📁 *"CRM 100, calls 200, invite 300. Lower is earlier."* — the sentence
-    // this guard exists to keep true.
-    const activation = COMPOSITION_CARDS.activation.filter(
-      (id): id is ActivationCardId => id in ACTIVATION_PRIORITY,
-    );
-    const lastBlocking = activation.reduce(
-      (last, id, index) => (BLOCKING[id] ? index : last),
+  it('the optional step is never ahead of a blocking one', () => {
+    const registry = activationRegistry(CONNECTIONS, MEMBERSHIP);
+    const lastBlocking = registry.reduce(
+      (last, entry, index) => (entry.blocking ? index : last),
       -1,
     );
-    const firstOptional = activation.findIndex((id) => !BLOCKING[id]);
+    const firstOptional = registry.findIndex((entry) => !entry.blocking);
 
     expect(firstOptional).toBeGreaterThan(lastBlocking);
   });
-});
 
-describe('🔴 the activation composition is complete, and the third card waited for its store', () => {
   /**
-   * ⚡ **All three of the design's steps are contributed now** —
-   * [TASK-1424](../../../docs/BACKLOG.md). ⛔ **`invite-the-team` was
-   * deliberately absent until migration `0050`**, because *"skip for now"* is
-   * the design's control and **a skip that forgot at the next sign-in is a
-   * control that lies.**
+   * 🔴 **The server may only ask for cards the design drew.**
+   *
+   * ⚡ `contractsFor` drops an id no module has contributed, so a step for a
+   * card that does not exist is already harmless — ⛔ **this is the assertion
+   * that says so out loud**, because a silently dropped step is a step nobody
+   * would notice was missing.
    */
-  it('all three steps are in the composition, in priority order', () => {
-    const activation = COMPOSITION_CARDS.activation.filter(
-      (id): id is ActivationCardId => id in ACTIVATION_PRIORITY,
-    );
+  it('every step the two modules declare maps to a card in the composition', () => {
+    const declared = [...CONNECTIONS, ...MEMBERSHIP].map((step) => CARD_FOR_STEP[step.id]);
 
-    expect(activation).toEqual(['connect-a-crm', 'connect-calls', 'invite-the-team']);
+    expect(declared.every((card) => card !== undefined)).toBe(true);
+    for (const card of declared) {
+      expect(COMPOSITION_CARDS.activation).toContain(card!);
+    }
   });
 
   it('⛔ and only the non-blocking one is skippable', () => {
     // 📁 *"Blocking cards — CRM and calls — cannot be dismissed."* ⚡ The two
     // blocking cards render through a component with no skip control at all,
     // so this is structural rather than a flag somebody could flip.
-    const skippable = (Object.keys(BLOCKING) as ActivationCardId[]).filter(
-      (id) => !BLOCKING[id],
-    );
+    const skippable = activationRegistry(CONNECTIONS, MEMBERSHIP)
+      .filter((entry) => !entry.blocking)
+      .map((entry) => entry.card);
 
     expect(skippable).toEqual(['invite-the-team']);
   });

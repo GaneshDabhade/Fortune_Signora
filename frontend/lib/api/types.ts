@@ -1694,3 +1694,21 @@ export interface SavedView {
   supersedes: string | null;
   retired_at: string | null;
 }
+
+
+/**
+ * One step a workspace must take before Signora is useful, as a module declares it.
+ *
+ * **The declaration, never the progress.** Whether it is done is derived from
+ * what the workspace actually has — a connection that works, a colleague who
+ * joined — and folding the two together would make a static registry look like
+ * per-tenant state.
+ */
+export interface ActivationStep {
+  /** Stable. The client keys its own presentation from it. */
+  id: string;
+  /** Lower is earlier. Order by this, never by array position. */
+  priority: number;
+  /** Whether Signora can conclude anything without it. */
+  blocking: boolean;
+}

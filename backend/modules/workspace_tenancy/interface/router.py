@@ -51,6 +51,7 @@ from modules.workspace_tenancy.application.use_cases.transfer_ownership import (
     TransferOwnershipCommand,
 )
 from modules.workspace_tenancy.domain.capability import NotAWorkspaceMemberError
+from modules.workspace_tenancy.domain.activation import activation_registry
 from modules.workspace_tenancy.domain.entities import WorkspaceRole
 from modules.workspace_tenancy.domain.exceptions import SavedViewNotFoundError
 from modules.workspace_tenancy.domain.onboarding import Answer, CompanySizeBand, Role
@@ -65,6 +66,7 @@ from modules.workspace_tenancy.infrastructure.repositories import (
     SqlAlchemyNotificationRepository,
 )
 from modules.workspace_tenancy.interface.schemas import (
+    ActivationStepResponse,
     RecordViewRequest,
     ViewedRecordResponse,
     AddMemberRequest,
@@ -1132,6 +1134,31 @@ async def record_entry(context: CurrentWorkspace) -> WorkspaceEntryResponse:
             None if entry.role_change is None else RoleChangePayload.of(entry.role_change)
         ),
     )
+
+
+@router.get(
+    "/workspaces/{workspace_id}/membership/activation-steps",
+    response_model=list[ActivationStepResponse],
+    summary="What this workspace has to do about its own people",
+)
+async def list_membership_activation_steps(
+    context: CurrentWorkspace,
+) -> list[ActivationStepResponse]:
+    """*"Is there anything about our team that Signora needs from us?"*
+
+    One step today — get colleagues in — and it is **not** something Signora
+    cannot work without. A workspace of one still gets conclusions; they are
+    thinner, because what the product measures is relationships and one person
+    is a small sample of a buying committee.
+
+    **Everybody gets the same answer, including somebody who cannot invite
+    anyone.** Withholding it from them would be the product hiding the reason
+    its conclusions are thin from the person most likely to ask about it —
+    they can still tell an administrator. What they may *do* about it is
+    settled where every other permission is, when they try.
+    """
+    context.authorize(Resource.MEMBER, Action.READ)
+    return [ActivationStepResponse.from_domain(step) for step in activation_registry()]
 
 
 @router.post(

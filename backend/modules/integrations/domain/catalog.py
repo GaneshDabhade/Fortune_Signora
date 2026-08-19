@@ -164,3 +164,60 @@ def entry_for(slug: str) -> CatalogEntry | None:
     after Signora stops offering new Salesforce connections.
     """
     return CATALOG.get(slug)
+
+
+@dataclass(frozen=True, slots=True)
+class ActivationStep:
+    """One step a workspace must take before Signora can say anything.
+
+    **The declaration, not the progress.** Whether the step is *done* is derived
+    from the connections a workspace actually has; this is the reviewed static
+    knowledge of what the steps are and what order they come in — the same
+    category as `CATALOG` itself, and owned by the same domain expert.
+    """
+
+    capability: Capability
+    #: Lower is earlier. **An integer a source declares rather than a position
+    #: in a list**, so a system added later lands where it belongs without
+    #: anything downstream knowing the set in advance.
+    priority: int
+    #: Whether Signora can produce anything without it. A blocking step that is
+    #: missing is why a workspace has no conclusions; a non-blocking one merely
+    #: makes them weaker.
+    blocking: bool
+
+
+#: The steps this module owns, in the order a customer meets them.
+#:
+#: **Both are blocking**: a CRM is the account and deal record everything scores
+#: against, and meetings are what the scoring is largely made of. Neither is
+#: something Signora can substitute for.
+ACTIVATION_STEPS: Final[tuple[ActivationStep, ...]] = (
+    ActivationStep(Capability.CRM_ACTIVITY, priority=100, blocking=True),
+    ActivationStep(Capability.MEETINGS, priority=200, blocking=True),
+)
+
+
+def activation_registry() -> tuple[ActivationStep, ...]:
+    """The steps this module may currently ask a customer to take.
+
+    **The catalog's own rule, applied to a second reader.** A step is published
+    only when its capability is live *and* some system in the catalog supplies
+    it — the same test `live_capabilities` already applies to the Connection
+    Center, for the same reason: asking somebody to connect a calendar Signora
+    cannot act on is the product promising what the pipeline cannot deliver.
+
+    **It can legitimately return nothing**, and that is not a defect to paper
+    over — a catalog that supplies no live capability means a misconfigured or
+    partly-deployed platform, and the surfaces that read this say so rather
+    than rendering an empty list of things to do.
+    """
+    supplied = {
+        capability for entry in CATALOG.values() for capability in entry.live_capabilities
+    }
+    return tuple(
+        sorted(
+            (step for step in ACTIVATION_STEPS if step.capability in supplied),
+            key=lambda step: step.priority,
+        )
+    )

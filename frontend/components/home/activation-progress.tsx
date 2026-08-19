@@ -16,7 +16,7 @@
 
 'use client';
 
-import { useActivationState } from '@/lib/query/hooks/home';
+import { useActivationRegistry, useActivationState } from '@/lib/query/hooks/home';
 import { useSkipInvite } from '@/lib/query/hooks/preferences';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
@@ -27,12 +27,18 @@ export function ActivationProgress() {
   // ⚠️ **Derived once, in `useActivationState`.** ⛔ This component held its own
   // copy of *"CRM complete means a working `crm_activity`"* and so did the
   // cards; the greeting would have been a third (§2).
-  const { resolved, progress, inviteHidden } = useActivationState(workspaceId);
+  // 📁 **Contract 5** — the set and which of it blocks are the server's, so
+  // the count is taken from the registry rather than from a constant here.
+  const registry = useActivationRegistry(workspaceId);
+  const { resolved, progress, inviteHidden } = useActivationState(
+    workspaceId,
+    registry.registry,
+  );
 
   // ⛔ **Silent until every answer is known.** ⚡ A progress line that counted
   // an unread connection as *not done* would tell somebody they had made no
   // progress, which is worse than saying nothing for a moment.
-  if (!resolved) return null;
+  if (!resolved || !registry.resolved) return null;
 
   return (
     <p className="flex items-center gap-2 text-2xs text-content-subtle">

@@ -136,6 +136,14 @@ export const queryKeys = {
   integrations: (workspaceId: string) =>
     ['workspace', workspaceId, 'integrations'] as const,
 
+  /**
+   * The activation steps a module declares. **Two modules answer**, so the
+   * source is part of the key — a single key would make the second response
+   * replace the first.
+   */
+  activationSteps: (workspaceId: string, source: 'integrations' | 'membership') =>
+    ['workspace', workspaceId, 'activation-steps', source] as const,
+
   accountNarration: (workspaceId: string, accountId: string) =>
     ['workspace', workspaceId, 'accounts', accountId, 'narration'] as const,
 
