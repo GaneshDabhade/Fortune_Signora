@@ -348,6 +348,49 @@ run 5: 0 failed                     20 passed
 
 ⛔ **This spec was the intended control for the browser gate.** 📁 **Lane A: *"a control that is clean on one stack and not another is not a control"*** — **and the sharper form this row proves: it is not clean on the SAME stack twice.** **A gate whose control is intermittent cannot distinguish a regression from a re-run.**
 
+### B-287 · 🟠 A test held `redis://localhost:6379/0` as a literal — slot 0's, which is human review's
+
+| | |
+|---|---|
+| **Module** | `backend/tests/integration/test_m1_1_demo_checklist.py` — **a shared suite, so QE's** |
+| **Current assignee** | **QE.** 📁 [§20e](../CLAUDE.md): QE owns every repository-wide suite. **Lane A reported it and correctly did not touch the file** |
+| **Severity** | 🟠 — ⚠️ **raised from the reported shape once QE measured what the test DOES to the Redis it reaches** |
+| **Status** | ✅ **`FIXED`** by QE, 2026-08-19. ⛔ **NOT `VERIFIED`** — QE wrote the fix |
+| **Found** | **2026-08-19 by Lane A**, gating a rebased candidate |
+
+**Steps to reproduce.** Run the backend suite in any lane. `test_item_3_message_appears_on_the_expected_redis_queue` raises `ConnectionRefusedError` against `127.0.0.1:6379`.
+
+📁 **[`RUNNING.md`](RUNNING.md#running-a-lane) allocates Redis as `6379 + 100n`**, so **`6379` is slot 0's — human review's** — and no lane has it.
+
+### ⚠️ It is not only a false red, and this half was not in the report
+
+📁 **Lines 182 and 195: `await redis.delete(queue)`, before and after.** ⛔ **So on a workstation where human review IS up, this test does not fail — it CONNECTS, and deletes a queue in the reviewer's Redis.** ⚡ **The failure everyone sees is the benign case**; the dangerous one is silent and looks like a pass.
+
+> 📁 **The same family as [B-270](#b-270)** — a suite consenting to destruction without naming what it would destroy. **There the fallback was `localhost:5432/signora`; here it is `localhost:6379/0`. Both are slot 0.**
+
+### ⚡ The cost Lane A named, which is the more valuable half of their report
+
+> *"It cost a diagnosis to establish that a red line in an 1,833-test run was a port allocation rather than a defect in the slice I was about to hand you."*
+
+**That is exactly what the allocation table exists to remove**, and a red line nobody can attribute is what a certification cycle spends most of its time on.
+
+### ✅ The fix — read it, and refuse to guess
+
+📁 **`REDIS_DSN = os.environ.get("SIGNORA_REDIS_URL")`**, the name `signora_platform/settings.py` already declares **required with no default**, *"for exactly this reason."*
+
+📁 **And the Makefile now passes it**, derived from `environments.py` beside the PostgreSQL port that was already derived there:
+
+```make
+SIGNORA_REDIS_PORT := $(shell python3 infra/environments.py --exports | sed -n 's/^SIGNORA_REDIS_PORT=//p')
+DESTRUCTIVE_DB_ENV = … SIGNORA_REDIS_URL=redis://localhost:$(SIGNORA_REDIS_PORT)/0 …
+```
+
+⚡ **[B-408](#b-408)'s shape exactly** — *"the mechanism already existed and nothing called it."* ✅ **`make -n test` now emits `SIGNORA_REDIS_URL=redis://localhost:6579/0`** on `lane-qe`.
+
+⛔ **The skip is explicit and says why it is not silent.** 📁 Lane A's condition — *"a silent skip would be worse than the red line"* — is met by naming the variable, naming `make test` as what sets it, and naming B-287 as what guessing a port causes.
+
+**Fire-tested both ways on a migrated database**: with `SIGNORA_REDIS_URL` set, **11 passed**; unset, **10 passed, 1 skipped**, exit 0, with the reason printed.
+
 ### B-1025 · 🟠 One certification run, two commits — `tree_is_clean()` proves the tree was stored, not that it was unchanged
 
 | | |
@@ -712,7 +755,7 @@ git push -q origin lane-qe && echo pushed          # pushed a branch with nothin
 | **Module** | `frontend/tests/e2e/**` — **the repository-wide browser suite** |
 | **Current assignee** | **QE** — 📁 [§20e](../CLAUDE.md): *"QE creates, maintains, extends and retires repository-wide automated tests"* |
 | **Severity** | 🔴 · ⛔ **It blocks the browser gate.** **Wired in as it stands, certification would report ~39 failures per cycle, most of them about nothing** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED`** by QE, 2026-08-19. ⛔ **NOT `VERIFIED`** — QE wrote it and does not verify its own work |
 | **Found** | **2026-08-18 by QE**, taking the first complete browser baseline from this lane, at `954291ec` |
 
 **Steps to reproduce.** Seed the Playground, run the whole suite, then read the memberships:
@@ -764,6 +807,47 @@ MAIN TEXT: … Welcome to E2E Org 1787050307980 | Signora needs three things
 ✅ **TESTED, 2026-08-18, by Lane A's own protocol — and it does NOT explain their instance.** **Lane A's distinguishing fact: Playwright orders by path, `account-360` sorts FIRST, so nothing precedes it that could switch the workspace — and it failed 3 of 3 for them anyway.** **Run on `main` as they specified — `account-360.spec.ts` first and alone against a freshly seeded Playground: ✅ 5 passed.** ⛔ **By their stated criterion that means B-279 stays open on its own evidence**, and this row's scope stays at what it measured. ⚡ **Two trees, two measurements** — the resemblance was strong and it was not the same instance.
 
 ⛔ **QE does not close another lane's row.** **The evidence is theirs to weigh** — their run was on a different tree and a different stack, so this explains the shape without proving it is the same instance.
+
+### ✅ FIXED, 2026-08-19 — a reserved persona, measured before and after on one environment
+
+> ## **372 passed · 16 failed · 5 skipped · 15.2m** — from **348 · 36 · 8 · 24.2m**
+
+**+24 passing, −20 failing, and nine minutes of wall clock**, because a contaminated assertion does not fail fast — it waits out a 20-second locator first.
+
+**The mechanism, verified rather than inferred** — memberships after the run:
+
+```
+quinn.alvarez  4   Playground, Northwind, Northwind, E2E Org 1787122465658
+dana.reyes     1   Playground          ← the shared owner, unchanged
+marcus.hale    1   Playground
+priya.nair     1   Playground
+sam.okafor     1   Playground
+```
+
+⚡ **The organizations are still created — the specs are unchanged and still prove what they proved.** **They simply land on an account nothing else depends on.**
+
+**Entirely gone**: `workflow` 5 · `utility-panel` 3 · `perception` 2 · `content-width` 1 · `top-bar-search` 1. **Reduced**: `visual` 4→2 · `resilience` 5→1 · `signal-center` 2→1.
+
+### The change, and the one it is not
+
+| | |
+|---|---|
+| `infra/demo-users.json` | **Quinn Alvarez**, `role: owner`, `reserved_for: "mutating-journeys"` |
+| `personas.ts` | `MUTATOR` resolved **by the declared field, never by position**, and `byRole` excludes reserved accounts — ⛔ **so `OWNER` can no longer become whoever happens to be first in the file** |
+| `auth.setup.ts` | A third sign-in |
+| `playwright.config.ts` | Project `mutating`; the spec pattern **declared once** as `MUTATING_JOURNEYS`, so what `owner` excludes and what `mutating` selects **cannot drift** |
+
+⛔ **It is a second OWNER because Signora refuses `/settings` to a member** — 📁 `permissions.member.spec.ts` proves both halves: the client guard redirects and the server refuses the write. **A member could not reach the screen under test at all.**
+
+### ⛔ The rejected design, kept because it is the tempting one
+
+**Run the two specs last, via `dependencies` on every project sharing `OWNER`'s state.** ⚠️ **Playwright skips a dependent project when its dependency fails**, so the coverage would vanish **exactly when the suite is red** — and a suite that quietly stops testing organization setup on its worst day is worse than the contamination it replaced. 📁 **A silent cap is the one thing this repository forbids by name.**
+
+✅ **Checked before running anything**: the 15 mutating tests land in **exactly one** project, `authenticate` grew to three setups, and the total moved 392 → 393 — **+1 setup, no spec lost and none duplicated.**
+
+### ⚠️ Sixteen failures remain and none is contamination
+
+**Unattributed as of this fix and not claimed as anything**: `security-center` 4 · `visual` 2 · `auth-credential-journeys` 2 · `layout-invariants` 3 ([B-1019](#b-1019)) · `signal-center` · `search-journey` · `resilience` · `rail-band` · `demo/golden-journey` · `auth-journey`. **Attribution is the next piece of work, not a claim made here.**
 
 ### ⛔ STILL LIVE on `19317ea3`, and now measured to the row — QE, 2026-08-19, cycle 249
 

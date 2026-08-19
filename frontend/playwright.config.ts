@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 import { browserEnvironment, resolveAppUrl, resolveRunMode } from './tests/e2e/fixtures/environment';
-import { OWNER, MEMBER, storageStatePath } from './tests/e2e/fixtures/personas';
+import { OWNER, MEMBER, MUTATOR, storageStatePath } from './tests/e2e/fixtures/personas';
 
 /**
  * End-to-end configuration.
@@ -84,6 +84,15 @@ const RUN_MODE = resolveRunMode();
  * the one flag, and it covers the daily journey only: the point is *does the
  * product work in another engine*, not *does every assertion hold three times*.
  */
+/**
+ * **The specs that permanently mutate the persona they sign in as** — they
+ * create an organization and the product offers no delete ([B-1017]).
+ * **Declared once**: the `owner` project excludes them and the `mutating`
+ * project selects them, and two copies of that list would eventually disagree
+ * about which — leaving a spec in both projects or in neither.
+ */
+const MUTATING_JOURNEYS = /(organization-setup|onboarding-journey)\.spec\.ts/;
+
 const OTHER_ENGINES =
   process.env.E2E_BROWSERS === 'all'
     ? (['firefox', 'webkit'] as const).map((engine) => ({
@@ -166,7 +175,14 @@ export default defineConfig({
     },
     {
       name: 'owner',
-      testIgnore: [/auth-journey\.spec\.ts/, /.*\.member\.spec\.ts/, /demo\//],
+      testIgnore: [
+        /auth-journey\.spec\.ts/,
+        /.*\.member\.spec\.ts/,
+        /demo\//,
+        // 📁 **[B-1017](../docs/BUGS.md)** — these two create organizations and
+        // leave them, so they run as `MUTATOR` in the `mutating` project below.
+        MUTATING_JOURNEYS,
+      ],
       dependencies: ['authenticate'],
       use: {
         ...devices['Desktop Chrome'],
@@ -249,6 +265,35 @@ export default defineConfig({
         viewport: { width: breakpoint.width, height: breakpoint.height },
       },
     })),
+    {
+      /**
+       * **The two journeys that permanently create organizations.**
+       *
+       * 🔴 **[B-1017](../docs/BUGS.md).** `organization-setup` and
+       * `onboarding-journey` create an organization and leave it — correctly:
+       * *"the product offers no delete and a test asserting one would be
+       * asserting a path that does not exist."* Run on `OWNER`'s state, that
+       * growth reached every later spec, `/` resolved to the organization
+       * chooser, and **36 of 392 browser tests failed about nothing.**
+       *
+       * ✅ **A separate PERSONA rather than a separate ordering.** Ordering
+       * needs `dependencies` on every project sharing `OWNER`'s state, and
+       * Playwright skips a dependent when its dependency fails — so the
+       * coverage would vanish exactly when the suite is red. **A silent cap is
+       * worse than the contamination it replaces.**
+       *
+       * ⚡ **It is a second OWNER because Signora refuses `/settings` to a
+       * member** — the client guard redirects and the server refuses the write
+       * — so a member could not reach the screen under test at all.
+       */
+      name: 'mutating',
+      testMatch: MUTATING_JOURNEYS,
+      dependencies: ['authenticate'],
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: storageStatePath(MUTATOR.email),
+      },
+    },
     {
       // The same product seen by somebody who administers nothing. A separate
       // project rather than a fixture, because the difference is the browser

@@ -13,7 +13,7 @@
 
 import { expect, test as setup } from '@playwright/test';
 
-import { MEMBER, OWNER, storageStatePath, type Persona } from './fixtures/personas';
+import { MEMBER, MUTATOR, OWNER, storageStatePath, type Persona } from './fixtures/personas';
 import { chooseOrganization, SignInPage } from './pages/signin';
 
 async function signIn(page: import('@playwright/test').Page, persona: Persona) {
@@ -54,6 +54,22 @@ async function signIn(page: import('@playwright/test').Page, persona: Persona) {
 
 setup('sign in as the owner', async ({ page }) => {
   await signIn(page, OWNER);
+});
+
+/**
+ * ⚡ **Quinn, and the only persona whose organizations are allowed to grow.**
+ *
+ * 📁 **[B-1017](../../../docs/BUGS.md).** The `mutating` project's two specs
+ * create organizations and leave them, because the product offers no delete.
+ * On the shared owner that growth reached every later spec — *"You are a member
+ * of four organizations"* — and **36 of 392 browser tests failed about nothing.**
+ *
+ * ⛔ **Not fixed by ordering the projects.** Playwright skips a dependent
+ * project when its dependency fails, so *run them last* would drop this
+ * coverage exactly when the suite is red — a silent cap.
+ */
+setup('sign in as the mutating journeys', async ({ page }) => {
+  await signIn(page, MUTATOR);
 });
 
 setup('sign in as a member', async ({ page }) => {

@@ -15,7 +15,19 @@
     "real person by accident.",
     "",
     "`role` is one of Signora's two workspace roles. Sales titles are in `persona`",
-    "because the product does not model them — see RUNNING.md."
+    "because the product does not model them — see RUNNING.md.",
+    "",
+    "`reserved_for` is a SUITE concern and the product does not model it either.",
+    "Two browser journeys — organization setup and onboarding — permanently create",
+    "organizations, and the product offers no delete, so the account they sign in",
+    "as accumulates memberships every run. Sharing the ordinary owner made every",
+    "later spec meet the organization chooser instead of the Playground, which is",
+    "B-1017: 36 of 392 browser tests failing about nothing. Quinn exists so that",
+    "growth lands on an account nothing else depends on.",
+    "",
+    "It is a second OWNER because Signora refuses `/settings` to a member — the",
+    "client guard redirects and the server refuses the write — so a member could",
+    "not reach the screen under test at all."
   ],
   "password": "signora-demo-password",
   "users": [
@@ -42,6 +54,13 @@
       "name": "Sam Okafor",
       "persona": "Sales Development — triages the attention list every morning",
       "role": "member"
+    },
+    {
+      "email": "quinn.alvarez@northwind.example",
+      "name": "Quinn Alvarez",
+      "persona": "Revenue Operations — a second owner, and the only account the mutating journeys sign in as",
+      "role": "owner",
+      "reserved_for": "mutating-journeys"
     }
   ]
 }

@@ -142,6 +142,12 @@ test: refuse-slot-0
 ## exports name the historical shared stack, out loud.
 SIGNORA_STACK := $(shell python3 infra/environments.py --exports | grep -v '^\#')
 SIGNORA_PG_PORT := $(shell python3 infra/environments.py --exports | sed -n 's/^SIGNORA_POSTGRES_PORT=//p')
+# 🔴 **[B-287](docs/BUGS.md), 2026-08-19, reported by Lane A.** One integration
+# test held `redis://localhost:6379/0` as a literal — **slot 0, human review's**
+# — so it raised `ConnectionRefusedError` in every lane. **The port was already
+# derived one line up in spirit and simply never passed**, which is B-408's
+# shape exactly: *"the mechanism already existed and nothing called it."*
+SIGNORA_REDIS_PORT := $(shell python3 infra/environments.py --exports | sed -n 's/^SIGNORA_REDIS_PORT=//p')
 # **The database this environment owns, from the allocation — TASK-455.**
 # `OWNER_DATABASE_URL` said `/signora` on every slot, which is the name only
 # slot 0 has. The `demo` environment is slot 7 with `signora_demo`, so
@@ -164,6 +170,7 @@ OWNER_DATABASE_URL := postgresql+asyncpg://signora:signora@localhost:$(SIGNORA_P
 # cannot drift apart — [§2](CLAUDE.md), truth has exactly one representation.
 DESTRUCTIVE_DB_ENV = SIGNORA_TEST_APP_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:$(SIGNORA_PG_PORT)/$(1) \
                      SIGNORA_TEST_ADMIN_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:$(SIGNORA_PG_PORT)/$(1) \
+                     SIGNORA_REDIS_URL=redis://localhost:$(SIGNORA_REDIS_PORT)/0 \
                      SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1
 
 ## 🔴 **Naming the database is not enough when the name is slot 0's.**

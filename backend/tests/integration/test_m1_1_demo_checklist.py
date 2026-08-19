@@ -12,6 +12,7 @@ PostgreSQL and real Redis; nothing here is mocked.
 import asyncio
 import json
 import logging
+import os
 from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID, uuid4
@@ -45,7 +46,18 @@ pytestmark = pytest.mark.integration
 
 CONSUMER = "demo-consumer"
 EVENT_TYPE = "demo.event.occurred"
-REDIS_DSN = "redis://localhost:6379/0"
+#: 🔴 **This was `redis://localhost:6379/0` — [B-287](../../../docs/BUGS.md).**
+#:
+#: `RUNNING.md` allocates Redis as `6379 + 100n`, so **`6379` is slot 0's, which
+#: is human review's**, and this test raised `ConnectionRefusedError` in every
+#: lane. **Reported by Lane A, and the cost was not the red line**: it took a
+#: diagnosis to establish that one failure in an 1,833-test run was a port
+#: allocation rather than a defect in the slice about to be handed over.
+#:
+#: ⛔ **No default, deliberately.** `signora_platform/settings.py` refuses a
+#: missing `SIGNORA_REDIS_URL` for exactly this reason — a default here would
+#: point at whatever happens to be listening, which is how this defect worked.
+REDIS_DSN = os.environ.get("SIGNORA_REDIS_URL")
 
 
 async def _noop(envelope: EventEnvelope) -> None:
@@ -150,10 +162,20 @@ async def test_item_2_relay_claims_and_marks_relayed_exactly_once(
     assert relayed_at is not None
 
 
+@pytest.mark.skipif(
+    REDIS_DSN is None,
+    reason=(
+        "SIGNORA_REDIS_URL is not set, and this test needs a real Redis. It is "
+        "NOT silent: `make test` sets it from the lane's own allocation, so a "
+        "skip here means the suite was run some other way. Guessing a port "
+        "would reach another lane's Redis, which is B-287."
+    ),
+)
 async def test_item_3_message_appears_on_the_expected_redis_queue(
     admin_session_factory: async_sessionmaker[AsyncSession], registry: SubscriptionRegistry
 ) -> None:
     """3. Message appears on the expected Redis queue. Real Redis."""
+    assert REDIS_DSN is not None  # narrowed by the skipif above
     redis: ArqRedis = await create_pool(RedisSettings.from_dsn(REDIS_DSN))
     queue = queue_name_for("default")
     try:
