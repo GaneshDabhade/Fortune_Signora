@@ -71,7 +71,15 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-19, `7b02364c`
+## Current — as of 2026-08-19, `8ceff5d6`
+
+> ⚡ **Cycle 251 Closeout. 25 commits, Lane A, two migrations, two certification attempts.**
+>
+> ✅ **No board rows removed.** **Every Lane A row under `## Current` checked against the task's own status in [`BACKLOG.md`](BACKLOG.md)** — ⛔ **not against `git log --grep`, which removed five wrongly at cycle 249.**
+>
+> 🔴 **[B-288](BUGS.md) shipped in this cycle**: account search had been crashing for every customer since 2026-08-06. **Found because a browser journey that could never pass was finally read rather than skipped.**
+>
+> ⛔ **QE reconciles this board; it does not fill it.**
 
 > ⚡ **Cycle 250 Closeout. 7 commits, one lane (QE), eight gates on the first attempt.**
 >

@@ -1,5 +1,27 @@
 # Session Handoff
 
+> ## Cycle 251 — promoted `8ceff5d6`, 2026-08-19 · **Home, and a thirteen-day customer crash the browser gate is why anybody knows about**
+>
+> **`main` = `8ceff5d6` = the certified commit.** `pytest` **5432** · coverage **95.03%** · **676 Security Invariants** · `mypy` **955** · `import-linter` **37/37** · `tsc` · `frontend-suite` **3430/198** · `eslint` · `smoke` 24/166s · **DR passed** · head **`0066`**. **25 commits, Lane A. Two attempts.**
+>
+> ⛔ **Five things the next session must not misread.**
+>
+> ⓐ 🔴 **[B-288](BUGS.md): account search crashed for every customer, in every workspace, from 2026-08-06 — thirteen days.** `KIND_LABEL: Record<SearchResultType, string>` is the shape §2 recommends and **the union it was total over had gone stale.** ⚡ **A map total over the wrong set is total and wrong: totality guarantees nothing unless the type it ranges over is DERIVED.** ⛔ **And the journey pointing at it searched for a company the Playground does not have, so it could never have passed** — **a test that cannot pass is not coverage and looks exactly like it.**
+>
+> ⓑ ⚡ **Migration reversibility ran against DATA and was REFUSED first.** `person_preferences` was empty — the exact table `0065`/`0066` touch — so QE ran the browser suite first to populate it through the product's own doors, then measured: **4 rows, reversible, rows survived.** **Query the table the migration touches, not the database.**
+>
+> ⓒ ⚠️ **[B-1032](BUGS.md) is QE's own**: `rail-band` returned `232 · 109 · 85 · 61` against `56` — **five frames of a 150ms width transition.** ⛔ **QE reported the `232` to Lane A as possibly a defect; *"reproducible 3/3"* was three samples of one race.**
+>
+> ⓓ ⚠️ **[B-1033](BUGS.md) is Lane A's**: `home-a11y` is `14/14` green on an empty `recently_viewed` and fails on three real rows — **37px touch target, 0px spacing.** **A test that cannot fail in the case it exists for.**
+>
+> ⓔ ⛔ **Two refusals, both correct, both the operator's fault.** [B-1031](BUGS.md): the frontend reporter crashed on a post-teardown `window is not defined` and the gate said *"did not report a total"* — **honest; the tests passed.** And **promotion refused because the certification record was in a STASH rather than the tree.**
+>
+> **Open and mine:** [B-1032](BUGS.md) · [B-1031](BUGS.md) · [B-1030](BUGS.md) four auth journeys, **rate limiting disconfirmed by measurement, no cause named** · [B-1027](BUGS.md) the silent `mode: 'serial'` cap · [B-1015](BUGS.md).
+>
+> **Open and NOT mine:** [B-1033](BUGS.md) `product_surface` · **[B-283](BUGS.md)'s remaining half — `components/shell/` and the Companies table, FROZEN frontend foundation.** §20c admits it on two of its four exceptions and **who does it is not QE's to decide.**
+>
+> **Next candidate:** none. `integration == main`. **Lane A returns to the startable backlog.**
+
 > ## Cycle 250 — promoted `7b02364c`, 2026-08-19 · **the browser gate becomes worth running, and the worst defect was in the gate**
 >
 > **`main` = `7b02364c` = the certified commit.** `pytest` **5378** · coverage **95.03%** · **676 Security Invariants** · `mypy` **949** · `import-linter` **37/37** · `tsc` · `frontend-suite` **3324/192** · `eslint` · `smoke` 24/181s · **DR passed** · head **`0064`**. **7 commits, QE. Eight gates, first attempt.**
