@@ -858,6 +858,54 @@ BLOCKED — the development database is not reachable
 
 > ✅ **Retired 2026-08-19, and the retirement is the point.** ⚠️ **This note said rows [B-1029](#b-1029)–[B-1033](#b-1033) were referenced below and *"NOT in this file yet"* — true when it was written onto `main`, and false the moment `lane-qe` rebased.** ⛔ **A note about a temporary state has to be removed by whatever ends the state**, or it becomes the drift it was written to prevent. 📁 [§2](../CLAUDE.md).
 
+### B-1040 · 🟠 `make smoke` says *"workers consuming without error"* and tests only the *"without error"* half
+
+| | |
+|---|---|
+| **Module** | `infra/smoke.sh` stage 12 — ⛔ **a gate, and [§20e](../CLAUDE.md) puts `smoke.sh` among the things that decide whether one passes** |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — **the assertion passes in exactly the case it exists to catch** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-19 by QE**, cycle 253, checking whether [B-1039](#b-1039) could have been caught by an existing gate |
+
+**Steps.** Read `infra/smoke.sh`, stage *12. Event bus, relay, and workers*:
+
+```bash
+WORKER_LOG="$($COMPOSE logs worker 2>&1)"
+if grep -qE '"level":"(ERROR|CRITICAL)"|Traceback' <<<"$WORKER_LOG"; then
+  fail "worker logged an error — see: $COMPOSE logs worker"
+fi
+pass "workers consuming without error"
+```
+
+**Expected**, from the message it prints: evidence that a worker **consumed** something.
+
+**Actual:** evidence that a worker **did not error**. ⛔ **A worker bound to a queue nothing publishes to consumes nothing, logs nothing, and passes.**
+
+### ⚡ What stage 12 genuinely proves, and it is worth keeping
+
+✅ **The relay half is real and well built**: it waits on `outbox_event WHERE relayed_at IS NULL` reaching zero with a bounded deadline, asserts `PUBLISHED == RELAYED`, and checks per-entity causal ordering. **Three assertions that can each fail.** ⛔ **Nothing after `relayed_at` is asserted at all** — the event reaching Redis is where the proof stops.
+
+### 🔴 Why this is the [§2](../CLAUDE.md) class rather than a missing test
+
+📁 ***"A guard that cannot fail is not protection — it is documentation pretending to be code."*** ⚠️ **This one can fail — on a crashing worker — so it is not wholly decorative.** ⛔ **But the property its message CLAIMS (`consuming`) is not the property it TESTS (`not erroring`)**, and the gap is invisible to every reader, which is the more expensive half: 📁 *"it gives engineers confidence that something is enforced when it is not — and the comment beside it is then a false claim that survives review."*
+
+### ⚠️ And nothing else covers the gap
+
+📁 **Stages 14b–14k do exercise the pipeline** — ingestion, identity resolution, change detection, business events, commercial interpretation, attention, commitment, grounded explanation, defensible conclusion, researched account. ⛔ **Every one of them runs `pytest tests/…` directly against the running database**, e.g. 14b: `uv run pytest tests/integration/test_provider_ingestion.py …`. ⚡ **They prove the pipeline CODE against a live stack. They never enqueue anything, so they never cross relay → queue → worker → handler.**
+
+> ⛔ **So the repository's async dispatch path is asserted, end to end, by nothing.** ⚡ **That is how [B-1039](#b-1039) survived 227 certification runs.**
+
+### ⚠️ And the two processes carry no healthcheck
+
+**Measured**: `docker inspect signora-prod-worker-1 --format '{{json .Config.Healthcheck}}'` → **`null`**, same for `signora-prod-relay-1`. 📁 **`api`, `frontend`, `postgres` and `redis` all have one, and `api`'s carries a deliberate comment about choosing `/ready` over `/health`.** ⛔ **The two background processes are the only ones nothing observes**, which is 📁 [§17](../CLAUDE.md): *"an untraceable background process is not production-ready."*
+
+### The direction of a fix, not the fix
+
+**Assert consumption, not silence** — a counter, a processed-event row, or a published event whose handler leaves a visible trace, checked with the same bounded-deadline pattern the relay half already uses well. ⛔ **Held with [B-1039](#b-1039)**: changing what a gate asserts is changing what certification means, and not while a candidate is mid-cycle.
+
+---
+
 ### B-1039 · 🟠 The local production stack runs one worker on the `default` pool, and four of the five queues that carry work are never drained
 
 | | |
@@ -884,7 +932,7 @@ BLOCKED — the development database is not reachable
 
 📁 `pools.py`, `UnknownPoolError`'s docstring: *"a typo'd pool name that quietly ran the wrong queue would be very hard to notice and **would leave the intended queue undrained**."*
 
-> ⛔ **A `default`-pool worker starts cleanly, reports healthy, logs `worker started` with its queue name, and consumes nothing from four queues.** ⚡ **`make smoke` passes. `make dr` passes.** **Nothing in the repository says so** — which is [§2](../CLAUDE.md)'s *a config file implying enforcement that was never installed*, in a compose file.
+> ⛔ **A `default`-pool worker starts cleanly, logs `worker started` with its queue name, and consumes nothing from four queues.** ⚡ **`make smoke` passes — and [B-1040](#b-1040) is why**: stage 12 asserts the relay swept and the worker logged no errors, and prints *"workers consuming without error"* for a worker that consumed nothing. **`make dr` passes.** ⚠️ **Neither the worker nor the relay carries a healthcheck at all** — `docker inspect … {{json .Config.Healthcheck}}` returns `null` for both, while `api`, `frontend`, `postgres` and `redis` each have one. **Nothing in the repository says so** — which is [§2](../CLAUDE.md)'s *a config file implying enforcement that was never installed*, in a compose file.
 
 ### ⚡ It is a defect, not a dependency
 
