@@ -35,7 +35,12 @@ from pathlib import Path
 
 from tests.certification import conditions as repository_conditions
 from tests.certification import database as disposable_database
-from tests.certification.record import CertificationRun, GateResult, ScenarioResult
+from tests.certification.record import (
+    CertificationError,
+    CertificationRun,
+    GateResult,
+    ScenarioResult,
+)
 from tests.certification import attempts
 from tests.certification.store import MANIFEST, append, render, report_path
 
@@ -427,6 +432,31 @@ def _report_gate_output(
             print(f"    {line}")
 
 
+def refuse_if_head_moved(*, started: str, finished: str) -> None:
+    """**One run, one commit.**
+
+    ⛔ `tree_is_clean()` proves the tree was *stored*, never that it was
+    *unchanged*: a commit made while the gates run leaves the tree clean and
+    silently changes which commit the record names. This module resolves HEAD
+    twice — once for the disposable database name, once for the record — and
+    until 2026-08-19 nothing compared them ([B-1025](../../../docs/BUGS.md)).
+    Cycle 249 wrote an attempt log saying `12c21acb` beside a manifest entry
+    saying `0d61c30a`, for one run.
+
+    ⚡ **Refusing before the record is written is the whole point.** A
+    mis-attributed certification is worse than none, because `promoted ==
+    certified` then compares a real SHA against evidence gathered on a
+    different tree — and the comparison passes.
+    """
+    if started == finished:
+        return
+    raise CertificationError(
+        f"HEAD moved during certification — the run began at {started[:12]} "
+        f"and ended at {finished[:12]}. A certification names one immutable "
+        "commit; nothing is recorded for a run that spanned two."
+    )
+
+
 def _certify(target: disposable_database.Disposable) -> int:
     """The gates, against a database this run created and will destroy.
 
@@ -495,8 +525,23 @@ def _certify(target: disposable_database.Disposable) -> int:
         print(f"  scenario            {scenario.name} — {scenario.detail}")
 
     now = repository_conditions.current()
+
+    # ⛔ **HEAD must not have moved during the run.** `tree_is_clean()` proves
+    # the tree was *stored*, not that it was *unchanged* — a commit made while
+    # the gates run leaves the tree clean and silently changes which commit the
+    # record names. Found 2026-08-19 (B-1025): this file resolves HEAD twice,
+    # once above for the disposable database name and once here for the record,
+    # and cycle 249 produced an attempt log saying `12c21acb` beside a manifest
+    # entry saying `0d61c30a`. **Nothing compared them.**
+    #
+    # ⚡ Refusing before the record is written is the point: a mis-attributed
+    # certification is worse than none, because `promoted == certified` then
+    # compares a real SHA against evidence gathered on a different tree.
+    finished_at_commit = repository_conditions.commit()
+    refuse_if_head_moved(started=attempt.commit, finished=finished_at_commit)
+
     run = CertificationRun(
-        commit=repository_conditions.commit(),
+        commit=finished_at_commit,
         tree_clean=repository_conditions.tree_is_clean(),
         certified_at=datetime.now(UTC),
         conditions=now,

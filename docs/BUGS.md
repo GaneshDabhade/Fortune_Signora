@@ -348,6 +348,49 @@ run 5: 0 failed                     20 passed
 
 ⛔ **This spec was the intended control for the browser gate.** 📁 **Lane A: *"a control that is clean on one stack and not another is not a control"*** — **and the sharper form this row proves: it is not clean on the SAME stack twice.** **A gate whose control is intermittent cannot distinguish a regression from a re-run.**
 
+### B-1025 · 🟠 One certification run, two commits — `tree_is_clean()` proves the tree was stored, not that it was unchanged
+
+| | |
+|---|---|
+| **Module** | `backend/tests/certification/` — **QE's own instrument** |
+| **Current assignee** | **QE.** 📁 [§20e](../CLAUDE.md): a defect in a gate is QE's to fix, and this is certification integrity rather than product behaviour |
+| **Severity** | 🟠 · ⛔ **It makes `promoted == certified` compare a real SHA against evidence from a different tree — and the comparison PASSES** |
+| **Status** | **`FIXED`** by QE at the commit carrying this row. ⛔ **NOT `VERIFIED`** — QE wrote it and does not verify its own work |
+| **Found** | **2026-08-19 by QE**, certifying `12c21acb` in cycle 249, **by causing it** |
+
+**Steps to reproduce.** Start `make certify`. While the gates run, make any commit. The run completes, every gate passes, and:
+
+```
+certification/attempts.jsonl  → {"commit": "12c21acb6866838f31eedba103e4124227e33199", "branch": "lane-qe", "event": "started"}
+certification/manifest.json   → {"commit": "0d61c30a107a6a2ff5272be410d6a82266ae1cd2", ...}
+```
+
+**Expected.** A certification names **one** commit.
+
+**Actual.** **It names two, from one run, and nothing compares them.**
+
+### Where it comes from, located rather than guessed
+
+📁 `__main__.py:387` resolves `repository_conditions.commit()` for the disposable database name — **at the start.** 📁 `__main__.py:499` resolves it **again** for the record — **at the end.** 📁 `attempts.py:118` resolves it a third time, *"before the first gate"*, and that value is the only honest one in the file.
+
+⛔ **`tree_is_clean()` did not catch it and could not.** Its own docstring is exact — *"whether the tree certified was actually stored"* — and a commit made mid-run leaves the tree **clean**. ⚡ **So the "working tree clean" condition passed while the certified tree was a different tree from the one the gates began on.**
+
+> ⚠️ **This is the [B-1000](#b-1000) family again: an instrument answering a narrower question than the one asked.** *Was the tree stored?* — yes. *Was the tree the same throughout?* — never asked.
+
+### ⚡ What it cost in the cycle that found it
+
+**Nothing, measured**: `git diff --name-only 12c21acb 0d61c30a` outside `docs/` is **0 paths**, and no gate reads the one file that moved. ⛔ **But that is luck, not a property.** **A commit touching `backend/` mid-run would have produced a CERTIFIED record for a tree no gate had seen** — and the promotion guard would have accepted it, because the SHA it names is real.
+
+### ✅ The fix, and it refuses rather than recovers
+
+`refuse_if_head_moved(started=attempt.commit, finished=…)`, called **before the record is written**, so a mis-attributed certification never exists to be read.
+
+**Fire-tested by mutation** — `tests/certification/test_head_stability.py`: forcing the guard to return kills `test_a_moved_head_is_refused_before_anything_is_recorded`. ⚡ **A guard that cannot fail is documentation pretending to be code** ([§2](../CLAUDE.md)).
+
+### ⛔ The discipline is not the fix
+
+**QE could simply not commit during a run** — that is what the model already requires. 📁 But the product owner's rule decides it: *"prefer operations that refuse unsafe states over operations that silently recover from them."* ⚡ **The Continuous Certification model rests entirely on snapshot immutability, and until now the instrument could not detect a violation of it.**
+
 ### B-1024 · 🔴 `slug` became required and `smoke.sh` was not told — `make smoke` fails, and it is a required gate
 
 | | |
