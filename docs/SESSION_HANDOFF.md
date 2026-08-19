@@ -1,5 +1,27 @@
 # Session Handoff
 
+> ## Cycle 250 — promoted `7b02364c`, 2026-08-19 · **the browser gate becomes worth running, and the worst defect was in the gate**
+>
+> **`main` = `7b02364c` = the certified commit.** `pytest` **5378** · coverage **95.03%** · **676 Security Invariants** · `mypy` **949** · `import-linter` **37/37** · `tsc` · `frontend-suite` **3324/192** · `eslint` · `smoke` 24/181s · **DR passed** · head **`0064`**. **7 commits, QE. Eight gates, first attempt.**
+>
+> ⛔ **Five things the next session must not misread.**
+>
+> ⓐ 🔴 **[B-1028](BUGS.md): every certification this repository has ever performed created and dropped its database on `localhost:5432` — slot 0, human review's.** `disposable()` runs `CREATE DATABASE` and `DROP DATABASE … WITH (FORCE)`. **Nothing was lost only because the names are always `signora_certify_<sha>`. That is luck.** ⚠️ **THREE instances** — `database.py:71`, `:79`, `release-preflight.py:215` — **and the third was found only because fixing the first was not enough.** 📁 **[B-270](BUGS.md) → [B-287](BUGS.md) → B-1028: one shape, a suite reaching for slot 0 because slot 0 is what a literal spells.**
+>
+> ⓑ ✅ **The browser suite is now `373 / 16 / 4` from `348 / 36 / 8`, and `373+16+4 = 393` enumerated with ZERO unrun.** **The arithmetic is part of the result** — see ⓒ.
+>
+> ⓒ ⚠️ **[B-1027](BUGS.md) is OPEN and it is a silent coverage cap.** A `mode: 'serial'` block abandons its tail and counts it as **neither failed nor skipped**; one run reported **385 of 393** and said nothing. ⛔ **Always add the three numbers.**
+>
+> ⓓ ⚡ **Migration reversibility was run against DATA for the first time** — `head → base → head` on 796 outbox events, 193 claims, 93 observations. ⛔ **`action_batch_transition` held zero rows, so [B-1016](BUGS.md)'s class was NOT exercised**, and the first attempt ran against an empty database and would have been reported as a used one. **Query the row counts.**
+>
+> ⓔ 🔴 **QE corrected its own row.** B-1016 was filed without reading `0048`'s `downgrade` docstring, which argues the refusal is correct. **Lane A read it independently, determined NOT A DEFECT, and deliberately did not close it.** ✅ **Closed by QE.**
+>
+> **Open and mine:** [B-1027](BUGS.md) the silent cap · [B-1013](BUGS.md) · [B-1014](BUGS.md) · [B-1025](BUGS.md) · [B-1026](BUGS.md) · [B-1028](BUGS.md) all `FIXED` awaiting independent verification · [B-1015](BUGS.md) the prod restart asymmetry · **four unattributed auth-flow browser failures, claimed as nothing.**
+>
+> **Open and NOT mine:** [B-1029](BUGS.md) — `rail-band`, `search-journey`, `signal-center` fail alone on a clean environment, `product_surface`. ⛔ **A stale spec and a regressed product produce identical evidence; which it is belongs to the assignee.**
+>
+> **Next candidate:** **`a9d1d7ea` on `origin/lane-a-product-surface-r2` — 23 commits, rebased and gated by Lane A, `main` an ancestor.** They will rebase once more onto `7b02364c`. **Contract 5 needs an exploratory pass on an untouched workspace; `0065`/`0066` need the used-database run, which is QE's.**
+
 > ## Cycle 249 — promoted `19317ea3`, 2026-08-19 · **the `/attention` guard lands, and a certification record that named a commit the run never began on**
 >
 > **`main` = `19317ea3` = the certified commit.** `pytest` **5378** · coverage **95.02%** · **676 Security Invariants** · `mypy` **949** · `import-linter` **37/37** · `tsc` · `frontend-suite` **3324/192** · `eslint` · `smoke` 24/158s · **DR passed, 676 invariants against the restarted stack** · head **`0064`**. **4 commits, QE.**

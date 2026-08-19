@@ -71,7 +71,15 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-19, `19317ea3`
+## Current — as of 2026-08-19, `7b02364c`
+
+> ⚡ **Cycle 250 Closeout. 7 commits, one lane (QE), eight gates on the first attempt.**
+>
+> ✅ **No board rows removed.** **Every Lane A row under `## Current` is `CLAIMED` or `IN PROGRESS` in [`BACKLOG.md`](BACKLOG.md)**, checked against the task's own status row — ⛔ **not against `git log --grep`, which is what removed five of them wrongly at cycle 249.**
+>
+> ⚠️ **Lane A holds `a9d1d7ea` — 23 commits, rebased and gated, the next candidate.** **It was not folded into this cycle**: QE's instrument fixes had to land first, or the verdict on their 23 commits would have come from a suite pointing at the wrong server and hiding eight tests.
+>
+> ⛔ **QE reconciles this board; it does not fill it.**
 
 > ⚡ **Cycle 249 Closeout. 4 commits, one lane (QE), two certification attempts** — ⛔ **and the first was DISCARDED BY QE rather than failed by a gate** ([B-1025](BUGS.md)).
 >
