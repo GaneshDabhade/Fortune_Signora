@@ -170,3 +170,97 @@ test.describe('§12 · the assistant drawer', () => {
     expect(Math.round(box!.width)).toBe(420);
   });
 });
+
+test.describe('§04 · §05 — the breadcrumb is in the top bar', () => {
+  /**
+   * 🔴 **The slot existed, the trail existed, and nothing joined them.**
+   *
+   * ⚠️ **Measured on `/accounts` at 1440 × 900 before the fix:** the top bar's
+   * `[data-slot="breadcrumb"]` was **`617 × 0` with zero children**, while
+   * `nav[aria-label="Breadcrumb"]` sat at **`@281,107`** — inside the page's own
+   * content. ⛔ **So the design's one breadcrumb was drawn in the one place the
+   * design does not put it.**
+   *
+   * 📁 **§04 — *"Left: breadcrumb only."*** 📁 **§05 — *"Mandatory below the
+   * first level, because most sessions start from a deep link."***
+   */
+  test('@journey a second-level screen states its trail in the top bar, once', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/accounts');
+    await expect(page.getByRole('heading', { name: 'Companies', level: 1 })).toBeVisible({
+      timeout: 30_000,
+    });
+
+    const slot = page.locator('[data-slot="breadcrumb"]');
+    await expect(slot).toContainText('Accounts');
+    await expect(slot).toContainText('Companies');
+    // ⛔ **Height, not merely presence** — the defect was a slot with content
+    // measuring zero, which every text assertion would have passed.
+    expect(Math.round((await slot.boundingBox())?.height ?? 0)).toBeGreaterThan(12);
+
+    // ⛔ **Exactly one trail on the page.** ⚡ Moving it must not leave a copy
+    // behind, which is the failure mode of every *"add it to the shell too"*.
+    await expect(page.locator('main nav[aria-label="Breadcrumb"]')).toHaveCount(0);
+  });
+
+  /**
+   * 🔴 **A route change is where this broke, and only in the browser.**
+   *
+   * ⚠️ **Clicking a row left the slot EMPTY while loading the same URL directly
+   * filled it.** **React mounts the incoming tree before unmounting the
+   * outgoing one**, so the outgoing screen's cleanup cleared a trail its
+   * successor had already published.
+   */
+  test('@journey the trail follows a click into an account, and is the account\'s name', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/accounts');
+    const first = page.locator('main a[href^="/accounts/"]').first();
+    const name = (await first.textContent())?.trim() ?? '';
+    await first.click();
+    await page.waitForURL(/\/accounts\/[0-9a-f-]{36}/, { timeout: 30_000 });
+
+    const slot = page.locator('[data-slot="breadcrumb"]');
+    await expect(slot).toContainText('Accounts');
+    await expect(slot).toContainText(name);
+  });
+});
+
+test.describe('§13 · the collapsed utility panel', () => {
+  /**
+   * 📁 ***"Collapsing leaves a 28px rail with the tab icons."***
+   *
+   * 🔴 **It left a rail of LETTERS at 19 × 26** — `I`, `A`, `N` — measured on
+   * `/accounts` at 1440 × 900. ⛔ **`2.5.8` asks for 24 × 24 with 8px
+   * separation**, and a bare initial is not the icon the design names.
+   */
+  test('@a11y the tab rail is 24px targets with 8px separation', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/accounts');
+    await expect(page.getByRole('heading', { name: 'Companies', level: 1 })).toBeVisible({
+      timeout: 30_000,
+    });
+
+    const tabs = page.locator('#shell-utility-panel [role="tab"]');
+    await expect(tabs).toHaveCount(3);
+
+    const boxes = [];
+    for (let i = 0; i < 3; i += 1) boxes.push((await tabs.nth(i).boundingBox())!);
+
+    for (const box of boxes) {
+      expect(Math.round(box.width), 'a target narrower than 24px').toBeGreaterThanOrEqual(24);
+      expect(Math.round(box.height), 'a target shorter than 24px').toBeGreaterThanOrEqual(24);
+    }
+    // ⛔ **The separation, which the letters did not have** — 4px between 26px
+    // rows. 📁 `2.5.8` counts the gap, not only the box.
+    for (let i = 1; i < boxes.length; i += 1) {
+      const gap = boxes[i]!.y - (boxes[i - 1]!.y + boxes[i - 1]!.height);
+      expect(Math.round(gap), 'less than 8px between two targets').toBeGreaterThanOrEqual(8);
+    }
+
+    // ♿ **The word is still the accessible name**, so nothing was lost with
+    // the letters.
+    await expect(tabs.nth(0)).toHaveAccessibleName('Insights');
+  });
+});

@@ -396,6 +396,25 @@ function railShape(depth: number, collapsed: boolean): string {
     // 📁 *"Item 32px tall, 8px radius, 10px icon-to-label gap."* ⛔ The values
     // are the design's; `gap-2.5` is 10px and `rounded-md` is the 8px token.
     'flex h-8 items-center gap-2.5 rounded-md px-2.5 text-sm transition-colors',
+    /**
+     * 🔴 **The row owns the rail's width in BOTH states, and that is the whole
+     * collapsed-rail defect** — 📁 *"Rail collapses to 56px icons with
+     * tooltips."*
+     *
+     * ⚠️ **Measured at 1024 × 900 before this line**: a collapsed row was
+     * **`16 × 32` sitting at `x = 12` inside a 56px rail**, so every icon sat
+     * **8px left of the rail's centre** and the target was 16px wide against
+     * the shell's own *"32px target"*. ⛔ **`justify-center` was already here
+     * and could not help**: it centres within the ROW, and the row had shrunk
+     * to its icon.
+     *
+     * ⚡ **The cause was the tooltip wrapper** — a collapsed row is wrapped in
+     * `Tooltip`'s `inline-flex` span, which made the link a flex ITEM sized to
+     * its content instead of a stretched block. ⛔ **Nudging the icon with a
+     * margin would have "fixed" it at one width and left the model wrong**;
+     * `w-full` is the model.
+     */
+    'w-full',
     // 📁 *"Second level indents to 30px and never nests further."*
     depth === 2 && !collapsed && 'pl-[30px]',
     collapsed && 'justify-center px-0',
@@ -661,7 +680,19 @@ function RailLink({
   // its own and varies between engines**, and a rule naming a duration needs
   // something that can hold one. ✅ **The accessible name stays on the link**,
   // so the tooltip describes rather than names.
-  return collapsed ? <Tooltip content={item.label}>{link}</Tooltip> : link;
+  /**
+   * ⛔ **`w-full` on the trigger too.** ⚠️ `Tooltip` renders a `relative
+   * inline-flex` span, which becomes the rail's flex child — **so without this
+   * the span stretches and the link inside it does not**, which is exactly how
+   * a 56px rail ended up holding 16px targets.
+   */
+  return collapsed ? (
+    <Tooltip content={item.label} className="w-full">
+      {link}
+    </Tooltip>
+  ) : (
+    link
+  );
 }
 
 /**
@@ -698,7 +729,15 @@ export function Navigation({
     <nav
       id={SKIP_TARGETS.navigation}
       aria-label="Primary"
-      className="flex h-full flex-col gap-0.5 p-3"
+      /**
+       * 📁 **Expanded — *"12px outer / 10px inner padding"*.** 📁 **Collapsed —
+       * the design's own collapsed column is `padding: 12px 8px`**, and the
+       * arithmetic is why: a 56px rail with 12px sides leaves a 32px row, which
+       * is the design's target size with nothing left for the tint around it.
+       * ⚡ **8px sides leave 40px**, so the active pill reads as a pill rather
+       * than as a square the icon fills.
+       */
+      className={cn('flex h-full flex-col gap-0.5', collapsed ? 'px-2 py-3' : 'p-3')}
     >
       {visibleDestinations(destinations).map((item) => {
         const entry = item as RailEntry;

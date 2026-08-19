@@ -19,6 +19,7 @@ import {
   type SortTerm,
 } from '@/lib/accounts/table';
 import { cn } from '@/lib/design/cn';
+import { useBand } from '@/lib/shell/use-band';
 
 /**
  * **The Companies toolbar** — [TASK-1475](../../../../docs/BACKLOG.md), against
@@ -286,15 +287,20 @@ export function AccountsToolbar({
   const grouped = group === null ? null : GROUPABLE.find((g) => g.key === group);
   const conditions = conditionsOf(filters);
 
-  return (
-    <div
-      data-testid="accounts-toolbar"
-      className="mb-4 flex flex-col gap-3 border-b border-border-soft pb-4"
-    >
-      <div className="flex flex-wrap items-center gap-2">
+  /**
+   * 🔴 **The one state transition in this toolbar** — 📁 §20, *"Filter strip
+   * collapses to one **Scope** button with a count."*
+   *
+   * ⚠️ **Measured at 390 × 844 before this**: `Group`, `Sort`, `Density` and
+   * `Columns` each became a full-width row, so the arrangement controls
+   * occupied more of the phone than the table did. ⛔ **That is a desktop row
+   * wrapping**, which the design replaces rather than reflows.
+   */
+  const band = useBand();
+  const scoped = band === 'phone';
 
-      </div>
-
+  const rows = (
+    <>
       {/* 🔴 **The design's filter row** — 📁 *"FILTERS · chips · ＋ Add
           condition · Smart filter"*.
 
@@ -309,7 +315,31 @@ export function AccountsToolbar({
           **Nothing derives one**, and a chip in that hue that ran an ordinary
           predicate would borrow the one treatment §14 reserves: *"nothing
           non-generated may borrow it."* */}
-      <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filters">
+      <div
+        /**
+         * 📁 **Three behaviours, and the design names each of them.**
+         *
+         * | Band | 📁 |
+         * |---|---|
+         * | ≥1280 | the strip, wrapping |
+         * | 1024–1279 | *"Filter strip stays; **chips scroll horizontally**."* |
+         * | <1024 | *"Filter strip collapses to one **Scope** button with a count."* |
+         *
+         * ⛔ **The middle one is CSS, not a breakpoint in JavaScript** — it is
+         * a change of overflow, not a change of controls. ⚡ **Only the third
+         * is a state transition**, because it replaces the controls with a
+         * different one, and that is the single thing `useBand` is read for.
+         */
+        className={cn(
+          'flex items-center gap-2',
+          // 📁 1024–1279 — chips scroll rather than wrap.
+          'flex-nowrap overflow-x-auto',
+          // 📁 ≥1280 — the reference strip wraps as before.
+          'laptop:flex-wrap laptop:overflow-x-visible',
+        )}
+        role="group"
+        aria-label="Filters"
+      >
         <span className="text-2xs font-semibold uppercase tracking-[0.05em] text-content-subtle">
           Filters
         </span>
@@ -501,6 +531,54 @@ export function AccountsToolbar({
           </div>
         </details>
       </div>
+    </>
+  );
+
+  return (
+    <div
+      data-testid="accounts-toolbar"
+      className={cn('mb-4 flex flex-col gap-3 border-b border-border-soft pb-4')}
+    >
+      {scoped ? (
+        /**
+         * ⚡ **One control, and the controls it holds are the SAME instances** —
+         * ⛔ **not a second copy rendered beside a hidden desktop row**: two
+         * copies of one control are two things a screen reader announces and
+         * two places a value can be set.
+         *
+         * ♿ **44px** — 📁 `2.5.8`: *"32px target with 8px separation; **44px on
+         * touch**."* ⛔ And `<details>` rather than a state flag: the surface
+         * opens with no JavaScript and closes with Escape for free.
+         */
+        <details data-testid="scope-control" className="w-full">
+          <summary
+            className={cn(
+              'flex h-11 w-full cursor-pointer list-none items-center justify-between gap-2',
+              'rounded-md border border-border px-3 text-sm font-semibold text-content',
+              'hover:bg-surface-sunken focus-visible:outline focus-visible:outline-2',
+              'focus-visible:outline-offset-2 focus-visible:outline-accent',
+              '[&::-webkit-details-marker]:hidden',
+            )}
+          >
+            <span>Scope</span>
+            {/* ⛔ **The count is the number of CONDITIONS, and it is absent at
+                zero.** 📁 A `0` badge is a count nobody acts on wearing the
+                shape of one they would — the same rule the bell keeps. */}
+            {conditions.length > 0 ? (
+              <span
+                data-testid="scope-count"
+                aria-label={`${conditions.length} condition${conditions.length === 1 ? '' : 's'} applied`}
+                className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-sunken px-1.5 text-2xs font-semibold tabular-nums text-content"
+              >
+                {conditions.length}
+              </span>
+            ) : null}
+          </summary>
+          <div className="mt-3 flex flex-col gap-3">{rows}</div>
+        </details>
+      ) : (
+        rows
+      )}
     </div>
   );
 }
