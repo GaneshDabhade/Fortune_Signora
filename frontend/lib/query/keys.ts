@@ -136,6 +136,17 @@ export const queryKeys = {
   integrations: (workspaceId: string) =>
     ['workspace', workspaceId, 'integrations'] as const,
 
+  /** The panel's items. */
+  notifications: (workspaceId: string) =>
+    ['workspace', workspaceId, 'notifications'] as const,
+  /**
+   * The badge, **keyed apart from the feed on purpose**: the bell is on every
+   * screen and the panel is opened rarely, so they are read at different rates
+   * and one key would make the badge as expensive as the list.
+   */
+  unreadNotifications: (workspaceId: string) =>
+    ['workspace', workspaceId, 'notifications', 'unread'] as const,
+
   /**
    * The activation steps a module declares. **Two modules answer**, so the
    * source is part of the key — a single key would make the second response

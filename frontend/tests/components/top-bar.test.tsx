@@ -31,6 +31,9 @@ vi.mock('@/components/intelligence/account-search', () => ({
 vi.mock('@/components/shell/workspace-selector', () => ({
   WorkspaceSelector: () => <div data-testid="workspace-selector" />,
 }));
+// ⚡ **The panel reads the workspace context and the query client**, and this
+// suite is about the frame — the same reason the account menu is stubbed.
+vi.mock('@/components/shell/notifications', () => ({ Notifications: () => null }));
 
 function bar(role: 'owner' | 'member' | null = 'owner') {
   return render(

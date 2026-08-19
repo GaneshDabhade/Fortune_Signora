@@ -6,6 +6,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 
 import { AccountSearch } from '@/components/intelligence/account-search';
 import { AccountMenu } from '@/components/shell/account-menu';
+import { Notifications } from '@/components/shell/notifications';
 import { Breadcrumb, OfflineStatus } from '@/components/ui';
 import { RegionBoundary } from '@/components/ui/region-boundary';
 import { cn } from '@/lib/design/cn';
@@ -272,19 +273,21 @@ export function TopBar({
       </div>
 
       {/* ── Slot 4 · Notifications ─────────────────────────────────────────
-          ⛔ **NOT BUILT, and the absence is deliberate.** 📁 The design wants
-          *"a 400px popover… grouped by day… unread is a 6px dot"* and a badge
-          that *"caps at 99+"*. ⚡ `badgeLabel` already implements the cap.
+          ✅ **BUILT** — [TASK-495](../../../docs/BACKLOG.md) slice ⓑ. 📁 *"32 × 32.
+          Count badge caps at 99+. Opens a 400px panel, not a page."*
 
-          🔴 **Nothing in the platform publishes a notification.** ✅ Measured:
-          no notification endpoint, no event feed, no unread count anywhere in
-          `lib/api`. **A bell that opens an empty 400px panel is the defect
-          [TASK-1433](../../../docs/BACKLOG.md) was parked for** — *"an empty
-          panel does not reserve space for a future feature, it takes space from
-          the one the customer is using today."*
+          ⚠️ **The comment that stood here said the absence was deliberate**, and
+          it was right at the time: 📁 [C-275](../../../docs/LANE_COORDINATION.md),
+          *"a bell that opens an empty 400px panel is the defect
+          [TASK-1433](../../../docs/BACKLOG.md) was parked for"*, and it recorded
+          the measurement — **no notification endpoint, no feed, no unread count
+          anywhere in `lib/api`.**
 
-          ⛔ **Raised as [C-275](../../../docs/LANE_COORDINATION.md).** An empty
-          slot is left rather than a placeholder rendered. */}
+          ⚡ **All three exist now.** Slice ⓐ shipped the feed, the badge and the
+          read state; `ai_research_engine` publishes into it when a research run
+          finishes. ⛔ **The panel had something to show before it got a bell**,
+          which is the order C-275 asked for. */}
+      <Notifications />
 
       {/* ── Slot 5 · Help & account ────────────────────────────────────────
           📁 *"32 + 32. Help before account, always last."*

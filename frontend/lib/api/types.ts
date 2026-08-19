@@ -1725,3 +1725,49 @@ export interface ActivationStep {
   /** Whether Signora can conclude anything without it. */
   blocking: boolean;
 }
+
+
+/**
+ * One item in the notification panel.
+ *
+ * ⛔ **No actor name and no subject title, and both absences are contracts.**
+ * 📁 `C-203` is deferred with a concrete trigger — *"nothing in the product can
+ * render a person's name"* — because Better Auth is the sole Authentication
+ * Authority and the Python tier only verifies. ⚡ **An agent's name IS returned**,
+ * because the platform authored it rather than resolving it.
+ *
+ * ⚠️ **`subject_id` without a title is deliberate too**: a cached account name
+ * would render one that changed last week, and the surface being opened already
+ * holds the current one.
+ */
+export interface AppNotification {
+  id: string;
+  /** 📁 The panel's tabs are these plus *All*. */
+  category: 'needs_you' | 'mention';
+  actor_kind: 'person' | 'agent';
+  actor_person_id: string | null;
+  /** Present only for an agent — a person's name is `C-203`. */
+  actor_agent_name: string | null;
+  subject_kind: string;
+  subject_id: string;
+  /** What happened, in the customer's vocabulary. */
+  summary: string;
+  /** What is expected of the recipient. */
+  expectation: string;
+  occurred_at: string;
+  /** ⛔ `null` means unread. **The panel's dot reads this**, never the badge
+   *  count, which says how many without saying which. */
+  read_at: string | null;
+}
+
+export interface NotificationFeed {
+  notifications: AppNotification[];
+}
+
+/** 📁 *"Count badge caps at 99+."* — the cap is the server's, not the shell's. */
+export interface UnreadBadge {
+  unread: number;
+  /** ⛔ Read this rather than comparing `unread` to `cap`. */
+  capped: boolean;
+  cap: number;
+}

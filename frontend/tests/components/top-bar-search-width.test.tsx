@@ -19,6 +19,9 @@ vi.mock('@/components/intelligence/account-search', () => ({
   AccountSearch: () => <input aria-label="Search accounts" />,
 }));
 vi.mock('@/components/shell/account-menu', () => ({ AccountMenu: () => null }));
+// ⚡ **Same reason as the account menu above** — the panel reads the workspace
+// context and the query client, and **this suite is about the frame**.
+vi.mock('@/components/shell/notifications', () => ({ Notifications: () => null }));
 vi.mock('@/components/ui', async () => {
   const actual = await vi.importActual<Record<string, unknown>>('@/components/ui');
   return { ...actual, OfflineStatus: () => null };

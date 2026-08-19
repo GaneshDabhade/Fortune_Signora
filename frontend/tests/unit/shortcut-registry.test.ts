@@ -59,6 +59,13 @@ const LOCAL_TO_A_COMPONENT: Readonly<Record<string, string>> = {
   'components/ui/tooltip.tsx': 'Escape dismisses the tooltip it belongs to',
   'components/ui/drawer.tsx': 'Escape closes the drawer it belongs to',
   'components/shell/account-menu.tsx': 'Escape and arrows move within the open menu',
+  // ⚡ **[TASK-495](../../../docs/BACKLOG.md) slice ⓑ.** ⛔ **Escape closes the
+  // panel it belongs to and returns focus to its trigger** — 📁 the same
+  // contract `drawer.tsx` and `account-menu.tsx` implement, and **not a
+  // published chord**: the App Shell's §15 names `⌘⇧N` for OPENING
+  // notifications, which is a global binding and would be registered rather
+  // than declared here. **This file is the dismissal, which every panel owns.**
+  'lib/shell/dismissable.ts': 'Escape closes the anchored panel it belongs to',
   // ⚡ **[TASK-1461](../../../docs/BACKLOG.md) — and this guard is what found
   // it**, on the first full run after the sheet was built. ⛔ **Escape closes
   // the navigation sheet the shell owns**, which is the same contract the

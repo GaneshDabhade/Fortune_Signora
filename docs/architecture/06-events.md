@@ -533,6 +533,37 @@ consumer resolves channels and writes.
 publishes through the `EventPublisher` port it already holds, and the consumer
 receives an `EventEnvelope`.
 
+### The read side, and why the feed carries a read time
+
+**Added 2026-08-19, slice ⓑ.** The event delivers; three reads serve the shell's
+notification panel.
+
+| | |
+|---|---|
+| `GET /workspaces/{id}/notifications` | The feed, newest first, bounded. **Each item carries `read_at`** |
+| `GET /workspaces/{id}/notifications/unread` | The badge — a count, capped at 99 |
+| `POST /workspaces/{id}/notifications/read` | Marks **named ids** read, and answers with the resulting badge |
+
+**`read_at` is on the item and not derived from the badge**, because the design's
+panel draws *"a 6px dot on the right"* per row: **the count says how many without
+saying which**, and a panel reading the count would mark every row unread.
+
+**The feed left-joins `notification_read`**, and the join is per person as well as
+per notification — one colleague reading an item must not mark it read for
+everyone it was sent to. **The RLS policy on `notification_read` is what enforces
+that**; the join's predicate is defence in depth, and
+`test_notification_feed_carries_read_state` records which of the two is
+load-bearing rather than implying both are.
+
+> **`FeedItem` keeps the two facts apart.** The notification records *what
+> happened*; `read_at` records *when this person read it*, which is a later event
+> with its own row. **Folding a read time onto the notification would put a
+> mutable-looking field on a record the module refuses to let anything update.**
+
+**Marking is per item and never on open** — the design is explicit: *"opening the
+panel does not mark items read; opening an item does."* **A mark-everything call
+on open would destroy the only signal the badge carries.**
+
 ### A channel with no adapter fails; it never degrades
 
 `channels` is a required, non-empty, comma-separated set. The consumer resolves
