@@ -751,6 +751,28 @@ run finishing**, and the chain it travels is:
 **nothing**, and `make review` starts *"both tiers"* — the API and the web app.
 ✅ **`infra/docker-compose.prod.yml` has both services and is the shape to copy.**
 
+> ## ⚠️ Corrected by measurement — QE, 2026-08-19, cycle 253. **Half of the paragraph above is wrong, and the wrong half is the headline.**
+>
+> ⛔ **Both processes ARE started.** 📁 `infra/docker-compose.prod.yml:164` runs `python -m apps.worker.relay_main` with `SIGNORA_RELAY_DATABASE_URL` under `signora_relay`; `:143` runs `arq apps.worker.main.WorkerSettings`. **`signora-prod-relay-1` and `signora-prod-worker-1` were both running when this was measured**, and **the browser suite runs against that stack** (3100/8100).
+>
+> ✅ **This item's own text already said so** — *"`infra/docker-compose.prod.yml` has both services and is the shape to copy"* — **so its two halves disagreed, and the louder one was believed.** ⚠️ **The `grep` above scoped `infra/` and `review/` and reported nothing; `infra/docker-compose.prod.yml` contains both strings.**
+>
+> ### ⚡ What is actually missing is ONE environment variable, and this item predicted it
+>
+> 📁 **This item's own second row is exactly right**: *"The default pool is not enough — `apps/worker/pools.py` partitions by cost, and research runs in `ai_research`. A default-pool worker starts cleanly, logs *worker started*, and consumes nothing, which is the most expensive way this can fail."*
+>
+> **That is precisely what is happening.** `docker-compose.prod.yml:143` sets **no `SIGNORA_WORKER_POOL`**, so the worker binds the `default` queue, while `relay.py:142` enqueues to `queue_name_for(subscription.pool)` — **one queue per pool.**
+>
+> | Subscriptions registered | |
+> |---|---|
+> | `DEFAULT` **8** · `INTELLIGENCE` **2** · `graph` **2** · `READ_MODEL` **1** · `ai_research` **2** | ⛔ **Five pools carry work. The stack drains one** |
+>
+> ### ⛔ Still `OPEN`, and deliberately not closed
+>
+> **The journey remains blocked** — ⚡ **for a smaller and more fixable reason than this item recorded.** **Filed as [B-1039](BUGS.md)**, because a compose file starting one of five workers the design requires is *something behaving wrongly today* rather than something unbuilt. ✅ **The fix stays QE's and stays out of a mid-certification candidate**: `docker-compose.prod.yml` decides what `make smoke` and `make dr` mean.
+>
+> ⚠️ **Nothing in this correction criticises the row.** **It named the exact mechanism before anybody had measured it**, and the half that was wrong cost nothing because the half that was right is the one that matters.
+
 ### ⚠️ What this lane did instead of waiting
 
 ⛔ **It did not weaken the journey**, and the two alternatives were both worse:

@@ -856,7 +856,51 @@ BLOCKED — the development database is not reachable
 
 **Measured**: `admin_dsn()` → `postgresql://signora:signora@localhost:5632/postgres` on `lane-qe`, and **unset raises a message naming the variable, slot 0 and this row.** ✅ **`tests/certification/` — 155 passed.**
 
-> ⚠️ **Rows [B-1029](#b-1029)–[B-1033](#b-1033) are referenced below and their headings are NOT in this file yet.** ⛔ **They are QE's, they are on `lane-qe`, and they arrive on `main` when that branch is certified.** ✅ **Named here rather than left as five silent dead anchors** — 📁 [§2](../CLAUDE.md), *the repository itself should always tell the truth.* ⚠️ **`main` already carried one such reference before these rows were added.**
+> ✅ **Retired 2026-08-19, and the retirement is the point.** ⚠️ **This note said rows [B-1029](#b-1029)–[B-1033](#b-1033) were referenced below and *"NOT in this file yet"* — true when it was written onto `main`, and false the moment `lane-qe` rebased.** ⛔ **A note about a temporary state has to be removed by whatever ends the state**, or it becomes the drift it was written to prevent. 📁 [§2](../CLAUDE.md).
+
+### B-1039 · 🟠 The local production stack runs one worker on the `default` pool, and four of the five queues that carry work are never drained
+
+| | |
+|---|---|
+| **Module** | `infra/docker-compose.prod.yml` — **the environment every browser journey, `make smoke` and `make dr` run against** |
+| **Current assignee** | **QE** — 📁 the same basis Lane A used for [C-1535](LANE_COORDINATION.md): *"[`RUNNING.md`](RUNNING.md) is QE's file and development environments is its one responsibility"* |
+| **Severity** | 🟠 — ⛔ **the stack starts cleanly, logs `worker started`, and consumes nothing from four queues** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-19 by QE**, cycle 253, investigating [C-1535](LANE_COORDINATION.md) |
+
+**Steps to reproduce.** `make up`, then publish anything whose subscription is not on the `default` pool — a research run, a signal, a timeline projection. **The event reaches Redis and stops.**
+
+### Measured, not inferred
+
+| | |
+|---|---|
+| **Seven pools exist** | `apps/worker/pools.py` — `ingestion` · `graph` · `intelligence` · `ai_reasoning` · `ai_research` · `read_model` · `default` |
+| **The relay routes per pool** | `signora_platform/event_bus/relay.py:142` — `queue_name=queue_name_for(subscription.pool)`. **One Redis queue per pool** |
+| **A worker binds exactly one** | `apps/worker/main.py:191` — `queue_name = queue_name_for(resolve_pool().name)`, and the pool comes from **`SIGNORA_WORKER_POOL`** (`pools.py:20`) |
+| ⛔ **The compose file starts one worker and sets no pool** | `infra/docker-compose.prod.yml:143` — `command: ["arq", "apps.worker.main.WorkerSettings"]`, **no `SIGNORA_WORKER_POOL`** → the `default` queue |
+| **Subscriptions actually registered** | **`DEFAULT` 8 · `INTELLIGENCE` 2 · `graph` 2 · `READ_MODEL` 1 · `ai_research` 2.** ⚡ **Five pools carry work; the stack drains one** |
+
+### 🔴 The failure mode is the expensive one, and the repository predicted it in writing
+
+📁 `pools.py`, `UnknownPoolError`'s docstring: *"a typo'd pool name that quietly ran the wrong queue would be very hard to notice and **would leave the intended queue undrained**."*
+
+> ⛔ **A `default`-pool worker starts cleanly, reports healthy, logs `worker started` with its queue name, and consumes nothing from four queues.** ⚡ **`make smoke` passes. `make dr` passes.** **Nothing in the repository says so** — which is [§2](../CLAUDE.md)'s *a config file implying enforcement that was never installed*, in a compose file.
+
+### ⚡ It is a defect, not a dependency
+
+📁 [§20e](../CLAUDE.md): *a defect is something behaving wrongly today; a dependency is something not yet built or agreed.* **The pools are built, the relay routes by pool, and the worker resolves its own pool correctly.** ⛔ **The compose file simply starts one of the five the design needs.**
+
+### ⚠️ What this corrects in [C-1535](LANE_COORDINATION.md), and it is half of it
+
+**That item says *"two processes in that chain are started by nothing in this repository"*.** ⛔ **Both are started.** `infra/docker-compose.prod.yml:164` runs `python -m apps.worker.relay_main` with `SIGNORA_RELAY_DATABASE_URL` under `signora_relay`, and `:143` runs the arq worker; **`signora-prod-relay-1` and `signora-prod-worker-1` were both up when this was measured.** ✅ **The item's own text already says the prod compose *"has both services and is the shape to copy"*, so the two halves of it disagree.**
+
+✅ **What C-1535 gets exactly right, and this row makes precise:** ***"The default pool is not enough — research runs in `ai_research`. A default-pool worker starts cleanly, logs worker started, and consumes nothing."*** ⚡ **So `notification-journey.spec.ts` still cannot pass — but for one missing environment variable per pool rather than for two missing processes.** ⛔ **C-1535 is updated with this measurement rather than closed: the journey is still blocked.**
+
+### The direction of a fix, deliberately not taken in this cycle
+
+**One worker service per pool that carries subscriptions, each with its own `SIGNORA_WORKER_POOL`.** ⛔ **Held because `infra/docker-compose.prod.yml` decides what `make smoke` and `make dr` MEAN** — 📁 [§20e](../CLAUDE.md) puts the compose files among the things that *"decide whether a gate passes"*, and **changing a gate's environment while a candidate is mid-certification is what that rule forbids.** ⚠️ **And it is not free**: five more containers changes what `make up` costs on every machine, which is a judgement about the developer environment rather than a repair.
+
+---
 
 ### B-1041 · 🟠 The release checklist's migration-reversibility step cannot be run as written
 
