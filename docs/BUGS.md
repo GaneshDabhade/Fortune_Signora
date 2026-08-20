@@ -1281,6 +1281,20 @@ const response = await fetch(url, { method: 'POST' });   //  POST /api/token
 
 ### B-1036 · 🟡 Specs that fail in the full run and pass in isolation, with no change to the tree
 
+> ### ⛔ 2026-08-20 — a method attempted, abandoned, and NOT to be retried
+>
+> **QE tried to test the starvation hypothesis directly**: run the affected specs alone (control), then under manufactured CPU load (treatment). ✅ **The control ran: `connections.spec.ts` + `confidence.spec.ts`, three repeats, `14 passed` every time.**
+>
+> 🔴 **The treatment was a mistake and it is recorded as one.** **It spawned 12 busy loops on a 12-core machine while Lane A was running Playwright**, taking load average to **15.00**. ⛔ **Any time-sensitive failure in their run during that window is attributable to QE**, and they were told the window so they would not diagnose it as a defect.
+>
+> ⚠️ **The one datum it produced before the command timed out**: the specs **passed under saturating load** on the first repeat. ⛔ **One data point, from a method that should not have been run, and it is not evidence.**
+>
+> ### ⛔ The method is dead, not deferred
+>
+> **Starvation cannot be tested by manufacturing scarcity on a machine another lane is using**, and this repository runs every lane on one box ([`RUNNING.md`](RUNNING.md)). ✅ **If this is ever characterised it will be by instrumenting the suite's OWN contention** — request timings, queue depth, the durations the reporter already records — **never by making the machine slower.**
+>
+> 📁 **This row still names no mechanism, and now it also names a method it will not use.**
+
 | | |
 |---|---|
 | **Module** | `frontend/tests/e2e/account-360-research.spec.ts` |
