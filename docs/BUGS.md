@@ -1308,6 +1308,16 @@ const response = await fetch(url, { method: 'POST' });   //  POST /api/token
 
 ### B-1036 · 🟡 Specs that fail in the full run and pass in isolation, with no change to the tree
 
+> ### ⚡ 2026-08-20 — **a leading hypothesis, and it is testable by MEASUREMENT**
+>
+> 📁 **[B-294](#b-294), found by Lane A**: `timeline_entry` has **no foreign key to `workspace`**, so every workspace deletion orphans its timeline rows permanently and nothing ever removes them.
+>
+> **Measured on QE's prod-local cluster after ONE browser-suite cycle on a freshly built stack:** `timeline_entry` **272**, of which **136 — half — reference a workspace that no longer exists.** ⛔ **On Lane A's persistent lane stack the same table reached 184,287 rows with 184,149 orphans.**
+>
+> ⚡ **A shared table that grows without bound and is never deleted is a far better candidate for *"passes alone, fails in a full run"* than CPU contention** — **and unlike CPU contention it can be tested by measuring**, which is the method this row committed to after the one below was abandoned.
+>
+> ⚠️ **Not chased yet, and deliberately**: Lane A's environment is degraded by [B-1044](#b-1044)'s recipe and B-294 is unfixed, so any measurement taken now would describe a broken stack rather than a normal one. ✅ **Recorded as the leading hypothesis so it is not rediscovered, and still NOT named as the mechanism.**
+
 > ### ⛔ 2026-08-20 — a method attempted, abandoned, and NOT to be retried
 >
 > **QE tried to test the starvation hypothesis directly**: run the affected specs alone (control), then under manufactured CPU load (treatment). ✅ **The control ran: `connections.spec.ts` + `confidence.spec.ts`, three repeats, `14 passed` every time.**
