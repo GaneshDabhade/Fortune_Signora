@@ -71,7 +71,15 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-19, `8a8116d5`
+## Current — as of 2026-08-20, `7a0f21c9`
+
+> ⚡ **Cycle 254 Closeout. 22 commits, all QE's, no migrations, EIGHT gates on the FIRST attempt.**
+>
+> ✅ **No board rows removed — and none should have been.** ⛔ **This cycle promoted no `TASK-nnn`**: its subject is QE's own certification tooling and the browser suite, which belong to no backlog row. ⚡ **Lane A's board rows are untouched and Lane A was never asked to wait.**
+>
+> ⚡ **Browser failures 14 → 7**, every recovery a fix in this candidate.
+>
+> ⛔ **QE reconciles this board; it does not fill it.**
 
 > ⚡ **Cycle 253 Closeout. 10 commits, Lane A, no migrations, EIGHT gates on the FIRST attempt.**
 >

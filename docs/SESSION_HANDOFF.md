@@ -1,5 +1,27 @@
 # Session Handoff
 
+> ## Cycle 254 — promoted `7a0f21c9`, 2026-08-20 · **the instruments, and the measured proof that fixing tests is the fastest certification**
+>
+> **`main` = `7a0f21c9` = the certified commit.** `pytest` **5434** · coverage **95.03%** · **679 Security Invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · `frontend-suite` **3525/204** · `eslint` · `smoke` 24/167s · **DR passed, 15 checks** · **reversible `head → base → head`** · head **`0066`**. **22 commits, QE. ONE attempt.**
+>
+> ⛔ **Five things the next session must not misread.**
+>
+> ⓐ 🔴 **Measure before optimising, and then check the measurement.** ⚡ **QE computed 7.4 minutes of browser-suite overhead and was wrong by TEN TIMES** — the parser mangled multi-minute durations. ✅ **Real figure: 41s, 3%, median test 1.40s.** ⛔ **What costs time is FAILING tests waiting out timeouts — 509s = 42% of cycle 253's suite.** ⚡ **So the largest speed optimisation available is making the suite green, and it weakens nothing.** ✅ **Proven in the same cycle: 509s → 373s, 20.7m → 19.8m, no gate changed.**
+>
+> ⓑ ⚡ **Browser failures 14 → 7.** [C-109](LANE_COORDINATION.md) cleared three rate-limit journeys, [B-1032](BUGS.md) cleared both `rail-band` tests, and `search-journey`/`top-bar-search` cleared with the load ([B-1036](BUGS.md)). ⛔ **`demo/golden-journey` 180s and `notification-arrival` 162s are now 30% of the suite in TWO tests**, and the second is [B-1039](BUGS.md).
+>
+> ⓒ ✅ **Migration reversibility is off the critical path and this is NOT a gate change.** **Disposable database on the LANE server (5632); the browser gate is on prod-local (5433).** ⛔ **Different server, different database, no shared state.** ⚡ **12s, measured beside a live browser suite.** 📁 **The runbook block also could not be run as written until this cycle** — it omitted `SIGNORA_TEST_ADMIN_DATABASE_URL` ([B-1041](BUGS.md), fixed on `lane-qe` at `eef5d74b`, **not in this promotion**).
+>
+> ⓓ ⛔ **The certification record does NOT contain `migration-reversibility` or `dr`.** 📁 The planner reported **nine** gates not recorded for the `platform` profile — *reported only, nothing skipped, nothing refused* ([B-131](BUGS.md)). **Both were run by hand and both passed. Run them by hand every cycle; the record will not remind you.**
+>
+> ⓔ ⚠️ **Two branches are PRESERVED by product-owner ruling and must not be deleted**: **`qe-validate`** holds an unmerged fix for [B-1022](BUGS.md), and **`qe-candidate`** holds certification records for two runs `main` has no account of ([B-1042](BUGS.md)). ⛔ **The three retired Lane C remotes hold 75 commits that exist nowhere else** ([C-110](LANE_COORDINATION.md)). 📁 **Branch cleanup is evidence preservation first, deletion second** — the ruling's six questions are on each row.
+>
+> **Open and mine:** [B-1039](BUGS.md) · [B-1040](BUGS.md) *(two gates say "workers consuming" and neither measures a worker)* · [B-1034](BUGS.md) · [B-1036](BUGS.md) · [B-1037](BUGS.md) · [B-1038](BUGS.md) · [B-1042](BUGS.md) · [B-1015](BUGS.md) · [B-1027](BUGS.md).
+>
+> **Open and NOT mine:** [B-1035](BUGS.md) — ⚡ **and it is a certification-speed item as well as a correctness one**: `client.ts` mints a token per request, so a navigation is ~24 HTTP requests where 12 would do, across ~430 navigations. ⛔ **Communicated to Lane A as information; prioritising it is the product owner's, not QE's** · [B-1033](BUGS.md) · [B-289](BUGS.md) · [B-283](BUGS.md)'s remainder.
+>
+> **Next candidate:** ⚡ **`lane-qe` at `eef5d74b`, 1 commit.** ✅ **Lane A holds nothing awaiting certification** — its branch carries 11 pre-rebase copies of already-promoted work and rebases at its next Startup.
+
 > ## Cycle 253 — promoted `8a8116d5`, 2026-08-19 · **the top bar against the design, and three failures that were not defects**
 >
 > **`main` = `8a8116d5` = the certified commit.** `pytest` **5435** · coverage **95.03%** · **679 Security Invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · `frontend-suite` **3518/202** · `eslint` · `smoke` 24/228s · **DR passed, 15 checks** · **reversible `head → base → head`** · head **`0066`**. **10 commits, Lane A. ONE attempt.**
