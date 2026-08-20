@@ -97,6 +97,44 @@ QE is the only lane that may merge into `integration`, certify, move `main`, wri
 
 ⚡ **So that *what was tested*, *what was promoted* and *what Lane A has since built* can never be confused for one another.**
 
+## 0f · Classify a certification-speed change BEFORE implementing it — ruled 2026-08-20, product owner
+
+> **The goal is to reduce wasted time through correctness, instrumentation, deterministic environments, clearer diagnostics and genuine defect fixes** — ⛔ **never by making certification less trustworthy.**
+
+⛔ **Do not weaken, skip, quarantine, reorder or reinterpret a quality gate to improve certification time.** ⚡ **Classify first. The class decides whether QE proceeds or stops.**
+
+| # | Class | QE's move |
+|---|---|---|
+| **①** | **Safe implementation improvement** — no change to what the gate measures or means | ✅ **Proceed** |
+| **②** | **Defect fix** — removes a genuine failure, timeout or flake **without weakening the gate** | ✅ **Proceed** |
+| **③** | **Instrumentation / diagnostic** — makes a failure faster to understand, **pass/fail semantics untouched** | ✅ **Proceed** |
+| **④** | **Execution optimisation** — reordering, parallelising, reusing | ⚠️ **Proceed ONLY when measurement proves the cost AND that isolation and ordering semantics remain intact** |
+| **⑤** | **Contract / semantic change** — what a gate, a `make` target, a certification command or a repository workflow **means** | 🔴 **STOP. Measure it, and escalate for a decision** |
+
+### ⚡ The worked examples, all from cycles 254–256
+
+| | Class | What happened |
+|---|---|---|
+| **[B-1041](BUGS.md)** — reversibility beside the browser gate | **④** | ✅ **Measured first**: a disposable database on the lane server against prod-local on 5433 — **different server, no shared state, 12s fully overlapped.** Same command, same assertion, only its position moved |
+| **[B-1043](BUGS.md)** — a wait bounded at 20s | **②/③** | ⚡ **180.0s → 35.1s**, and ✅ **passing-test time moved FOUR seconds** — the whole saving came out of a failing test's patience. **A heading absent at 20s is absent at 180s** |
+| **[B-131](BUGS.md)** — `planned_not_recorded` | **③** | ✅ **Recorded, never applied.** `satisfied` does not read it and `REQUIRED_GATES` is unchanged. **Certification did not get greener; it stopped being silent** |
+| **[B-1037](BUGS.md)** — the vacuous audit line | **③** | ✅ **Bounded to the one audit where it was measurable**, after checking the other two |
+| 🔴 **[B-1034](BUGS.md)** — `--exports` refusing | 🔴 **⑤** | ⛔ **STOPPED.** **The `Makefile` calls it in `$(shell …)` six times at PARSE time**, so a non-zero exit breaks **every target** on `main`, not one gate. ✅ **The documentation-only half was taken; the refusal is the product owner's** |
+| 🔴 **[C-111](LANE_COORDINATION.md)** — two gates asserting *workers consuming* | 🔴 **⑤** | ⛔ **STOPPED.** **The correct assertion FAILS on today's stack**, so gate and environment are one change |
+
+> ⚡ **[B-1028](BUGS.md) is the contrast that makes ⑤ legible.** **Its refusal WAS safe** — `database.py` is called by one thing. **`--exports` is called by all of them.** ⛔ **The same fix shape is class ② in one place and class ⑤ in another, and only measurement tells you which.**
+
+### ⛔ The four standing rulings, so the next cycle does not relitigate them
+
+| | |
+|---|---|
+| **[C-111](LANE_COORDINATION.md)** | **Pending the required ruling.** ⛔ **Do not silently redefine the affected gates** |
+| **[B-1042](BUGS.md)** | **Investigate and measure** — ⛔ **stop if the remediation changes gate semantics** |
+| **[B-294](BUGS.md)** | **Establish the actual contract and impact before changing anything** |
+| **[B-1034](BUGS.md)** | ✅ **Settled: leave at the documented fallback** unless the repository owner explicitly decides `make` should fail in that condition |
+
+---
+
 ## 0d · Validate on QE's own stack; certify on the default one
 
 **Ratified by QE, 2026-08-05, closing [B-121](BUGS.md).** The environment derivation keys off the **branch name**. QE validates a lane's tree by pointing a throwaway branch — `qe-validate` — at their tip, and **that name derives nothing**:

@@ -1220,6 +1220,16 @@ export SIGNORA_TEST_ADMIN_DATABASE_URL="postgresql+asyncpg://signora:signora@loc
 
 ### B-1034 · 🟠 Certification on a non-lane branch aims its disposable database at port 5432, which is human review's
 
+> ## ✅ RULED 2026-08-20, product owner — **settled at the documented fallback**
+>
+> ⛔ **`--exports` does NOT gain a non-zero exit on this branch. The `Makefile`'s execution semantics do not change.** ✅ **The comments stay, because they make the otherwise implicit shared-stack behaviour visible without changing behaviour.**
+>
+> **The verification is kept as the evidence it is:** `--exports` exits **0** on the fallback path · **ports unchanged** · `make -n down` **succeeds** · ⚠️ **`make -n help` exits 2 before AND after — no such target, so it is not a regression.**
+>
+> ✅ **And `SIGNORA_WEB_PORT`/`SIGNORA_API_PORT` being absent from the fallback stays part of THIS row** — 📁 the product owner's words: *"do not split it into another artificial defect."*
+>
+> ⚡ **Reopening this needs an explicit decision that `make` SHOULD fail in that condition.** ⛔ **Until then it is settled, and a future cycle should not relitigate it** — 📁 recorded in [`QUALITY_ENGINEERING.md` §0f](QUALITY_ENGINEERING.md).
+
 > ## ⚡ 2026-08-20 — **the refusal was measured and REJECTED, and the diagnostic was taken instead**
 >
 > ⛔ **This row proposed making `_exports()` refuse rather than emit slot 0**, on the product owner's standing rule: *"prefer operations that refuse unsafe states over operations that silently recover from them."* ✅ **The rule still applies. The blast radius is what does not permit it here.**
