@@ -930,6 +930,34 @@ pass "workers resumed consuming"
 
 ---
 
+### B-1046 · 🟠 The documented way to start the frontend takes slot 0, beside a backend line that derives its port
+
+| | |
+|---|---|
+| **Module** | [`docs/RUNNING.md`](RUNNING.md) — **QE's** · `Makefile:236` and `frontend/package.json` — **`platform_foundation`, Lane A** |
+| **Current assignee** | **Split. QE fixed its half; the other two are Lane A's** |
+| **Severity** | 🟠 — **a lane following the documented path squats human review's port** |
+| **Status** | ⚠️ **`PARTIALLY FIXED`** — QE's half done, 2026-08-20 |
+| **Found** | **2026-08-20 by Lane A**, who caught it and moved to `-p 3300` |
+
+**`frontend/package.json`: `"dev": "next dev"` — no port.** ⛔ **So it takes Next's default, `3000`, which [`RUNNING.md`](RUNNING.md#running-a-lane) allocates to `review`/slot 0.**
+
+### 🔴 Three sites, and the first is the one that makes it a defect rather than a footgun
+
+| | |
+|---|---|
+| 📁 [`RUNNING.md`](RUNNING.md)**:217** | ⛔ **`cd frontend && npm run dev`, directly beside a backend line that derives `${SIGNORA_API_PORT}`.** ✅ **FIXED by QE — it now derives `${SIGNORA_WEB_PORT}`** |
+| 📁 `Makefile`**:236** | **`@echo "  frontend  cd frontend && npm run dev"`** — the instruction `make demo` prints. **Lane A's** |
+| 📁 `frontend/package.json` | **`"dev": "next dev"`.** **Lane A's** |
+
+⚡ **The inconsistency is what makes it worth a row.** ⛔ **A lane following that block gets its API on its own port and its frontend on the reviewer's** — **they cannot even address each other correctly**, and 📁 [`RUNNING.md`](RUNNING.md)**:386** already does it right (`npm run dev -- --port 3400`), so the repository disagrees with itself two hundred lines apart.
+
+### ⚠️ Why nobody noticed
+
+**On slot 0 the derived value and the default are the same number**, so the documented path is correct for exactly the one environment where correctness does not matter. 📁 **The same shape as [B-1003](#b-1003), [B-1028](#b-1028) and [B-270](#b-270): slot 0 reached by a route that looks right because 5432, 6379 and 3000 are what a bare tool picks.**
+
+---
+
 ### B-1045 · 🟠 The breadcrumb says *"This account"* where the page says the account is not named yet
 
 | | |

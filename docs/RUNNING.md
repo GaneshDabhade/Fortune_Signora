@@ -214,7 +214,12 @@ cd backend && SIGNORA_DATABASE_URL="postgresql+asyncpg://signora_app:signora_app
   uv run uvicorn apps.api.main:create_app --factory --reload --port ${SIGNORA_API_PORT}
 
 # frontend
-cd frontend && npm run dev
+# ⚠️ **`npm run dev` is bare `next dev`, which takes whatever port Next
+#    defaults to — 3000, slot 0, human review's.** The backend line above
+#    derives ${SIGNORA_API_PORT}; this one must derive too, or a lane ends up
+#    with its API on its own port and its frontend squatting the reviewer's
+#    (B-1046). On slot 0 the two are the same number and nothing looks wrong.
+cd frontend && npm run dev -- --port ${SIGNORA_WEB_PORT}
 ```
 
 **<http://localhost:3000>** → sign in as `dana.reyes@northwind.example`.
