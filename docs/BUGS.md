@@ -930,6 +930,41 @@ pass "workers resumed consuming"
 
 ---
 
+### B-1047 · 🟢 QE's verification of [B-295](#b-295)'s exposure claim — confirmed, and it names where the orphans come from
+
+| | |
+|---|---|
+| **Module** | **Verification note, not a defect.** [B-295](#b-295) is Lane A's row and the finding is theirs |
+| **Current assignee** | **none — this is evidence** |
+| **Severity** | 🟢 |
+| **Status** | ✅ **`CLOSED` on filing** — it exists so the claim it checks is not re-verified from scratch |
+| **Found** | **2026-08-20 by QE**, checking a load-bearing claim rather than taking it |
+
+**Lane A wrote:** *"No customer is exposed — the product has no workspace-delete path at all."* ✅ **Confirmed, and it is stronger than *not built yet*.**
+
+**Measured:** no `DELETE` route on workspaces in any module's `interface/`, and none in the API surface. ⚡ **The module states the stance rather than merely lacking the route:**
+
+> 📁 `workspace_tenancy/interface/router.py:464` — *"`POST` rather than `DELETE`, **because nothing is deleted**: the row survives with the moment it was withdrawn."*
+>
+> 📁 `router.py:804` — *"⛔ **Retired, never deleted.** A view that explained a decision must still explain it afterwards."*
+
+⚡ **So deletion is architecturally disfavoured here**, consistent with [§2](../CLAUDE.md)'s *immutability is the default for anything that records a fact.* **The missing foreign keys are a latent gap that may never be exposed at all.**
+
+### 🔴 And the check answered a question neither lane had asked
+
+**If nothing deletes a workspace, why is half of `entity` orphaned?**
+
+```
+grep -rn 'DELETE FROM workspace' backend/ --include=*.py
+→ backend/tests/playground/seed.py:360
+```
+
+⛔ **One hit, in a test fixture.** ⚡ **The Playground seeder is the ONLY thing in the repository that deletes a workspace, and it does so on every re-seed** — which is exactly the +15 entities and +136 timeline rows [B-1044](#b-1044) measured per run.
+
+> ✅ **So the orphan population is entirely an artifact of re-seeding, and the exposure is entirely development-side.** ⛔ **That does not make [B-295](#b-295) less real** — a cascade tree whose root has no parent is still an inconsistency, and *"the day somebody builds workspace deletion"* is still the day it matters. ⚡ **It does mean no customer data is at risk today, and the severity should be read that way.**
+
+---
+
 ### B-1046 · 🟠 The documented way to start the frontend takes slot 0, beside a backend line that derives its port
 
 | | |
