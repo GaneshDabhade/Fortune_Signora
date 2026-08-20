@@ -1273,11 +1273,13 @@ python3 infra/certification-guard.py --audit-claims
 → 0 claim(s) awaiting promotion
 ```
 
-**Expected.** The claim on `origin/integration` is named, or the check says out loud that it is answering about the local clone.
+> 🔴 **DISPROVEN 2026-08-20 — everything from here to the correction below was QE's belief and is NOT the mechanism.** ⛔ **Kept visible rather than deleted, because a register that quietly loses a wrong diagnosis teaches nothing** — **but nothing in the next three paragraphs may be cited as established fact.**
 
-**Actual.** **Silence that reads as *"nothing is waiting"*.**
+~~**Expected.** The claim on `origin/integration` is named, or the check says out loud that it is answering about the local clone.~~
 
-⚡ **`--audit-main` gets this right in the same run** — it prints *"note — 1 commit(s) on `origin/integration` are not in this clone's `integration`."* ⛔ **Two checks in one file, one of which knows the local ref may be stale and one of which does not.**
+~~**Actual.** **Silence that reads as *"nothing is waiting"*.**~~
+
+~~⚡ **`--audit-main` gets this right in the same run** — it prints *"note — 1 commit(s) on `origin/integration` are not in this clone's `integration`."* ⛔ **Two checks in one file, one of which knows the local ref may be stale and one of which does not.**~~ 🔴 **FALSE: both call `_scope_note()`.**
 
 > ## 🔴 The diagnosis above is WRONG, and the correction is the row
 >
@@ -1302,8 +1304,20 @@ python3 infra/certification-guard.py --audit-claims
 > ⚠️ **Two tests, and the first one I wrote proved nothing.** ⛔ **A repository with NO claims at all takes an earlier branch that was already honest — *"no claim commits to check"*.** ⚡ **Reproducing it needs historical claims AND no pending one**, which is the live repository's state and not the obvious fixture. ✅ **Mutation-tested: restoring the vacuous positive kills the assertion.**
 >
 > ⛔ **And the second test is the half that matters** — a real pending claim must still get the positive result, or this becomes a check that never affirms.
+>
+> ### ⛔ It does NOT generalise, and the reason is structural rather than lucky
+>
+> **Checked, not assumed — the other two audits in the same file:**
+>
+> | | Population printed | Population judged | Same defect? |
+> |---|---|---|---|
+> | **`--audit-claims`** | `audit — 199 claim commit(s)` — **historical + pending** | 🔴 **pending only** | ✅ **Yes.** A reader saw 199 and a clean verdict, and never saw that the judged set was **0** |
+> | **`--audit-planning`** | `audit — N planning commit(s)` | **the same N** | ⛔ **No** — one range, and the count is on the line above the verdict |
+> | **`--audit-main`** | **three explicit counts** — certified · in-snapshot · Closeout — **plus an early `if not commits` branch** | the same set | ⛔ **No** — an empty population cannot masquerade: every count reads 0 |
+>
+> ⚡ **`--audit-claims` is the only audit whose printed population differs from its judged population**, and that asymmetry exists because [B-184](#b-184) split it into two ranges — one actionable, one immutable. **The fix is therefore bounded to the one place the defect is measurable**, and no other audit was touched.
 
-📁 **The family this belongs to**: an instrument answering a narrower question than the one asked. **The question is *"what is awaiting promotion?"*; the answer is *"what is awaiting promotion in this clone"*, and only one of those is what a promotion decision needs.**
+📁 **The family this belongs to is unchanged and it is the one thing the original row got right**: an instrument answering a narrower question than the one asked. ⚠️ **The question QE thought it was answering was *"what is awaiting promotion?"* versus *"in this clone"*.** ✅ **The question it was ACTUALLY answering is *"did anything examined carry a breach?"* while printing an answer to *"is the repository clean?"*** — **same family, different narrowing.**
 
 ---
 
