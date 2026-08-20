@@ -1400,6 +1400,37 @@ python3 infra/certification-guard.py --audit-claims
 
 ### B-1038 · 🟠 A failed certification poisons the next attempt, and the message blames the operator's tree
 
+> ## ⚡ 2026-08-20 — **the diagnostic now names the cause. The poisoning itself is NOT fixed.**
+>
+> ⛔ **`append()` still runs unconditionally, so a failed run still dirties the tree.** ✅ **What changed is that the next run stops blaming the operator for it:**
+>
+> ```
+> NOT CERTIFIED
+>   · the working tree was dirty, so the tree certified was never stored
+>
+>   dirty (2):
+>     · certification/manifest.json
+>     · certification/reports/<sha>.md
+>
+>   ⛔ Only certification/ is dirty, so THIS is almost certainly a previous
+>   run's own output rather than your work: append() writes a record even when
+>   a gate fails. Clear it and re-run:
+>
+>       git checkout -- certification/
+> ```
+>
+> ⛔ **No verdict changed.** `tree_is_clean()` is untouched, the run still refuses, and `tree_clean` is still recorded false. ⚡ **Only the message learns what it is looking at.**
+>
+> ### 🔴 The test found a real bug in the fix, which is why it exists
+>
+> **`dirty_paths` first used `line[3:]`** — porcelain v1 is `XY path` with a two-character status. ⛔ **But `_git` calls `.strip()` on the WHOLE output**, so the leading space of an unstaged ` M path` is gone before this sees it, and a fixed offset **ate a character of the path**: `ertification/manifest.json`.
+>
+> ⚠️ **QE's first version of the test asserted the wrong thing too** — it expected `certification/manifest.json` for a wholly *untracked* directory, and git reports `certification/`, one line for the directory. ✅ **Both were corrected by asserting what git DOES rather than what QE expected**, and the suite now covers the tracked-modified case, which is B-1038's actual shape.
+>
+> ### ⛔ Still open, and this is the part that needs a decision
+>
+> **Making a failed run not write into the tree it requires clean is a change to certification's own semantics** — where a failed record goes, and whether it is kept at all. 📁 **The attempt log already survives a `git checkout --` deliberately.** ⚠️ **Not QE's to take alone, and it is smaller now that the message says what to do.**
+
 | | |
 |---|---|
 | **Module** | `backend/tests/certification/__main__.py` · `store.py` |

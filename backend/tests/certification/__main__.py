@@ -330,6 +330,38 @@ def _computed_profile() -> str:
     return note.split(":")[0].strip()
 
 
+def _explain_the_dirty_tree() -> None:
+    """Name what is dirty, and say when the previous run is the cause — B-1038.
+
+    ⛔ **`append()` runs unconditionally**, so a run that fails a gate writes
+    its own manifest entry and report. **The next run then refuses with *"the
+    working tree was dirty"*, which the operator reads as a statement about
+    their own uncommitted work.** ⚡ **It is a statement about the previous
+    run**, and the `git checkout --` that clears it was named in a comment
+    inside this package and in no runbook.
+
+    ✅ **This changes no verdict** — the run has already refused, and
+    `tree_clean` is recorded false either way. **Only the diagnostic learns to
+    name the cause.**
+    """
+    paths = repository_conditions.dirty_paths()
+    if not paths:
+        return
+    certification_only = all(path.startswith("certification/") for path in paths)
+    print(f"\n  dirty ({len(paths)}):")
+    for path in paths[:8]:
+        print(f"    · {path}")
+    if len(paths) > 8:
+        print(f"    · … and {len(paths) - 8} more")
+    if certification_only:
+        print(
+            "\n  ⛔ Only certification/ is dirty, so THIS is almost certainly a previous\n"
+            "  run's own output rather than your work: append() writes a record even when\n"
+            "  a gate fails. Clear it and re-run:\n\n"
+            "      git checkout -- certification/\n"
+        )
+
+
 def _planned_not_recorded(gates: tuple[GateResult, ...]) -> tuple[str, ...]:
     """The planned gates this record will not contain — **B-131**.
 
@@ -598,6 +630,8 @@ def _certify(target: disposable_database.Disposable) -> int:
     print("\nNOT CERTIFIED")
     for reason in run.failures:
         print(f"  · {reason}")
+    if not run.tree_clean:
+        _explain_the_dirty_tree()
     _report_gate_output(gates, {"pytest": suite, "security-invariants": invariants,
                                 "mypy": types, "import-linter": contracts,
                                 "tsc": typescript, "smoke": smoke,

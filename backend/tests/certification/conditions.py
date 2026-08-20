@@ -18,6 +18,7 @@ gained a recorded refusal.
 
 from __future__ import annotations
 
+import re
 import subprocess
 from pathlib import Path
 
@@ -140,6 +141,37 @@ def tree_is_clean(*, repository_root: Path = REPOSITORY_ROOT) -> bool:
     that ignored it would describe a tree nobody can check out.
     """
     return _git(["status", "--porcelain"], repository_root) == ""
+
+
+def dirty_paths(*, repository_root: Path = REPOSITORY_ROOT) -> tuple[str, ...]:
+    """**What is dirty**, so the refusal can say so — [B-1038](../../../docs/BUGS.md).
+
+    ⛔ **A failed run writes its own record.** `__main__.py` calls `append()`
+    unconditionally, so a run that fails a gate still modifies
+    `certification/manifest.json` and writes a report. **The NEXT run then
+    refuses with *"the working tree was dirty"* — and the operator reads that
+    as a statement about their own uncommitted work.**
+
+    ⚡ **It is a statement about the previous run**, and until now nothing said
+    so. The `git checkout --` that clears it is named in a comment inside this
+    package and in no runbook.
+
+    ✅ **This changes no verdict.** `tree_is_clean` is unchanged, the run still
+    refuses, and `tree_clean` is still recorded false. **Only the diagnostic
+    learns to name the cause.**
+    """
+    # ⚠️ **Not `line[3:]`, and the test is what caught it.** Porcelain v1 is
+    # `XY path` with a two-character status — but `_git` **strips the whole
+    # output**, so the leading space of an unstaged ` M path` is gone by the
+    # time this sees it and a fixed offset eats a character of the path
+    # (`ertification/manifest.json`). **Strip the status field, whatever width
+    # it arrived at.**
+    status = _git(["status", "--porcelain"], repository_root)
+    return tuple(
+        re.sub(r"^\S{1,2}\s+", "", line.strip())
+        for line in status.splitlines()
+        if line.strip()
+    )
 
 
 def _git(arguments: list[str], repository_root: Path) -> str:

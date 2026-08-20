@@ -478,3 +478,76 @@ class TestPlannedGatesCannotDisappear:
         page = render(_run(profile=""), _run().conditions)
         assert "Every gate the planner required" not in page
         assert "Planned and NOT recorded" not in page
+
+
+class TestADirtyTreeRefusalNamesItsCause:
+    """**B-1038.** `append()` runs even when a gate fails, so a failed run
+    writes its own manifest entry and report. **The next run then refuses with
+    *"the working tree was dirty"*, which reads as a statement about the
+    operator's uncommitted work.**
+
+    ⚡ **It is a statement about the previous run.** ⛔ **The `git checkout --`
+    that clears it was named in a comment inside this package and in no
+    runbook**, and QE hit it in cycle 252 and diagnosed it as its own error.
+
+    ✅ **These prove the DIAGNOSTIC, never the verdict.** The verdict is
+    untouched: a dirty tree still refuses, and `tree_clean` is still recorded
+    false.
+    """
+
+    @staticmethod
+    def _repo(root: Path) -> None:
+        import subprocess
+
+        subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+        subprocess.run(["git", "config", "user.email", "q@e"], cwd=root, check=True)
+        subprocess.run(["git", "config", "user.name", "QE"], cwd=root, check=True)
+
+    def test_a_modified_manifest_is_reported_by_path(self, tmp_path: Path) -> None:
+        """⚡ **The real B-1038 shape.** `manifest.json` is TRACKED, so a failed
+        run leaves it MODIFIED — and git reports the file, not its directory."""
+        import subprocess
+
+        from tests.certification import conditions
+
+        self._repo(tmp_path)
+        (tmp_path / "certification").mkdir()
+        (tmp_path / "certification" / "manifest.json").write_text("{}")
+        subprocess.run(["git", "add", "-A"], cwd=tmp_path, check=True)
+        subprocess.run(["git", "commit", "-qm", "base"], cwd=tmp_path, check=True)
+        (tmp_path / "certification" / "manifest.json").write_text('{"runs": []}')
+
+        assert conditions.dirty_paths(repository_root=tmp_path) == (
+            "certification/manifest.json",
+        )
+
+    def test_an_untracked_directory_is_reported_as_git_reports_it(
+        self, tmp_path: Path
+    ) -> None:
+        """⚠️ **Asserting what git DOES, not what QE expected.** A wholly
+        untracked directory is reported as `certification/` — one line for the
+        directory, never one per file. **QE's first version of this test
+        asserted the file path and failed**, which is the harness being wrong
+        rather than the code."""
+        from tests.certification import conditions
+
+        self._repo(tmp_path)
+        (tmp_path / "certification").mkdir()
+        (tmp_path / "certification" / "report.md").write_text("x")
+
+        assert conditions.dirty_paths(repository_root=tmp_path) == ("certification/",)
+
+    def test_a_clean_tree_reports_nothing(self, tmp_path: Path) -> None:
+        import subprocess
+
+        from tests.certification import conditions
+
+        subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+        assert conditions.dirty_paths(repository_root=tmp_path) == ()
+
+    def test_the_verdict_is_unchanged_by_the_diagnostic(self) -> None:
+        """⛔ **The half that matters.** A better message must not make a dirty
+        tree any more acceptable than it was."""
+        run = _run(tree_clean=False)
+        assert run.satisfied is False
+        assert any("working tree was dirty" in reason for reason in run.failures)
