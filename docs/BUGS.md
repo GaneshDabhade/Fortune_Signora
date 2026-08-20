@@ -956,7 +956,9 @@ Received string:    "Accounts/This account"
 
 ### ⛔ Why it appeared only now, and it is not a regression in this candidate
 
-**The candidate changed `infra/certification-guard.py` and one backend test. Neither can reach a breadcrumb.** ⚡ **Which account the spec opens depends on list ordering**, and the Playground holds both named and unnamed accounts — **so earlier cycles happened to click a named one.** ✅ **Confirmed by re-running it alone: it fails in isolation too**, which separates it from [B-1036](#b-1036)'s starvation class.
+**The candidate changed `infra/certification-guard.py` and one backend test. Neither can reach a breadcrumb.** ⚡ **Which account the spec opens depends on list ordering**, and the Playground holds both named and unnamed accounts — **so earlier cycles happened to click a named one.** ⚠️ **Corrected 2026-08-20, and the correction matters.** ⛔ **QE first wrote *"confirmed real by re-running it alone"*.** ✅ **It DID fail alone — which separates it from [B-1036](#b-1036)'s starvation class** — ⛔ **but after a re-seed it PASSES alone**, because the ordering changed and it opened a named account.
+
+> ⚡ **The DEFECT is real and the evidence is exact**: `Expected "09cdf253 — no source has named this account yet"`, `Received "Accounts/This account"`. **Two surfaces disagreed about one account, and that was observed rather than inferred.** ⛔ **The TEST is intermittent by DATA, not deterministic**, and *"confirmed real"* overstated what a single isolation run establishes. 📁 **Reproduce it by seeding until the list's first account is unnamed, never by re-running.**
 
 📁 **The same data dependency `search-journey.spec.ts` and `notification-arrival.spec.ts` both defend against** by filtering for an account with a legal name. ⛔ **This spec does not filter — and it should not**: the unnamed case is exactly the one worth asserting.
 
@@ -999,6 +1001,31 @@ Received string:    "Accounts/This account"
 ---
 
 ### B-1044 · 🟡 A browser failure cannot be re-run without rebuilding the environment, so diagnosing one costs four minutes before it starts
+
+> ## ✅ RESOLVED 2026-08-20 — **and the fix was to measure, not to build**
+>
+> ⛔ **The row assumed a re-seed needed new tooling. It does not — the path already works, and nobody had established that it does.**
+>
+> ⚡ **`backend/tests/playground/seed.py:360` deletes its own workspace and rebuilds it**, so the seeder is idempotent against a LIVE database. ⚡ **And `auth:migrate` is unnecessary on a stack that has already run it** — the `auth` tables persist across everything but a `down -v`.
+>
+> **The whole recovery is two commands against the running stack:**
+>
+> ```bash
+> cd frontend && npm run demo:users              # enrols the 15 signed-in people
+> cd ../backend && uv run python -m tests.playground.seed
+> ```
+>
+> | | |
+> |---|---|
+> | **Before** — `make down && make up` + `auth:migrate` + `demo:users` + `seed` | **~4 minutes** |
+> | ✅ **After** — the two commands above | ⚡ **7 seconds** |
+> | **Then one spec** — `shell-values.spec.ts` | **15.7s, 11 passed** |
+>
+> ✅ **Measured end to end: 24 seconds from *environment consumed* to *spec verified*, against roughly four minutes.**
+>
+> ⛔ **No gate changed and no tooling was written.** ⚡ **The browser gate still begins with `make down`** — it needs a genuinely clean volume and that is not what this is for. ✅ **This is the DIAGNOSIS path**, which is what made [B-1036](#b-1036)'s isolation runs expensive and turned every *"starvation or defect?"* question into a four-minute investment.
+>
+> ⚠️ **And it immediately corrected a claim in [B-1045](#b-1045)**: that spec failed in isolation before the re-seed and passes after it, which is how QE learned the failure is data-dependent rather than deterministic. ⚡ **A cheap diagnosis path pays for itself in the accuracy of the rows it produces.**
 
 | | |
 |---|---|
