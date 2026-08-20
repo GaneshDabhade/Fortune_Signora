@@ -930,6 +930,42 @@ pass "workers resumed consuming"
 
 ---
 
+### B-1045 · 🟠 The breadcrumb says *"This account"* where the page says the account is not named yet
+
+| | |
+|---|---|
+| **Module** | `product_surface` — the shell's breadcrumb |
+| **Current assignee** | **Lane A** |
+| **Severity** | 🟠 — **two surfaces describe one state differently, and one of them carries no identity at all** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-20 by QE**, browser validation of cycle 256's candidate `fa3c78ab` |
+
+**Steps.** Open `/accounts` and click an account **whose name has not arrived**.
+
+```
+shell-values.spec.ts:214
+Expected substring: "09cdf253 — no source has named this account yet"
+Received string:    "Accounts/This account"
+```
+
+### ⚡ The page and the breadcrumb disagree about the same account
+
+📁 **The account page renders `09cdf253 — no source has named this account yet`** — which is [B-290](#b-290)'s rule working: *a name that has not arrived is not a name that does not exist.* ⛔ **The breadcrumb renders `This account`**, which names nothing and is the same for every unnamed account on the product.
+
+⚠️ **The spec is right to assert they agree.** ⚡ **A breadcrumb that says something different from the page it names is a trail a customer cannot use to tell two records apart** — and with several unnamed accounts in a workspace, every one of them reads identically in the trail.
+
+### ⛔ Why it appeared only now, and it is not a regression in this candidate
+
+**The candidate changed `infra/certification-guard.py` and one backend test. Neither can reach a breadcrumb.** ⚡ **Which account the spec opens depends on list ordering**, and the Playground holds both named and unnamed accounts — **so earlier cycles happened to click a named one.** ✅ **Confirmed by re-running it alone: it fails in isolation too**, which separates it from [B-1036](#b-1036)'s starvation class.
+
+📁 **The same data dependency `search-journey.spec.ts` and `notification-arrival.spec.ts` both defend against** by filtering for an account with a legal name. ⛔ **This spec does not filter — and it should not**: the unnamed case is exactly the one worth asserting.
+
+### ⚠️ What QE is NOT doing
+
+⛔ **Not filtering the spec to dodge the case.** ⚡ **That would convert a test that found something into one that cannot.** ✅ **The row goes to the module's assignee and the red line stays** until the breadcrumb carries the same identity the page does.
+
+---
+
 ### B-1043 · 🟠 The demonstration's step 6 looks for the account history where the panel no longer puts it
 
 | | |

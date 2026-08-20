@@ -728,6 +728,46 @@ to the next eligible row rather than idling or inventing an anonymous design.**
 | **Blocks** | ⛔ **Nothing today.** ⚠️ **It costs 162 seconds of every browser gate and leaves four of five populated queues undrained** |
 | **Status** | ✅ **`READY FOR PRODUCT DECISION`** |
 
+> ## 🔴 MEASURED 2026-08-20, cycle 256 — **and it is worse than [B-1039](BUGS.md) states**
+>
+> **Taken after a full product exercise: 423 browser tests against a freshly seeded production stack, with the stack still up.**
+>
+> | | |
+> |---|---|
+> | `outbox_event` published | **808** |
+> | `outbox_event` relayed | **808** — ✅ **the relay is doing its job perfectly, and this is why both gates pass** |
+> | `processed_event` | 🔴 **0** |
+> | `dead_letter_event` | **0** |
+>
+> ⛔ **`processed_event` is the idempotency ledger and `claim()` inserts into it before every handler runs** (`event_bus/idempotency.py:37`). ⚡ **Zero rows means NOT ONE event was consumed by ANY consumer.**
+>
+> ### ⚠️ Not *"four of five pools undrained"* — nothing was consumed at all
+>
+> | Redis queue | Pending |
+> |---|---|
+> | `signora:events:read_model` | **139** |
+> | `signora:events:intelligence` | **29** |
+> | `signora:events:ai_research` | **1** |
+> | `signora:events:default` | ⛔ **the key does not exist** |
+>
+> ✅ **The worker is healthy and behaving exactly as configured** — `"pool":"default"`, `"queue":"signora:events:default"`, `"subscriptions":8`, **zero errors in its log.** ⛔ **`signora:events:default` was never created, so nothing was ever routed to the only pool being drained.** ⚡ **169 events sit pending across three queues nothing is bound to.**
+>
+> ### 🔴 And both gates reported success against that
+>
+> **`smoke` printed *"workers consuming without error"*. `make dr` printed *"workers resumed consuming"*.** ⛔ **Neither is false — and neither measured a consumer.** 📁 **That is [B-1040](BUGS.md), demonstrated rather than argued.**
+>
+> ### ✅ The five questions, answered
+>
+> | | |
+> |---|---|
+> | **What each gate CLAIMS** | that workers are consuming |
+> | **What it MEASURES** | `smoke`: the absence of `ERROR` in the worker log · `dr`: `outbox_event.relayed_at`, **which the relay writes** |
+> | **What the correct assertion is** | **`processed_event` gained rows** — written by a consumer, so a row proves consumption. **Bounded-deadline poll, exactly the pattern the relay half already uses well** |
+> | **Does correcting it change runtime?** | ⛔ **The assertion itself is one query.** ⚡ **Fixing what it exposes removes `notification-arrival`'s 162s.** ✅ **Adding workers costs ~5 containers on `make up`** |
+> | **Can it expose a product defect?** | 🔴 **It exposes this one immediately** — **the corrected assertion FAILS on today's stack**, and that is the point |
+>
+> ⛔ **QE has changed nothing.** ⚠️ **The corrected gate would turn `smoke` and `dr` red until a worker exists per pool**, so the two changes are one change and neither is QE's to take alone.
+
 ### The measured position
 
 | | |
