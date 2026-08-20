@@ -1,5 +1,25 @@
 # Session Handoff
 
+> ## Cycle 255 — promoted `8524cf0d`, 2026-08-20 · **the record stops being silent, and the suite loses 2.7 minutes without losing a test**
+>
+> **`main` = `8524cf0d` = the certified commit.** `pytest` **5442** · coverage **95.03%** · **679 Security Invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · `frontend-suite` **3525/204** · `eslint` · `smoke` 24/232s · **DR passed, 15 checks** · **reversible in 6s beside the browser gate** · head **`0066`**. **2 commits, QE. ONE attempt.**
+>
+> ⛔ **Four things the next session must not misread.**
+>
+> ⓐ ✅ **[B-131](BUGS.md): the certification record now names the gates it did NOT run.** ⚡ **Read it from `manifest.json`, not the log** — `planned_not_recorded`, verified on this very run as the nine `platform`-profile gates including `dr` and `migration-reversibility`. ⛔ **Recorded, never applied**: `satisfied` does not read it, `REQUIRED_GATES` is unchanged, and widening what certification REQUIRES is an [ADR-0032](architecture/adr/0032-release-certification.md) decision. ⚠️ **The deeper fix is UNTAKEN — two mandatory gates still execute outside certification, by hand. Run them by hand every cycle; the record will not remind you, it will only record that they were absent.**
+>
+> ⓑ ⚡ **Measure, then check the measurement.** 📁 **A 2.7-minute saving came from ONE unbounded wait** — `demo/golden-journey` step 6 called `scrollIntoViewIfNeeded` with no timeout and inherited 180s, while every sibling used 20s. **180.0s → 35.1s.** ✅ **Passing-test time moved FOUR SECONDS (776s → 772s)** — **the whole saving came out of a failing test's patience.** ⛔ **The failure set is unchanged at seven, identical specs.**
+>
+> ⓒ 🔴 **A near-miss, kept because it is the class this repository keeps finding.** **QE queried `workspace`/`workspace_member`, got `0` and *"relation does not exist"*, and was one step from filing a 🔴 against `make dr` for destroying data while reporting *"Nothing lost"*.** ⛔ **The table is `membership` and `make dr` truncates nothing.** ⚡ **A wrong table name produces evidence indistinguishable from a serious defect** — 📁 and see [B-1044](BUGS.md): re-running one browser spec costs a ~4-minute rebuild, which is why isolation runs are expensive.
+>
+> ⓓ ⚠️ **Two branches are PRESERVED by product-owner ruling** — **`qe-validate`** ([B-1022](BUGS.md)) and **`qe-candidate`** ([B-1042](BUGS.md)) — **and the three retired Lane C remotes hold 75 commits that exist nowhere else** ([C-110](LANE_COORDINATION.md)). ⛔ **Branch cleanup is evidence preservation first, deletion second.**
+>
+> **Open and mine:** [B-1039](BUGS.md) *(one worker on the `default` pool — and `notification-arrival`'s 162s is its timeout, the largest remaining item in the browser gate)* · [B-1040](BUGS.md) · [B-1043](BUGS.md) · [B-1044](BUGS.md) · [B-1034](BUGS.md) · [B-1036](BUGS.md) · [B-1037](BUGS.md) · [B-1038](BUGS.md) · [B-1042](BUGS.md) · [B-131](BUGS.md).
+>
+> **Open and NOT mine:** [B-1035](BUGS.md) · [B-1033](BUGS.md) · [B-289](BUGS.md) · [B-283](BUGS.md)'s remainder.
+>
+> **Next candidate:** ⛔ **none. `integration` == `main` and `lane-qe` is level.** ✅ **Lane A holds nothing awaiting certification** — its 11 commits are pre-rebase copies, verified.
+
 > ## Cycle 254 — promoted `7a0f21c9`, 2026-08-20 · **the instruments, and the measured proof that fixing tests is the fastest certification**
 >
 > **`main` = `7a0f21c9` = the certified commit.** `pytest` **5434** · coverage **95.03%** · **679 Security Invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · `frontend-suite` **3525/204** · `eslint` · `smoke` 24/167s · **DR passed, 15 checks** · **reversible `head → base → head`** · head **`0066`**. **22 commits, QE. ONE attempt.**

@@ -71,7 +71,15 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-20, `7a0f21c9`
+## Current — as of 2026-08-20, `8524cf0d`
+
+> ⚡ **Cycle 255 Closeout. 2 commits, QE, no migrations, EIGHT gates on the FIRST attempt.**
+>
+> ✅ **No board rows removed, and none should have been** — this cycle promoted no `TASK-nnn`. Its subject is the certification record itself.
+>
+> ⚡ **The browser gate fell 19.8m → 17.1m with the failure set unchanged at seven.**
+>
+> ⛔ **QE reconciles this board; it does not fill it.** ⚠️ **Lane A was never asked to wait.**
 
 > ⚡ **Cycle 254 Closeout. 22 commits, all QE's, no migrations, EIGHT gates on the FIRST attempt.**
 >

@@ -49,6 +49,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -122,6 +123,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -195,6 +197,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -268,6 +271,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -341,6 +345,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -414,6 +419,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -487,6 +493,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -560,6 +567,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -633,6 +641,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -706,6 +715,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -779,6 +789,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -852,6 +863,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -925,6 +937,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -998,6 +1011,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -1071,6 +1085,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -1144,6 +1159,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -1217,6 +1233,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -1290,6 +1307,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -1363,6 +1381,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -1436,6 +1455,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -1509,6 +1529,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -1582,6 +1603,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -1655,6 +1677,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -1728,6 +1751,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -1801,6 +1825,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -1874,6 +1899,7 @@
           "passed": false
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -1947,6 +1973,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -2020,6 +2047,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -2093,6 +2121,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -2166,6 +2195,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -2239,6 +2269,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -2312,6 +2343,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -2385,6 +2417,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -2458,6 +2491,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -2531,6 +2565,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -2604,6 +2639,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -2677,6 +2713,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -2750,6 +2787,7 @@
           "passed": false
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -2823,6 +2861,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -2896,6 +2935,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -2969,6 +3009,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -3047,6 +3088,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -3125,6 +3167,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -3203,6 +3246,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -3281,6 +3325,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -3359,6 +3404,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -3437,6 +3483,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -3515,6 +3562,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -3593,6 +3641,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -3671,6 +3720,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -3749,6 +3799,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -3827,6 +3878,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -3905,6 +3957,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -3983,6 +4036,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -4061,6 +4115,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -4139,6 +4194,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -4217,6 +4273,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -4295,6 +4352,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -4373,6 +4431,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -4451,6 +4510,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -4529,6 +4589,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -4607,6 +4668,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -4685,6 +4747,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -4763,6 +4826,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -4841,6 +4905,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -4919,6 +4984,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -4997,6 +5063,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -5075,6 +5142,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -5153,6 +5221,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -5231,6 +5300,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -5309,6 +5379,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -5387,6 +5458,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -5465,6 +5537,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -5543,6 +5616,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -5621,6 +5695,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -5699,6 +5774,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -5777,6 +5853,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -5855,6 +5932,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -5933,6 +6011,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -6011,6 +6090,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -6089,6 +6169,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -6167,6 +6248,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -6245,6 +6327,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -6323,6 +6406,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -6401,6 +6485,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -6479,6 +6564,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -6557,6 +6643,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -6635,6 +6722,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -6713,6 +6801,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -6791,6 +6880,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -6869,6 +6959,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -6947,6 +7038,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -7025,6 +7117,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -7103,6 +7196,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -7181,6 +7275,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -7259,6 +7354,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -7337,6 +7433,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -7415,6 +7512,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -7493,6 +7591,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -7571,6 +7670,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -7649,6 +7749,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -7727,6 +7828,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -7805,6 +7907,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -7883,6 +7986,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -7961,6 +8065,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -8039,6 +8144,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -8117,6 +8223,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -8195,6 +8302,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -8273,6 +8381,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -8351,6 +8460,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -8429,6 +8539,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -8507,6 +8618,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "",
       "record_version": 1,
       "scenarios": [
@@ -8585,6 +8697,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -8663,6 +8776,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -8741,6 +8855,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -8819,6 +8934,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -8897,6 +9013,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -8975,6 +9092,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -9053,6 +9171,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -9131,6 +9250,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -9209,6 +9329,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -9287,6 +9408,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -9365,6 +9487,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -9443,6 +9566,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -9521,6 +9645,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -9599,6 +9724,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -9677,6 +9803,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -9755,6 +9882,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -9833,6 +9961,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation",
       "record_version": 1,
       "scenarios": [
@@ -9911,6 +10040,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -9989,6 +10119,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -10067,6 +10198,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -10145,6 +10277,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -10223,6 +10356,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -10301,6 +10435,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -10379,6 +10514,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -10457,6 +10593,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -10535,6 +10672,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -10613,6 +10751,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend+module+persistence",
       "record_version": 1,
       "scenarios": [
@@ -10691,6 +10830,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -10769,6 +10909,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation",
       "record_version": 1,
       "scenarios": [
@@ -10847,6 +10988,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -10925,6 +11067,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -11003,6 +11146,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -11081,6 +11225,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -11159,6 +11304,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -11237,6 +11383,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -11315,6 +11462,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -11393,6 +11541,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -11471,6 +11620,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -11549,6 +11699,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -11627,6 +11778,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -11705,6 +11857,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -11783,6 +11936,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -11861,6 +12015,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -11939,6 +12094,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -12017,6 +12173,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation",
       "record_version": 1,
       "scenarios": [
@@ -12095,6 +12252,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -12173,6 +12331,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -12251,6 +12410,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -12329,6 +12489,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -12407,6 +12568,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -12485,6 +12647,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -12563,6 +12726,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -12641,6 +12805,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "contract+documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -12719,6 +12884,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -12797,6 +12963,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -12875,6 +13042,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -12953,6 +13121,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -13031,6 +13200,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -13109,6 +13279,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -13187,6 +13358,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation",
       "record_version": 1,
       "scenarios": [
@@ -13265,6 +13437,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation",
       "record_version": 1,
       "scenarios": [
@@ -13343,6 +13516,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -13421,6 +13595,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation",
       "record_version": 1,
       "scenarios": [
@@ -13499,6 +13674,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -13577,6 +13753,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -13655,6 +13832,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -13733,6 +13911,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -13811,6 +13990,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -13889,6 +14069,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -13967,6 +14148,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -14045,6 +14227,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -14123,6 +14306,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -14201,6 +14385,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -14279,6 +14464,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -14357,6 +14543,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -14435,6 +14622,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -14513,6 +14701,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -14591,6 +14780,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -14669,6 +14859,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -14747,6 +14938,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -14825,6 +15017,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -14903,6 +15096,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -14981,6 +15175,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -15059,6 +15254,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -15137,6 +15333,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -15215,6 +15412,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -15293,6 +15491,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -15371,6 +15570,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -15449,6 +15649,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -15527,6 +15728,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -15605,6 +15807,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -15683,6 +15886,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -15761,6 +15965,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -15839,6 +16044,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -15917,6 +16123,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -15995,6 +16202,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -16073,6 +16281,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -16151,6 +16360,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -16229,6 +16439,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -16307,6 +16518,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -16385,6 +16597,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -16463,6 +16676,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -16541,6 +16755,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -16619,6 +16834,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -16697,6 +16913,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -16775,6 +16992,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -16853,6 +17071,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -16931,6 +17150,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -17009,6 +17229,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -17087,6 +17308,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -17165,6 +17387,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -17243,6 +17466,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -17321,6 +17545,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -17399,6 +17624,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -17477,6 +17703,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -17555,6 +17782,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -17643,6 +17871,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -17731,6 +17960,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -17819,6 +18049,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -17907,6 +18138,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -17995,6 +18227,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -18083,6 +18316,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -18171,6 +18405,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -18259,6 +18494,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -18347,6 +18583,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -18435,6 +18672,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -18523,6 +18761,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -18611,6 +18850,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -18699,6 +18939,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -18787,6 +19028,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -18875,6 +19117,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -18963,6 +19206,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -19051,6 +19295,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -19139,6 +19384,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -19227,6 +19473,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -19315,6 +19562,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -19403,6 +19651,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -19491,6 +19740,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "platform",
       "record_version": 1,
       "scenarios": [
@@ -19579,6 +19829,7 @@
           "passed": true
         }
       ],
+      "planned_not_recorded": [],
       "profile": "documentation+frontend",
       "record_version": 1,
       "scenarios": [
@@ -19666,6 +19917,106 @@
           "name": "tsc",
           "passed": true
         }
+      ],
+      "planned_not_recorded": [],
+      "profile": "platform",
+      "record_version": 1,
+      "scenarios": [
+        {
+          "detail": "208 assertions",
+          "name": "baseline@1 research lifecycle",
+          "passed": true
+        }
+      ],
+      "tools": [
+        [
+          "mypy",
+          "2.3.0"
+        ],
+        [
+          "pytest",
+          "9.1.1"
+        ],
+        [
+          "python",
+          "3.13.14"
+        ]
+      ],
+      "tree_clean": true
+    },
+    {
+      "certified_at": "2026-08-20T03:15:26.786470+00:00",
+      "commit": "8524cf0dfb833867390e504768e785e7892cd88c",
+      "conditions": {
+        "migration_head": "0066",
+        "prompt_releases": [
+          {
+            "fingerprint": "bafc9d282d53e4e3ae7a10748d41e9128acb63c9ae1e6d5e00390871db2debfb",
+            "model": "llama3.1:8b",
+            "reference": "research_planning@2"
+          },
+          {
+            "fingerprint": "409a6b2e38a92f1b72022a7b205bfaf299e93e4213e83afcfe486e65fa80d3b6",
+            "model": "llama3.1:8b",
+            "reference": "research_synthesis@2"
+          }
+        ],
+        "rendering_protocol_version": 2,
+        "scenario_fingerprint": "e5b92f4872fc966f8333ed93070f85afa3c75b1ac85041d69c88ddb08596922e"
+      },
+      "coverage": 95.03,
+      "gates": [
+        {
+          "detail": "clean",
+          "name": "eslint",
+          "passed": true
+        },
+        {
+          "detail": "3525 passed in 204 files",
+          "name": "frontend-suite",
+          "passed": true
+        },
+        {
+          "detail": "37 kept, 0 broken",
+          "name": "import-linter",
+          "passed": true
+        },
+        {
+          "detail": "strict, clean over 956 files",
+          "name": "mypy",
+          "passed": true
+        },
+        {
+          "detail": "5442 passed",
+          "name": "pytest",
+          "passed": true
+        },
+        {
+          "detail": "679 invariants",
+          "name": "security-invariants",
+          "passed": true
+        },
+        {
+          "detail": "24 stages in 232s, slowest 14k. Researched account 29s",
+          "name": "smoke",
+          "passed": true
+        },
+        {
+          "detail": "clean",
+          "name": "tsc",
+          "passed": true
+        }
+      ],
+      "planned_not_recorded": [
+        "accessibility",
+        "doc-drift",
+        "dr",
+        "event-catalog",
+        "migration-reversibility",
+        "prompt-evaluation",
+        "reachability",
+        "runtime-composition",
+        "state-check"
       ],
       "profile": "platform",
       "record_version": 1,
