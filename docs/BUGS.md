@@ -1037,11 +1037,24 @@ Received string:    "Accounts/This account"
 >
 > ⚡ **QE's numbers are small ONLY because the browser gate runs `make down` — which is `down -v` — every cycle.** ⛔ **Lane A's lane stack persists, and reached 184,287 rows of which 184,149 were orphans.** **The gate is safe; the shortcut is what is not.**
 >
-> ### ✅ What is still true, and what is now conditional
+> ### ✅ What is still true, and what is now conditional — **re-measured 2026-08-20**
 >
-> **The 7-second measurement stands** — it was taken on a stack whose orphan count was low enough not to collide. ⛔ **It is not a general recipe**, and QE presented it as one.
+> ⚡ **QE ran the re-seed a SECOND time, deliberately on a cluster that already carried orphans. It returned exit 0 in 4 seconds.** ⛔ **So *"re-seeding fails regardless"* is not true of every cluster**, and the destructive case is narrower than this row first said.
 >
-> **Safe:** a stack that has just been rebuilt, or one where `select count(*) from timeline_entry t where not exists (select 1 from workspace w where w.id = t.workspace_id)` is **0**. ⛔ **Unsafe on any long-lived stack until [B-294](#b-294) lands** — and the failure destroys the workspace before it aborts.
+> **What IS confirmed, and it is per-run and linear:**
+>
+> | | before | after | delta |
+> |---|---|---|---|
+> | `entity` · orphaned | 30 · **15** | 45 · **30** | **+15** |
+> | `timeline_entry` · orphaned | 272 · **136** | 408 · **272** | **+136** |
+>
+> ⚡ **Every re-seed strands exactly one Playground's worth of entities and their ten-table subtree, without erroring.** **The stranding is structural. The COLLISION is a symptom of it that appears under some conditions and not others.**
+>
+> ⚠️ **One measured difference between the two clusters, recorded as a lead and NOT as a diagnosis.** 📁 **QE's prod-local runs the relay and ONE worker on the `default` pool, and `processed_event` reads 0 — nothing is consumed at all** ([C-111](LANE_COORDINATION.md)). **Lane A's lane stack runs the relay and four `arq` workers started by hand.** ⛔ **So timeline entries reach the table by different paths on the two stacks.** ⚡ **`event_id` is a globally-unique UUID and 408 of 408 are distinct here**, so nothing collided across two runs.
+>
+> ### ⛔ The recipe is still not general, and the reason is now sharper
+>
+> **Safe** on a stack that has just been rebuilt. ⚠️ **Unknown, not proven-unsafe, on a long-lived one** — QE cannot reproduce the abort and Lane A can. ⛔ **The failure mode when it does occur destroys the workspace before it aborts**, which is why the caution stands even though the reproduction does not.
 >
 > ### ⚠️ What QE got wrong, stated plainly
 >
