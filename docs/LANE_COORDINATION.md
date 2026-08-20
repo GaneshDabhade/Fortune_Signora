@@ -718,6 +718,43 @@ is on `main` and correct.** ⚠️ **The row stays `CLAIMED` rather than moving 
 not, which is the class [§2](../CLAUDE.md) exists to prevent. ✅ **The lane moved
 to the next eligible row rather than idling or inventing an anonymous design.**
 
+## C-112 · After a host reboot every lane's stack stays down silently while prod-local's services return and crash-loop
+
+| | |
+|---|---|
+| **Raised by** | **QE**, 2026-08-20, jointly with Lane A after both lanes hit the same signature and mistook it for each other's doing |
+| **Owner** | ⛔ **Product owner.** **A policy that resurrects three containers per lane on every boot is a decision about developer machines, not a defect fix** — and 📁 [`QUALITY_ENGINEERING.md` §0f](QUALITY_ENGINEERING.md) classes a change to what a repository-level workflow MEANS as ⑤: stop and escalate |
+| **Type** | **Decision** — ⚡ **the engineering is three lines; what needs a ruling is whether we want them** |
+| **Blocks** | ⛔ **Nothing.** ⚠️ **It cost two lanes an afternoon of mutual suspicion** |
+| **Status** | ✅ **`READY FOR PRODUCT DECISION`** |
+
+### The asymmetry, measured on both compose files and confirmed live
+
+| | |
+|---|---|
+| 📁 `infra/docker-compose.yml` — **every lane's stack** | ⛔ **`postgres`, `redis`, `minio` declare NO `restart:` at all.** Live: `signora-lane-qe-postgres-1` → **`restart=no`** |
+| 📁 `infra/docker-compose.prod.yml` — **prod-local** | **three services carry `restart: unless-stopped`.** Live: `signora-prod-relay-1` → **`restart=unless-stopped`** |
+
+⚡ **So a host reboot leaves every lane's data services down — silently — while prod-local's relay, worker and API return and crash-loop against a database that is not there.**
+
+### ⚠️ What it cost, which is the argument for deciding rather than shrugging
+
+**Lane A saw its stack `Exited (0)` and prod-local `Up 5 seconds`, and reasonably suspected QE's `make down --remove-orphans`.** **QE saw the same shape and offered its own 12 busy loops as a likelier cause.** ⛔ **Both were wrong; neither could have known.** ✅ **Lane A dated the boot from `who -b` — `2026-08-20 17:47:12`, landing between their last successful `docker exec` and the `ConnectionRefusedError` that started the thread — which is what settled it.**
+
+📁 **[B-1034](BUGS.md) already records this shape once**: *"it exited on the host restart ten hours before this cycle."* ⚡ **Twice now.**
+
+### ⛔ Why neither lane is taking it
+
+**`infra/` is `platform_foundation`, which [`modules.toml`](coordination/modules.toml) joins to Lane A — so it is theirs to change and they declined**, on the grounds that it is a choice about developer machines rather than a repair. ✅ **QE agrees and is routing it rather than filing it as a defect.** 📁 **Lane A's own words: *"if you would rather it went to the product owner as an infra choice, that is the more honest route and I would lean that way."***
+
+### The QE-side consequence, so the decision has both halves
+
+⚠️ **A cold start after a reboot means the first `make certify` of a session can fail on a stack that is not there** — an **abort**, not a verdict, and 📁 [`QUALITY_ENGINEERING.md`](QUALITY_ENGINEERING.md) already requires QE to tell those apart. ⛔ **And prod-local's crash-looping relay and worker are noise beside anything QE certifies.** ⚡ **Neither is severe; both are avoidable.**
+
+### ⚠️ One thing deliberately left unexplained
+
+**Lane A's containers reported *"Exited (0) 9 hours ago"*, which does not fit a 17:47 stop, and they restarted them so `FinishedAt` is gone.** ✅ **QE's `signora-lane-qe-postgres-1` is self-consistent — stopped 08:32:59, never restarted, `restart=no`.** ⛔ **Lane A declined to invent a staleness theory to make the number fit, and this item does not either.** **The boot explains the observation; the reported exit age remains odd and is recorded as odd.**
+
 ## C-111 · Two gates assert a property they do not measure, and fixing that changes what a gate's environment is
 
 | | |
