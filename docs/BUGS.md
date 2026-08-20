@@ -1002,6 +1002,33 @@ Received string:    "Accounts/This account"
 
 ### B-1044 · 🟡 A browser failure cannot be re-run without rebuilding the environment, so diagnosing one costs four minutes before it starts
 
+> ## 🔴 CORRECTED 2026-08-20 — **the recipe below is CONDITIONALLY DESTRUCTIVE, and QE published it before knowing that**
+>
+> ⛔ **QE recommended this to Lane A and it degraded their environment.** ⚠️ **The re-seed deletes the old Playground workspace FIRST and can then ABORT**, leaving the stack half-built — **strictly worse than not running it.**
+>
+> **The mechanism is [B-294](#b-294), Lane A's row**: `timeline_entry` has **no foreign key to `workspace`**, so deleting a workspace orphans its timeline rows instead of cascading them. Their `event_id` unique constraint is **global**, so on the next seed the new rows collide with the dead ones — and the seeder's `ON CONFLICT (id) DO NOTHING` guards the wrong column.
+>
+> **Measured on QE's own prod-local cluster, 2026-08-20:**
+>
+> | | |
+> |---|---|
+> | `workspace` | **1** |
+> | `timeline_entry` | **272** |
+> | …referencing a workspace that no longer exists | 🔴 **136 — half of them** |
+> | Foreign keys on `timeline_entry` | **one, to `entity`. None to `workspace`** |
+>
+> ⚡ **QE's numbers are small ONLY because the browser gate runs `make down` — which is `down -v` — every cycle.** ⛔ **Lane A's lane stack persists, and reached 184,287 rows of which 184,149 were orphans.** **The gate is safe; the shortcut is what is not.**
+>
+> ### ✅ What is still true, and what is now conditional
+>
+> **The 7-second measurement stands** — it was taken on a stack whose orphan count was low enough not to collide. ⛔ **It is not a general recipe**, and QE presented it as one.
+>
+> **Safe:** a stack that has just been rebuilt, or one where `select count(*) from timeline_entry t where not exists (select 1 from workspace w where w.id = t.workspace_id)` is **0**. ⛔ **Unsafe on any long-lived stack until [B-294](#b-294) lands** — and the failure destroys the workspace before it aborts.
+>
+> ### ⚠️ What QE got wrong, stated plainly
+>
+> ⛔ **Publishing a recovery procedure after ONE successful run on ONE stack.** ⚡ **A procedure is a claim about every stack it will be run on**, and this one had a precondition QE had not looked for. 📁 **The same shape as [B-1037](#b-1037) and [B-1045](#b-1045) this week: a mechanism asserted from a single observation.**
+
 > ## ✅ RESOLVED 2026-08-20 — **and the fix was to measure, not to build**
 >
 > ⛔ **The row assumed a re-seed needed new tooling. It does not — the path already works, and nobody had established that it does.**
