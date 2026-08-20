@@ -961,6 +961,32 @@ grep -rn 'DELETE FROM workspace' backend/ --include=*.py
 
 ⛔ **One hit, in a test fixture.** ⚡ **The Playground seeder is the ONLY thing in the repository that deletes a workspace, and it does so on every re-seed** — which is exactly the +15 entities and +136 timeline rows [B-1044](#b-1044) measured per run.
 
+### 🔴 The deeper check Lane A asked for, and it changes [B-295](#b-295)'s framing
+
+**Lane A: *"What I did not check is whether the Workspace Lifecycle design specifies a delete that simply is not built yet. If it is specified-but-unbuilt, the row deserves to name the design that will make it live."*** ✅ **Checked. It is worse than specified-but-unbuilt.**
+
+**Workspace deletion is not merely planned — TWO design documents have already DISMISSED work on the grounds of a cascade that does not exist:**
+
+| | |
+|---|---|
+| 📁 [`46-team-management.md`](architecture/46-team-management.md)**:931, :995** | **"Absorbed: … workspace deletion *(cascades)*"** — ⛔ **listed as needing no design BECAUSE it cascades.** Twice |
+| 📁 [`46-team-management.md`](architecture/46-team-management.md)**:831** | *"Erasability is a property of the tenancy model, so **deleting a workspace must be able to delete its history.**"* — **an explicit requirement** |
+| 📁 [`500-authenticated-entry-reconciliation.md`](architecture/500-authenticated-entry-reconciliation.md)**:208** | *"the foreign key is `ON DELETE CASCADE`, so the rows go with the workspace whenever one is built — **structural rather than something a future use case has to remember**"* |
+| 📁 [`438-platform-initiatives.md`](architecture/438-platform-initiatives.md)**:79** | **S1 — GDPR erasure · workspace deletion · retention · legal hold · tenant cleanup. 🔴 *"Nothing. Build first or build three times."*** |
+
+⚡ **So the architecture has twice reasoned *"we need not design for workspace deletion, the cascades handle it"* — and [B-295](#b-295) is the measurement that they do not.**
+
+### ✅ And the split is precise, which is why nobody noticed
+
+| | |
+|---|---|
+| **`workspace_tenancy`'s own tables** | ✅ **`ForeignKey("workspace.id", ondelete="CASCADE")` — four of them.** The module that OWNS `workspace` is correct |
+| **The consuming modules** | ⛔ **`workspace_id` with no such key** — `provider_platform`, `timeline`, `commercial_profile`, `signal_engine`, `buying_score_engine` and the rest |
+
+⚡ **The module a reader would check first is the one that is right.** 📁 **Same shape as [B-1046](#b-1046)**: correct in exactly the place that gets looked at.
+
+> ⛔ **This does not make it customer-facing today** — the verification above stands, and only the seeder deletes a workspace. ⚡ **It makes the 🔴 decision more urgent than *"a latent gap"* suggests**: **whoever builds `S1` will build it believing cascades do the work**, which is precisely the reasoning `seed.py`'s docstring used and which [B-294](#b-294) proved false.
+
 > ✅ **So the orphan population is entirely an artifact of re-seeding, and the exposure is entirely development-side.** ⛔ **That does not make [B-295](#b-295) less real** — a cascade tree whose root has no parent is still an inconsistency, and *"the day somebody builds workspace deletion"* is still the day it matters. ⚡ **It does mean no customer data is at risk today, and the severity should be read that way.**
 
 ---
@@ -969,21 +995,33 @@ grep -rn 'DELETE FROM workspace' backend/ --include=*.py
 
 | | |
 |---|---|
-| **Module** | [`docs/RUNNING.md`](RUNNING.md) — **QE's** · `Makefile:236` and `frontend/package.json` — **`platform_foundation`, Lane A** |
-| **Current assignee** | **Split. QE fixed its half; the other two are Lane A's** |
+| **Module** | [`docs/RUNNING.md`](RUNNING.md) — **QE's** · `Makefile:236` — **`platform_foundation`, Lane A** |
+| **Current assignee** | **Split, one site each. Both fixed** |
 | **Severity** | 🟠 — **a lane following the documented path squats human review's port** |
-| **Status** | ⚠️ **`PARTIALLY FIXED`** — QE's half done, 2026-08-20 |
+| **Status** | ✅ **`FIXED`** — QE's site and Lane A's, both 2026-08-20. ⛔ **NOT `VERIFIED`**: QE wrote one half |
 | **Found** | **2026-08-20 by Lane A**, who caught it and moved to `-p 3300` |
 
-**`frontend/package.json`: `"dev": "next dev"` — no port.** ⛔ **So it takes Next's default, `3000`, which [`RUNNING.md`](RUNNING.md#running-a-lane) allocates to `review`/slot 0.**
+**`npm run dev` invoked with no port takes Next's default, `3000`, which [`RUNNING.md`](RUNNING.md#running-a-lane) allocates to `review`/slot 0.**
 
-### 🔴 Three sites, and the first is the one that makes it a defect rather than a footgun
+### ✅ TWO sites, not three — corrected 2026-08-20 by Lane A, and QE verified it from source
 
 | | |
 |---|---|
-| 📁 [`RUNNING.md`](RUNNING.md)**:217** | ⛔ **`cd frontend && npm run dev`, directly beside a backend line that derives `${SIGNORA_API_PORT}`.** ✅ **FIXED by QE — it now derives `${SIGNORA_WEB_PORT}`** |
-| 📁 `Makefile`**:236** | **`@echo "  frontend  cd frontend && npm run dev"`** — the instruction `make demo` prints. **Lane A's** |
-| 📁 `frontend/package.json` | **`"dev": "next dev"`.** **Lane A's** |
+| 📁 [`RUNNING.md`](RUNNING.md)**:217** | ⛔ **`cd frontend && npm run dev`, directly beside a backend line that derives `${SIGNORA_API_PORT}`.** ✅ **FIXED by QE — derives `${SIGNORA_WEB_PORT}`** |
+| 📁 `Makefile`**:236** | **`@echo "  frontend  cd frontend && npm run dev"`** — what `make demo` prints. ✅ **FIXED by Lane A — `-- --port $(SIGNORA_WEB)`, verified with `make -n demo`** |
+| ⛔ 📁 `frontend/package.json` | 🔴 **NOT a site. `"dev": "next dev"` is CORRECT as written** |
+
+> ⚠️ **QE's row first named `package.json` as a third site. It is not, and the correction is Lane A's.**
+>
+> ✅ **Verified from the CLI source rather than by running a server** — 📁 `next/dist/bin/next:92`:
+>
+> ```js
+> new Option('-p, --port <port>').argParser(…).default(3000).env('PORT')
+> ```
+>
+> ⚡ **Commander's `.env('PORT')`, with `3000` as the DEFAULT.** **So `PORT=3399 next dev` listens on 3399, and both routes are supported — only the default is slot 0.** 📁 `next-dev.js:189` carries the matching comment: *"If neither `--port` nor `PORT` were specified, it's okay to retry new ports."*
+>
+> ⛔ **And changing it would be worse.** **`"dev": "next dev -p …"` puts an explicit flag ahead of any `npm run dev -- --port X`, leaving two `--port` arguments whose precedence a reader must know.** ✅ **The script is right; the two places that told people to invoke it without a port were wrong, and both are now fixed.**
 
 ⚡ **The inconsistency is what makes it worth a row.** ⛔ **A lane following that block gets its API on its own port and its frontend on the reviewer's** — **they cannot even address each other correctly**, and 📁 [`RUNNING.md`](RUNNING.md)**:386** already does it right (`npm run dev -- --port 3400`), so the repository disagrees with itself two hundred lines apart.
 
