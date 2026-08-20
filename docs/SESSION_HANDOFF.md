@@ -1,5 +1,25 @@
 # Session Handoff
 
+> ## Cycle 256 — promoted `fa3c78ab`, 2026-08-20 · **the gate measurement that found nothing is being consumed**
+>
+> **`main` = `fa3c78ab` = the certified commit.** `pytest` **5444** · coverage **95.03%** · **679 Security Invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · `frontend-suite` **3525/204** · `eslint` · `smoke` 24/201s · **DR passed, 15 checks** · **reversible in 7s beside the browser gate** · head **`0066`**. **3 commits, QE. ONE attempt.**
+>
+> ⛔ **Four things the next session must not misread.**
+>
+> ⓐ 🔴 **[C-111](LANE_COORDINATION.md): 808 events published, 808 relayed, `processed_event` = 0.** ⛔ **`claim()` writes that table before every handler runs, so ZERO means not one event was consumed by any consumer.** **Queues: `read_model` 139 · `intelligence` 29 · `ai_research` 1 · `default` — the key does not exist.** ✅ **The worker is healthy on `default` with 8 subscriptions and zero errors; nothing was ever routed to it.** ⚠️ **`smoke` and `dr` both reported success.** ⛔ **Do NOT correct either gate alone — the right assertion FAILS on today's stack, so gate and environment are ONE change and it needs a ruling.**
+>
+> ⓑ ✅ **[B-131](BUGS.md)'s field is computed, not stamped — confirmed on a SECOND candidate.** **255 named nine planned-but-unrun gates; 256 names eight, because `accessibility` correctly dropped for a candidate with no frontend change.** ⚠️ **`migration-reversibility` and `dr` are named on BOTH. Run them by hand every cycle; the record will not remind you, only record their absence.**
+>
+> ⓒ ⚠️ **[B-1037](BUGS.md) was CORRECTED, not closed.** ⛔ **Its original mechanism is DISPROVEN and struck through in the register — do not cite it.** ✅ **The real defect was an empty audit reading as a clean one, and the fix is bounded to `--audit-claims`, the only audit whose printed population differs from its judged one.**
+>
+> ⓓ ⚡ **Re-run a browser failure ALONE before reporting it.** **This cycle: `confidence:158` and `shell-values:48` passed in isolation ([B-1036](BUGS.md)); `shell-values:214` failed alone too and is real ([B-1045](BUGS.md)).** ⛔ **The decisive test separates a defect from starvation and nothing else does.**
+>
+> **Open and mine:** [C-111](LANE_COORDINATION.md) *(awaiting a ruling)* · [B-1039](BUGS.md) · [B-1040](BUGS.md) · [B-1043](BUGS.md) · [B-1044](BUGS.md) · [B-1034](BUGS.md) · [B-1036](BUGS.md) · [B-1038](BUGS.md) · [B-1042](BUGS.md) · [B-131](BUGS.md).
+>
+> **Open and NOT mine:** [B-1045](BUGS.md) *(new — the breadcrumb)* · [B-1035](BUGS.md) · [B-1033](BUGS.md) · [B-289](BUGS.md) · [B-283](BUGS.md)'s remainder.
+>
+> **Next candidate:** ⚡ **`lane-qe` at `c415ac27`** — C-111's measurement, documentation only, so it **accumulates** rather than warranting a cycle ([§20e](../CLAUDE.md)). ✅ **Lane A holds nothing awaiting certification.**
+
 > ## Cycle 255 — promoted `8524cf0d`, 2026-08-20 · **the record stops being silent, and the suite loses 2.7 minutes without losing a test**
 >
 > **`main` = `8524cf0d` = the certified commit.** `pytest` **5442** · coverage **95.03%** · **679 Security Invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · `frontend-suite` **3525/204** · `eslint` · `smoke` 24/232s · **DR passed, 15 checks** · **reversible in 6s beside the browser gate** · head **`0066`**. **2 commits, QE. ONE attempt.**

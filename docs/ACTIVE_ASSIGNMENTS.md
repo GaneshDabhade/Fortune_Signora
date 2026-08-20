@@ -71,7 +71,15 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-20, `8524cf0d`
+## Current — as of 2026-08-20, `fa3c78ab`
+
+> ⚡ **Cycle 256 Closeout. 3 commits, QE, no migrations, EIGHT gates on the FIRST attempt.**
+>
+> ✅ **No board rows removed** — this cycle promoted no `TASK-nnn`.
+>
+> 🔴 **[C-111](LANE_COORDINATION.md) is measured and awaiting a ruling**: 808 events published, 808 relayed, **0 consumed**, and both gates reported success.
+>
+> 📁 **[B-1045](BUGS.md) opened against `product_surface`** — the breadcrumb and the page disagree about an unnamed account. ⛔ **Lane A was not asked to wait.**
 
 > ⚡ **Cycle 255 Closeout. 2 commits, QE, no migrations, EIGHT gates on the FIRST attempt.**
 >
