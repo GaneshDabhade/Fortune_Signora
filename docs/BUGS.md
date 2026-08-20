@@ -1256,15 +1256,15 @@ const response = await fetch(url, { method: 'POST' });   //  POST /api/token
 
 ---
 
-### B-1037 · 🟡 `--audit-claims` reads local refs and reports "0 awaiting promotion" while one plainly is
+### B-1037 · 🟡 An empty claim audit reads as a clean one
 
 | | |
 |---|---|
 | **Module** | `infra/certification-guard.py` — **governance tooling** |
 | **Current assignee** | **QE** |
 | **Severity** | 🟡 — ⛔ **it under-reports, and the thing it under-reports is another lane's claim** |
-| **Status** | **`OPEN`** |
-| **Found** | **2026-08-19 by QE**, cycle 252 |
+| **Status** | ✅ **`FIXED`** by QE, 2026-08-20, cycle 256. ⛔ **NOT `VERIFIED`** — QE wrote the fix |
+| **Found** | **2026-08-19 by QE**, cycle 252. ⚠️ **Diagnosis CORRECTED 2026-08-20 — see below** |
 
 **Steps.** With `origin/integration` carrying a claim commit the local `integration` does not yet have:
 
@@ -1278,6 +1278,30 @@ python3 infra/certification-guard.py --audit-claims
 **Actual.** **Silence that reads as *"nothing is waiting"*.**
 
 ⚡ **`--audit-main` gets this right in the same run** — it prints *"note — 1 commit(s) on `origin/integration` are not in this clone's `integration`."* ⛔ **Two checks in one file, one of which knows the local ref may be stale and one of which does not.**
+
+> ## 🔴 The diagnosis above is WRONG, and the correction is the row
+>
+> ⛔ **This row said the claim audit reads local refs while `--audit-main` does not.** ⚡ **Both call `_scope_note()` and report staleness identically** — `certification-guard.py:1138` and `:911`. **There is no asymmetry, and there never was.**
+>
+> ⚠️ **QE recorded a mechanism it had not measured**, which is [B-1030](#b-1030)'s lesson arriving in a different register. ✅ **Found by trying to fix the reported defect and discovering there was nothing there to fix.**
+>
+> ### ✅ The REAL defect, measured
+>
+> **With historical claims on `main` and none awaiting promotion — the ordinary state between cycles — the audit printed:**
+>
+> ```
+> 0 claim(s) awaiting promotion touch only ACTIVE_ASSIGNMENTS.md and BACKLOG.md.
+> A claim is the one thing a feature lane may push to `integration`, and
+> none of the unpromoted ones carried anything else.
+> ```
+>
+> ⛔ **Both sentences are vacuously true and together they read as a clean audit of a set nobody examined.** ⚡ **A reader cannot tell *nothing was wrong* from *nothing was checked*** — 📁 [B-125](#b-125)'s class, and the reason `_plan_shortfall` returns `None` rather than an empty list when it cannot measure ([B-131](#b-131)).
+>
+> ✅ **Fixed:** an empty set now says *"no claim is awaiting promotion, so none was examined. This is not a clean result — it is an empty one."*
+>
+> ⚠️ **Two tests, and the first one I wrote proved nothing.** ⛔ **A repository with NO claims at all takes an earlier branch that was already honest — *"no claim commits to check"*.** ⚡ **Reproducing it needs historical claims AND no pending one**, which is the live repository's state and not the obvious fixture. ✅ **Mutation-tested: restoring the vacuous positive kills the assertion.**
+>
+> ⛔ **And the second test is the half that matters** — a real pending claim must still get the positive result, or this becomes a check that never affirms.
 
 📁 **The family this belongs to**: an instrument answering a narrower question than the one asked. **The question is *"what is awaiting promotion?"*; the answer is *"what is awaiting promotion in this clone"*, and only one of those is what a promotion decision needs.**
 

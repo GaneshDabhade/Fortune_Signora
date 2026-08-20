@@ -1228,6 +1228,24 @@ def _audit_claims() -> int:
         print()
 
     if not violations:
+        # ⛔ **An empty set is not a passing audit, and this said it was.**
+        # With no claim awaiting promotion it printed *"0 claim(s) awaiting
+        # promotion touch only ACTIVE_ASSIGNMENTS.md and BACKLOG.md"* followed
+        # by *"none of the unpromoted ones carried anything else"* — **both
+        # vacuously true, and together they read as a clean result on a set
+        # nobody examined.**
+        #
+        # ⚡ **A reader cannot tell *nothing was wrong* from *nothing was
+        # checked***, which is B-125's class and the reason `_plan_shortfall`
+        # returns `None` rather than an empty list when it cannot measure.
+        # 📁 [B-1037](../docs/BUGS.md).
+        if not pending:
+            print(
+                "  no claim is awaiting promotion, so none was examined.\n\n"
+                "This is not a clean result — it is an empty one. `integration` carries\n"
+                "no unpromoted claim commit, which is the ordinary state between cycles."
+            )
+            return 0
         print(
             f"  {len(pending)} claim(s) awaiting promotion touch only "
             "ACTIVE_ASSIGNMENTS.md and BACKLOG.md.\n\n"

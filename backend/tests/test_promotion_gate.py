@@ -509,3 +509,66 @@ class TestAPromotedBreachIsHistoryNotAFinding:
             "an unpromoted claim carrying more than a claim must still refuse — "
             "otherwise scoping the audit has simply switched it off."
         )
+
+
+class TestAnEmptyClaimAuditDoesNotReadAsACleanOne:
+    """**B-1037.** With no claim awaiting promotion, `--audit-claims` printed
+    *"0 claim(s) awaiting promotion touch only ACTIVE_ASSIGNMENTS.md and
+    BACKLOG.md"* and then *"none of the unpromoted ones carried anything
+    else"*.
+
+    ⛔ **Both are vacuously true and together they read as a clean audit of a
+    set nobody examined.** ⚡ **A reader cannot tell *nothing was wrong* from
+    *nothing was checked*** — B-125's class, and the reason `_plan_shortfall`
+    returns `None` rather than an empty list when it cannot measure.
+
+    ⚠️ **This row's original diagnosis was WRONG and is corrected in the
+    register.** It claimed the audit read local refs while `--audit-main` did
+    not; **both call `_scope_note()` and report staleness identically.** The
+    real defect is the vacuous positive, found by trying to fix the reported
+    one.
+    """
+
+    def test_an_empty_audit_says_it_examined_nothing(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        # ⚠️ **Historical claims and NO pending one — the live repository's
+        # ordinary state between cycles, and the only one that produced the
+        # misleading line.** A repository with no claims at all takes an
+        # earlier branch that was already honest: *"no claim commits to
+        # check"*. **My first version of this test built that repository and
+        # proved nothing.**
+        root = TestAPromotedBreachIsHistoryNotAFinding._repo_with(tmp_path, "main")
+        loaded = TestAPromotedBreachIsHistoryNotAFinding()._guard(monkeypatch, root)
+
+        assert loaded._audit_claims() == 0
+        out = capsys.readouterr().out
+        assert "none was examined" in out, (
+            "an audit with nothing to audit must say so. Reporting it as a pass "
+            "makes an absent measurement indistinguishable from a clean one."
+        )
+        assert "carried anything else" not in out, (
+            "the reassurance is about a set that was never examined, and it is "
+            "exactly what made the empty case read as a clean one."
+        )
+
+    def test_a_real_pending_claim_still_gets_the_positive_result(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        """⛔ **The half that stops this becoming a check that never affirms.**
+        A clean claim awaiting promotion must still be reported as clean."""
+        helper = TestAClaimPushCannotSmuggleASlice
+        root = helper._repo(tmp_path)
+        helper._run(root, "checkout", "-q", "integration")
+        helper._run(root, "checkout", "-q", "-b", "lane")
+        (root / "docs").mkdir(parents=True, exist_ok=True)
+        (root / "docs" / "BACKLOG.md").write_text("TASK-9 CLAIMED\n")
+        helper._run(root, "add", "docs/BACKLOG.md")
+        helper._run(root, "commit", "-q", "-m", "Claim TASK-9 — a clean claim")
+        helper._push(root, "lane", "integration")
+        loaded = TestAPromotedBreachIsHistoryNotAFinding()._guard(monkeypatch, root)
+
+        assert loaded._audit_claims() == 0
+        out = capsys.readouterr().out
+        assert "1 claim(s) awaiting promotion touch only" in out
+        assert "none was examined" not in out
