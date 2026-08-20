@@ -409,3 +409,72 @@ class TestTheGateParsersReadWhatTheGatesActuallyPrint:
 
         assert coverage_of("no coverage line here") == 0.0
         assert not _run(coverage=0.0).satisfied
+
+
+class TestPlannedGatesCannotDisappear:
+    """**B-131.** A gate the planner required and the run did not execute must
+    be visible in the record, and must stay distinguishable from a gate that was
+    never required at all.
+
+    ⛔ **The defect these exist for**: on 2026-08-19 a run printed *"9 planned
+    gate(s) NOT recorded"* — including `migration-reversibility` and `dr`, the
+    two the release checklist makes mandatory — **and wrote a record carrying no
+    trace of it.** stdout is not evidence.
+    """
+
+    def test_a_planned_gate_that_did_not_run_is_named_in_the_record(self) -> None:
+        run = _run(planned_not_recorded=("dr", "migration-reversibility"), profile="platform")
+        assert run.planned_not_recorded == ("dr", "migration-reversibility")
+
+    def test_it_survives_a_round_trip_through_the_manifest(self, tmp_path: Path) -> None:
+        """⛔ **The field is worthless if it does not read back.** A record is
+        evidence only once somebody else can read it."""
+        manifest = tmp_path / "manifest.json"
+        append(_run(planned_not_recorded=("dr",), profile="platform"), manifest=manifest)
+        assert load(manifest)[0].planned_not_recorded == ("dr",)
+
+    def test_a_record_written_before_the_field_existed_still_loads(self, tmp_path: Path) -> None:
+        """⚠️ **229 records predate this field** and `extra="forbid"` would
+        reject every one of them if it were required."""
+        manifest = tmp_path / "manifest.json"
+        append(_run(), manifest=manifest)
+        document = json.loads(manifest.read_text())
+        del document["runs"][0]["planned_not_recorded"]
+        manifest.write_text(json.dumps(document))
+        assert load(manifest)[0].planned_not_recorded == ()
+
+    def test_a_gate_cannot_be_recorded_as_both_executed_and_not_recorded(self) -> None:
+        """⛔ **The states must be mutually exclusive or they are not states.**
+        `CLAUDE.md` §2 — prefer a violation that is unrepresentable."""
+        with pytest.raises(CertificationError, match="one or the other"):
+            _run(gates=(GateResult(name="pytest", passed=True, detail="1 passed"),),
+                 planned_not_recorded=("pytest",))
+
+    def test_it_does_not_change_whether_the_run_certifies(self) -> None:
+        """⛔ **Recorded, never applied.** Widening what certification REQUIRES
+        is an ADR-0032 decision, not one a run may take about itself — so a
+        shortfall is visible and does not block."""
+        assert _run(planned_not_recorded=("dr",), profile="platform").satisfied is True
+
+    def test_the_report_names_the_missing_gates(self) -> None:
+        """⚡ **The report is rendered FROM the record**, so a shortfall a reader
+        can see in the manifest must also reach the page they actually read."""
+        run = _run(planned_not_recorded=("dr", "migration-reversibility"), profile="platform")
+        page = render(run, run.conditions)
+        assert "Planned and NOT recorded" in page
+        assert "**dr**" in page
+        assert "**migration-reversibility**" in page
+
+    def test_the_report_says_so_when_nothing_is_missing(self) -> None:
+        """⚠️ **Silence is the failure mode this whole field exists to remove.**
+        A report that says nothing about the plan reads identically whether the
+        plan was met or never computed."""
+        page = render(_run(profile="platform"), _run().conditions)
+        assert "Every gate the planner required" in page
+
+    def test_an_uncomputable_plan_says_nothing_rather_than_claiming_success(self) -> None:
+        """⛔ **An empty profile means NO PLAN, never *nothing missing*.**
+        📁 B-125's class: an absent measurement reported as silence."""
+        page = render(_run(profile=""), _run().conditions)
+        assert "Every gate the planner required" not in page
+        assert "Planned and NOT recorded" not in page

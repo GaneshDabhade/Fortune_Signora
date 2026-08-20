@@ -330,6 +330,22 @@ def _computed_profile() -> str:
     return note.split(":")[0].strip()
 
 
+def _planned_not_recorded(gates: tuple[GateResult, ...]) -> tuple[str, ...]:
+    """The planned gates this record will not contain — **B-131**.
+
+    ⛔ **Until 2026-08-20 this existed only as a `print`.** A run announced
+    *"9 planned gate(s) NOT recorded"* — including `migration-reversibility`
+    and `dr`, the two `REPOSITORY_RELEASE_CHECKLIST.md` makes mandatory — and
+    the record it wrote said nothing at all. **stdout is not evidence**: it is
+    not committed, not read back, and gone by the next cycle.
+
+    Returns `()` when the plan could not be computed, which `profile` already
+    distinguishes: an empty profile means *no plan*, not *nothing missing*.
+    """
+    missing, _ = _plan_shortfall({gate.name for gate in gates})
+    return tuple(missing or ())
+
+
 def _report_plan_shortfall(gates: tuple[GateResult, ...]) -> None:
     missing, note = _plan_shortfall({gate.name for gate in gates})
     if missing is None:
@@ -550,6 +566,10 @@ def _certify(target: disposable_database.Disposable) -> int:
         coverage=coverage,
         tools=_tools(),
         profile=_computed_profile(),
+        # **B-131.** The same computation `_report_plan_shortfall` prints, kept
+        # in the record rather than only on stdout. ⛔ Reported, never applied —
+        # `satisfied` does not read it (`record.py`).
+        planned_not_recorded=_planned_not_recorded(tuple(gates)),
     )
 
     append(run)

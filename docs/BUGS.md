@@ -926,6 +926,68 @@ pass "workers resumed consuming"
 
 ---
 
+### B-1043 · 🟠 The demonstration's step 6 looks for the account history where the panel no longer puts it
+
+| | |
+|---|---|
+| **Module** | `frontend/tests/e2e/demo/golden-journey.spec.ts` — **QE's**, [§20e](../CLAUDE.md): *QE creates, maintains, extends and retires repository-wide tests* |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — ⛔ **it is red on `main` and has been counted as a pre-existing failure for several cycles without anybody naming its cause** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-20 by QE**, cycle 255, while bounding the wait that was hiding the cause |
+
+**Steps.** `npx playwright test demo/golden-journey.spec.ts` against a seeded prod-local stack.
+
+**Actual:** step 6 never finds `heading "What has happened"` on the account screen.
+
+### ⚡ The heading exists — it has moved, not vanished
+
+📁 `frontend/app/(app)/accounts/[accountId]/page.tsx:913` still renders `heading="What has happened"`, and `utility-panel.spec.ts:147` asserts it **visible** while `:90` asserts it **`toHaveCount(0)`** — ⛔ **so its presence is a function of whether the utility panel is docked**, which is exactly what the panel and responsive-regime work changed.
+
+⚠️ **The demonstration never docks the panel.** ⚡ **So this is a stale step after an implementation change, not a product regression** — and `utility-panel.spec.ts` proves the behaviour it was checking is still covered, on both sides.
+
+### ⛔ Why the step is not simply repointed
+
+📁 **This file's own header:** *"A demonstration that failed on a changed sentence would be re-baselined until it demonstrated nothing, which is the same failure mode as a re-baselined screenshot."* ⚡ **Repointing step 6 at wherever the history now lives is that re-baselining**, and the question it raises — *should the morning's demonstration open a panel to see what happened?* — **is a product-review question about the demonstration, not a test fix.** ✅ **Recorded for the product owner rather than answered by QE.**
+
+### ✅ What WAS fixed, and it is not this
+
+**The wait was unbounded.** `scrollIntoViewIfNeeded` with no timeout inherited the `demo` project's **180 seconds**, so one missing element cost **180s — 14% of the entire browser gate** — to report. **Every other wait in the file already used `{ timeout: 20_000 }`.**
+
+⚡ **Measured 2026-08-20: 180.0s → 36.4s. A 143.6-second saving on one test.** ⛔ **Nothing was weakened** — the heading is still required, and a heading that is absent is absent at 20 seconds exactly as at 180. ✅ **And the failure now says what it means** instead of `locator.scrollIntoViewIfNeeded: Test timeout of 180000ms exceeded`.
+
+---
+
+### B-1044 · 🟡 A browser failure cannot be re-run without rebuilding the environment, so diagnosing one costs four minutes before it starts
+
+| | |
+|---|---|
+| **Module** | `infra/` · the browser-gate sequence — **QE's** |
+| **Current assignee** | **QE** |
+| **Severity** | 🟡 — ⛔ **it is a diagnosis cost on every red line, paid every cycle** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-20 by QE**, cycle 255, trying to re-run one spec to measure a change |
+
+**Steps.** Run the browser gate. When it finishes, re-run any authenticated spec.
+
+**Actual:** `page.waitForURL` times out at `/workspaces/none` — **the signed-in person has no organization.** `membership` is **0** while `auth."user"` is **15**: the accounts survive and their memberships do not, because the suite's own mutating journeys consumed them.
+
+⚠️ **This is correct behaviour, not a defect in the suite** — 📁 the gate begins with `make down` (which is `down -v`) precisely because it needs a clean slate, and journeys that mutate are supposed to mutate.
+
+### ⛔ The cost is diagnosis, which is the point of the row
+
+⚡ **To re-run ONE failing spec, an engineer must rebuild the stack, run `auth:migrate`, `demo:users` and `playground.seed` — about four minutes before the spec starts.** 📁 That is why [B-1036](#b-1036)'s isolation re-runs are expensive, and why a starvation-class failure takes a cycle to characterise rather than a minute.
+
+### ⚠️ A near-miss worth recording, because it is the class this repository keeps finding
+
+⛔ **QE first queried `workspace` and `workspace_member`, got `0` and *"relation does not exist"*, and was one step from filing a 🔴 against `make dr` for destroying data while reporting *"Nothing lost"*.** ⚡ **The table is `membership`, and `make dr` truncates nothing** — `grep -E 'TRUNCATE|DELETE FROM|down -v' infra/disaster-recovery.sh` returns nothing. ✅ **The wrong table name produced evidence indistinguishable from a serious defect.**
+
+### The direction of a fix, not the fix
+
+**A re-seed target that restores the Playground without rebuilding the stack** — the seeder already runs against a live database, so the missing piece is enrolment, not infrastructure. ⛔ **Held: it is new tooling rather than a gate repair, and this cycle's remit is the certification record.**
+
+---
+
 ### B-1042 · 🟠 Two certification runs happened and the repository has no record of them
 
 > ## ✅ Ruled by the product owner, 2026-08-19 — **preserve, and the condition for release is named**
@@ -12654,6 +12716,26 @@ uv run mypy --strict .                                     → 7 errors in 4 fil
 
 
 ### B-131 · The Validation Planner requires sixteen gates; the certification record contains six
+
+> ### ✅ 2026-08-20, cycle 255 — **the shortfall is now IN the record, and that was the whole defect**
+>
+> ⛔ **Until now `_plan_shortfall` printed to stdout and nowhere else.** ⚡ **On 2026-08-19 a run announced *"9 planned gate(s) NOT recorded"* — including `migration-reversibility` and `dr`, the two [`REPOSITORY_RELEASE_CHECKLIST.md`](REPOSITORY_RELEASE_CHECKLIST.md) makes mandatory — and wrote a record carrying no trace of it.** **stdout is not evidence: it is not committed, not read back, and gone by the next cycle.**
+>
+> ✅ **`CertificationRun.planned_not_recorded` now carries it**, serialized, read back, and rendered into the report. **Four states are distinguishable from the record alone:**
+>
+> | State | How it reads |
+> |---|---|
+> | **passed** | a `GateResult` with `passed=True` |
+> | **failed or refused** | a `GateResult` with `passed=False` |
+> | **planned, not executed** | named in `planned_not_recorded` |
+> | **not applicable** | in neither — the planner did not require it |
+> | **plan not computable** | `profile` is empty, so the field is meaningless rather than reassuring |
+>
+> ⛔ **Recorded, never applied — deliberately.** `satisfied` does not read it and `REQUIRED_GATES` is unchanged: **widening what certification REQUIRES is an [ADR-0032](architecture/adr/0032-release-certification.md) decision, not one a run may take about itself.** ⚡ **What this buys is that a missing gate can no longer disappear**, not that it now blocks. ✅ **A gate cannot be recorded as both executed and not-recorded — `__post_init__` refuses it.**
+>
+> ⚠️ **8 tests added, and mutation-tested rather than assumed**: dropping the field from serialisation kills 2, neutering the disjointness guard kills 1, and restoring returns all 8 to green. 📁 **The first mutation run reported errors on an unchanged tree and was a broken harness, not a broken guard** — read the error before believing a verdict.
+>
+> ⛔ **This row stays `OPEN`.** ⚡ **The deeper question is untouched: two gates the runbook makes mandatory still execute OUTSIDE certification, by hand.** **Making certification run them is the real fix and it changes what `make certify` does** — an ADR-0032 decision, prepared here and not taken.
 
 | | |
 |---|---|

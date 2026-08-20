@@ -95,6 +95,9 @@ class _RunRecord(BaseModel):
     #: 427 step 2. **Optional**, because every record written before it exists
     #: has no such key and `extra="forbid"` must keep accepting them.
     profile: str = ""
+    #: B-131. **Optional for the same reason** — 229 records predate it, and
+    #: `extra="forbid"` would reject every one of them if this were required.
+    planned_not_recorded: tuple[str, ...] = ()
     conditions: _ConditionsRecord
     gates: tuple[_GateRecord, ...]
     scenarios: tuple[_ScenarioRecord, ...]
@@ -153,6 +156,7 @@ def _as_json(run: CertificationRun) -> dict[str, Any]:
         "record_version": run.record_version,
         "coverage": run.coverage,
         "profile": run.profile,
+        "planned_not_recorded": list(run.planned_not_recorded),
         "conditions": {
             "rendering_protocol_version": run.conditions.rendering_protocol_version,
             "migration_head": run.conditions.migration_head,
@@ -178,6 +182,7 @@ def _run(record: _RunRecord) -> CertificationRun:
         record_version=record.record_version,
         coverage=record.coverage,
         profile=record.profile,
+        planned_not_recorded=tuple(record.planned_not_recorded),
         conditions=Conditions(
             rendering_protocol_version=record.conditions.rendering_protocol_version,
             migration_head=record.conditions.migration_head,
@@ -230,6 +235,23 @@ def render(run: CertificationRun, conditions: Conditions) -> str:
     lines.extend(
         f"- {'✅' if g.passed else '❌'} **{g.name}** — {g.detail}" for g in run.gates
     )
+    if run.planned_not_recorded:
+        lines.extend(
+            [
+                "",
+                "### Planned and NOT recorded",
+                "",
+                f"The Validation Planner required these for this run's `{run.profile}` diff and "
+                "this record does not contain them. **They did not run inside certification** — "
+                "whether they ran by hand is not something this record can know (B-131).",
+                "",
+            ]
+        )
+        lines.extend(f"- ⚠️ **{name}**" for name in run.planned_not_recorded)
+    elif run.profile:
+        lines.extend(
+            ["", f"*Every gate the planner required for this `{run.profile}` diff is recorded above.*"]
+        )
     lines.extend(["", "## Scenarios", ""])
     lines.extend(
         f"- {'✅' if s.passed else '❌'} **{s.name}** — {s.detail}" for s in run.scenarios

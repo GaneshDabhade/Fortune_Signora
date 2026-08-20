@@ -131,7 +131,29 @@ test('a working morning at Signora', async ({ page, accounts, brief }) => {
     '6 · "What has actually happened here?"',
     'The record of events, underneath what Signora thinks about them.',
   );
-  await page.getByRole('heading', { name: 'What has happened' }).scrollIntoViewIfNeeded();
+  /**
+   * ⚠️ **Bounded at 20s, and it was unbounded.** ⛔ **`scrollIntoViewIfNeeded`
+   * with no timeout inherits the `demo` project's 180 seconds**, so on
+   * 2026-08-19 a heading that never appeared cost **the entire budget — 180s,
+   * 14% of the whole browser gate — to report one missing element.**
+   *
+   * ⚡ **Every other wait in this file already uses `{ timeout: 20_000 }`.**
+   * ⛔ **Nothing is weakened: the heading is still required, and a heading that
+   * is absent is absent at 20 seconds exactly as it is at 180.** ✅ **What
+   * changes is only how long the demonstration is willing to stare at it.**
+   *
+   * 📁 **And the assertion is separated from the scroll deliberately**, so the
+   * failure says *the record of events was not on this screen* rather than
+   * `locator.scrollIntoViewIfNeeded: Test timeout exceeded`.
+   */
+  const history = page.getByRole('heading', { name: 'What has happened' });
+  await expect(
+    history,
+    'the account never showed "What has happened" — the record of events is the ' +
+      'point of this step, and the panel that carries it may not be docked at ' +
+      'this viewport (see utility-panel.spec.ts, which asserts it BOTH ways)',
+  ).toBeVisible({ timeout: 20_000 });
+  await history.scrollIntoViewIfNeeded();
   await beat(page, 2000);
 
   // ── 7 ─────────────────────────────────────────────────────────────────────

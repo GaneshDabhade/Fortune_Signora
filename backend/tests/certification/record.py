@@ -233,9 +233,49 @@ class CertificationRun:
     #: does not read it — an older record is judged by exactly the rule it was
     #: judged by then.
     profile: str = ""
+    #: The gates the Validation Planner required for this run's diff that this
+    #: record does **not** contain — **B-131, and the reason this field exists
+    #: rather than a print statement.**
+    #:
+    #: ⛔ **Until now the shortfall was reported to stdout and nowhere else.**
+    #: On 2026-08-19 a run announced *"9 planned gate(s) NOT recorded"*,
+    #: including `migration-reversibility` and `dr` — **the two gates
+    #: `REPOSITORY_RELEASE_CHECKLIST.md` makes mandatory** — and the record it
+    #: wrote carried no trace of that. **A reader of the manifest could not tell
+    #: a gate that was never planned from one that was planned and skipped.**
+    #:
+    #: ⚡ **With this field the four states are distinguishable from the record
+    #: alone**, which is the whole requirement:
+    #:
+    #: | State | How it reads |
+    #: |---|---|
+    #: | **passed** | a `GateResult` with `passed=True` |
+    #: | **failed or refused** | a `GateResult` with `passed=False` |
+    #: | **planned, not executed** | named here |
+    #: | **not applicable** | in neither — the planner did not require it |
+    #: | **plan not computable** | `profile` is empty, so this is meaningless |
+    #:
+    #: ⛔ **Recorded, never applied** — exactly as `profile` is. `satisfied`
+    #: does not read it and `REQUIRED_GATES` is unchanged, because widening what
+    #: certification *requires* is an ADR-0032 decision and not one a run may
+    #: take about itself. **What this buys is that a missing gate can no longer
+    #: disappear**, not that it now blocks.
+    #:
+    #: ⚠️ **Empty on every record written before this field existed**, and
+    #: indistinguishable there from *"nothing was missing"*. 📁 `profile` has the
+    #: same property for the same reason: an older record is read by exactly the
+    #: rule it was written under.
+    planned_not_recorded: tuple[str, ...] = ()
     record_version: int = RECORD_VERSION
 
     def __post_init__(self) -> None:
+        overlap = sorted({g.name for g in self.gates} & set(self.planned_not_recorded))
+        if overlap:
+            raise CertificationError(
+                f"gate(s) {', '.join(overlap)} are recorded as executed AND as planned-but-not-"
+                "recorded. A gate is one or the other, and a record that says both describes no "
+                "run at all."
+            )
         if len(self.commit) != 40:
             raise CertificationError(
                 f"'{self.commit}' is not a full commit SHA. An abbreviated one is ambiguous "
