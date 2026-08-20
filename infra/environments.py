@@ -322,7 +322,26 @@ def _exports() -> int:
     if environment is None:
         # **Named, not silent.** Falling back is correct on `integration`; doing
         # it without saying so is how four clones came to share one server.
+        #
+        # ⚠️ **And naming the fallback is not the same as naming its COST**,
+        # which is [B-1034](../docs/BUGS.md): `POSTGRES_BASE` is **5432**, the
+        # port `RUNNING.md` allocates to `review`/slot 0. **So this branch does
+        # not select a stack — it selects whatever is listening on 5432**, and
+        # on a workstation where human review is up that is the reviewer's
+        # server. It cost QE a certification run in cycle 252, spent on a
+        # `ConnectionRefused` whose real subject was the branch name.
+        #
+        # ⛔ **Refusing here was considered and rejected on measurement, not on
+        # nerve.** The `Makefile` calls `--exports` in `$(shell …)` **six
+        # times at parse time**, so a non-zero exit would break every target —
+        # `make help` included — on `main` and `integration`. **That is a
+        # decision about what `make` does, not a repair, and it belongs to the
+        # product owner.**
         print("# no environment derived (not on a lane branch) — historical shared stack")
+        print(f"# ⚠️  {POSTGRES_BASE} is slot 0, which RUNNING.md allocates to human review.")
+        print("#    If you are certifying, name your stack instead of inheriting this one:")
+        print("#      git checkout -b lane-qe-cycleNNN     (the name derives the allocation)")
+        print("#    B-1034.")
         print("COMPOSE_PROJECT_NAME=signora-v2")
         print(f"SIGNORA_POSTGRES_PORT={POSTGRES_BASE}")
         print(f"SIGNORA_REDIS_PORT={REDIS_BASE}")

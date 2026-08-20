@@ -1220,6 +1220,32 @@ export SIGNORA_TEST_ADMIN_DATABASE_URL="postgresql+asyncpg://signora:signora@loc
 
 ### B-1034 · 🟠 Certification on a non-lane branch aims its disposable database at port 5432, which is human review's
 
+> ## ⚡ 2026-08-20 — **the refusal was measured and REJECTED, and the diagnostic was taken instead**
+>
+> ⛔ **This row proposed making `_exports()` refuse rather than emit slot 0**, on the product owner's standing rule: *"prefer operations that refuse unsafe states over operations that silently recover from them."* ✅ **The rule still applies. The blast radius is what does not permit it here.**
+>
+> **Measured:** the `Makefile` calls `--exports` inside **`$(shell …)` six times at PARSE time** — `SIGNORA_STACK`, `SIGNORA_PG_PORT`, `SIGNORA_REDIS_PORT`, `SIGNORA_DB`, `SIGNORA_WEB`, `SIGNORA_API` — **on every invocation, whatever the target.**
+>
+> ⛔ **So a non-zero exit does not fail a gate. It breaks EVERY `make` target on `main` and `integration`** — including the ones a cold session runs first. ⚡ **That is a decision about what `make` does, and it belongs to the product owner rather than to QE.** 📁 **[B-1028](#b-1028)'s refusal was safe precisely because `database.py` is called by one thing; this is called by all of them.**
+>
+> ### ✅ What WAS taken — the fallback now names its own cost
+>
+> ```
+> # no environment derived (not on a lane branch) — historical shared stack
+> # ⚠️  5432 is slot 0, which RUNNING.md allocates to human review.
+> #    If you are certifying, name your stack instead of inheriting this one:
+> #      git checkout -b lane-qe-cycleNNN     (the name derives the allocation)
+> #    B-1034.
+> ```
+>
+> ⛔ **Zero behaviour change**: every line added starts with `#`, which the `Makefile`'s own `grep -v '^#'` already filters. ✅ **Verified on the fallback branch — `--exports` exits 0, the ports are unchanged, and `make -n down` exits 0.** ⚠️ **`make -n help` exits 2 both before and after: there is no `help` target, which is pre-existing and not this.**
+>
+> ⚡ **This is the half that would have saved cycle 252's first attempt** — a run spent on a `ConnectionRefused` whose real subject was the branch name. **The remaining half is a product decision and this row now says which is which.**
+>
+> ### ⚠️ Noticed while measuring, and NOT filed as a separate row
+>
+> **The fallback branch emits no `SIGNORA_WEB_PORT` and no `SIGNORA_API_PORT`**, while the derived branch emits both. **So `SIGNORA_WEB` and `SIGNORA_API` are empty on `main`.** ⛔ **Recorded here rather than as a new row** — it is the same fallback, the same fix, and a second id would make one defect look like two.
+
 | | |
 |---|---|
 | **Module** | `infra/environments.py` — **certification infrastructure**. 📁 [§20e](../CLAUDE.md) names it among the things that *"decide whether a gate passes"* |
