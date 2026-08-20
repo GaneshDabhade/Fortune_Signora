@@ -822,6 +822,8 @@ BLOCKED — the development database is not reachable
 
 ### B-1040 · 🟠 `make smoke` says *"workers consuming without error"* and tests only the *"without error"* half
 
+> ⚡ **Blocked on [B-1039](#b-1039) by construction** — **an assertion that a worker consumed cannot be written while the worker cannot consume.** 📁 **[C-111](LANE_COORDINATION.md) carries both.**
+
 | | |
 |---|---|
 | **Module** | `infra/smoke.sh` stage 12 **and `infra/disaster-recovery.sh:203`** — ⛔ **both gates, and [§20e](../CLAUDE.md) puts them among the things that decide whether one passes** |
@@ -883,6 +885,8 @@ pass "workers resumed consuming"
 ---
 
 ### B-1039 · 🟠 The local production stack runs one worker on the `default` pool, and four of the five queues that carry work are never drained
+
+> ⚡ **The blocker is now a decision rather than a schedule.** 📁 **[C-111](LANE_COORDINATION.md), raised 2026-08-20.** ⛔ **QE held this three times with *"not while a candidate is mid-cycle"*, and no candidate is mid-cycle now — a reason that keeps lapsing and keeps being reused is an excuse.** ✅ **The honest blocker is that adding a worker per pool changes what `make smoke` and `make dr` are run against, and QE's authority is to make a documented gate runnable, never to change what it means.**
 
 | | |
 |---|---|

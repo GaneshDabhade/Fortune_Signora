@@ -718,6 +718,45 @@ is on `main` and correct.** ⚠️ **The row stays `CLAIMED` rather than moving 
 not, which is the class [§2](../CLAUDE.md) exists to prevent. ✅ **The lane moved
 to the next eligible row rather than idling or inventing an anonymous design.**
 
+## C-111 · Two gates assert a property they do not measure, and fixing that changes what a gate's environment is
+
+| | |
+|---|---|
+| **Raised by** | **QE**, 2026-08-20, after holding [B-1039](BUGS.md) and [B-1040](BUGS.md) across three cycles on the same reasoning |
+| **Owner** | ⛔ **Product owner.** **The fix changes `infra/docker-compose.prod.yml`, which decides what `make smoke` and `make dr` MEAN** ([§20e](../CLAUDE.md) puts the compose files among the things that decide whether a gate passes) |
+| **Type** | **Decision** — ⚡ **the engineering is understood and small; what needs a ruling is whether QE may change a gate's environment** |
+| **Blocks** | ⛔ **Nothing today.** ⚠️ **It costs 162 seconds of every browser gate and leaves four of five populated queues undrained** |
+| **Status** | ✅ **`READY FOR PRODUCT DECISION`** |
+
+### The measured position
+
+| | |
+|---|---|
+| **Pools carrying subscriptions** | `DEFAULT` 8 · `INTELLIGENCE` 2 · `graph` 2 · `READ_MODEL` 1 · `ai_research` 2 — **five** |
+| **Pools the local production stack drains** | 🔴 **one** — `docker-compose.prod.yml:143` starts a single worker and sets no `SIGNORA_WORKER_POOL` |
+| **What that costs the browser gate** | ⚡ **`notification-arrival` waits out 162s** — **14% of the suite**, and the single largest remaining item in it |
+| **What notices** | ⛔ **Nothing.** `smoke.sh` prints *"workers consuming without error"* and tests only the *without error* half; `disaster-recovery.sh:203` prints *"workers resumed consuming"* and measures `relayed_at`, **which is the relay** |
+
+### ⛔ Why QE has not simply done it
+
+📁 **QE has held this three times with the same sentence — *"not while a candidate is mid-cycle"*.** ⚠️ **No candidate is mid-cycle now, so that reason has lapsed, and a reason that keeps lapsing and keeps being reused is an excuse.** ⚡ **The honest blocker is different and it is real:**
+
+> **Adding a worker per pool changes what `make smoke` and `make dr` are run against.** ⛔ **QE's authority is to make a documented gate runnable, never to change what it means** ([§20e](../CLAUDE.md)).
+
+⚠️ **And the change would strengthen rather than weaken**: it makes two assertions capable of failing, and it may **surface** tests that currently pass because nothing was consumed. ⚡ **That is the desired direction and it is still a change to the certification boundary**, which is the product owner's to approve.
+
+### What a ruling would authorise
+
+**① One worker service per pool that carries subscriptions**, each with its own `SIGNORA_WORKER_POOL` — 📁 the shape [B-1039](BUGS.md) names, and the one Lane A already built by hand on its own stack. ⛔ **Cost: five more containers on every `make up`.**
+
+**② Then `smoke.sh` stage 12 and `disaster-recovery.sh:203` assert CONSUMPTION** rather than silence — a processed-event row or a handler's visible trace, checked with the bounded-deadline pattern the relay half already uses well.
+
+⚡ **Expected effect: `notification-arrival` passes, 162s leaves the browser gate, and two gates begin measuring what their names claim.** ⛔ **No threshold moves, no test is removed, nothing is skipped.**
+
+### ⚠️ If the answer is *not yet*
+
+✅ **That is a complete answer and QE will record it as one.** **The rows stay open, the 162s stays measured, and nothing is quietly done anyway.**
+
 ## C-110 · Lane C is retired and three of its branches hold 75 commits that exist nowhere else
 
 > ⚠️ **Allocated `C-1536` on first write and corrected within the minute.** ⛔ **`1500+` is LANE A's second range and `C-1536` was already theirs** — *"TASK-430's screen is drawn in named people"*, on `main`. 📁 **QE's block is `C-100+`; `C-109` was the highest in use and this is `C-110`.** ⚡ **§20e: the later claim moves, and this was the later claim.**
