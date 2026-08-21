@@ -1861,3 +1861,39 @@ Commissioned on the product owner's clarification that **Workspace has always be
 
 📁 **Lane A adopted the same caveat for their own work, unprompted**: *"'compared, clean' from me means 'I looked and did not see', not 'there is nothing there'"* — ⚠️ **and noted that two of their ten findings sat inside areas they had already reported as compared.**
 
+
+## R13-11 · A defect no screenshot could ever have shown — the limit of this review's own instrument
+
+**2026-08-21. Raised by Lane A, verified here independently.**
+
+⚡ **Review 13's premise is that prior audits read source files and this one measures rendered pixels.** ⛔ **That premise has a limit, and one of the audit's own findings sits outside it.**
+
+📁 **Measured across all 35 design documents:**
+
+| | |
+|---|---|
+| Colour roles declared | **33** |
+| Roles **declared and used zero times** | 🔴 **2** — `--brand-strong` (2/35 documents) and `--c4` (2/35), **`var()` uses: 0** |
+
+🔴 **`--brand-strong` is the role whose dark value `--color-accent-hover` was holding wrongly** ([B-1051](../BUGS.md#b-1051)'s second half). ⛔ **No screenshot comparison could ever have found it. Nothing in the corpus DRAWS with that role, so there is no rendered thing to compare against.**
+
+> ⚡ **Only a value-against-design check, in both themes, reaches it** — **which is exactly what [B-1050](../BUGS.md#b-1050)'s acceptance criterion asked for, and which this review had been treating as belt-and-braces.** ⛔ **For that role it is not a second opinion. It is the only instrument.**
+
+**So the instruments are not ranked; they have different reach:**
+
+| Instrument | Reaches | Blind to |
+|---|---|---|
+| **Rendered measurement** — this review's premise | Anything drawn: [B-1050](../BUGS.md#b-1050)'s skeleton, [B-1054](../BUGS.md#b-1054)'s count, [B-1058](../BUGS.md#b-1058)'s four treatments | **A role nothing draws with** |
+| **Value-against-design** | Every declared role, both themes | Whether the value is applied to the right thing |
+| **Source reading** — 478, 489, 498, 499 | Structure and adoption | Values that are correct in one theme and wrong in the other |
+
+⚠️ **Lane A's own re-read is the corroboration and it produced a clean result**: *"for EVERY colour role the design publishes, is its value carried by some implementation token, in both themes?"* — **33 roles, both themes, no new finding**, reported as the result rather than hunted past.
+
+⛔ **And their first version of that check was wrong**: a reverse value→token lookup, where several implementation tokens share a value and the map silently kept the last one inserted. **It printed 8 confident orphans, all collisions.** ⚡ **[B-1000](../BUGS.md#b-1000) in the other direction, built in two minutes** — which is the rate at which this class appears when anybody writes a new instrument.
+
+✅ **Not filed, and correctly**: a role the design declares and does not use is **a fact about the design corpus, not a defect in the product**, and the guard covers it either way.
+
+### One claim withdrawn
+
+⛔ **[R13-10](#r13-10--the-failure-mode-has-a-name-in-this-register-and-i-cited-it-while-committing-it) said a row *"routed a reader to the right file"* and offered it as an argument for file-level specificity.** ⚠️ **Lane A qualified their own credit and they are right: [B-1055](../BUGS.md#b-1055) named `tabs.tsx` and `utility-panel.tsx:394` for CITATION, and the routing was a side effect.** ✅ **Still an argument for naming files; a weaker one than *"it works"*.**
+
