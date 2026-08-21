@@ -32,6 +32,27 @@ import { SETTINGS_NAV, type SettingsSection } from '@/lib/settings/sections';
  * ✅ **Recorded rather than taken**; everything else about the navigation is
  * the design's.
  */
+/**
+ * ⛔ **The design draws an ACTIVE item and this renders none, deliberately.**
+ *
+ * 📁 **The design states the appearance exactly** — `color: var(--brand-ink)`,
+ * `background: var(--brand-tint)`, `weight: 600`, against `--ink-2` /
+ * transparent / 400 for the rest. ⚠️ **It does not state what MAKES an item
+ * active**, and the two candidate rules are a scroll observer and the URL
+ * fragment — neither of which the design mentions.
+ *
+ * 🔴 **And the design's own navigation makes any anchor-derived rule ambiguous**:
+ * *SSO* and *SCIM* both point at `#sso`, *API keys* and *Webhooks* both at
+ * `#api`. **Any rule reading the anchor marks TWO items active**, and the
+ * design shows one.
+ *
+ * ⚡ **So the appearance is specified and the behaviour is not** — inventing the
+ * rule would be reinterpreting the design rather than implementing it. **The
+ * same absence exists on Account 360's `OnThisPage` rail**, whose docstring
+ * records `active --brand-ink on --brand-tint, 600` and which renders no active
+ * entry either. ✅ **Recorded here rather than guessed at; if it is wanted, it
+ * wants a ruling on the rule, not a component.**
+ */
 export function SettingsNav({ className }: { className?: string }) {
   return (
     <nav
