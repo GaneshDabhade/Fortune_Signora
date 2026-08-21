@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `438447ba`, 2026-08-21.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `68da093e`, 2026-08-21.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,7 +12,15 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `438447ba`, 2026-08-21.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `68da093e`, 2026-08-21.** Every figure is read from the repository, never carried forward.
+
+> ⚡ **Cycle 259 promotes Lane A's UI conformance work — the first cycle this month whose subject is the product rather than QE's instruments.** ✅ **Certified `68da093e497a` — pytest 5452 · coverage 95.03% · 679 Security Invariants · mypy 956 · import-linter 37/37 · tsc · frontend-suite 4010/208 · eslint · smoke 24 stages/270s · DR passed · reversibility head→base→head in 7s.**
+>
+> ✅ **The browser gate is 442 of 451 passed, 6 failed, 3 skipped — and ALL SIX also fail on `main`'s baseline, which had TEN.** ⚡ **Zero regressions, and strictly better than the tree it replaces.**
+>
+> 🔴 **It took FOUR candidates, and the reason is the finding.** ⛔ **`7274324b` certified but broke three journey tests on a heading rename whose tests were not updated. Its "fix" broke four more in three other files. The third candidate was refused by Lane A's OWN new guard, catching a ninth invented heading in production code.** ⚡ **Each refusal was correct and each was cheap — production stayed byte-identical through two of them, so the cost was one browser pass, never a cycle.**
+>
+> 🔴 **And [B-1063](docs/BUGS.md) is the one worth reading: a certification gate that could not fail on the machine that certifies.** ⛔ **It read the product owner's uncommitted `Design Documents/` behind `if (!existsSync(path)) return` — a silent pass, not a skip — so the same commit certified differently on different machines.** ⚡ **Found because Lane A reported two failures and QE reported one, and the disagreement was investigated rather than resolved in favour of either run.**
 
 > 🔴 **Cycle 258 is the one cycle the planner said was not needed, and it ran on the product owner's instruction.** ⛔ **`make certified ARGS="--next-cycle"` reported *"No cycle needed"* — all 14 commits are documentation, and [§20e](CLAUDE.md) warrants a cycle by executable change rather than by movement.** ⚡ **It ran because `main` did not carry the ten defect rows the UI conformance audit produced, and [§20e](CLAUDE.md) also requires `main` to represent the authoritative state.** ✅ **Certified `438447ba27e5` on the FIRST attempt — 5448 pytest, 95.03% coverage, 679 Security Invariants, 3525 frontend across 204 files, smoke 24 stages in 203s, DR passed, reversibility head→base→head in 5s.**
 >

@@ -1,5 +1,17 @@
 # Session Handoff
 
+> ## Cycle 259 — promoted `68da093e`, 2026-08-21 · **Lane A's UI conformance work, after four candidates**
+>
+> **`main` = `68da093e` = the certified commit.** `pytest` **5452** · coverage **95.03%** · **679 Security Invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · `frontend-suite` **4010/208** · `eslint` · `smoke` 24/270s · **DR passed** · **reversible in 7s** · head **`0066`**. **5 commits, Lane A.**
+>
+> ✅ **Browser gate 442/451 — 6 failed, 3 skipped — and all six also fail on the previous `main`, which had ten.** ⛔ **Zero regressions.** ⚠️ **Two apparent regressions were investigated and were CONTAMINATION FROM QE'S OWN REPEATED RUNS** — three suites on one seed left 30 entities and 5 workspaces where a clean seed gives 15 and 1 ([B-1017](BUGS.md)'s mechanism). **17/17 green after a rebuild and reseed. Not filed; QE's fault, recorded rather than charged to the lane.**
+>
+> 🔴 **[B-1063](BUGS.md) is this cycle's most transferable finding: a certification gate that could not fail on the machine that certifies.** ⛔ **`page-heading-role.test.tsx` read the product owner's uncommitted `Design Documents/` behind `if (!existsSync(path)) return` — reported as a PASS, with `0 skipped`.** ⚡ **Fixed by reading `docs/design-snapshot/` instead, so the hidden input DISAPPEARS rather than becoming visible; QE fire-tested the repair by breaking the string on a machine without the corpus.**
+>
+> ⚠️ **NOT VERIFIED, and it is [C-1544](LANE_COORDINATION.md), not a defect**: the POPULATED state of **account narration** *(measured — `narrate.py` 0 of 7, "points — Field required")*, **AI research** *(structural, not separately measured)* and **evidence citations** *(unreachable without narration)*. ✅ **Their ABSENT states are fully exercised and covered.** ⛔ **Account validation is NOT affected** — it reads domain-expert catalog prose, not model output.
+>
+> ⚡ **Four candidates, three refusals, and every refusal was correct.** 📁 **Production stayed byte-identical through two of them, so a refusal cost one browser pass rather than a cycle.**
+
 > ## Cycle 258 — promoted `438447ba`, 2026-08-21 · **the cycle the planner said was not needed**
 >
 > **`main` = `438447ba` = the certified commit.** `pytest` **5448** · coverage **95.03%** · **679 Security Invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · `frontend-suite` **3525/204** · `eslint` · `smoke` 24/203s · **DR passed** · **reversible head→base→head in 5s** · head **`0066`**. **14 commits, QE. ONE attempt.**
