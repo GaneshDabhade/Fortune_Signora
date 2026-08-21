@@ -353,6 +353,8 @@ databaseUrl: required(
 
 | Id | What | Requester | Owner | Status | Blocks |
 |---|---|---|---|---|---|
+| [C-1546](#c-1546--the-product-catalog-editor-is-producer-backed-design-backed-one-screen-over-and-named-by-no-settings-design) | 🟢 **The product-catalog editor is producer-backed, design-backed one screen over, and named by no Settings design** | **Lane A**, 2026-08-21, the Settings implementation | ⛔ **Product Owner** | 🟢 **`OPEN`** | ⛔ **Where the editor lives.** ✅ **The capability is untouched and still reachable** |
+| [C-1545](#c-1545--the-settings-design-draws-team-and-integrations-inline-and-the-experience-map-names-them-as-routes) | 🟠 **The Settings design draws Team and Integrations INLINE; the Experience Map names them as ROUTES** | **Lane A**, 2026-08-21, the Settings implementation | ⛔ **Product Owner** — 📁 **two final documents disagree** | 🟠 **`OPEN`** | ⛔ **Two sections' composition.** ✅ **Both work today, by route** |
 | [C-1544](#c-1544--adr-0028-makes-the-deterministic-mock-the-development-default-and-the-mock-satisfies-no-schema-the-platform-defines) | 🟠 **ADR-0028 makes the deterministic mock the development default, and the mock satisfies NO schema the platform defines** | **Lane A**, 2026-08-21, taking the Playground seeder | ⛔ **Product Owner** — 📁 the alternatives all decide what *development mode* means | 🟠 **`OPEN`** | ⛔ **Every AI-authored surface, in development.** ✅ **Production and evaluation are unaffected** |
 | [C-1543](#c-1543--the-validation-sections-heading-is-in-no-final-design-document-and-the-designs-nearest-heading-is-a-different-capability) | 🟢 **The validation section's heading is in no final design document, and the design's nearest heading is a different capability** | **Lane A**, 2026-08-21, the Company 360 vocabulary pass | ⛔ **Product Owner** | 🟢 **`OPEN`** | ⛔ **One heading.** ✅ **Left unchanged — renaming it was tried and reverted** |
 | [C-1542](#c-1542--the-designs-single-score-card-is-split-across-two-blocks-one-of-them-unanchored) | 🟢 **The design's single `#score` card is split across two blocks, one of them unanchored** | **Lane A**, 2026-08-21, the Company 360 micro-audit | ⛔ **Product Owner** | 🟢 **`OPEN`** | ⛔ **Consolidation would delete two producer-backed blocks the design has no place for** |
@@ -679,6 +681,46 @@ is what currently makes states 02, 03 and 04 unreachable.**
 for state 11 — 📁 the string is ready the day a producer or a ruling exists, and a
 copy table holding a sentence nothing renders is honest in a way a fabricated
 substitute would not be.
+
+---
+
+## C-1546 · The product-catalog editor is producer-backed, design-backed one screen over, and named by no Settings design
+
+| | |
+|---|---|
+| **Raised** | **Lane A**, 2026-08-21, implementing Settings |
+| **Owner of the answer** | ⛔ **Product Owner** |
+| **Severity** | 🟢 **P3** — ✅ **the capability works and is reachable**; what is unresolved is where it belongs |
+| **Status** | 🟢 **`OPEN`** |
+
+📁 **`/settings/products` appears in NO final design document's Settings navigation.** ⛔ **Under *remove what the design does not have*, it is a deletion candidate.**
+
+🔴 **It must not be deleted.** ⚡ **`GET /workspaces/{id}/products` is a real producer**, and the catalog it edits is what 📁 **Account 360's *"What you sell"* section reads** — a section the design DOES draw. **Removing the route would strand a producer-backed capability the design depends on, one screen over.**
+
+⚠️ **What the design does not say is where the editor lives.** ✅ **Left reachable from `#workspace` with the divergence recorded in the code**, because 📁 `infra/reachability.py` refuses a built route no screen leads to — *"the Connection Center had two inbound links and was still unreachable."*
+
+---
+
+## C-1545 · The Settings design draws Team and Integrations inline, and the Experience Map names them as routes
+
+| | |
+|---|---|
+| **Raised** | **Lane A**, 2026-08-21, implementing Settings |
+| **Owner of the answer** | ⛔ **Product Owner** — ⚡ **two FINAL documents disagree**, which [§20e](../CLAUDE.md) says a lane records rather than resolves |
+| **Severity** | 🟠 **P2** — ⚡ **it decides the composition of two of the eleven sections** |
+| **Status** | 🟠 **`OPEN`** |
+
+📁 **`Design Documents/Fortune Signora Settings.html`** draws `#users` as a full table — *User · Role · Provisioned by · Last active · Status*, with *Invite* and *Export list* — and `#integrations` as a list of systems with their state. **Both inline, on the Settings page.**
+
+📁 **`Signora Product Experience Map`**, the canonical route document, names **`…/settings/team`** and **`…/settings/integrations`** as routes with their own entry points and workflows.
+
+⚠️ **Both are final. Neither is obviously the later word.**
+
+✅ **What was implemented, and why it is the reversible half.** **The sections exist, carry the design's titles and meta, and link to the routes that work.** ⛔ **Moving either inline is a refactor of a live producer-backed flow** — `/settings/team` carries invitations and role changes across 894 lines, `/settings/connections` carries an OAuth round trip — **and this slice could not have verified either.**
+
+⚡ **If the ruling is *inline*, the sections are already there to receive the content.** ⛔ **If the ruling is *routes*, nothing needs undoing.**
+
+⚠️ **One more disagreement in the same pair, recorded rather than acted on**: the Experience Map's route is **`…/settings/integrations`** and the repository serves **`/settings/connections`**.
 
 ---
 

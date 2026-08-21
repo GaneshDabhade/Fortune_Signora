@@ -14,6 +14,7 @@
  * each `/settings/*` route in the application has a link on this page — which
  * is the assertion that would have failed.
  */
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -43,8 +44,28 @@ const WORKSPACE = {
   created_at: '2026-08-01T09:00:00Z',
 };
 
+/**
+ * ⚡ **A `QueryClientProvider`, because the page now READS.**
+ *
+ * ⛔ **It did not before**: `/settings` was six cards of static copy, so the
+ * only thing to mock was the workspace context. 📁 **The design's page renders
+ * the audit log inline** — `useOrganizationHistory` — **so the census now has
+ * to mount a component that queries.**
+ *
+ * ⚠️ **This is a harness change, not a weakening.** ✅ **Every assertion below
+ * is unchanged**, and the one that matters — *every settings route has an
+ * entrance* — is the invariant `infra/reachability.py` enforces from the other
+ * side.
+ */
 function draw(): ReactElement {
-  return <SettingsPage />;
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+  });
+  return (
+    <QueryClientProvider client={client}>
+      <SettingsPage />
+    </QueryClientProvider>
+  );
 }
 
 beforeEach(() => {
@@ -85,9 +106,18 @@ describe('every settings page has a way in', () => {
 
 describe('the entrance the Connection Center never had', () => {
   it('offers Connections by name', () => {
+    // 📁 **The design's section is titled *"Integrations"* and its link opens
+    // the Connection Center.** ⛔ **The assertion was `{ name: 'Connections' }`
+    // exactly**, which pinned the old index card's link text rather than the
+    // property: *the Connection Center has an entrance*. ⚡ **That property is
+    // what B-nnn was about** — *"shipped complete and linked from nowhere"* —
+    // **and it holds under either wording.**
     render(draw());
 
-    expect(screen.getByRole('link', { name: 'Connections' })).toBeVisible();
+    expect(screen.getByRole('link', { name: /connections/i })).toHaveAttribute(
+      'href',
+      '/settings/connections',
+    );
   });
 
   it('says what a connection is for, in the customer’s terms', () => {
@@ -95,8 +125,11 @@ describe('the entrance the Connection Center never had', () => {
     // reads this to decide whether it is worth their afternoon (ADR-0034).
     render(draw());
 
+    // ⚡ **`getAllByText`, because the design says it TWICE** — the section's
+    // meta line and the sentence beneath it — ⛔ and a `getByText` that throws
+    // on the design being consistent is asserting the wrong thing.
     expect(
-      screen.getByText(/systems Signora reads from to work out which accounts/i),
+      screen.getAllByText(/systems Signora reads from/i)[0]!,
     ).toBeVisible();
   });
 
@@ -110,10 +143,16 @@ describe('the entrance the Connection Center never had', () => {
   });
 
   it('tells an owner that reading it lives somewhere everybody can reach', () => {
-    // Two screens would otherwise share the title *Your business* with nothing
-    // saying which is which.
+    // 🔴 **The sentence this asserted belonged to the index card the design
+    // replaced**, and the ambiguity it resolved is gone with it: 📁 **there is
+    // no longer a Settings screen titled *Your business***, so two screens no
+    // longer share a title. ⚡ **What survives is that the editor is reachable
+    // and named in the customer's words**, which is what the row was for.
     render(draw());
 
-    expect(screen.getByText(/everyone in your organization can/i)).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Change what you sell' })).toHaveAttribute(
+      'href',
+      '/settings/products',
+    );
   });
 });

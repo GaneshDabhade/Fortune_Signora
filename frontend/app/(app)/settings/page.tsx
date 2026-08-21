@@ -14,6 +14,7 @@ import {
   Dialog,
   EmptyState,
   Input,
+  LockedField,
   SkeletonText,
   TBody,
   TD,
@@ -25,6 +26,17 @@ import {
 import { ApiError } from '@/lib/api/client';
 import { useCreateWorkspace } from '@/lib/query/hooks';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
+import { formatDay } from '@/components/intelligence/dates';
+import { NoWorkspace } from '@/components/workspace/no-workspace';
+import { OrganizationHistory } from '@/components/team/history';
+import {
+  AbsentSettings,
+  ElsewhereSettings,
+  SettingsNav,
+  SettingsSectionShell,
+} from '@/components/settings/sections';
+import { useOrganizationHistory } from '@/lib/query/hooks/team';
+import { SETTINGS_SECTIONS } from '@/lib/settings/sections';
 import { ReadingColumn } from '../reading-column';
 
 /**
@@ -60,24 +72,162 @@ import { ReadingColumn } from '../reading-column';
  * because *workspace* is precise about isolation in a way *organization*
  * is not.
  */
+
 /**
- * The way out of Settings, and the only way into two of them.
+ * 📁 **`#workspace` — *"Identity, region and fiscal calendar"*.**
  *
- * **A shared shape rather than a shared component**, because it is one page's
- * repetition and `components/ui` is frozen (§20c) — *"add to the library rather
- * than around it"* applies to a component the library would benefit from, and a
- * settings-page link is not one. If a third page needs it, it earns promotion.
+ * ⛔ **One of those three has a producer.** `Workspace` publishes `id`, `name`,
+ * `created_at` and `updated_at` — 🔴 **no region, no fiscal calendar, no plan
+ * and no seat count.** ⚡ **So the identity is stated and the rest is named as
+ * missing**, rather than a select box that changes nothing.
+ *
+ * ✅ **`LockedField` is the library's own component for exactly this** — a
+ * value the product holds and a customer cannot change — and 📁
+ * `/settings/organization` already uses it for the same facts.
  */
-function SettingsLink({ href, children }: { href: string; children: string }) {
+function WorkspaceIdentity() {
+  const { activeWorkspace, isLoading } = useWorkspaceContext();
+
+  if (isLoading) return <SkeletonText lines={3} label="your organization" />;
+  if (!activeWorkspace) return <NoWorkspace />;
+
   return (
-    <Link
-      href={href}
-      className="mt-3 inline-block rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent "
-    >
-      {children}
-    </Link>
+    <div className="flex flex-col gap-4">
+      <dl className="grid gap-4 phone:grid-cols-2">
+        {/* ✅ **`LockedField` for the NAME, because a name is a setting that
+            exists and cannot be changed here** — 📁 the component's own
+            definition — **and its `reason` is required by the type**, which is
+            the discipline: *"a lock with no reason is worse than an absent
+            field, because the customer now knows something is missing and not
+            why."* */}
+        <LockedField
+          label="Name"
+          value={activeWorkspace.name}
+          reason="Renaming an organization is not something Signora can do yet."
+        />
+        {/* ⛔ **NOT a `LockedField`.** ⚡ **When the organization was created is
+            a FACT, not a setting** — nothing would change it even if the
+            product could, so a padlock beside it would promise a control that
+            was never withheld. */}
+        <div>
+          <dt className="text-2xs text-content-subtle">Created</dt>
+          <dd className="mt-0.5 text-sm text-content">
+            {formatDay(activeWorkspace.created_at)}
+          </dd>
+        </div>
+      </dl>
+      {/* ⛔ **Named rather than drawn.** 📁 The design's *region* and *fiscal
+          calendar* have no field on `Workspace` and no route that would set
+          one — **a disabled select would imply the setting exists and is
+          merely unavailable to this reader**, which is a different and false
+          statement. */}
+      <p className="text-sm leading-6 text-content-muted">
+        Renaming your organization, and setting its region or fiscal calendar, are not
+        things Signora can do yet.
+      </p>
+      {/* ⚠️ **`/settings/products` appears in NO final design document's
+          Settings navigation**, and this link is here because removing the
+          index cards took its only entrance — 📁 `infra/reachability.py`
+          refuses a built route no screen leads to.
+
+          ⛔ **It is not stale UI to delete**: the catalog it edits is what
+          Account 360's *"What you sell"* reads, so removing the route would
+          strand a producer-backed capability the design DOES draw, one screen
+          over. ⚡ **What the design does not say is where the editor lives.**
+          ✅ **Recorded as [C-1546](../../../../docs/LANE_COORDINATION.md)**
+          rather than settled by putting it somewhere that looked reasonable. */}
+      <div className="flex flex-wrap gap-x-6 gap-y-2">
+        {/* ⚡ **The organization's own screen**, which carries the slug, the
+            defaults and the settings this product states it cannot change.
+            ⛔ **The section above shows the identity; it does not replace that
+            screen**, and removing the index cards took its only entrance. */}
+        <Link
+          href="/settings/organization"
+          className="inline-block rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent"
+        >
+          Organization setup
+        </Link>
+        <Link
+          href="/settings/products"
+          className="inline-block rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent"
+        >
+          Change what you sell
+        </Link>
+      </div>
+    </div>
   );
 }
+
+/**
+ * 📁 **`#audit` — the log the page's own subtitle promises.**
+ *
+ * ✅ **`OrganizationHistory` is reused unchanged**, which is the point: 📁
+ * `/settings/audit`'s own docstring says *"a second renderer of the same
+ * entries is how two surfaces start disagreeing about what a role change
+ * looked like."* ⚡ **One component, two placements** — the same rule the
+ * account history follows between the page and the utility panel.
+ */
+function AuditLog() {
+  const { activeWorkspace, isLoading } = useWorkspaceContext();
+  const history = useOrganizationHistory(activeWorkspace?.id ?? null);
+
+  return (
+    <div className="flex flex-col gap-3">
+      <OrganizationHistory
+        entries={history.data?.items ?? []}
+        isLoading={history.isLoading || isLoading}
+        isError={history.isError}
+      />
+      {/* ⚡ **The section shows the log; the route pages it.** ⛔ **And the link
+          is load-bearing rather than decorative**: 📁 `infra/reachability.py`
+          refuses a route no screen leads to — *"the Connection Center had two
+          inbound links and was still unreachable"* — **and removing the index
+          cards took this route's only entrance with them.** */}
+      <Link
+        href="/settings/audit"
+        className="inline-block self-start rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent"
+      >
+        Open the full log
+      </Link>
+    </div>
+  );
+}
+
+
+/**
+ * ✅ **The four sections a shipped module can fill**, each composed from what
+ * already exists rather than rebuilt here.
+ *
+ * ⚠️ **Two render inline and two point at their own route, and the split is a
+ * document conflict rather than a preference.** 📁 **The Settings design draws
+ * every section's detail inline**; 📁 **the Experience Map names
+ * `…/settings/team` and `…/settings/integrations` as canonical ROUTES.** ⛔
+ * **Both are final documents.** ✅ **Recorded as
+ * [C-1545](../../../../docs/LANE_COORDINATION.md)** — and until it is ruled,
+ * the route keeps the flow that works: `/settings/team` carries invitations and
+ * role changes, `/settings/connections` carries an OAuth round trip, and
+ * **moving either inline is a refactor of a working, producer-backed flow that
+ * this slice would not be able to verify.**
+ */
+function SuppliedSettings({ id }: { id: string }) {
+  if (id === 'workspace') return <WorkspaceIdentity />;
+  if (id === 'audit') return <AuditLog />;
+  if (id === 'users') {
+    return (
+      <ElsewhereSettings href="/settings/team" label="Open your team">
+        Everyone who can see this organization&apos;s accounts, and everyone on their way
+        in. Invite a colleague, change what somebody may do, or withdraw an invitation.
+      </ElsewhereSettings>
+    );
+  }
+  return (
+    <ElsewhereSettings href="/settings/connections" label="Open your connections">
+      The systems Signora reads from, what each one last brought in, and what to do when
+      one stops answering.
+    </ElsewhereSettings>
+  );
+}
+
 
 export default function SettingsPage() {
   const { workspaces, activeWorkspace, setActiveWorkspace, isLoading } =
@@ -140,92 +290,44 @@ export default function SettingsPage() {
         <Button onClick={() => setDialogOpen(true)}>New organization</Button>
       </header>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Your business</CardTitle>
-        </CardHeader>
-        <CardBody>
-          <p className="text-sm text-content-muted">
-            What your company sells, and — as it arrives — who buys it and who decides.
-            Signora needs this before it can tell you anything useful about anyone
-            else&apos;s company.{' '}
-            {/* **The two screens name each other rather than sharing a title.**
-                Reading lives at `Your business` in the sidebar, where everybody
-                including a member can reach it (CX-05); this card authors it.
-                Without this sentence an owner meets two pages headed *Your
-                business* and has to work out which one they are on. */}
-            Everyone in your organization can{' '}
-            <strong className="font-medium">read</strong>
-            {' '}
-            this under <em>Your business</em>; changing it is yours.
-          </p>
-          <SettingsLink href="/settings/products">Change what you sell</SettingsLink>
-        </CardBody>
-      </Card>
+      {/* 🔴 **The design's eleven sections replace six index cards.**
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Organization setup</CardTitle>
-        </CardHeader>
-        <CardBody>
-          <p className="text-sm text-content-muted">
-            Identity and defaults for everyone here — and, stated plainly, the settings
-            this product cannot change yet.
-          </p>
-          <SettingsLink href="/settings/organization">Organization setup</SettingsLink>
-        </CardBody>
-      </Card>
+          📁 `Design Documents/Fortune Signora Settings.html` draws ONE page —
+          a four-group navigation over eleven anchored sections, each with the
+          detail inline. ⛔ **This screen was an INDEX**: six cards, each a
+          title and a sentence and a link out, and **not one of the six appears
+          in the design.**
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Your team</CardTitle>
-        </CardHeader>
-        <CardBody>
-          <p className="text-sm text-content-muted">
-            Everyone who can see this organization&apos;s accounts, and everyone on their
-            way in. Invite a colleague, or withdraw an invitation.
-          </p>
-          <SettingsLink href="/settings/team">Your team</SettingsLink>
-        </CardBody>
-      </Card>
+          ⚠️ **The index was not wrong when it was built** — 📁 its own docstring
+          records the rule it exists for: *"a settings page ships with its card
+          here… a page with no entrance is not shipped."* ⚡ **That rule is
+          satisfied better by the design's navigation**, which reaches every
+          section including the ones nothing can fill.
 
-      {/**
-       * ⚡ **[TASK-1412](../../../../docs/BACKLOG.md) — the card that makes the
-       * audit log reachable**, and it ships in the same slice as the page it
-       * points at because **this file is where that rule was written**:
-       * *"a settings page ships with its card here… a page with no entrance is
-       * not shipped, whatever its own tests say."*
-       *
-       * 🔴 **The record existed and had no door.** The history rendered only
-       * inside `/settings/team`, so an administrator looking for an audit log
-       * had to already know it lived under *Your team* — **the Connection
-       * Center's defect exactly, one screen later.**
-       */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Audit log</CardTitle>
-        </CardHeader>
-        <CardBody>
-          <p className="text-sm text-content-muted">
-            Who changed what, and when. Every change to your team is recorded here and
-            nothing can edit it afterwards — not an administrator, and not Signora.
-          </p>
-          <SettingsLink href="/settings/audit">Audit log</SettingsLink>
-        </CardBody>
-      </Card>
+          ⛔ **Removed rather than kept beside the new structure**: an index and
+          a navigation over the same eleven destinations is two answers to
+          *what can I configure*, and 📁 [§2](../../../../CLAUDE.md) says the
+          second copy eventually contradicts the first. */}
+      <div className="grid gap-6 smalllaptop:grid-cols-[208px_minmax(0,1fr)] smalllaptop:items-start">
+        {/* 📁 **Sticky, like the design's own navigation and Account 360's
+            rail.** ⛔ **Below the laptop band it becomes an ordinary block
+            above the sections**, which is the same regime change
+            `OnThisPage` makes and for the same reason: 238px of navigation
+            beside 320px of content is not a layout. */}
+        <SettingsNav className="smalllaptop:sticky smalllaptop:top-4" />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Connections</CardTitle>
-        </CardHeader>
-        <CardBody>
-          <p className="text-sm text-content-muted">
-            The systems Signora reads from to work out which accounts deserve your
-            attention. Connect the ones your team already uses.
-          </p>
-          <SettingsLink href="/settings/connections">Connections</SettingsLink>
-        </CardBody>
-      </Card>
+        <div className="flex flex-col gap-6">
+          {SETTINGS_SECTIONS.map((section) => (
+            <SettingsSectionShell key={section.id} section={section}>
+              {section.supply === 'absent' ? (
+                <AbsentSettings section={section} />
+              ) : (
+                <SuppliedSettings id={section.id} />
+              )}
+            </SettingsSectionShell>
+          ))}
+        </div>
+      </div>
 
       <Card>
         <CardHeader>
