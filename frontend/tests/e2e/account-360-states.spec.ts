@@ -44,10 +44,10 @@ test.describe('Account 360 — a section changes state and stays honest', () => 
   test('@journey collapsing a section never hides its count', async ({ page }) => {
     await openScoredAccount(page);
 
-    const heading = page.getByRole('heading', { name: 'What contributed' });
+    const heading = page.getByRole('heading', { name: 'Account score' });
     await expect(heading).toBeVisible();
 
-    const toggle = page.getByRole('button', { name: 'What contributed' });
+    const toggle = page.getByRole('button', { name: 'Account score' });
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
 
     // ⚡ **The count beside the heading, read BEFORE the collapse** so the
@@ -74,7 +74,7 @@ test.describe('Account 360 — a section changes state and stays honest', () => 
   test('@journey a rail link opens the section it points at', async ({ page }) => {
     await openScoredAccount(page);
 
-    const toggle = page.getByRole('button', { name: 'What contributed' });
+    const toggle = page.getByRole('button', { name: 'Account score' });
     await toggle.click();
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
 
@@ -105,13 +105,27 @@ test.describe('Account 360 — a section changes state and stays honest', () => 
     // hidden. 📁 The design's rule is *"every SECTION is a labelled region with
     // a heading"*, so a content heading inside a shut body disappearing is the
     // feature rather than the defect. ✅ **Scoped to the rule it is enforcing.**
-    const sections = ['What contributed', 'What changed'];
+    // 🔴 **The design's names.** ⛔ **These read `['What contributed', 'What
+    // changed']`** — 📁 both **invented**: *"What contributed"* appears **0
+    // times in the 35-document snapshot** and *"What changed"* **0 times in
+    // Account 360**, while the design titles the two sections ***"Account
+    // score"*** and ***"Signals timeline"***.
+    //
+    // ⚠️ **This spec was already HALF-migrated and that is the useful part**:
+    // line 83 expected the rail link *"Account score"* while the heading three
+    // lines up expected *"What contributed"*, **so the rail and the section it
+    // points at were asserted under two different names.** 🔴 **The rename made
+    // that visible; it did not create it.**
+    const sections = ['Account score', 'Signals timeline'];
 
     for (const name of sections) {
-      // ⚡ **`exact`, and it matters** — the Signals body carries its own
-      // `h2` *"What changed, and who says so"*, **which is the very heading
-      // that leaves the outline when the body is hidden.** ⛔ A loose match
-      // resolves to both and cannot tell the section from its content.
+      // ⚡ **`exact`, and the reason has CHANGED with the rename.** ⛔ It used
+      // to be that *"What changed"* is a prefix of the Signals body's own `h2`
+      // *"What changed, and who says so"*, so a loose match resolved to both.
+      // ✅ **That collision is gone** — the section is *"Signals timeline"*
+      // now — ⚡ **and `exact` stays**: the body heading still leaves the
+      // outline when the body is hidden, and an exact match is what keeps this
+      // assertion about the SECTION rather than about whatever is inside it.
       await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
     }
 
@@ -125,10 +139,13 @@ test.describe('Account 360 — a section changes state and stays honest', () => 
     // toggle, so collapsing removed the section from landmark navigation
     // entirely.
     for (const name of sections) {
-      // ⚡ **`exact`, and it matters** — the Signals body carries its own
-      // `h2` *"What changed, and who says so"*, **which is the very heading
-      // that leaves the outline when the body is hidden.** ⛔ A loose match
-      // resolves to both and cannot tell the section from its content.
+      // ⚡ **`exact`, and the reason has CHANGED with the rename.** ⛔ It used
+      // to be that *"What changed"* is a prefix of the Signals body's own `h2`
+      // *"What changed, and who says so"*, so a loose match resolved to both.
+      // ✅ **That collision is gone** — the section is *"Signals timeline"*
+      // now — ⚡ **and `exact` stays**: the body heading still leaves the
+      // outline when the body is hidden, and an exact match is what keeps this
+      // assertion about the SECTION rather than about whatever is inside it.
       await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
     }
   });
