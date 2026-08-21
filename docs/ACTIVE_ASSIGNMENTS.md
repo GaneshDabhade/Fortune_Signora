@@ -71,7 +71,15 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-20, `fa3c78ab`
+## Current — as of 2026-08-21, `07f22c04`
+
+> ⚡ **Cycle 257 Closeout. 15 commits, QE, no migrations, EIGHT gates on the FIRST attempt.**
+>
+> ✅ **No board rows removed** — this cycle promoted no `TASK-nnn`; its subject is QE's own instruments.
+>
+> 🔴 **[B-1048](BUGS.md): QE reported a background job started when the script did not exist.** ⚡ **Twelve minutes lost to reading an empty log as a slow one.**
+>
+> ⛔ **Lane A untouched and never asked to wait.** ⚠️ **Five decisions pending: [C-111](LANE_COORDINATION.md), [C-112](LANE_COORDINATION.md), [B-1042](BUGS.md), [B-295](BUGS.md), [B-1034](BUGS.md) (settled).**
 
 > ⚡ **Cycle 256 Closeout. 3 commits, QE, no migrations, EIGHT gates on the FIRST attempt.**
 >

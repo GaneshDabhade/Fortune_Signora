@@ -1,5 +1,27 @@
 # Session Handoff
 
+> ## Cycle 257 — promoted `07f22c04`, 2026-08-21 · **a week of instrument work reaches `main`**
+>
+> **`main` = `07f22c04` = the certified commit.** `pytest` **5448** · coverage **95.03%** · **679 Security Invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · `frontend-suite` **3525/204** · `eslint` · `smoke` 24/165s · **DR passed** · **reversible in 5s beside the browser gate** · head **`0066`**. **15 commits, QE. ONE attempt.**
+>
+> ⛔ **Five things the next session must not misread.**
+>
+> ⓐ 🔴 **[B-1048](BUGS.md): `&` returns success for LAUNCHING, never for RUNNING.** ⛔ **QE reported *"browser gate started"* when the script did not exist** — a host reboot had cleared `/tmp` — **and polled a 0-byte log for twelve minutes reading *empty* as *still building*.** ✅ **After launching ANYTHING in the background, read its first output before reporting a start.** ⚠️ **Third instance this week of [B-142](BUGS.md)'s family.**
+>
+> ⓑ ⚠️ **The browser-gate procedure has no home outside `/tmp`.** ✅ **Reconstructible from [`RUNNING.md`](RUNNING.md) in a minute** — ⛔ **but nothing tells you it is missing.** 📁 **Same reboot as [C-112](LANE_COORDINATION.md).**
+>
+> ⓒ ⚡ **[B-1036](BUGS.md) has four cycles of evidence and the PATTERN is the finding.** **Six specs, and no two runs share the same set** — `connections:32`, `search-journey:18`, `top-bar-search:26`, `confidence:158`, `shell-values:48`, `business-setup:62`. ⛔ **A defect in one spec would recur in that spec.** ✅ **Diagnose with the 7-second re-seed** ([B-1044](BUGS.md)), ⛔ **never by manufacturing load.**
+>
+> ⓓ ⛔ **`migration-reversibility` and `dr` are STILL not in the certification record.** 📁 **[B-131](BUGS.md)'s field now names them on every run** — 8 gates this cycle, 9 last, `accessibility` correctly dropping with the diff. **Run both by hand every cycle; the record will not remind you, only record their absence.**
+>
+> ⓔ ⚠️ **[`QUALITY_ENGINEERING.md` §0f](QUALITY_ENGINEERING.md) is the standing rule now** — **classify a certification-speed change BEFORE implementing it.** 🔴 **Class ⑤, contract/semantic, means STOP and escalate**, and [B-1034](BUGS.md) and [C-111](LANE_COORDINATION.md) are the worked examples.
+>
+> **Open and mine:** [C-111](LANE_COORDINATION.md) · [C-112](LANE_COORDINATION.md) · [B-1039](BUGS.md) · [B-1040](BUGS.md) · [B-1036](BUGS.md) · [B-1042](BUGS.md) · [B-1043](BUGS.md) · [B-131](BUGS.md).
+>
+> **Open and NOT mine:** [B-295](BUGS.md) *(🔴 schema — `entity` has no FK to `workspace` while ten tables cascade from it; two designs already dismissed work on that cascade)* · [B-1045](BUGS.md) · [B-1035](BUGS.md) · [B-1033](BUGS.md) · [B-289](BUGS.md).
+>
+> **Next candidate:** ⛔ **none. `integration` == `main` and `lane-qe` is level.**
+
 > ## Cycle 256 — promoted `fa3c78ab`, 2026-08-20 · **the gate measurement that found nothing is being consumed**
 >
 > **`main` = `fa3c78ab` = the certified commit.** `pytest` **5444** · coverage **95.03%** · **679 Security Invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · `frontend-suite` **3525/204** · `eslint` · `smoke` 24/201s · **DR passed, 15 checks** · **reversible in 7s beside the browser gate** · head **`0066`**. **3 commits, QE. ONE attempt.**
