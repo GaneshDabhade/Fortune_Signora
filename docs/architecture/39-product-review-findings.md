@@ -1763,3 +1763,46 @@ Commissioned on the product owner's clarification that **Workspace has always be
 ✅ **Now covered:** Signal Center · the Loading state · keyboard focus and traversal · per-screen string coverage for seven shipped screens · a dark-theme invisible-surface sweep across nine routes.
 ⛔ **Still not covered:** **popovers, menus and tooltips** · the **collapsed and focus-mode** states · screenshots against the design renders · the *producer-backed-but-unsurfaced* direction of data honesty · **28 of 35 designs at element level**.
 
+
+## R13-09 · Overlays, tooltips and the responsive regimes — one finding, and the shell is correct to the pixel
+
+**2026-08-21, continued.** ⚡ **The three surfaces this audit had listed as never-opened were taken: menus and popovers, tooltips, and the App Shell's per-regime specifications.**
+
+### The one finding
+
+**[B-1059](../BUGS.md#b-1059)** 🟢 — **`account-menu.tsx`:164 uses `rounded-md` and renders 280×352 at 8px**, where Design System v2 §05 assigns menus **12px** (`--r-lg`) and gives 8px to *button, input, select, nav item*. ⚡ **Four of the five overlay containers in the product already measure 12px**, so it is one line and **the last instance of the class [499 §1](499-implementation-design-reconciliation.md) found in `Dialog` and [TASK-1453](../BACKLOG.md) fixed.**
+
+### The App Shell's regime table, measured number by number
+
+📁 **The design states four regimes with explicit widths. Every one was rendered and measured, with the utility panel opened by its documented `⌘.`:**
+
+| Regime | Design | Rail | Utility panel | |
+|---|---|---|---|---|
+| **Desktop** ≥1600 | rail 232 · panel 360, both open | **232** | **360** | ✅ |
+| **Laptop** 1280–1599 | rail 232 · panel 300 | **232** | **300** | ✅ |
+| **Small laptop** 1024–1279 | rail 56 icons + tooltips · panel → 28px tab rail | **56** | **28** | ✅ |
+| **Tablet & phone** <1024 | rail becomes a sheet · tables become row cards | **off-canvas at `x=-232`** | absent | ✅ |
+
+✅ **Content overlap is `0px` at every width** — the design's *"the content narrows and does not overlap"*, measured as geometry rather than trusted. ✅ **A `role="tabpanel"` exists whenever the panel is open** at all four widths.
+
+> ⚡ **This is the most exact conformance result in the audit.** **Seven numbers from a design document, seven matches, measured in a browser.**
+
+### Two candidates died here, and both were the instrument aiming at the wrong thing
+
+🔴 **"The utility panel never docks — it is 28px at every width."** ⛔ **Wrong.** **[TASK-1433](../BACKLOG.md)'s DoD says *"the panel docks at 300px, `⌘.` toggles it"* — the toggle is a keyboard shortcut and I had been clicking the tab.** ✅ **Pressing `⌘.` docks it to 300/360 with a tabpanel, and toggles it back.** ⚠️ **I read the promoted row's DoD before filing, which is what caught it.**
+
+🔴 **"No tooltips anywhere — the shared `Tooltip` has one importer."** ⛔ **Wrong, and it would have been a plausible P2.** 📁 **The App Shell asks for tooltips on the COLLAPSED rail specifically** — *"Collapsed items expose their label as an accessible name and a 300ms tooltip"* — **and I had hovered top-bar controls at a width where the rail is expanded.** ✅ **At 1100 the 55px rail shows a `role="tooltip"` reading *Home* after ≈375ms with `aria-label="Home"` on the anchor; at 1440 the expanded rail correctly shows none.** ⚠️ **375 against a 300ms specification is inside this instrument's 100ms sampling granularity and is NOT reported as a discrepancy.**
+
+⚡ **Both were caught the same way: by asking what the design actually specifies, and by reading the promoted row before writing one.**
+
+### Also verified and not filed
+
+✅ **Every overlay closes on `Escape`** and returns the document to zero overlays — workspace menu, notifications, account menu. ✅ **Workspace menu 340×131 @12px · notifications 400×166 @12px · system status and offline status @12px** — all matching §05. ✅ **The notifications popover is `role="dialog"`**, defensible for a panel carrying its own actions. ✅ **Below 1024 the table is gone** — `tables=0`, consistent with *"tables become row cards"*.
+
+⚠️ **[B-1055](../BUGS.md#b-1055) is sharpened rather than changed by this pass**: with the panel open `tabpanels=1`; collapsed, `tabpanels=0` **while the tabs remain in the tree**, which is exactly what that row reports.
+
+### Amendment to coverage
+
+✅ **Now covered:** menus · popovers · tooltips · the four responsive regimes at their stated widths · the utility panel's docked widths and overlap.
+⛔ **Still not covered:** **the collapsed and focus-mode section states** on Account 360 · screenshots against the design renders · the *producer-backed-but-unsurfaced* direction of data honesty · **28 of 35 designs at element level**.
+
