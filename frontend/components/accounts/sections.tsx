@@ -79,6 +79,7 @@ import { onThisPage, type AccountSection } from '@/lib/accounts/sections';
  */
 export function OnThisPage({
   anchored,
+  counts,
   className,
 }: {
   /**
@@ -108,6 +109,21 @@ export function OnThisPage({
    * of its own, **so there is no region for the rail to reach.**
    */
   anchored: readonly string[];
+  /**
+   * 🔴 **📁 The design gives every rail entry a COUNT**, and this rail had
+   * none — `Design Documents/Fortune Signora Account 360.html`:
+   * `<span style="margin-left:auto;font-size:10px;color:var(--ink-4);
+   * font-variant-numeric:tabular-nums">{{ p.count }}</span>`, and its own
+   * `pageNav` carries `['Signals timeline', '#signals', '6']`.
+   *
+   * ⚡ **Every one of these is already computed on the page** — the same figures
+   * `AccountSectionShell` puts in each section header — **so the rail was the
+   * only place they were dropped.** ⛔ **Nothing is derived here**: a section
+   * absent from the map renders no count rather than a zero, because 📁
+   * *a count is a measurement* ([B-1054](../../../docs/BUGS.md)) and the
+   * sections that cannot be filled have not measured anything.
+   */
+  counts?: Readonly<Record<string, number>>;
   className?: string;
 }) {
   const sections = onThisPage().filter((section) => anchored.includes(section.id));
@@ -152,7 +168,20 @@ export function OnThisPage({
               : 'text-content-subtle hover:text-content-muted',
           )}
         >
-          {section.label}
+          <span>{section.label}</span>
+          {/* ⚡ **`margin-left:auto` and tabular numerals**, the design's own
+              treatment. ⛔ **Absent rather than zero** where nothing counted.
+              ⚠️ **`text-2xs` (11px) where the design draws 10px** — 📁 ruling ②,
+              *nearest scale step, not arbitrary pixels*: `2xs` is the smallest
+              role §04 publishes, and the entry label above it takes the same
+              step for the same reason. **The design separates the two by size;
+              this separates them by colour**, which the design also does
+              (`--ink-4` against the entry's own ink). */}
+          {counts?.[section.id] === undefined ? null : (
+            <span className="ml-auto text-2xs tabular-nums text-content-subtle">
+              {counts[section.id]}
+            </span>
+          )}
         </a>
       ))}
     </nav>

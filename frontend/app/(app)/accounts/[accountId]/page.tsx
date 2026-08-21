@@ -786,6 +786,31 @@ export default function AccountBriefPage() {
       rail={
         score ? (
           <OnThisPage
+            // 🔴 **📁 The design gives every rail entry a count and this rail
+            //    dropped them all** — `pageNav` carries `['Signals timeline',
+            //    '#signals', '6']` and each `<a>` renders `{{ p.count }}` at
+            //    `margin-left:auto`.
+            //
+            // ⚡ **Every figure here is already computed on this page** — the
+            //    same ones `AccountSectionShell` puts in each section header —
+            //    so nothing is derived and nothing is fetched twice.
+            // ⛔ **A section whose read has not answered contributes NO key**,
+            //    so the rail shows no number rather than a zero: 📁
+            //    [B-1054](../../../../docs/BUGS.md), *a count is a
+            //    measurement*, and the sections nothing can fill have measured
+            //    nothing.
+            counts={{
+              ...(score?.contributions === undefined
+                ? {}
+                : { score: score.contributions.length }),
+              ...(observations.data === undefined
+                ? {}
+                : { signals: observations.data.length }),
+              ...(rendersCompetitors && competitors.data !== undefined
+                ? { competitors: competitors.data.competitors.length }
+                : {}),
+              ...(opportunity === undefined ? {} : { opportunities: 1 }),
+            }}
             // ⚡ **What this page actually renders**, in the design's order.
             // ⛔ **`score`, `signals` and `activity` are the supplied sections
             // that have a section here**; the seven absent ones all carry an id.
