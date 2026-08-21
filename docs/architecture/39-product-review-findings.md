@@ -1789,7 +1789,21 @@ Commissioned on the product owner's clarification that **Workspace has always be
 
 ### Two candidates died here, and both were the instrument aiming at the wrong thing
 
-🔴 **"The utility panel never docks — it is 28px at every width."** ⛔ **Wrong.** **[TASK-1433](../BACKLOG.md)'s DoD says *"the panel docks at 300px, `⌘.` toggles it"* — the toggle is a keyboard shortcut and I had been clicking the tab.** ✅ **Pressing `⌘.` docks it to 300/360 with a tabpanel, and toggles it back.** ⚠️ **I read the promoted row's DoD before filing, which is what caught it.**
+🔴 **"The utility panel never docks — it is 28px at every width."** ⛔ **The CONCLUSION was wrong.** **[TASK-1433](../BACKLOG.md)'s DoD says *"the panel docks at 300px, `⌘.` toggles it"* — the toggle is a keyboard shortcut and I had been clicking the tab.** ✅ **Pressing `⌘.` docks it to 300/360 with a tabpanel, and toggles it back.**
+
+> ### 🔴 CORRECTED 2026-08-21 — and this one is a FALSE NEGATIVE, which is a class this review had not been counting
+>
+> ⛔ **The observation underneath that dismissed candidate was TRUE and I discarded it.** 📁 **My own log**: `viewport 1920: panel before=28px tabFound=1 after={"w":28, "tabpanels":0}` — **I clicked the *Insights* tab, watched nothing happen, and moved on because `⌘.` worked.**
+>
+> 🔴 **Lane A treated the same behaviour as a defect and were right.** ⚡ **A visible 24px control that does nothing when clicked is broken whether or not a keyboard shortcut exists** — and their diagnosis is one layer below anything I measured: **`onTab` only changed an invisible selection, so the click had never done anything a person could see.**
+>
+> ⚠️ **I let a working alternative excuse a broken control.** ⛔ **"The documented path works" is not a reason to discard an observation; it is a reason to ask why the undocumented one does not.**
+>
+> ### What this changes about this review's own tally
+>
+> **Every figure published so far counts FALSE POSITIVES only** — candidates raised and killed. ⛔ **It says nothing about what was measured and wrongly dismissed**, and that is the more dangerous direction: **a false positive costs a lane an argument; a false negative ships.**
+>
+> 📁 **Known false negatives to date: one, this one, found by Lane A rather than by QE.** ⚠️ **That count is almost certainly not the true one** — **an audit cannot measure its own misses**, which is precisely why the second reader mattered here and why the tally should be quoted with this caveat attached.
 
 🔴 **"No tooltips anywhere — the shared `Tooltip` has one importer."** ⛔ **Wrong, and it would have been a plausible P2.** 📁 **The App Shell asks for tooltips on the COLLAPSED rail specifically** — *"Collapsed items expose their label as an accessible name and a 300ms tooltip"* — **and I had hovered top-bar controls at a width where the rail is expanded.** ✅ **At 1100 the 55px rail shows a `role="tooltip"` reading *Home* after ≈375ms with `aria-label="Home"` on the anchor; at 1440 the expanded rail correctly shows none.** ⚠️ **375 against a 300ms specification is inside this instrument's 100ms sampling granularity and is NOT reported as a discrepancy.**
 
