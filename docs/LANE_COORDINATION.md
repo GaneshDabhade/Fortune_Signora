@@ -15350,3 +15350,44 @@ if (!offline && queued.length === 0) return null;
 ### 📁 Why it is worth a row rather than a shrug
 
 **Third governance item this month whose cost is not a blocked slice but a *divided reading***, and the register's own standard is that an item exists when a lane cannot safely proceed without an answer. ⚠️ **A lane CAN proceed here — Lane A did, correctly.** ✅ **The row exists because the next lane may read the other sentence first**, and the two produce opposite behaviour in the same file.
+
+### C-1547 · The Settings screen draws a 16px card; the Design System assigns 12px to cards
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-21, during the Settings micro-level conformance pass |
+| **Owner** | **Product Office** — a disagreement between two final design documents |
+| **Status** | **`OPEN`** — ⚡ **nothing is blocked.** The implementation follows the Design System and is believed correct |
+| **Blocks** | Nothing. Raised so an auditor does not file it as a defect |
+
+📁 **`Fortune Signora Settings.dc.html`** draws every section card at
+`border-radius:16px` with a header at `padding:13px 18px`.
+
+📁 **`Fortune Signora Design System v2.dc.html`** §05 `radii` assigns:
+
+| | | |
+|---|---|---|
+| `8px` | `--r-md` | **Button, input, select, nav item, segmented option** |
+| `12px` | `--r-lg` | **Card, menu, popover, toast, chart container** |
+| `16px` | `--r-xl` | Table plane, dialog, drawer, assistant panel |
+
+⚡ **And §09 `Cards` says it in words** — *"12px radius"* — **drawing
+`padding:20px`.** ✅ **`components/ui/card.tsx` renders exactly that: 12px and
+20px.** ⛔ **So the shared primitive is right and the screen document is the
+outlier**; changing the card for this screen would break every other surface and
+breach §20c.
+
+⚠️ **The same shape applies to the section title.** The screen draws `13.5px`,
+the system's `Section` role is `18 / 1.3 / 600`, and `CardTitle` renders 16px —
+**three values, and no two agree.** ⛔ **Not changed**, for the same reason.
+
+⚡ **A third, smaller one, and the product already carries both sides**:
+`Column head` is `+0.06em` in the system and `0.07em` on this screen and on
+Account 360. `components/settings/sections.tsx` and `components/accounts/
+sections.tsx` use `0.07em`; `app/(onboarding)/onboarding/rail.tsx` uses `0.06em`.
+
+**What is actually being asked:** ⛔ **not a change** — a ruling on **which
+document wins for a shared primitive**, so that future conformance passes stop
+re-deriving it. 🔴 **Lane A's reading, offered as input only: the Design System
+governs the primitive and a screen document governs that screen's composition.**
+

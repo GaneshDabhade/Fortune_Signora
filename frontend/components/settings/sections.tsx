@@ -42,7 +42,16 @@ export function SettingsNav({ className }: { className?: string }) {
         <div key={group.label} className="flex flex-col">
           {/* 📁 *"10.5px / 600 / 0.07em / uppercase / --ink-4"* — ⚡ `text-2xs`
               is the nearest role §04 publishes and the tracking is the
-              design's own, the same pairing the Account 360 rail uses. */}
+              design's own, the same pairing the Account 360 rail uses.
+
+              ⚠️ **TWO DOCUMENTS DISAGREE BY 0.01em AND THIS FOLLOWS THE SCREEN.**
+              📁 **Design System v2 §04 `typeRows` gives `Column head` as
+              `11 / 1.4 / 600 / +0.06em / upper`**; 📁 **this screen and Account
+              360 both draw `0.07em`.** ⛔ **Not silently reconciled**: moving to
+              `0.06em` here would make Settings disagree with the Account 360
+              rail, which is the worse of the two inconsistencies.
+              ⚡ **`onboarding/rail.tsx` already uses `0.06em`**, so the product
+              currently carries both — recorded rather than resolved in code. */}
           <p className="px-2 pb-1.5 text-2xs font-semibold uppercase tracking-[0.07em] text-content-subtle">
             {group.label}
           </p>
@@ -55,7 +64,19 @@ export function SettingsNav({ className }: { className?: string }) {
               // around 12.5px type is 25px, so the floor is what it already
               // draws rather than something added to it.
               className={cn(
-                'flex min-h-6 items-center gap-2 rounded-md px-2 py-1.5 text-2xs transition-colors',
+                // 🔴 **`text-xs`, not `text-2xs`.** 📁 **The design sets the
+                // ITEM at `12.5px` and the GROUP LABEL at `10.5px`** — two
+                // sizes, and this rendered both at `--text-2xs` (11px), which
+                // flattened the hierarchy the nav is built on.
+                //
+                // ⛔ **NOT `text-label`, though that token is exactly 12.5px.**
+                // 📁 **`--text-label` carries the whole `Label` role — `12.5 /
+                // 1.45 / 600` — and the design draws this item at the DEFAULT
+                // weight**, so taking the token would state a role this element
+                // does not have and render it bold. ⚡ **12px against 12.5px is
+                // invisible; 400 against 600 is not.** ⚠️ `12.5px` as a literal
+                // would breach the token rule ([§20c](../../CLAUDE.md)).
+                'flex min-h-6 items-center gap-2 rounded-md px-2 py-1.5 text-xs transition-colors',
                 'coarse:min-h-11',
                 'text-content-muted hover:bg-surface-sunken hover:text-content',
               )}
@@ -86,10 +107,33 @@ export function SettingsSectionShell({
 }) {
   return (
     <section id={section.id} aria-labelledby={`${section.id}-heading`} className="scroll-mt-4">
+      {/* ⚠️ **The card is 12px and the Settings design draws 16px — and 12px is
+          CORRECT.** 📁 **Design System v2 §05 `radii` assigns `12px --r-lg` to
+          *"Card, menu, popover, toast, chart container"* and `16px --r-xl` to
+          *"Table plane, dialog, drawer, assistant panel"***, so this screen's
+          16px contradicts the system's own scale. ⚡ **§09 `Cards` states it in
+          words too — *"12px radius"* — and draws `padding:20px`, which is what
+          `CardHeader` renders.**
+
+          ⛔ **So this is NOT a divergence to fix, and `components/ui/card.tsx`
+          must not be restyled for this screen** ([§20c](../../CLAUDE.md)).
+          🔴 **Recorded as [C-1547](../../../docs/LANE_COORDINATION.md) because
+          an auditor comparing this screen to its own document will read 12 vs
+          16 as a defect** — which is exactly what happened here before the
+          system document was checked. */}
       <Card>
-        <CardHeader className="flex flex-col gap-0.5">
+        {/* 🔴 **This was `flex-col`, and the comment beside it asserted the
+            design put the meta *"beneath the title"*. ⛔ It does not.** 📁 The
+            design's section header is ONE row — `display:flex;
+            align-items:center; gap:10px; flex-wrap:wrap` — with the meta beside
+            the title, not under it. ⚠️ **A comment citing the design while
+            describing the implementation is the worst kind of wrong**, because
+            it stops the next reader checking.
+
+            ⚡ **`flex-wrap` is the design's own**, so a long meta wraps to its
+            own line on a narrow screen rather than crushing the title. */}
+        <CardHeader className="flex flex-wrap items-center gap-2.5">
           <CardTitle id={`${section.id}-heading`}>{section.title}</CardTitle>
-          {/* 📁 The design's meta line, beneath the title on every section. */}
           <p className="text-2xs text-content-subtle">{section.meta}</p>
         </CardHeader>
         <CardBody>{children}</CardBody>
