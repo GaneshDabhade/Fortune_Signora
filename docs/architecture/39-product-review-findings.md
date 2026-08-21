@@ -1683,3 +1683,41 @@ Commissioned on the product owner's clarification that **Workspace has always be
 
 ⚠️ **Scope of this measurement, stated:** three routes, 203 text nodes, **text only.** ⛔ **No focus-visible states, no hover states, no disabled text, no placeholder text, no non-text UI components beyond B-1050**, and no keyboard traversal.
 
+
+## R13-07 · Account 360, and the first fault-injection pass
+
+**2026-08-21, after a machine restart.** ⚡ **The environment rebuilt in minutes because the traps were written down; the audit resumed at the screen it had named.**
+
+**Design authority: [`Fortune Signora Account 360.dc.html`](../design-snapshot/screens/)** — 110KB, the largest screen document. **128 distinct visible strings extracted; the 34 that name a section or a header control tested against a rendered account.**
+
+| | |
+|---|---|
+| **Design elements present** | **13 of 34** — Account score · Customer health · Buying intent · Signals timeline · Research summary · Open opportunities · Contacts · Organisation chart · Relationship graph · Technology stack · Market signals · Meetings · *On this page* |
+| **Absent** | **21** — Competitors · Battlecards · Win rate · Recent activity · Tasks · Emails · Files · Notes · Custom fields · Historical timeline · Integrations & billing · Risk indicators · Recommendations · AI reasoning · Log activity · Book meeting · Brief me · Owner · Show reasoning · Confidence · Open all evidence |
+
+⛔ **None of the 21 is filed.** ⚠️ **A count is not a finding**: the sections the product has not built say so in the customer's own voice — *"An organisation chart is inferred from email, calendar and public sources. **Signora is not reading any of those yet**"* — and the reads behind the rest return **empty**, not wrong. 📁 **The gap is scope, and scope belongs to [`BACKLOG.md`](../BACKLOG.md), not to this register.**
+
+### The method that was new: induce the failure
+
+📁 **The design document specifies section states explicitly — Normal · Loading · **Error** (*"Contacts could not load"* · *Retry* · *Ask what changed* · `req_2b71-40cd`) · Empty · Collapsed · Focus mode.** ⚡ **An error state cannot be audited by looking at a healthy page**, so seven account reads were intercepted in turn and fulfilled with `500`, and each section was compared **healthy against failed on one tree**.
+
+| Forced failure | What renders | |
+|---|---|---|
+| **`…/score`** | The **page-level** *"Could not load this account"* — every section withdraws | ✅ **correct**, and it is the behaviour [B-207](../BUGS.md#b-207)'s withdrawal vindicated |
+| **`…/observations`** | ✅ *"Signora could not load what changed at this account. **Nothing has changed about the account** — reload to try again."* — 🔴 **above it, the count renders `0` where healthy renders `21`** | ⛔ **[B-1054](../BUGS.md#b-1054)** |
+| **`…/opportunity`** · **`…/buying-committee`** · **`…/competitors`** | unchanged — ⚡ **these return `[]` on this account, so a forced failure loses nothing and proves nothing** | ⚠️ **inconclusive, and recorded as such rather than as a pass** |
+| **Contacts · Org chart · Relationship graph** | unchanged — **capability copy that does not consume the read** | ✅ **correct** |
+
+⚡ **[B-1054](../BUGS.md#b-1054) is the whole yield, and it is a good one**: the prose is exemplary — it names the failure *and* removes the inference a reader would otherwise draw — **and the count beside the heading contradicts it with a number nobody measured.** 📁 **[P-A](../DOMAIN_DISCOVERY_REGISTER.md)'s quietest form: `0` rendered as a fact, in the line a scanner reads first.**
+
+### A sixth candidate died, and this one nearly shipped
+
+🔴 **The first sweep reported `observations`, `opportunity`, `buying-committee` and `account-identities` as having NO error state.** ⛔ **Wrong — the instrument waited 1500ms and read the pre-error render.** ✅ **Re-run with a healthy/failed pair on one tree, `observations` has an exemplary error state and the real defect is one badge.**
+
+⚠️ **Filed as written, that sweep would have been a 🔴 P1 against four sections that are mostly correct.** 📁 **Six of ten candidates in this audit have now died on re-measurement**, every one of them an instrument fault rather than a product fault — **which is the ratio worth remembering the next time a sweep looks conclusive.**
+
+### Amendment to coverage
+
+✅ **Now covered:** Account 360 at section level · the first fault-injection pass across seven reads · per-section error states.
+⛔ **Still not covered:** **33 of 35 designs** · popovers, menus, tooltips · keyboard traversal and focus order · the loading and collapsed/focus-mode states the design also specifies · screenshots against the design renders.
+

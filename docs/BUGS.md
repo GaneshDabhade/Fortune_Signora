@@ -17198,6 +17198,55 @@ ai:      'bg-ai-subtle text-ai'
 
 ---
 
+### B-1054 · 🟡 A failed read renders its count as `0` while the body correctly says the read failed
+
+| | |
+|---|---|
+| **Module** | `product_surface` — **Lane A** · [`frontend/app/(app)/accounts/[accountId]/page.tsx`](../frontend/app/(app)/accounts/[accountId]/page.tsx) — the *What changed* section |
+| **Severity** | 🟡 **P2** — the body tells the truth, so the customer can reach it; the **count states a false quantity in the line people scan** |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-21 by QE, UI conformance audit second pass, on `9448cfc3`, by **inducing the failure** rather than waiting for one |
+| **Route** | `/accounts/:accountId` |
+| **Surface** | Account 360 → *What changed* → the count beside the heading |
+
+**Current implementation.** With `GET …/accounts/{id}/observations` forced to **500**, the section renders:
+
+```
+What changed 0
+What changed, and who says so
+Signora could not load what changed at this account.
+Nothing has changed about the account — reload to try again.
+```
+
+**Healthy, the same heading reads `What changed 21`** — the endpoint returns `array(21)`.
+
+✅ **The prose is exemplary and is NOT what this row is about.** *"Signora could not load…"* names the failure, ***"Nothing has changed about the account"*** removes the inference a reader would otherwise draw, and *"reload to try again"* offers recovery. 📁 **That is [P-A](DOMAIN_DISCOVERY_REGISTER.md) satisfied.**
+
+🔴 **The count beside it is not.** **`0` is a measurement, and no measurement was obtained.** ⚡ **A reader scanning headings — which is what a count beside a heading is FOR — reads *nothing changed at this account*, which is the exact inference the sentence below it was written to prevent.** ⛔ **The section contradicts itself, and the half that is wrong is the half that is read first.**
+
+📁 **[P-A](DOMAIN_DISCOVERY_REGISTER.md)** — *a failed read must never render as an empty result.* ⚠️ **`0` IS the empty result**, rendered as a fact.
+
+**Evidence — measured both ways on one tree, by intercepting the response rather than by reasoning about the code:**
+
+| | Heading | Section body |
+|---|---|---|
+| **Healthy** | `What changed 21` | 21 observations, each with provider and age |
+| **`observations` → 500** | 🔴 **`What changed 0`** | ✅ *"Signora could not load what changed at this account."* |
+
+**Reproduction.** Sign in · open any account with observations · intercept `**/api/proxy/**` and fulfil any request whose path ends `/observations` with `500` · observe the heading render `What changed 0` above a body that says the read failed.
+
+**Acceptance criteria.**
+- When the observations read fails, the section renders **no count at all** — not `0`, and not a stale count from a previous render.
+- The count returns when the read succeeds.
+- A test asserts the failed case, ⚠️ **by inducing the failure**; a test that only checks the healthy path cannot see this.
+- ⛔ **Do not "fix" this by removing the body's error copy to match the count.** The prose is right; the number is wrong.
+
+> ⚠️ **Scope, stated so this row is not read as wider than it is.** **Three sibling behaviours were tested and are CORRECT, and none of them is being reported:** ✅ a `500` on `…/score` collapses to the **page-level** *"Could not load this account"*, which is the behaviour [B-207](#b-207)'s withdrawal vindicated · ✅ `…/opportunity` and `…/buying-committee` return **empty** on this account, so a forced failure there loses nothing and proves nothing · ✅ the *Contacts*, *Organisation chart* and *Relationship graph* sections render **capability copy** (*"Signora is not reading any of those yet"*) that correctly does not vary with a read they do not consume.
+>
+> ⛔ **An earlier sweep in this same audit reported `observations` as having NO error state at all. That was wrong** — the instrument waited 1500ms and read the pre-error render. **The finding survived only because it was measured again with a healthy/failed pair on one tree**, which is the method this row's acceptance criteria ask for.
+
+---
+
 ## Verified
 
 ### B-001 · `signal_profile` reads the wrong row as "current"
