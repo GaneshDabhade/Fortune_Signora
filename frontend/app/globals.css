@@ -47,6 +47,35 @@
     --color-accent-soft: 160 196 222;
     --color-accent-subtle: 230 241 248;
 
+    /* 🔴 **[B-1051](../../docs/BUGS.md) — five design roles with no token, and
+     * one implementation token that is right in light and wrong in dark.**
+     *
+     * ⚡ **The authority is unusually strong, and it is not the Design System
+     * document's prose**: 📁 **all 35 screen documents carry the same
+     * `tokens()` block**, and a script comparing them found **zero
+     * disagreements** on any of the 37 roles. ⛔ **That overturns this file's
+     * earlier reading** — recorded as ruling ① in `RESUME.md` — **that
+     * `--ink-4`, `--ai-ink` and `--ai-line` were "mock chrome" and only nine
+     * colour tokens were published.** ✅ **Unanimity across 35 documents IS the
+     * token layer**; the nine-token table in the prose is a summary of it.
+     *
+     * ⚠️ **The `-line` roles are NOT for badges.** 📁 **Measured: of 180
+     * badge-like tinted elements in the designs, 166 carry no border and 14
+     * do** — so a border on every badge would move away from the design, not
+     * toward it ([B-1052](../../docs/BUGS.md)). ✅ **What these serve is the
+     * tinted PANEL** — 📁 **87 tint-plus-line pairings** — and the repository's
+     * own consumers are already there, spelled as invented alphas:
+     * `border-warning/30`, `border-danger/30`, `border-accent/30`,
+     * `border-success/30` in `system-state.tsx`, `system-status.tsx` and
+     * `offline-status.tsx`. **These tokens replace the guess with the value.** */
+    --color-accent-ink: 19 78 118;
+    --color-accent-line: 200 221 238;
+    --color-ai-ink: 59 73 160;
+    --color-ai-line: 220 222 250;
+    --color-success-line: 201 230 218;
+    --color-warning-line: 239 220 192;
+    --color-danger-line: 242 213 209;
+
     /* Status. Each carries a subtle pair so a badge never has to guess. */
     --color-success: 31 122 92;
     --color-success-subtle: 232 245 240;
@@ -103,6 +132,16 @@
        fails to load. */
     --font-body: var(--font-archivo), "Archivo", system-ui, sans-serif;
     --ease: cubic-bezier(0.32, 0.72, 0, 1);
+
+    /* 📁 **Design System v2 §*Table*** — `--row-h: 44px; --row-h-compact: 34px`.
+     * ⚡ **The design's own names and its own values**, added because the
+     * repository expressed row density as PADDING and 📁 the Design Review is
+     * explicit that *"tables at 44px rows and 11.5px meta are why this product
+     * beats a CRM."* ⛔ **`py-3` around 14px type measured 49px** — five over,
+     * on every row of the book of accounts. ⚠️ **A height on a `td` is a
+     * MINIMUM**, so a wrapped cell still grows; what it fixes is the floor. */
+    --row-h: 44px;
+    --row-h-compact: 34px;
 
     --radius-xs: 0.25rem;
     --radius-sm: 0.375rem;
@@ -232,13 +271,36 @@
      *
      * `md` is the default a form control gets. `sm` is for controls that sit
      * inside a row of content rather than on their own line. */
+    /* 🔴 **`md` and `lg` were invented rather than taken from the design.**
+     * 📁 §10 Controls: *"Buttons and inputs move to 8px radius and **34px
+     * default height**"*, and its own specimen row draws `Large 40px` beside
+     * it. ⛔ **This scale said 40px and 44px** — the default control in the
+     * product was the design's LARGE, and its large was larger still.
+     *
+     * ✅ **`sm` stays at 32px and is not the design's 26px compact.** 📁 §17
+     * `2.5.8`: *"the 26px compact button keeps a 32px hit area"*, and the App
+     * Shell's own furniture is *"a 32px target with 8px separation"* — **32px
+     * is the target the design names for an inline control**, and this token is
+     * what every inline control in the frame is sized by.
+     *
+     * ⚠️ **44px did not disappear; it moved to where the design puts it.** 📁
+     * *"44px on touch"* is a POINTER rule, not a size step — it is applied to
+     * the shared control below rather than baked into a height every desktop
+     * screen would also inherit. */
     --control-sm: 2rem;
-    --control-md: 2.5rem;
-    --control-lg: 2.75rem;
+    --control-md: 2.125rem;
+    --control-lg: 2.5rem;
 
     /* Layout constants the shell depends on — here rather than in the
-     * shell, so the sidebar width is one edit and not three. */
-    --sidebar-width: 15rem;
+     * shell, so the top bar's height is one edit and not three.
+     *
+     * ⛔ **`--sidebar-width` is GONE and was not replaced with 232px.** ⚠️ **It
+     * read `15rem` — 240px — against the design's *"232px expanded, 56px
+     * collapsed"*, and it had no consumer**: the rail is sized from
+     * [`RAIL_WIDTH`](../lib/shell/rail.ts), which carries BOTH states and is
+     * what `app-shell.tsx` actually reads. ⚡ **One number, one home** — a
+     * second token holding a third value is the disagreement
+     * [§2](../../CLAUDE.md) exists to prevent, and this one was already wrong. */
     --topbar-height: 3.5rem;
 
     /* ⚡ **TASK-491 gap ⑦ — the authentication card's width becomes a token.**
@@ -264,8 +326,19 @@
   :root[data-theme='dark'] {
     --color-canvas: 13 20 24;
     --color-surface: 21 32 39;
-    --color-surface-raised: 27 39 47;
-    --color-surface-sunken: 13 20 24;
+    /* 🔴 **These two carried each other's neighbours** — measured against the
+     * Design System's dark `tokens()` block. 📁 It gives `--bg-rail: #101a1f`
+     * and `--sunken: #1b272f`; this file had `raised` at `#1b272f` — the
+     * SUNKEN value — and `sunken` at `#0d1418`, which is the CANVAS.
+     *
+     * ⛔ **Two consequences, both silent.** The rail ground and the page ground
+     * were the same colour in dark mode, so the frame lost the separation the
+     * light theme has; and every sunken surface — table headers, toolbars,
+     * segmented tracks — sat at the canvas value, so a *sunken* plane was not
+     * sunken at all. ⚡ **The light theme was always correct**, which is why
+     * nothing caught it: the roles are only wrong in one theme. */
+    --color-surface-raised: 16 26 31;
+    --color-surface-sunken: 27 39 47;
 
     --color-content: 234 240 243;
     --color-content-muted: 168 182 190;
@@ -277,10 +350,31 @@
     --color-border-strong: 101 115 124;
 
     --color-accent: 79 163 209;
-    --color-accent-hover: 156 207 232;
+    /* 🔴 **Two tokens that were correct in light and wrong in DARK**, found by
+     * generalising [B-1051](../../docs/BUGS.md)'s method to every mapped role.
+     * ⚠️ **`design-foundation.test.tsx` could not see them**: its `cssToken`
+     * reads the FIRST occurrence in this file, which is always the light block.
+     * ✅ **The guard now checks both themes**, which is what makes these the
+     * last two rather than the two that happened to be looked at.
+     *
+     * ⛔ **`--color-accent-hover` held `#9ccfe8`, which is the design's
+     * `--brand-ink`** — the readable-on-tint foreground, not the hover step.
+     * 📁 `--brand-strong` dark is `#7cc0e5`. **Light was already `#0f3d5c`, the
+     * design's value exactly**, which is why the mapping was never questioned.
+     *
+     * ⛔ **`--color-accent-soft` held `#1e4658`, which is `--brand-line`** —
+     * now a token of its own below. 📁 `--brand-soft` dark is `#2c6a8c`. */
+    --color-accent-hover: 124 192 229;
     --color-accent-contrast: 13 20 24;
-    --color-accent-soft: 30 70 88;
+    --color-accent-soft: 44 106 140;
     --color-accent-subtle: 20 48 62;
+    --color-accent-ink: 156 207 232;
+    --color-accent-line: 30 70 88;
+    --color-ai-ink: 179 187 242;
+    --color-ai-line: 43 49 89;
+    --color-success-line: 29 68 51;
+    --color-warning-line: 69 53 32;
+    --color-danger-line: 74 42 37;
 
     --color-success: 79 174 135;
     --color-success-subtle: 19 41 31;
@@ -358,11 +452,87 @@
     font-family: var(--font-body);
   }
 
-  /* Visible focus, once, globally. Every component inherits it rather than
-   * restating a ring — and no component can quietly omit one. */
+  /**
+   * 🔴 **[B-1058](../../docs/BUGS.md) — four focus treatments on one screen,
+   * and this rule was one of the two mechanisms producing them.**
+   *
+   * ⛔ **The defect is not either treatment; it is that BOTH exist.** 📁 QE
+   * measured four distinct `(outline, box-shadow)` pairs within 28 tab stops on
+   * each of three routes: this rule's solid accent outline, a `--brand-tint`
+   * ring, a ring with a white offset, and a link outline. ⚡ **Counted in
+   * `components/**`: `focus-visible:outline-none` ×55, `focus-visible:ring-2`
+   * ×49, `focus-visible:outline-2` ×64** — **a mechanism chosen per component.**
+   *
+   * ## ⚠️ The design's indicator is TWO parts, and the row named one of them
+   *
+   * 🔴 **QE's row reads *"a 3px tint ring, never an outline."* Measured, that is
+   * half of it.** ✅ **All 21 occurrences of `box-shadow:0 0 0 3px
+   * var(--brand-tint)` in the 35 documents ALSO carry `border:1px solid
+   * var(--brand)`** — 21 of 21, no exceptions.
+   *
+   * ⛔ **The distinction is not pedantic, it is the whole accessibility of the
+   * indicator.** `--brand-tint` is `#e6f1f8` against a `#faf8f6` page — **about
+   * 1.06:1, which is invisible.** ⚡ **`--brand` at `#134e76` is what carries
+   * the contrast**; the tint widens it to a 4px target. **A bare tint ring
+   * would have satisfied the row and failed `1.4.11`.**
+   *
+   * ## ✅ So: one mechanism, and it is the design's pair
+   *
+   * ⚡ **`outline` rather than `border` for the brand line** — a border changes
+   * the box and every focus would nudge the layout. **`outline-offset: 0`** puts
+   * it at the element's edge, where the design draws it, and the **4px** spread
+   * leaves exactly 3px of tint showing beyond the 1px line.
+   *
+   * ⚠️ **A real outline, not `2px solid transparent`.** ♿ **Windows High
+   * Contrast discards `box-shadow` and honours `outline`**, so a transparent
+   * outline with a shadow ring is no indicator at all there.
+   */
   :focus-visible {
-    outline: 2px solid rgb(var(--color-focus));
-    outline-offset: 2px;
+    outline: 1px solid rgb(var(--color-accent));
+    outline-offset: 0;
+    /**
+     * 🔴 **Composed through Tailwind's ring slot, not written over its shadow.**
+     *
+     * ⛔ **`box-shadow: 0 0 0 4px …` alone silently DELETED the halo on every
+     * element carrying a `shadow-*` class** — `box-shadow` is one property, and
+     * the later declaration wins outright. ⚡ **Measured in a browser rather
+     * than reasoned about**: after the first fix, Tab across `/signals` still
+     * produced **three** treatments, and the skip link was one of them — a
+     * correct 1px brand outline beside its own `--e3` cast and no tint at all.
+     *
+     * ✅ **Tailwind already composes `ring` and `shadow` through two custom
+     * properties**, so claiming the ring slot leaves the element's own shadow
+     * intact and puts the halo exactly where a ring belongs. ⚠️ **The fallbacks
+     * matter**: an element with no Tailwind shadow has neither variable set.
+     */
+    --tw-ring-shadow: 0 0 0 4px rgb(var(--color-accent-subtle));
+    box-shadow:
+      var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow),
+      var(--tw-shadow, 0 0 #0000);
+  }
+
+  /**
+   * ♿ **The ONE exception, and it is a mechanical one rather than a stylistic
+   * one** — 📁 [B-1058](../../docs/BUGS.md).
+   *
+   * ⛔ **Three composite controls focus something a person cannot see**: a
+   * `sr-only` radio inside a choice card, the same inside a segmented control,
+   * and a transparent `<select>` laid over a filter chip. ⚡ **The global rule
+   * still fires — on a 1px hidden input**, which is an indicator nobody
+   * perceives. **So the visible wrapper draws it instead.**
+   *
+   * ✅ **The same declaration, not a second treatment.** 🔴 **That is the whole
+   * point of the row**: four indicators existed because each component chose its
+   * own, and a component may still need to move WHERE the indicator is drawn
+   * without being allowed to change WHAT it is.
+   */
+  .focus-proxy:has(:focus-visible) {
+    outline: 1px solid rgb(var(--color-accent));
+    outline-offset: 0;
+    --tw-ring-shadow: 0 0 0 4px rgb(var(--color-accent-subtle));
+    box-shadow:
+      var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow),
+      var(--tw-shadow, 0 0 #0000);
   }
 
   /* Motion preference respected globally rather than per animation, where

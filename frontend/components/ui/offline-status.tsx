@@ -90,10 +90,15 @@ export function OfflineStatus({ className }: { className?: string }) {
         }
         data-offline={offline}
         className={cn(
-          'flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium',
-          'transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+          // 📁 §04 — the same *"auto × 32"* slot as `SystemStatus` beside it,
+          // and 📁 `2.5.8`'s 32px target. ⛔ **Two components share one slot**,
+          // so a pill an inch shorter than its neighbour is visible the moment
+          // both are on screen.
+          'flex h-control-sm items-center gap-2 whitespace-nowrap rounded-full border px-3',
+          'text-xs font-semibold coarse:min-h-11',
+          'transition-colors ',
           offline
-            ? 'border-warning/30 bg-warning-subtle text-warning'
+            ? 'border-warning-line bg-warning-subtle text-warning'
             : 'border-border bg-surface-sunken text-content-muted',
         )}
       >
@@ -119,9 +124,13 @@ export function OfflineStatus({ className }: { className?: string }) {
           <ol className="flex flex-col gap-2">
             {queued.map((edit) => (
               <li key={edit.id} className="flex items-baseline justify-between gap-3">
-                <span className="min-w-0 flex-1 truncate text-sm text-content">{edit.title}</span>
+                <span className="min-w-0 flex-1 truncate text-sm text-content">
+                  {edit.title}
+                </span>
                 {edit.meta === undefined ? null : (
-                  <span className="shrink-0 text-2xs text-content-subtle">{edit.meta}</span>
+                  <span className="shrink-0 text-2xs text-content-subtle">
+                    {edit.meta}
+                  </span>
                 )}
               </li>
             ))}

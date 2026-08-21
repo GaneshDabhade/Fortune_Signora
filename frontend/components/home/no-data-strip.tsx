@@ -49,7 +49,12 @@ export interface NoDataStripProps {
   readonly loading: boolean;
 }
 
-export function NoDataStrip({ systems, accounts, activation, loading }: NoDataStripProps) {
+export function NoDataStrip({
+  systems,
+  accounts,
+  activation,
+  loading,
+}: NoDataStripProps) {
   // ⛔ **Silent until both facts are known.** ⚡ A strip saying *"it returned no
   // opportunities"* while the count is still in flight would accuse a working
   // integration of emptiness on every slow connection — and it is the strip a
@@ -74,7 +79,7 @@ export function NoDataStrip({ systems, accounts, activation, loading }: NoDataSt
      */
     <div
       role="status"
-      className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-warning/30 bg-warning-subtle px-4 py-3"
+      className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-warning-line bg-warning-subtle px-4 py-3"
     >
       {/* 📁 The design's own mark for this state — `!` on a surface chip, warn
           tinted, distinct from the disconnected strip's danger tint. */}
@@ -96,7 +101,7 @@ export function NoDataStrip({ systems, accounts, activation, loading }: NoDataSt
           and health cards link into it and never restate a connection step"*. */}
       <a
         href="/settings/connections"
-        className="ml-auto inline-flex h-control-sm items-center rounded-md border border-border bg-surface px-3 text-2xs font-semibold text-content transition-colors hover:border-accent hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="ml-auto inline-flex h-control-sm items-center rounded-md border border-border bg-surface px-3 text-2xs font-semibold text-content transition-colors hover:border-accent hover:text-accent "
       >
         Check what is synced
       </a>

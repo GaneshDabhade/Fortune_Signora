@@ -77,7 +77,7 @@ export function AccountOwner({ assignment, members }: AccountOwnerProps) {
   // [C-1510](../../../docs/LANE_COORDINATION.md) asks the product owner
   // about. ⛔ **Rendering their raw id would show a customer a UUID; showing
   // nothing would hide that the account is held at all.**
-  return <span className="text-muted-foreground italic">No longer a member</span>;
+  return <span className="text-content-subtle italic">No longer a member</span>;
 }
 
 /**
@@ -89,5 +89,5 @@ export function AccountOwner({ assignment, members }: AccountOwnerProps) {
  * loading state comes to render as a claim.
  */
 export function UnassignedOwner() {
-  return <span className="text-muted-foreground">Unassigned</span>;
+  return <span className="text-content-subtle">Unassigned</span>;
 }

@@ -101,7 +101,8 @@ const ADMIN_ACTIONS: readonly { label: string; href: string }[] = [
 ];
 
 export function WorkspaceSwitcher({ collapsed = false }: { collapsed?: boolean }) {
-  const { workspaces, activeWorkspace, setActiveWorkspace, isLoading } = useWorkspaceContext();
+  const { workspaces, activeWorkspace, setActiveWorkspace, isLoading } =
+    useWorkspaceContext();
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState('');
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -178,7 +179,9 @@ export function WorkspaceSwitcher({ collapsed = false }: { collapsed?: boolean }
   });
 
   if (isLoading) {
-    return <div className="mx-3 mt-3 h-[38px] animate-pulse rounded-md bg-surface-sunken" />;
+    return (
+      <div className="mx-3 mt-3 h-[38px] animate-pulse rounded-md bg-surface-sunken" />
+    );
   }
   if (activeWorkspace === null) return null;
 
@@ -201,8 +204,6 @@ export function WorkspaceSwitcher({ collapsed = false }: { collapsed?: boolean }
         className={cn(
           'flex h-[38px] w-full items-center gap-2.5 rounded-md px-2 text-sm transition-colors',
           'hover:bg-surface-sunken',
-          'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent',
-          'focus-visible:ring-offset-[3px] focus-visible:ring-offset-accent-subtle',
           collapsed && 'justify-center px-0',
         )}
         title={collapsed ? activeWorkspace.name : undefined}
@@ -247,7 +248,7 @@ export function WorkspaceSwitcher({ collapsed = false }: { collapsed?: boolean }
                 // 📁 *"type to filter"* — and the label says organization.
                 aria-label="Filter organizations"
                 placeholder="Filter…"
-                className="h-8 w-full rounded-md bg-surface-sunken px-2.5 text-sm text-content placeholder:text-content-subtle focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
+                className="h-8 w-full rounded-md bg-surface-sunken px-2.5 text-sm text-content placeholder:text-content-subtle "
               />
             </div>
           ) : null}
@@ -270,7 +271,7 @@ export function WorkspaceSwitcher({ collapsed = false }: { collapsed?: boolean }
                       onClick={() => choose(workspace.id)}
                       className={cn(
                         'flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors',
-                        'focus-visible:outline-none focus-visible:bg-surface-sunken',
+                        ' focus-visible:bg-surface-sunken',
                         current
                           ? 'bg-accent-subtle font-semibold text-accent'
                           : 'text-content-muted hover:bg-surface-sunken hover:text-content',
@@ -280,7 +281,9 @@ export function WorkspaceSwitcher({ collapsed = false }: { collapsed?: boolean }
                         aria-hidden
                         className={cn(
                           'grid h-[22px] w-[22px] flex-none place-items-center rounded-md text-2xs font-semibold',
-                          current ? 'bg-accent text-accent-contrast' : 'bg-surface-sunken text-content-muted',
+                          current
+                            ? 'bg-accent text-accent-contrast'
+                            : 'bg-surface-sunken text-content-muted',
                         )}
                       >
                         {initialsFor(workspace.name)}
@@ -309,7 +312,7 @@ export function WorkspaceSwitcher({ collapsed = false }: { collapsed?: boolean }
                 href={action.href}
                 role="menuitem"
                 onClick={() => close(false)}
-                className="block px-3 py-2 text-sm text-content-muted transition-colors hover:bg-surface-sunken hover:text-content focus-visible:outline-none focus-visible:bg-surface-sunken"
+                className="block px-3 py-2 text-sm text-content-muted transition-colors hover:bg-surface-sunken hover:text-content focus-visible:bg-surface-sunken"
               >
                 {action.label}
               </Link>

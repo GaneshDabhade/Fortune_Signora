@@ -76,18 +76,19 @@ export function ResumeOnboarding() {
       className="flex flex-wrap items-center gap-3 border-b border-border-soft bg-surface-sunken px-5 py-2.5 text-sm"
     >
       <span className="text-content-muted">
-        Your setup is unfinished. Signora works better once it knows what you are trying to fix.
+        Your setup is unfinished. Signora works better once it knows what you are trying
+        to fix.
       </span>
       <Link
         href="/onboarding"
-        className="rounded font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        className="rounded font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent "
       >
         Finish setting up
       </Link>
       <button
         type="button"
         onClick={dismiss}
-        className="ml-auto rounded text-content-subtle underline underline-offset-4 transition-colors hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        className="ml-auto rounded text-content-subtle underline underline-offset-4 transition-colors hover:text-content "
       >
         Not now
       </button>

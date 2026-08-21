@@ -3,6 +3,8 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { tokenTable, type Theme } from '../support/design-snapshot';
+
 /**
  * TASK-490 — **the design foundation, verified against its canonical source.**
  *
@@ -26,10 +28,67 @@ const DESIGN: string = readFileSync(
 );
 const CSS: string = readFileSync(join(__dirname, '..', '..', 'app', 'globals.css'), 'utf8');
 
-/** The design's own `tokens()` block, light theme — the first definition wins. */
-function designToken(name: string): string {
-  const match = new RegExp(`'${name}'\\s*:\\s*'([^']*)'`).exec(DESIGN);
-  expect(match, `the design defines ${name}`).not.toBeNull();
+/**
+ * 🔴 **[B-1051](../../../docs/BUGS.md) — this file could only ever see one
+ * theme, and that is how two defects lived here.**
+ *
+ * ⛔ **`designToken` took the first match and `cssToken` took the first
+ * declaration**, and in both files the light block comes first. ⚡ **So every
+ * assertion below was a light-theme assertion wearing a role's name**, and
+ * `--color-accent-hover` (holding the design's `--brand-ink`) and
+ * `--color-accent-soft` (holding `--brand-line`) were correct in light and
+ * wrong in dark for as long as the mapping has existed.
+ *
+ * ✅ **Both halves are split by theme now**, and every mapping is asserted
+ * twice. ⚠️ **QE's own criterion, and it is the right one**: *"a test that
+ * only forbids literal colours is not sufficient — the assertion must be
+ * value-against-design"*, in **both** themes.
+ */
+/**
+ * 🔴 **The authority is ALL 35 screen documents, not the Design System file
+ * alone** — and that correction is what this row turned on.
+ *
+ * ⛔ **`Design System v2.dc.html` does not declare `--pos-line`, `--warn-line`
+ * or `--risk-line`; eighteen of the other screens do**, unanimously. ⚡ **So
+ * reading one document answers *is this role in the summary* rather than *what
+ * is this role's value***, and the first question is not the one a token guard
+ * is asking.
+ *
+ * ⚠️ **The extraction is NOT written here.** 📁
+ * [`tests/support/design-snapshot.ts`](../support/design-snapshot.ts) owns it,
+ * and this file imports it — ⛔ **because two lanes measuring the same 35
+ * documents already produced two different sets of numbers once**, and a
+ * second copy inside this repository would be the same failure at closer
+ * range. ✅ **The precedent is
+ * [`support/source.ts`](../support/source.ts)**, extracted for
+ * [B-252](../../../docs/BUGS.md) for exactly this reason.
+ */
+const DESIGN_TABLE = tokenTable();
+
+it('reads the token block from every screen document', () => {
+  // ⚡ **A guard that silently read one file would still pass every assertion
+  // below** — 📁 the truncation-that-reads-as-a-result failure this lane has
+  // now met four times.
+  expect(DESIGN_TABLE.read).toBeGreaterThanOrEqual(30);
+});
+
+it('proves the premise it relies on — the documents agree', () => {
+  // ⛔ **A disagreement is a finding, never a resolution.** ⚠️ Silently taking
+  // the first value is how a snapshot refresh becomes invisible.
+  expect(DESIGN_TABLE.conflicts).toEqual([]);
+});
+
+function designToken(name: string, theme: Theme = 'light'): string {
+  const pattern = new RegExp(`'${name}'\\s*:\\s*'([^']*)'`);
+  // ⚡ **Theme-independent roles live in the `base` object**, outside both
+  // blocks — `--font-body` and `--ease` are the same in light and dark, and the
+  // design says so by declaring them once. ⛔ **So the block is preferred and
+  // the document is the fallback**, rather than the document being searched
+  // first, which is the behaviour that hid the dark values.
+  const fromTable = DESIGN_TABLE.values[theme].get(name);
+  if (fromTable !== undefined) return fromTable;
+  const match = pattern.exec(DESIGN);
+  expect(match, `the design defines ${name} in ${theme}`).not.toBeNull();
   return match![1] ?? '';
 }
 
@@ -38,10 +97,27 @@ function hexToRgb(hex: string): string {
   return `${parseInt(h.slice(0, 2), 16)} ${parseInt(h.slice(2, 4), 16)} ${parseInt(h.slice(4, 6), 16)}`;
 }
 
-/** The light-theme value, which is the first occurrence in `globals.css`. */
-function cssToken(name: string): string {
-  const match = new RegExp(`${name}:\\s*([^;]+);`).exec(CSS);
-  expect(match, `globals.css defines ${name}`).not.toBeNull();
+/**
+ * ⚠️ **Comments are stripped first.** 📁 QE's own note on the method: a doc
+ * comment quoting `` `--line-soft: #eae5df` `` is indistinguishable from a
+ * declaration to a regex, and reading one as the other produces a finding that
+ * is not there.
+ */
+const CSS_BARE: string = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
+
+function themeBlock(theme: Theme): string {
+  const selector = theme === 'light' ? ':root {' : ":root[data-theme='dark'] {";
+  const start = CSS_BARE.indexOf(selector);
+  expect(start, `globals.css declares ${selector}`).toBeGreaterThan(-1);
+  const end = CSS_BARE.indexOf('\n  }', start);
+  return CSS_BARE.slice(start, end === -1 ? undefined : end);
+}
+
+const CSS_BLOCKS: Record<Theme, string> = { light: themeBlock('light'), dark: themeBlock('dark') };
+
+function cssToken(name: string, theme: Theme = 'light'): string {
+  const match = new RegExp(`${name}:\\s*([^;]+);`).exec(CSS_BLOCKS[theme]);
+  expect(match, `globals.css defines ${name} in ${theme}`).not.toBeNull();
   return (match![1] ?? '').trim();
 }
 
@@ -74,9 +150,65 @@ describe('the palette is the finalized one, value by value', () => {
   ];
 
   for (const [design, ours] of mapping) {
-    it(`${ours} is the design's ${design}`, () => {
-      expect(cssToken(ours)).toBe(hexToRgb(designToken(design)));
-    });
+    // ⛔ **Both themes.** 🔴 One theme is how `--color-accent-hover` and
+    // `--color-accent-soft` passed this file while holding another role's
+    // colour in dark ([B-1051](../../../docs/BUGS.md)).
+    for (const theme of ['light', 'dark'] as const) {
+      it(`${ours} is the design's ${design} in ${theme}`, () => {
+        expect(cssToken(ours, theme)).toBe(hexToRgb(designToken(design, theme)));
+      });
+    }
+  }
+
+  /**
+   * 🔴 **The ramp, asserted as a RAMP** — 📁 [B-1050](../../../docs/BUGS.md)'s
+   * own criterion: *"no two of canvas / surface / raised / sunken resolve to
+   * the same value in either theme."*
+   *
+   * ⚡ **A four-step ramp that loses a step still passes a value-by-value
+   * check if the values it holds are each some real token** — which is exactly
+   * how dark `sunken` came to be the canvas colour.
+   */
+  it('keeps four DISTINCT surface steps in both themes', () => {
+    const steps = [
+      '--color-canvas',
+      '--color-surface',
+      '--color-surface-raised',
+      '--color-surface-sunken',
+    ];
+    for (const theme of ['light', 'dark'] as const) {
+      const values = steps.map((token) => cssToken(token, theme));
+      expect(new Set(values).size, `${theme}: ${values.join(' | ')}`).toBe(steps.length);
+    }
+  });
+});
+
+/**
+ * 🔴 **[B-1051](../../../docs/BUGS.md) — five design roles had no token at all.**
+ *
+ * ⚡ **The authority is the 35 screen documents, not the Design System's prose
+ * table**: every one carries the same `tokens()` block, and a comparison across
+ * all of them finds zero disagreements. ⛔ **This corrects a ruling this lane
+ * had established** — that `--ai-ink` and `--ai-line` were "mock chrome" —
+ * **which was drawn from the summary table rather than from the token block.**
+ */
+describe('the roles the design publishes and the repository had no token for', () => {
+  const added: [string, string][] = [
+    ['--brand-ink', '--color-accent-ink'],
+    ['--brand-line', '--color-accent-line'],
+    ['--ai-ink', '--color-ai-ink'],
+    ['--ai-line', '--color-ai-line'],
+    ['--pos-line', '--color-success-line'],
+    ['--warn-line', '--color-warning-line'],
+    ['--risk-line', '--color-danger-line'],
+  ];
+
+  for (const [design, ours] of added) {
+    for (const theme of ['light', 'dark'] as const) {
+      it(`${ours} is the design's ${design} in ${theme}`, () => {
+        expect(cssToken(ours, theme)).toBe(hexToRgb(designToken(design, theme)));
+      });
+    }
   }
 });
 

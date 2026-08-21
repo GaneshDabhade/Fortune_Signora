@@ -122,7 +122,10 @@ export function NarrativeBlock({
     return (
       <section id={id} className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold text-content">In plain language</h2>
-        <div className="flex flex-col gap-2 rounded-md border border-border bg-surface-raised px-4 py-3.5" aria-hidden>
+        <div
+          className="flex flex-col gap-2 rounded-md border border-border bg-surface-raised px-4 py-3.5"
+          aria-hidden
+        >
           {Array.from({ length: skeletonRows(null) }, (_, row) => (
             <SkeletonText key={row} />
           ))}
@@ -225,7 +228,6 @@ export function NarrativeBlock({
 const NOT_WRITTEN =
   'Signora has not written one for this account yet. Everything above stands on its own — an explanation is written separately, and appears here once it has been.';
 
-
 /**
  * The panel with nothing in it, said in one line.
  *
@@ -287,7 +289,6 @@ function Grounding({
         'shrink-0 whitespace-nowrap rounded pt-0.5 text-xs tabular-nums',
         'text-content-muted underline decoration-dotted underline-offset-4',
         'transition-colors hover:text-content',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
       ].join(' ')}
     >
       {label}
@@ -398,8 +399,7 @@ function Provenance({ narration }: { narration: AccountNarration }) {
     <p className="border-t border-border pt-3 text-xs leading-5 text-content-subtle">
       Written by <span className="text-content-muted">{narration.model}</span> using{' '}
       <span className="text-content-muted">{narration.prompt}</span>. Every sentence is
-      restricted to facts the
-      pipeline computed —{' '}
+      restricted to facts the pipeline computed —{' '}
       <span className="text-content-muted">the model chose the words, not the facts</span>
       .
     </p>

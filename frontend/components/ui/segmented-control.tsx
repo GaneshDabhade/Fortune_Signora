@@ -59,7 +59,9 @@ export function SegmentedControl({
 
   return (
     <fieldset className={cn('flex flex-col gap-2', className)}>
-      <legend className={cn('text-sm font-medium text-content', legendHidden && 'sr-only')}>
+      <legend
+        className={cn('text-sm font-medium text-content', legendHidden && 'sr-only')}
+      >
         {legend}
       </legend>
       <div
@@ -80,7 +82,9 @@ export function SegmentedControl({
               htmlFor={inputId}
               className={cn(
                 'flex flex-1 cursor-pointer items-start gap-2 rounded px-3 py-2 text-sm transition-colors',
-                'focus-within:outline-none focus-within:ring-2 focus-within:ring-accent focus-within:ring-offset-1',
+                // ♿ **The radio inside is `sr-only`** — 📁
+                // [B-1058](../../../docs/BUGS.md), and see `choice-cards.tsx`.
+                'focus-proxy',
                 selected
                   ? 'border border-accent bg-surface font-semibold text-content shadow-sm'
                   : 'border border-transparent text-content-muted hover:text-content',
@@ -93,7 +97,10 @@ export function SegmentedControl({
                 value={segment.value}
                 checked={selected}
                 onChange={() => onChange(segment.value)}
-                className={cn('mt-0.5 h-3.5 w-3.5 shrink-0 accent-accent', !describes && 'sr-only')}
+                className={cn(
+                  'mt-0.5 h-3.5 w-3.5 shrink-0 accent-accent',
+                  !describes && 'sr-only',
+                )}
               />
               <span className="flex flex-col gap-0.5">
                 <span>{segment.label}</span>

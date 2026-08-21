@@ -3,7 +3,10 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { CAPABILITY_VALUE, systemName } from '@/components/integrations/connection-center';
+import {
+  CAPABILITY_VALUE,
+  systemName,
+} from '@/components/integrations/connection-center';
 import { cn } from '@/lib/design/cn';
 import { finishOnboarding } from '@/lib/api/onboarding';
 import type { IntegrationSystem, PersonPreferences } from '@/lib/api/types';
@@ -13,6 +16,7 @@ import { useChangePreferences, usePreferences } from '@/lib/query/hooks/preferen
 import { OnboardingShell } from '../onboarding-shell';
 import { OnboardingSkeleton } from './company-form';
 import { useOnboarding } from './use-onboarding';
+import { Button } from '@/components/ui';
 
 /**
  * **Screen `07 Connect & AI personalisation`** — [TASK-469](../../../../docs/BACKLOG.md).
@@ -98,18 +102,13 @@ export function ConnectForm() {
       description="Signora is read-only until you say otherwise. You can connect now, or skip and start with sample data until you're ready."
       actions={
         <>
-          <button
-            type="button"
-            onClick={finish}
-            disabled={isSaving}
-            className="inline-flex h-control-md items-center rounded-md bg-accent px-[18px] text-[13.5px] font-semibold text-accent-contrast shadow-sm transition-colors hover:bg-accent-hover disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-          >
+          <Button onClick={finish} disabled={isSaving}>
             {isSaving ? 'Finishing…' : 'Connect and finish'}
-          </button>
+          </Button>
           <button
             type="button"
             onClick={finish}
-            className="text-[13px] font-semibold text-content-subtle hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="text-sm font-semibold text-content-subtle hover:text-content "
           >
             {/* 📁 The design's words. ⚠️ **And they are true**: the Playground
                 is what a skipped workspace lands in. ⛔ A *"Skip"* that
@@ -197,8 +196,8 @@ function Connectors({
   if (failed) {
     return (
       <p role="alert" className="text-sm text-danger">
-        We could not read which systems you can connect. You can skip this and connect from
-        Settings later — nothing is lost.
+        We could not read which systems you can connect. You can skip this and connect
+        from Settings later — nothing is lost.
       </p>
     );
   }
@@ -206,8 +205,8 @@ function Connectors({
   if (systems.length === 0) {
     return (
       <p className="text-sm text-content-muted">
-        There is nothing to connect yet. Signora will work on the sample data you already have
-        until there is.
+        There is nothing to connect yet. Signora will work on the sample data you already
+        have until there is.
       </p>
     );
   }
@@ -224,19 +223,19 @@ function Connectors({
       {[...systems]
         .sort((a, b) => Number(b.connectable) - Number(a.connectable))
         .map((system) => (
-        <Connector
-          key={system.integration}
-          system={system}
-          busy={connecting === system.integration}
-          onConnect={() => onConnect(system.integration)}
-        />
-      ))}
+          <Connector
+            key={system.integration}
+            system={system}
+            busy={connecting === system.integration}
+            onConnect={() => onConnect(system.integration)}
+          />
+        ))}
     </div>
   );
 }
 
 /** 📁 *"padding:15px 16px; border-radius:12px"*, a 30px initial tile, the name,
- *  what it gives, and the action on the right. */
+ * what it gives, and the action on the right. */
 function Connector({
   system,
   busy,
@@ -252,7 +251,9 @@ function Connector({
     <div
       className={cn(
         'flex items-center gap-3 rounded-lg border px-4 py-[15px]',
-        system.working ? 'border-accent/40 bg-accent-subtle' : 'border-border-soft bg-surface',
+        system.working
+          ? 'border-accent/40 bg-accent-subtle'
+          : 'border-border-soft bg-surface',
       )}
     >
       {/* 📁 The design's 30px `--sunken` square with the system's initials.
@@ -264,14 +265,14 @@ function Connector({
         {initials(name)}
       </span>
       <div className="min-w-0">
-        <p className="truncate text-[13px] font-semibold text-content">{name}</p>
+        <p className="truncate text-sm font-semibold text-content">{name}</p>
         {/* 📁 The design's second line is *"Read-only · 3 objects"*. ⚡ **This
             says what the connection GIVES instead**, which is the rule
             `connection-center.tsx` already establishes and the reason
             `CAPABILITY_VALUE` is exported: *"Salesforce · Connected tells an
             administrator nothing they can act on."* ⛔ **And an object count
             would be a number nothing here measures.** */}
-        <p className="mt-0.5 text-[11.5px] leading-[1.4] text-content-subtle">
+        <p className="mt-0.5 text-2xs leading-[1.4] text-content-subtle">
           {system.capabilities.length === 0
             ? 'Read-only'
             : `Read-only · ${CAPABILITY_VALUE[system.capabilities[0]!].toLowerCase()}`}
@@ -282,17 +283,14 @@ function Connector({
           // ✅ Already connected — **the tile reports rather than offers.**
           <span className="text-xs font-semibold text-accent">Connected</span>
         ) : system.connectable ? (
-          <button
-            type="button"
-            onClick={onConnect}
-            disabled={busy}
-            className="inline-flex h-[30px] items-center rounded-md border border-border bg-surface px-3 text-xs font-semibold text-content transition-colors hover:border-accent hover:text-accent disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-          >
+          <Button variant="secondary" size="sm" onClick={onConnect} disabled={busy}>
             {busy ? 'Opening…' : 'Connect'}
-          </button>
+          </Button>
         ) : (
           // ⛔ **No dead button**, and the reason is said rather than implied.
-          <span className="text-xs font-semibold text-content-subtle">Not available yet</span>
+          <span className="text-xs font-semibold text-content-subtle">
+            Not available yet
+          </span>
         )}
       </div>
     </div>
@@ -302,8 +300,14 @@ function Connector({
 /** Two letters, so *Google Calendar* reads `GC` exactly as the design draws it. */
 function initials(name: string): string {
   const words = name.split(/\s+/).filter(Boolean);
-  return (words.length === 1 ? name.slice(0, 2) : words.slice(0, 2).map((w) => w[0]).join(''))
-    .toUpperCase();
+  return (
+    words.length === 1
+      ? name.slice(0, 2)
+      : words
+          .slice(0, 2)
+          .map((w) => w[0])
+          .join('')
+  ).toUpperCase();
 }
 
 /**
@@ -326,7 +330,10 @@ function Behaviour({
     // 📁 *"margin-top:24px; padding-top:22px; border-top:1px solid --line-soft"*.
     <section className="mt-6 border-t border-border-soft pt-[22px]">
       <div className="flex items-center gap-[9px]">
-        <span aria-hidden className="grid h-[22px] w-[22px] flex-none place-items-center rounded-sm bg-ai">
+        <span
+          aria-hidden
+          className="grid h-[22px] w-[22px] flex-none place-items-center rounded-sm bg-ai"
+        >
           <svg
             width="12"
             height="12"
@@ -415,7 +422,7 @@ function Row({
   return (
     <div className="flex items-start gap-[14px] border-b border-border-soft py-[13px]">
       <div className="min-w-0 flex-1">
-        <p className="text-[13px] font-semibold text-content">{title}</p>
+        <p className="text-sm font-semibold text-content">{title}</p>
         <p className="mt-[3px] text-xs leading-[1.5] text-content-muted">{detail}</p>
       </div>
       <div className="flex-none pt-0.5">{children}</div>
@@ -451,8 +458,10 @@ function Switch({
       onClick={() => onToggle(!on)}
       className={cn(
         'flex h-[22px] w-[38px] items-center rounded-full p-0.5 transition-colors',
-        'disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
-        on ? 'justify-end bg-accent' : 'justify-start bg-surface-sunken shadow-[inset_0_0_0_1px_rgb(var(--color-border))]',
+        'disabled:opacity-50 ',
+        on
+          ? 'justify-end bg-accent'
+          : 'justify-start bg-surface-sunken shadow-[inset_0_0_0_1px_rgb(var(--color-border))]',
       )}
     >
       <span aria-hidden className="h-[18px] w-[18px] rounded-full bg-surface shadow-sm" />
@@ -470,8 +479,8 @@ function Fixed({ children }: { children: React.ReactNode }) {
 }
 
 /** ⚠️ **The preferences read failed or has not landed.** ⛔ **A switch drawn
- *  off would claim the person had declined** — [P-A](../../../../docs/DOMAIN_DISCOVERY_REGISTER.md):
- *  a failed read must never render as an answer. */
+ * off would claim the person had declined** — [P-A](../../../../docs/DOMAIN_DISCOVERY_REGISTER.md):
+ * a failed read must never render as an answer. */
 function Unknown() {
   return (
     <span role="status" className="text-2xs font-semibold text-content-subtle">

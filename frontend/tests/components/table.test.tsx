@@ -173,12 +173,45 @@ describe('📁 rule ③ — inline editing', () => {
     expect(onCommit).not.toHaveBeenCalled();
   });
 
-  it('📁 the 6px ring appears on focus and is the affordance', () => {
-    // ⛔ The cell must read as ordinary text until focused — a permanently
-    // ringed cell would make every table look like a form.
+  /**
+   * 🔴 **This asserted `focus:ring-[6px]` — a CLASS NAME — and that is the
+   * shape of assertion [B-1058](../../../docs/BUGS.md) is about.**
+   *
+   * ⛔ **A class-name check cannot see that four focus treatments coexist**; it
+   * only sees that this component has one. ⚡ **Every one of the nine components
+   * that opted out of the global rule had a test just as green as this.**
+   *
+   * ## ⚠️ And the 6px was the design disagreeing with itself
+   *
+   * 📁 Design System v2's prose: *"Editable cells reveal a **6px** ring on
+   * focus."* 📁 **Its own inline-edit element, drawn:** `border:1px solid
+   * var(--brand); box-shadow:0 0 0 3px var(--brand-tint)` — **the same pair as
+   * every other focused control**, and `0 0 0 6px` appears **nowhere in any of
+   * the 35 documents**. ✅ **Recorded as
+   * [C-1540](../../../docs/LANE_COORDINATION.md)**; the markup is what ships.
+   *
+   * ✅ **What this asserts instead is the rule's actual content** — *ordinary
+   * text at rest, an affordance on focus* — **which survives a change of ring
+   * size and would fail if the cell ever looked like a form.**
+   */
+  it('📁 the cell reads as ordinary text at rest, and focus is the affordance', () => {
     const { input } = cell();
-    expect(input.className).toMatch(/focus:ring-\[6px\]/);
+
+    // ⛔ **No fill and no border of its own** — the two things that would make
+    // a table of these look like a form.
     expect(input.className).toContain('bg-transparent');
+    expect(input.className).not.toMatch(/\bborder\b/);
+    expect(input.className).not.toMatch(/\bbg-surface\b/);
+
+    // ⚡ **And it declares no focus treatment**, so it inherits the product's
+    // one indicator rather than drawing a second.
+    expect(input.className).not.toMatch(/(focus|focus-visible|focus-within):-?(outline|ring)/);
+    expect(input.className).not.toMatch(/\boutline-none\b/);
+
+    // ⚡ **The one thing focus DOES change here is stacking**, so the indicator
+    // is not painted under the neighbouring cells.
+    expect(input.className).toContain('focus:relative');
+    expect(input.className).toContain('focus:z-10');
   });
 });
 

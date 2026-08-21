@@ -57,8 +57,10 @@ export {
   type ToastTone,
   type ToastAction,
 } from './toast';
-export { Tabs, type TabsProps, type TabItem } from './tabs';
+export { Tabs, TabPanel, tabId, tabPanelId, type TabsProps, type TabItem } from './tabs';
 export { Avatar, initialsFor, type AvatarProps, type AvatarSize } from './avatar';
+export { IconButton, type IconButtonProps, type IconButtonSize } from './icon-button';
+export { FilterChip, type FilterChipProps, type FilterChipTone } from './filter-chip';
 export { Tooltip, TOOLTIP_DELAY_MS, type TooltipProps } from './tooltip';
 export {
   PageHeader,
@@ -82,7 +84,7 @@ export { SystemStatus } from './system-status';
 // environment. ✅ **It still lives in `components/ui` because it is a library
 // component and not a page-local variant** (§20c); callers import the file.
 export { RegionBoundary, MAX_ATTEMPTS } from './region-boundary';
-export { Skeleton, SkeletonText, type SkeletonTextProps } from './skeleton';
+export { LoadingRegion, Skeleton, SkeletonText, type SkeletonTextProps } from './skeleton';
 export {
   Table,
   TBody,

@@ -58,19 +58,43 @@ import { cn } from '@/lib/design/cn';
  */
 export type ColumnSpan = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
+/**
+ * 🔴 **The span applies from 1024 up, and below it every column is the full
+ * twelve** — 📁 the App Shell's `breakpoints` and Home's `viewports`, which
+ * agree on the number.
+ *
+ * ⚠️ **Measured on `/settings/team` at 390 × 844 before this line**: a
+ * `span={8}` column was **221px wide inside a 375px content region**, holding a
+ * card holding a table — **so the People table was legible in a 177px slot with
+ * 154px of the viewport left empty beside it.** ⛔ **The grid was a coordinate
+ * system that never changed coordinates**: `col-span-8` means eight twelfths at
+ * 1920 and eight twelfths at 320, and eight twelfths of a phone is not a
+ * column, it is a gutter with content in it.
+ *
+ * 📁 **The design states the transition twice and at the same width.** Home §09
+ * `viewports`: **`390` → *"1 col"*, `768` → *"1 col … the two-column split is
+ * dropped rather than compressed"*, `1024` → *"2 col"*.** App Shell §20 puts
+ * the same boundary at 1024 for the rail and the utility panel. ✅ **So
+ * `smalllaptop:` is the design's own answer, not a number chosen to fix a
+ * screenshot.**
+ *
+ * ⚡ **Every consumer inherits it.** 📁 `ReadingColumn` is nine screens —
+ * Settings and its five children, Business, Help and the account record — and
+ * none of them needed a change.
+ */
 const SPAN_CLASS: Readonly<Record<ColumnSpan, string>> = {
-  1: 'col-span-1',
-  2: 'col-span-2',
-  3: 'col-span-3',
-  4: 'col-span-4',
-  5: 'col-span-5',
-  6: 'col-span-6',
-  7: 'col-span-7',
-  8: 'col-span-8',
-  9: 'col-span-9',
-  10: 'col-span-10',
-  11: 'col-span-11',
-  12: 'col-span-12',
+  1: 'smalllaptop:col-span-1',
+  2: 'smalllaptop:col-span-2',
+  3: 'smalllaptop:col-span-3',
+  4: 'smalllaptop:col-span-4',
+  5: 'smalllaptop:col-span-5',
+  6: 'smalllaptop:col-span-6',
+  7: 'smalllaptop:col-span-7',
+  8: 'smalllaptop:col-span-8',
+  9: 'smalllaptop:col-span-9',
+  10: 'smalllaptop:col-span-10',
+  11: 'smalllaptop:col-span-11',
+  12: 'smalllaptop:col-span-12',
 };
 
 /**
@@ -177,7 +201,16 @@ export interface ColumnProps {
   className?: string;
 }
 
-/** ⚡ **One region on the twelve-column axis.** */
+/**
+ * ⚡ **One region on the twelve-column axis, from 1024 up.**
+ *
+ * ⛔ **`col-span-12` is the base and is unconditional**, so a column is full
+ * width on every viewport the design draws as one column — **and `min-w-0` is
+ * what lets a wide child (a table, a long word, a code block) shrink the column
+ * rather than push the grid past the viewport.** ⚠️ **Without it a `grid` track
+ * takes its `auto` minimum from its content**, which is the mechanism behind
+ * most *"a table broke the page"* reports.
+ */
 export function Column({ children, span, className }: ColumnProps) {
-  return <div className={cn(SPAN_CLASS[span], className)}>{children}</div>;
+  return <div className={cn('col-span-12 min-w-0', SPAN_CLASS[span], className)}>{children}</div>;
 }

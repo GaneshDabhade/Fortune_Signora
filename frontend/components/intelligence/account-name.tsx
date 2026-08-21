@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import { Skeleton } from '@/components/ui';
 import { cn } from '@/lib/design/cn';
 
@@ -38,14 +40,31 @@ export function AccountName({
   name,
   pending,
   absent,
+  href,
   className,
 }: {
   /** ⛔ `null` means **the identity surface says nobody has named it** — not
-   *  that the answer has not arrived. That is `pending`. */
+   * that the answer has not arrived. That is `pending`. */
   name: string | null;
   pending: boolean;
   /** What to render when the read has settled and there is no name. */
   absent: string;
+  /**
+   * 🔴 **Where this account's record lives** — 📁 `Design Documents/Signora
+   * Product Experience Map.html`: Account 360's entries are ***"row · search ·
+   * citation · **signal** · deep link"***, and the Signal Center's own row
+   * reads ***"the monitoring loop enters at the queue, **exits into
+   * accounts**."***
+   *
+   * ⛔ **The exit did not exist.** The Signal Center rendered this name as
+   * plain text, so a triager could disposition a signal and had no way to open
+   * the company it was about — **an approved entry point that led nowhere.**
+   *
+   * ⚡ **Optional, because a name is not always a destination**: a row that is
+   * already on the record it names must not link to itself, which is the same
+   * rule `EntityName` states for the brief.
+   */
+  href?: string;
   className?: string;
 }) {
   if (pending && name === null) {
@@ -54,5 +73,22 @@ export function AccountName({
        the reflow the skeleton exists to prevent. */
     return <Skeleton className={cn('inline-block h-4 w-32 align-middle', className)} />;
   }
-  return <span className={className}>{name ?? absent}</span>;
+  const label = name ?? absent;
+  if (href === undefined) return <span className={className}>{label}</span>;
+
+  return (
+    // ⚡ **The same link treatment `EntityName` gives a name**, so one company
+    // reads and behaves identically wherever it is offered.
+    // ♿ 📁 §17 `2.5.8` — the 24px floor, as everywhere else.
+    <Link
+      href={href}
+      className={cn(
+        'inline-flex min-h-6 items-center rounded transition-colors hover:text-accent',
+        'coarse:min-h-11',
+        className,
+      )}
+    >
+      {label}
+    </Link>
+  );
 }

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/design/cn';
 
 /**
@@ -112,7 +113,14 @@ function Actions({
   if (primaryAction === undefined && secondaryActions === undefined) return null;
 
   return (
-    <div className="flex flex-none items-center gap-2">
+    /* ⚡ **`flex-wrap`, and `flex-none` is gone.** ⛔ **`flex-none` was the
+       whole of the header's mobile defect**: measured at 390 × 844, the actions
+       kept their full width and the title column was left ~150px, so
+       *"Companies"* sat beside *"Export"* over a description running at
+       twenty-four characters a line. **A header's actions give way before its
+       title does** — they wrap under it, and if two of them cannot share a line
+       they wrap against each other. */
+    <div className="flex flex-wrap items-center gap-2">
       {secondaryActions}
       {/* ⚡ **The marker is what makes rule 03 assertable at runtime**, which
           the type alone cannot do for a caller that renders two buttons inside
@@ -138,8 +146,20 @@ export function PageHeader({
     // 📁 *"24px padding and a soft bottom hairline."*
     <header className={cn(PLANE, 'mb-6 p-6', className)}>
       {eyebrow !== undefined ? <div className="mb-2">{eyebrow}</div> : null}
-      <div className="flex items-start gap-4">
-        <div className="min-w-0 flex-1">
+      {/* 🔴 **The header's layout model, and it is intrinsic rather than
+          banded** — this row carried `flex items-start gap-4` with a
+          `flex-none` action group, which is a desktop row that never stops
+          being one.
+
+          ⚡ **`flex-wrap` plus a `basis` on the title is what makes it
+          responsive without a breakpoint**: the title asks for 16rem, and the
+          moment the container cannot give it that *and* fit the actions
+          alongside, the actions wrap beneath. ⛔ **No media query, so it is
+          correct at every width between the design's bands** rather than at the
+          four the bands name — and it reacts to the CONTAINER, so a header
+          inside a narrow column behaves like a header on a phone. */}
+      <div className="flex flex-wrap items-start gap-x-4 gap-y-3">
+        <div className="min-w-0 grow basis-64">
           {/* 📁 §04's `Title` role — 26px / 1.15 / 700 / −0.026em, all four
               numbers, which is why `text-title` is a tuple in the config. */}
           {/* ⚡ **One line, two elements** — 📁 the design sets the counts on
@@ -165,9 +185,46 @@ export function PageHeader({
 export interface RecordFact {
   label: string;
   value: ReactNode;
+  /**
+   * 🔴 **📁 §08's fact carries a SECOND term and this slot was missing** — the
+   * design draws every header fact as a value **and** a qualifier on one
+   * baseline: *"$1.24M **−12%**"*, *"12 Oct 2026 **69 days**"*, *"1,240 **91%
+   * active**"*.
+   *
+   * ⚡ **Optional, so every existing caller is unchanged** — ⛔ a fact whose
+   * qualifier has no producer renders exactly as it did before, rather than
+   * acquiring an empty second line.
+   */
+  delta?: ReactNode;
+  /**
+   * ⚠️ **The design colours a delta by judgement — `risk`, `warn`, `pos` — and
+   * that judgement is a PRODUCT rule, not a rendering one.**
+   *
+   * ⛔ **Defaults to neutral deliberately.** 📁 §08 draws *"69 days"* in `warn`,
+   * which implies a threshold at which a renewal becomes urgent — **nothing in
+   * the product defines one**, and picking a number here would invent the rule
+   * rather than render it. ✅ **A caller passes a tone only where a producer
+   * establishes the judgement.**
+   */
+  deltaTone?: 'neutral' | 'positive' | 'caution' | 'critical';
 }
 
-export interface RecordHeaderProps extends PageHeaderProps {
+/**
+ * ⛔ **`titleMeta` is removed rather than inherited, and that is a correction.**
+ *
+ * 🔴 **`RecordHeaderProps` extended `PageHeaderProps` whole, so `titleMeta` was
+ * a legal prop that `RecordHeader` never destructured** — **a caller could pass
+ * it, `tsc` would agree, and nothing would render.** 📁 [§2](../../../CLAUDE.md):
+ * *types should make incorrect architecture impossible*, and a prop that cannot
+ * work is the same defect class as a guard that cannot fail.
+ *
+ * ⚡ **Removed rather than implemented, because the design has no role for it
+ * here.** 📁 `titleMeta` is §08's PAGE header carrying a list's counts —
+ * *"8,412 total · 312 in view"* — and §04's RECORD header puts the status pill
+ * and the tag chips beside the title instead. **That slot exists and is called
+ * {@link RecordHeaderProps.status}.**
+ */
+export interface RecordHeaderProps extends Omit<PageHeaderProps, 'titleMeta'> {
   /**
    * 📁 *"identity"* — §08's 46px tile. ⛔ **Initials, not an image**: the
    * platform publishes no logo for an account, and a placeholder image is a
@@ -188,6 +245,30 @@ export interface RecordHeaderProps extends PageHeaderProps {
    * decision, which shell rule 01 forbids.
    */
   health?: ReactNode;
+  /**
+   * 📁 **§08's line under the actions** — *"Owner **M. Reinhardt** · CSM
+   * **P. Lund** · Synced 4m ago."*
+   *
+   * ⚡ **A slot rather than `owner`/`syncedAt` props**: the facts differ per
+   * record type, and a typed pair here would decide the wording — the same
+   * reasoning `titleMeta` already carries.
+   *
+   * ⛔ **Not `description`**, which renders a `<p>`: 📁 the record page's line
+   * is itself a paragraph (`Freshness`, `WorkflowStage`), and a `<p>` inside a
+   * `<p>` is closed by the parser, so the second half of the header would fall
+   * out of the header element.
+   */
+  meta?: ReactNode;
+  /**
+   * ⚡ **The name has not arrived yet.** ⛔ **The `<h1>` still renders** — 📁
+   * [B-313](../../../docs/BUGS.md) is that a record page with no level-1
+   * heading leaves every `<h2>` hanging under nothing, and a heading that
+   * appears a moment later is the same defect for as long as it lasts.
+   *
+   * ⚠️ **Absence is NOT loading.** A record nobody has named passes the
+   * identifier as `title`; this is only *the read is in flight*.
+   */
+  titleLoading?: boolean;
 }
 
 export function RecordHeader({
@@ -200,13 +281,18 @@ export function RecordHeader({
   status,
   facts,
   health,
+  meta,
+  titleLoading = false,
   className,
 }: RecordHeaderProps) {
   return (
     <header className={cn(PLANE, 'mb-6 p-6', className)}>
       {eyebrow !== undefined ? <div className="mb-3">{eyebrow}</div> : null}
 
-      <div className="flex items-start gap-4">
+      {/* ⚡ **The same intrinsic model as `PageHeader` above** — the identity
+          tile and the title travel together, and the actions wrap beneath them
+          when the row cannot hold all three. */}
+      <div className="flex flex-wrap items-start gap-x-4 gap-y-3">
         {initials !== undefined ? (
           // 📁 §08: 46px, 12px radius, brand tint. ⛔ `rounded-lg` is the 12px
           // token — **not `rounded-full`**, which §05 reserves for the avatar
@@ -219,9 +305,14 @@ export function RecordHeader({
           </span>
         ) : null}
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 grow basis-64">
           <div className="flex flex-wrap items-center gap-2.5">
-            <h1 className="min-w-0 truncate text-title text-content">{title}</h1>
+            {/* ⚡ **The element is unconditional; only its contents wait.** 📁
+                B-313 — the outline must never lose its level 1, not even for
+                the moment the identity read is in flight. */}
+            <h1 className="min-w-0 truncate text-title text-content">
+              {titleLoading ? <Skeleton className="h-7 w-56 max-w-full" /> : title}
+            </h1>
             {status}
           </div>
 
@@ -242,8 +333,29 @@ export function RecordHeader({
                       ⛔ **§08 draws this at 11.5px and that is not followed** —
                       C-1414: §04 is the type authority. */}
                   <dt className="text-label text-content-subtle">{fact.label}</dt>
-                  <dd className="mt-0.5 text-sm font-semibold tabular-nums text-content">
-                    {fact.value}
+                  {/* 📁 *"display:flex;align-items:baseline;gap:6px"* — the
+                      value and its qualifier share one baseline, so the eye
+                      reads them as one fact rather than two stacked lines. */}
+                  <dd className="mt-0.5 flex items-baseline gap-1.5">
+                    <span className="text-sm font-semibold tabular-nums text-content">
+                      {fact.value}
+                    </span>
+                    {fact.delta === undefined ? null : (
+                      <span
+                        className={cn(
+                          'text-2xs font-semibold',
+                          fact.deltaTone === 'positive'
+                            ? 'text-success'
+                            : fact.deltaTone === 'caution'
+                              ? 'text-warning'
+                              : fact.deltaTone === 'critical'
+                                ? 'text-danger'
+                                : 'text-content-subtle',
+                        )}
+                      >
+                        {fact.delta}
+                      </span>
+                    )}
                   </dd>
                 </div>
               ))}
@@ -251,7 +363,26 @@ export function RecordHeader({
           ) : null}
         </div>
 
-        <Actions primaryAction={primaryAction} secondaryActions={secondaryActions} />
+        {/* 📁 **§08 stacks the meta line beneath the actions and shares their
+            column** — *"Owner M. Reinhardt · CSM P. Lund · Synced 4m ago."*
+
+            ⛔ **Left-aligned, and §08's right edge is deliberately NOT
+            reproduced.** ⚠️ **Measured on Company 360 at 1440**: the header sits
+            in a 737px reading column, the title asks for its `basis-64` and
+            grows, so **this block wraps onto its own full-width row** — and a
+            right-aligned meta line under a left-aligned button row reads as two
+            elements that lost each other. ⚡ **`items-end` is only ever correct
+            while the block is genuinely the right-hand column**, which flexbox
+            cannot tell it, so the alignment that is right at every width wins
+            over the one that is right at one. */}
+        {meta === undefined ? (
+          <Actions primaryAction={primaryAction} secondaryActions={secondaryActions} />
+        ) : (
+          <div className="flex min-w-0 flex-col items-start gap-2">
+            <Actions primaryAction={primaryAction} secondaryActions={secondaryActions} />
+            <div className="min-w-0 text-sm text-content-muted">{meta}</div>
+          </div>
+        )}
       </div>
 
       {health !== undefined ? (

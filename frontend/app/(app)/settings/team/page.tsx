@@ -61,6 +61,7 @@ import {
 import { useSession } from '@/lib/auth/client';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 import { ReadingColumn } from '../../reading-column';
+import { usePublishBreadcrumb } from '@/components/shell/breadcrumb-trail';
 
 /**
  * Your team — **an administrator's workspace, not a table of users.**
@@ -89,6 +90,25 @@ import { ReadingColumn } from '../../reading-column';
  * revoking are all administrator operations and need none of that.
  */
 export default function TeamPage() {
+  /**
+   * 📁 **§05 Breadcrumbs — *"Mandatory below the first level, because most
+   * sessions start from a deep link in Slack or email."***
+   *
+   * ⛔ **Six routes below the first level published nothing**, so the top bar's
+   * slot rendered empty on every settings screen and a person arriving from a
+   * link had no route back up. ⚡ **The channel already existed and was
+   * correct** — [`usePublishBreadcrumb`](../../../../components/shell/breadcrumb-trail.tsx),
+   * which `accounts` has used since it shipped — **so this is a consumer
+   * adopting the canonical surface, not a new one.**
+   *
+   * 📁 *"They mirror the data hierarchy, not the click path"*, and the last
+   * crumb is the current record and is not a link.
+   */
+  usePublishBreadcrumb([
+    { label: 'Settings', kind: 'link', href: '/settings' },
+    { label: 'Team', kind: 'current' },
+  ]);
+
   const { activeWorkspace, isLoading: workspacesLoading } = useWorkspaceContext();
   const workspaceId = activeWorkspace?.id ?? null;
   const { data, isLoading, isError } = useInvitations(workspaceId);
@@ -202,7 +222,7 @@ export default function TeamPage() {
     <ReadingColumn>
       <header className="flex flex-col gap-3 phone:flex-row phone:items-start phone:justify-between phone:gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-content">Your team</h1>
+          <h1 className="text-title text-content">Your team</h1>
           {/* **The answer to *is this right?*, before any row.** How many
               people, and how many can administer Signora — the second is what
               makes the last-owner refusal comprehensible before anybody meets
@@ -355,13 +375,18 @@ export default function TeamPage() {
                       <button
                         type="button"
                         onClick={() => setInspecting(one)}
-                        className="mt-1 block text-xs text-content-subtle underline underline-offset-2 hover:text-content"
+                        /* ♿ 📁 `2.5.8` — this measured `130 × 18`, fifty times
+                           on one screen. ⛔ **`block` on a text link gives it the
+                           line box's height and nothing more.** ⚡ `min-h-6` is
+                           the floor as a token; the treatment stays a link,
+                           which is what the design draws here. */
+                        className="mt-1 inline-flex min-h-6 items-center rounded text-xs text-content-subtle underline underline-offset-2 hover:text-content coarse:min-h-11"
                       >
                         See what they can do
                       </button>
                     </TD>
                     <TD>
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         {/* **Absent, never disabled**, and absent for two
                             different reasons: a member is not offered a control
                             the server would refuse, and nobody is offered one
@@ -515,7 +540,7 @@ export default function TeamPage() {
                         // offers both, and an administrator chasing a
                         // forgotten invitation reaches for the recoverable one
                         // first. Withdrawing is the deliberate second choice.
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                           <Button
                             variant="secondary"
                             size="sm"

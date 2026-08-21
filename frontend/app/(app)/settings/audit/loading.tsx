@@ -9,5 +9,5 @@ import { SkeletonText } from '@/components/ui';
  * state**: the error path belongs to the read.
  */
 export default function Loading() {
-  return <SkeletonText lines={6} />;
+  return <SkeletonText lines={6} label="the audit log" />;
 }

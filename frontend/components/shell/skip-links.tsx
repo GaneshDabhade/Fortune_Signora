@@ -73,7 +73,6 @@ export function SkipLinks() {
             'focus:text-sm focus:font-medium focus:text-content focus:shadow-lg',
             // 📁 Rule 2.4.7 — the same 2px ring at 2px offset as everything
             // else in the shell.
-            'focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-accent',
           )}
         >
           {link.label}

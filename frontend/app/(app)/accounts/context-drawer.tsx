@@ -2,8 +2,15 @@
 
 import Link from 'next/link';
 
-import { AccountOwner, UnassignedOwner, type AccountOwnerProps } from '@/components/accounts/account-owner';
-import { AccountSegments, type AccountSegmentsProps } from '@/components/accounts/account-segments';
+import {
+  AccountOwner,
+  UnassignedOwner,
+  type AccountOwnerProps,
+} from '@/components/accounts/account-owner';
+import {
+  AccountSegments,
+  type AccountSegmentsProps,
+} from '@/components/accounts/account-segments';
 import { NothingSaid, StageBadge } from '@/components/accounts/account-commercial';
 import { AccountTags } from '@/components/accounts/account-tags';
 import { formatDay } from '@/components/intelligence/dates';
@@ -67,15 +74,15 @@ export function ContextDrawer({
   open: boolean;
   onClose: () => void;
   /** ⛔ **The assignment and the roster, not a resolved name.** ⚡ **`AccountOwner`
-   *  already turns one into the other** — ADR-0411 stores a reference precisely
-   *  so a name is never duplicated, and resolving it a second time here would
-   *  be the second representation [§2](../../../../CLAUDE.md) forbids. */
+   * already turns one into the other** — ADR-0411 stores a reference precisely
+   * so a name is never duplicated, and resolving it a second time here would
+   * be the second representation [§2](../../../../CLAUDE.md) forbids. */
   assignment: AccountOwnerProps['assignment'];
   members: AccountOwnerProps['members'];
   segments: AccountSegmentsProps['membership'];
   /** ⚡ **The vocabulary the membership's ids resolve against** — passed in
-   *  because the page already read it and a second fetch would be a second
-   *  answer. */
+   * because the page already read it and a second fetch would be a second
+   * answer. */
   vocabulary: AccountSegmentsProps['segments'];
   tags: Parameters<typeof AccountTags>[0]['tags'];
 }) {
@@ -97,7 +104,7 @@ export function ContextDrawer({
             </span>
             <Link
               href={`/accounts/${row.account.account_id}`}
-              className="ml-auto text-xs font-semibold text-accent hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="ml-auto text-xs font-semibold text-accent hover:underline "
             >
               Open record
             </Link>
@@ -205,7 +212,9 @@ function Fact({
       <dt className="text-content-subtle">{label}</dt>
       <dd
         className={
-          numeric ? 'font-semibold tabular-nums text-content' : 'font-semibold text-content'
+          numeric
+            ? 'font-semibold tabular-nums text-content'
+            : 'font-semibold text-content'
         }
       >
         {children}

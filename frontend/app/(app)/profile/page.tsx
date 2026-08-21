@@ -30,7 +30,7 @@ export default async function ProfilePage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold tracking-tight text-content">Your profile</h1>
+      <h1 className="text-title text-content">Your profile</h1>
 
       {/* 🔴 **The design's `ProfileShell` — a rail and one section beside it.**
 
@@ -52,13 +52,13 @@ export default async function ProfilePage() {
        * all* for a route no screen links to.
        */}
       <Link
-        className="rounded-lg border border-border bg-surface p-5 hover:bg-surface-sunken focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="rounded-lg border border-border bg-surface p-5 hover:bg-surface-sunken "
         href="/profile/security"
       >
         <span className="block text-base font-semibold text-content">Security</span>
         <span className="mt-1 block text-sm text-content-muted">
-          Your password, your second factors, and every session signed in as you — including
-          the ones you can end.
+          Your password, your second factors, and every session signed in as you —
+          including the ones you can end.
         </span>
       </Link>
     </div>

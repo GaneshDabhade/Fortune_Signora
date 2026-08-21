@@ -129,24 +129,28 @@ export function InviteTheTeamCard() {
             aria-hidden
             className={cn(
               'flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-2xs font-semibold',
-              done ? 'bg-success text-white' : 'border border-border text-content-subtle',
+              done
+                ? 'bg-success text-accent-contrast'
+                : 'border border-border text-content-subtle',
             )}
           >
             {done ? <Check className="h-3 w-3" /> : '3'}
           </span>
           <h2 className="text-sm font-semibold text-content">Invite the team</h2>
-          <span className="text-2xs text-content-subtle">{done ? 'Complete' : 'Optional'}</span>
+          <span className="text-2xs text-content-subtle">
+            {done ? 'Complete' : 'Optional'}
+          </span>
         </div>
 
         {/* ⚠️ **The design writes *"a workspace of one"* and this says
-            *organization*, deliberately.** 📁 [ADR-0034]: *"a customer says
+          *organization*, deliberately.** 📁 [ADR-0034]: *"a customer says
             organization, the platform says workspace"*, and the translation
             lives at the frontend edge — ⛔ **a design mock is not exempt from
             it**, and `vocabulary.test.tsx` caught this sentence before it
             shipped. */}
         <p className="text-sm leading-6 text-content-muted">
-          Signora scores relationships, so an organization with one person in it measures very
-          little.
+          Signora scores relationships, so an organization with one person in it measures
+          very little.
         </p>
         <p className="text-2xs text-content-subtle">
           Not blocking — you can do this at any time from Team Management.
@@ -155,7 +159,7 @@ export function InviteTheTeamCard() {
         <div className="flex items-center gap-3">
           <Link
             href="/settings/team"
-            className="w-fit rounded border border-border px-3 py-1.5 text-sm text-content hover:bg-surface-sunken focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="w-fit rounded border border-border px-3 py-1.5 text-sm text-content hover:bg-surface-sunken "
           >
             {done ? 'Manage the team' : 'Invite people'}
           </Link>
@@ -168,7 +172,7 @@ export function InviteTheTeamCard() {
               type="button"
               onClick={() => skip.mutate(true)}
               disabled={skip.isPending}
-              className="rounded text-sm text-content-subtle underline decoration-border underline-offset-4 hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed"
+              className="rounded text-sm text-content-subtle underline decoration-border underline-offset-4 hover:text-content disabled:cursor-not-allowed"
             >
               Skip for now
             </button>
@@ -231,7 +235,9 @@ function Step({ id }: { id: 'connect-a-crm' | 'connect-calls' }) {
             aria-hidden
             className={cn(
               'flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-2xs font-semibold',
-              done ? 'bg-success text-white' : 'border border-border text-content-subtle',
+              done
+                ? 'bg-success text-accent-contrast'
+                : 'border border-border text-content-subtle',
             )}
           >
             {done ? <Check className="h-3 w-3" /> : id === 'connect-a-crm' ? '1' : '2'}
@@ -248,7 +254,7 @@ function Step({ id }: { id: 'connect-a-crm' | 'connect-calls' }) {
              its primary."*** */
           <Link
             href="/settings/connections"
-            className="w-fit rounded text-sm text-accent underline decoration-border underline-offset-4 hover:decoration-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="w-fit rounded text-sm text-accent underline decoration-border underline-offset-4 hover:decoration-accent "
           >
             Review mapping
           </Link>
@@ -257,7 +263,7 @@ function Step({ id }: { id: 'connect-a-crm' | 'connect-calls' }) {
              wizard or an OAuth step."* */
           <Link
             href="/settings/connections"
-            className="w-fit rounded bg-accent px-3 py-1.5 text-sm font-medium text-accent-contrast hover:bg-accent-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="w-fit rounded bg-accent px-3 py-1.5 text-sm font-medium text-accent-contrast hover:bg-accent-hover "
           >
             {copy.action}
           </Link>

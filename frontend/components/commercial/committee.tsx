@@ -295,7 +295,7 @@ function CommitteeDialog({
                 <button
                   type="button"
                   aria-label={`Remove ${role.title}`}
-                  className="rounded text-content-subtle transition-colors hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                  className="rounded text-content-subtle transition-colors hover:text-content "
                   onClick={() =>
                     setRoles(roles.filter((other) => other.title !== role.title))
                   }

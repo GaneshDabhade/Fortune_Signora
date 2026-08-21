@@ -5,6 +5,7 @@ import { CommercialFocusEditor } from '@/components/commercial/focus';
 import { CompetitorsEditor } from '@/components/commercial/competitors';
 import { TargetAccountsEditor } from '@/components/commercial/target-accounts';
 import { IcpEditor } from '@/components/commercial/icp';
+import { IcpPerformance } from '@/components/commercial/icp-performance';
 import { SegmentList } from '@/components/commercial/segments';
 import { ProductCatalogEditor } from '@/components/commercial/products';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
@@ -20,6 +21,7 @@ import {
 } from '@/lib/query/hooks/commercial';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 import { ReadingColumn } from '../../reading-column';
+import { usePublishBreadcrumb } from '@/components/shell/breadcrumb-trail';
 
 /**
  * What this organization sells.
@@ -38,6 +40,25 @@ import { ReadingColumn } from '../../reading-column';
  * is the courtesy, never the enforcement.
  */
 export default function ProductsPage() {
+  /**
+   * 📁 **§05 Breadcrumbs — *"Mandatory below the first level, because most
+   * sessions start from a deep link in Slack or email."***
+   *
+   * ⛔ **Six routes below the first level published nothing**, so the top bar's
+   * slot rendered empty on every settings screen and a person arriving from a
+   * link had no route back up. ⚡ **The channel already existed and was
+   * correct** — [`usePublishBreadcrumb`](../../../../components/shell/breadcrumb-trail.tsx),
+   * which `accounts` has used since it shipped — **so this is a consumer
+   * adopting the canonical surface, not a new one.**
+   *
+   * 📁 *"They mirror the data hierarchy, not the click path"*, and the last
+   * crumb is the current record and is not a link.
+   */
+  usePublishBreadcrumb([
+    { label: 'Settings', kind: 'link', href: '/settings' },
+    { label: 'Products', kind: 'current' },
+  ]);
+
   const { activeWorkspace, isLoading: workspacesLoading } = useWorkspaceContext();
   const { data, isLoading, isError } = useProductCatalog(activeWorkspace?.id ?? null);
   const icp = useIcpDeclaration(activeWorkspace?.id ?? null);
@@ -51,7 +72,7 @@ export default function ProductsPage() {
   return (
     <ReadingColumn>
       <header>
-        <h1 className="text-xl font-semibold text-content">Your business</h1>
+        <h1 className="text-title text-content">Your business</h1>
         <p className="mt-1 text-sm text-content-muted">
           What Signora needs to know about your company before it can tell you anything
           useful about anyone else&apos;s.
@@ -84,6 +105,15 @@ export default function ProductsPage() {
           workspaceId={activeWorkspace?.id ?? null}
         />
       ) : null}
+      {/* 🔴 **Directly beneath the description it measures** — 📁 `Design
+          Documents/Fortune Signora ICP Builder.html`: ***"Every criterion is
+          scored against closed-won evidence, not opinion."*** ⛔ **The
+          measurement shipped with no consumer**, so a customer could describe
+          an ideal customer and was never told whether it predicted anything.
+          ⚡ **Beside the editor rather than on `/business`**: `/business` is
+          the read-only overview, and feedback on an edit belongs where the edit
+          is made. */}
+      {data ? <IcpPerformance catalog={data} workspaceId={activeWorkspace?.id ?? null} /> : null}
       {/* **Who you sell to, as a list.** Reads the catalog for product names
           and renders whatever the segments query returned — including nothing,
           which is the common state for a new organization and is designed as a

@@ -101,5 +101,5 @@ export function AccountSegments({ membership, segments }: AccountSegmentsProps) 
  * one component is how a loading state comes to render as a claim.
  */
 export function UnsegmentedAccount() {
-  return <span className="text-muted-foreground">No segment</span>;
+  return <span className="text-content-subtle">No segment</span>;
 }

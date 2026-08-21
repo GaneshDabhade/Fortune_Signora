@@ -72,13 +72,15 @@ function ManagedElsewhere({ provider }: { provider: string }) {
     <Card>
       <CardHeader>
         <CardTitle>Password</CardTitle>
-        <p className="mt-1 text-sm text-content-muted">Managed by your identity provider</p>
+        <p className="mt-1 text-sm text-content-muted">
+          Managed by your identity provider
+        </p>
       </CardHeader>
       <CardBody className="flex flex-col gap-4">
         <p className="text-sm leading-6 text-content-muted">
-          You sign in through {known?.name ?? provider}, so Signora never receives, stores or
-          verifies your password. The form is shown disabled rather than hidden — you should
-          be able to see that it exists and where it lives.
+          You sign in through {known?.name ?? provider}, so Signora never receives, stores
+          or verifies your password. The form is shown disabled rather than hidden — you
+          should be able to see that it exists and where it lives.
         </p>
 
         <div className="flex flex-col gap-3 opacity-60" aria-hidden="true">
@@ -96,16 +98,20 @@ function ManagedElsewhere({ provider }: { provider: string }) {
            * *Change password at your provider* that goes nowhere is the
            * affordance this panel's own header refuses.**
            */
-          <p className="text-sm leading-6 text-content-muted" data-testid="password-no-link">
+          <p
+            className="text-sm leading-6 text-content-muted"
+            data-testid="password-no-link"
+          >
             Change it where your account lives. Signora does not know that address for{' '}
-            {provider}, and would rather say so than send you to a page that may not exist.
+            {provider}, and would rather say so than send you to a page that may not
+            exist.
           </p>
         ) : (
           <div>
             {/* ⛔ **An anchor, not a `Button` with a handler** — it navigates, and a
                 keyboard user must be able to open it in a new tab the ordinary way. */}
             <a
-              className="inline-flex h-9 items-center rounded-md border border-border px-3 text-sm font-medium text-content hover:bg-surface-sunken focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="inline-flex h-9 items-center rounded-md border border-border px-3 text-sm font-medium text-content hover:bg-surface-sunken "
               href={known.href}
               target="_blank"
               rel="noreferrer noopener"
@@ -167,9 +173,9 @@ function ChangePasswordForm() {
       <CardHeader>
         <CardTitle>Password</CardTitle>
         <p className="mt-1 text-sm text-content-muted">
-          Length over composition, checked against known-compromised credentials, and never
-          expired on a schedule — expiry rules push people toward predictable variants of one
-          password.
+          Length over composition, checked against known-compromised credentials, and
+          never expired on a schedule — expiry rules push people toward predictable
+          variants of one password.
         </p>
       </CardHeader>
       <CardBody>
@@ -222,7 +228,9 @@ function ChangePasswordForm() {
           {done ? (
             <p role="status" className="text-sm text-success">
               Your password has been changed.
-              {signOutOthers ? ' Your other sessions have ended.' : ' Your other sessions are still open.'}
+              {signOutOthers
+                ? ' Your other sessions have ended.'
+                : ' Your other sessions are still open.'}
             </p>
           ) : null}
 

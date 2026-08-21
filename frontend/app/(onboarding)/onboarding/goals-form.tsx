@@ -3,13 +3,20 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { MultiChoiceCards } from '@/components/ui';
+import { Button, MultiChoiceCards } from '@/components/ui';
 import { chooseGoals, type Goal } from '@/lib/api/onboarding';
 
 import { OnboardingShell } from '../onboarding-shell';
 import { OnboardingRail } from './rail';
 import { OnboardingSkeleton } from './company-form';
-import { GOALS, MAX_GOALS, COUNTED_STEPS, COUNTED_TOTAL, isGoal, positionOf } from './steps';
+import {
+  GOALS,
+  MAX_GOALS,
+  COUNTED_STEPS,
+  COUNTED_TOTAL,
+  isGoal,
+  positionOf,
+} from './steps';
 import { SkipSetup } from './skip-setup';
 import { useOnboarding } from './use-onboarding';
 
@@ -79,14 +86,14 @@ export function GoalsForm() {
           footer={
             <>
               {/* 📁 The design's own note, verbatim, in a `--sunken` card:
-                  *"This is the last question · Connecting your CRM comes after
+                *"This is the last question · Connecting your CRM comes after
                   — you can do it now or from Settings."* ⚡ **It is what makes
                   the next screen feel optional before somebody reaches it.** */}
               <div className="mt-[22px] rounded-lg bg-surface-sunken p-3">
-                <p className="text-[11.5px] font-semibold text-content">
+                <p className="text-2xs font-semibold text-content">
                   This is the last question
                 </p>
-                <p className="mt-[5px] text-[11.5px] leading-[1.5] text-content-muted">
+                <p className="mt-[5px] text-2xs leading-[1.5] text-content-muted">
                   Connecting your CRM comes after — you can do it now or from Settings.
                 </p>
               </div>
@@ -102,14 +109,9 @@ export function GoalsForm() {
       description="Choose up to three. These decide what your home page leads with and which insights Signora produces first."
       actions={
         <>
-          <button
-            type="button"
-            onClick={submit}
-            disabled={isSaving}
-            className="inline-flex h-control-md items-center rounded-md bg-accent px-[18px] text-[13.5px] font-semibold text-accent-contrast shadow-sm transition-colors hover:bg-accent-hover disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-          >
+          <Button onClick={submit} disabled={isSaving}>
             {isSaving ? 'Saving…' : 'Finish setup'}
-          </button>
+          </Button>
           <button
             type="button"
             onClick={async () => {
@@ -120,7 +122,7 @@ export function GoalsForm() {
               await advance('connect');
               router.push('/onboarding/connect');
             }}
-            className="text-[13px] font-semibold text-content-subtle hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="text-sm font-semibold text-content-subtle hover:text-content "
           >
             Skip for now
           </button>
@@ -131,10 +133,7 @@ export function GoalsForm() {
               talk over somebody choosing quickly.
               ⚡ **`tabular-nums` because the design says so**: proportional
               figures make the line jump as the count changes. */}
-          <p
-            role="status"
-            className="ml-auto text-[11.5px] tabular-nums text-content-subtle"
-          >
+          <p role="status" className="ml-auto text-2xs tabular-nums text-content-subtle">
             {selected.length} of {MAX_GOALS} selected
           </p>
         </>
@@ -212,8 +211,8 @@ function GoalConsequence({ on, off }: { on: readonly string[]; off: readonly str
 
   return (
     // 📁 *"padding:13px 15px; border-radius:12px; background:var(--ai-tint);
-    //     border:1px solid var(--ai-line)"*.
-    <div className="mt-[22px] flex items-center gap-3 rounded-lg border border-ai/30 bg-ai-subtle px-[15px] py-[13px]">
+    // border:1px solid var(--ai-line)"*.
+    <div className="mt-[22px] flex items-center gap-3 rounded-lg border border-ai-line bg-ai-subtle px-[15px] py-[13px]">
       {/* 📁 The design's 20px tile with its four-point spark. ♿ `aria-hidden`
           — the sentence beside it says everything. */}
       <span
@@ -233,7 +232,7 @@ function GoalConsequence({ on, off }: { on: readonly string[]; off: readonly str
           <path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14" />
         </svg>
       </span>
-      <p className="text-[12.5px] leading-[1.55] text-content">
+      <p className="text-label leading-[1.55] text-content">
         Based on these, Signora will
         {on.length > 0 ? (
           <>
@@ -255,13 +254,11 @@ function GoalConsequence({ on, off }: { on: readonly string[]; off: readonly str
 }
 
 /** 📁 The design emphasises the capability names inside the sentence. ⚡ **An
- *  Oxford-free list with *and* before the last** — the design writes *"Forecast,
- *  Signal Center and Renewal risk"*. */
+ * Oxford-free list with *and* before the last** — the design writes *"Forecast,
+ * Signal Center and Renewal risk"*. */
 function Named({ of }: { of: readonly string[] }) {
   const text =
-    of.length === 1
-      ? of[0]
-      : `${of.slice(0, -1).join(', ')} and ${of[of.length - 1]}`;
+    of.length === 1 ? of[0] : `${of.slice(0, -1).join(', ')} and ${of[of.length - 1]}`;
   return <span className="font-semibold">{text}</span>;
 }
 
@@ -282,7 +279,10 @@ function Named({ of }: { of: readonly string[] }) {
  * could not express *"this is named and unreachable"***, which is why the
  * absent ones were indistinguishable from the shipped ones.
  */
-const DESTINATIONS: Record<string, { readonly label: string; readonly href: string | null }> = {
+const DESTINATIONS: Record<
+  string,
+  { readonly label: string; readonly href: string | null }
+> = {
   // ✅ Shipped, and reachable from the rail.
   signals: { label: 'Signals', href: '/signals' },
   companies: { label: 'Companies', href: '/accounts' },

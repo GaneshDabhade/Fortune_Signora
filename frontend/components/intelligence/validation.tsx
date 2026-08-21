@@ -100,6 +100,28 @@ export function ValidationBlock({
 
   return (
     <section className="flex flex-col gap-3">
+      {/* 🔴 **NOT *"Recommendations"*, and this lane briefly renamed it that.**
+
+          ⚠️ **The reasoning that produced the mistake was sound and the
+          conclusion was wrong**: ***"Before you act"* appears ZERO times across
+          all 17 final design documents**, so it looked invented — ⛔ **and the
+          design's nearest heading, `#recs` *"Recommendations"*, is a DIFFERENT
+          SECTION.** 📁 Its rows carry `title` · `body` · **`effect`** (*"+18
+          score"*, *"−41% slip risk"*) · a confidence pip row · **`cta`**
+          (*"Draft intro"*, *"Find warm path"*) · **`Dismiss`** — **AI-generated
+          next actions with predicted effects and a drafting action, and NOTHING
+          produces any of it.**
+
+          ✅ **This section is `useAccountValidation`'s hypotheses — what can be
+          CHECKED, not what to do** — and renaming it would have claimed the
+          Recommendations capability on the strength of a shared word.
+          ⚡ **Caught by an existing guard** — 📁 `brief.test.tsx`'s *"invents
+          neither of the two cards that have no producer"* — **which is what a
+          guard asserting an ABSENCE is for.**
+
+          ⚠️ **The heading itself is still unresolved against the design** and is
+          recorded in [C-1543](../../../docs/LANE_COORDINATION.md) rather than
+          guessed at a second time. */}
       <h2 className="text-sm font-semibold text-content">Before you act</h2>
       {isError ? (
         <Unavailable />
@@ -166,7 +188,10 @@ function NothingCurrent({ evidence }: { evidence?: EvidenceState }) {
 function Unavailable() {
   return (
     <div className="rounded-md border border-border bg-surface-raised px-4 py-3.5">
-      <StatedAbsence subject="what to check on this account" reassurance="Nothing has changed about the account" />
+      <StatedAbsence
+        subject="what to check on this account"
+        reassurance="Nothing has changed about the account"
+      />
     </div>
   );
 }
@@ -217,7 +242,6 @@ function Observed({
                 className={cn(
                   'text-left text-content-muted underline decoration-dotted underline-offset-4',
                   'transition-colors hover:text-content',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
                 )}
               >
                 {event.summary}
@@ -240,9 +264,7 @@ function Hypothesis({
   return (
     <div className="flex flex-col gap-2.5 rounded-md border border-border bg-surface-raised px-4 py-3.5">
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-        <h3 className="text-md font-medium leading-6 text-content">
-          {hypothesis.title}
-        </h3>
+        <h3 className="text-md font-medium leading-6 text-content">{hypothesis.title}</h3>
         <Relevance relevance={hypothesis.relevance} />
       </div>
 
@@ -352,10 +374,15 @@ function LimitationsDisclosure({
         onClick={onToggle}
         aria-expanded={open}
         aria-controls={detailId}
+        /* ♿ 📁 §17 `2.5.8` — *"Targets ≥ 24px."* ⚠️ **Measured at `300 × 18`.**
+           ⛔ **A floor, not a height** — the disclosure is calibration prose
+           and 📁 *"a limitation drawn as an alert would make Signora look
+           unsure of a conclusion it is in fact sure of."* **Growing the box
+           changes nothing a reader sees; it changes what a thumb can hit.** */
         className={cn(
-          'inline-flex w-fit items-center gap-1 rounded text-xs text-content-muted',
+          'inline-flex min-h-6 w-fit items-center gap-1 rounded text-xs text-content-muted',
+          'coarse:min-h-11',
           'transition-colors hover:text-content',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
         )}
       >
         <ChevronRight

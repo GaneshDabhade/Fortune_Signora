@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Card } from '@/components/ui';
 
 import { CardFailure } from '@/components/home/card-failure';
 import { useCardPhase } from '@/lib/home/loading';
@@ -84,11 +85,11 @@ export function IntegrationHealthCard() {
   }
 
   /** 📁 **State 07** — *"cards skeletonised at declared footprints"*, ⛔ **and
-   *  nothing for the first 300ms**, which the design calls a flicker. */
+   * nothing for the first 300ms**, which the design calls a flicker. */
   if (systems.isPending) {
     return (
       <Frame>
-        <div aria-hidden className="space-y-3 px-[18px] py-[15px]">
+        <div aria-hidden className="space-y-3 px-5 py-[15px]">
           {phase === 'skeleton' ? (
             <>
               <div className="h-4 w-1/2 animate-pulse rounded bg-surface-sunken" />
@@ -110,14 +111,16 @@ export function IntegrationHealthCard() {
          * banned list. ✅ **It names what was looked for**, which is §03's test
          * for whether an empty state is credible.
          */
-        <p className="px-[18px] py-[15px] text-[12.5px] leading-[1.55] text-content-muted">
+        <p className="px-5 py-[15px] text-label leading-[1.55] text-content-muted">
           {/* ⛔ **Not *"workspace"*** — 📁 [ADR-0034](../../../docs/architecture/adr):
-              *a customer says "organization", the platform says "workspace"*.
+            *a customer says "organization", the platform says "workspace"*.
               ⚡ **Caught by `vocabulary.test.tsx`, not by review.** */}
           No system is connected yet.
         </p>
       ) : (
-        connections.map((connection) => <Row key={connection.id} connection={connection} />)
+        connections.map((connection) => (
+          <Row key={connection.id} connection={connection} />
+        ))
       )}
     </Frame>
   );
@@ -140,13 +143,19 @@ function Row({ connection }: { connection: Connection }) {
   return (
     <div
       className={cn(
-        'flex flex-wrap items-start gap-x-3 gap-y-2 border-b border-l-2 border-border-soft px-[18px] py-[13px]',
-        tone === 'pos' ? 'border-l-success' : tone === 'warn' ? 'border-l-warning' : 'border-l-border',
+        'flex flex-wrap items-start gap-x-3 gap-y-2 border-b border-l-2 border-border-soft px-5 py-[13px]',
+        tone === 'pos'
+          ? 'border-l-success'
+          : tone === 'warn'
+            ? 'border-l-warning'
+            : 'border-l-border',
       )}
     >
       <div className="min-w-[11rem] flex-1">
         <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
-          <span className="text-label font-semibold text-content">{connection.label}</span>
+          <span className="text-label font-semibold text-content">
+            {connection.label}
+          </span>
           {/* 📁 **The connection's own state**, verbatim from the contract. */}
           <span
             className={cn(
@@ -164,7 +173,7 @@ function Row({ connection }: { connection: Connection }) {
         {/* ⚡ **The reason, only when the read supplies one.** ⛔ Never a
             sentence composed here to fill the space. */}
         {connection.reason === null ? null : (
-          <p className="mt-1.5 text-[12.5px] leading-[1.55] text-content-muted">
+          <p className="mt-1.5 text-label leading-[1.55] text-content-muted">
             {connection.reason}
           </p>
         )}
@@ -172,7 +181,7 @@ function Row({ connection }: { connection: Connection }) {
       {/* 📁 The registry's primary action for this card, verbatim. */}
       <Link
         href="/settings/connections"
-        className="inline-flex h-[31px] flex-none items-center rounded-md border border-border px-3 text-[12.5px] font-semibold text-content transition-colors hover:border-accent hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="inline-flex h-[31px] flex-none items-center rounded-md border border-border px-3 text-label font-semibold text-content transition-colors hover:border-accent hover:text-accent "
       >
         Open the integration
       </Link>
@@ -181,22 +190,28 @@ function Row({ connection }: { connection: Connection }) {
 }
 
 function Frame({ count, children }: { count?: number; children: React.ReactNode }) {
+  /* 🔴 **The shared [`Card`](../ui/card.tsx), and the class string it
+     replaces was not merely inconsistent — it carried `shadow-e1`, **a
+     utility that does not exist**. `boxShadow` in `tailwind.config.ts`
+     defines `sm`, `DEFAULT`, `lg` and `xl` and no `e1`, so Tailwind emitted
+     nothing and **five Home cards rendered with no elevation** while every
+     other card in the product carried `--e1`. ⚠️ **Invisible in review,
+     because no two of them appear on one screen beside a correct card.**
+
+     ⛔ **`rounded-xl` was also the wrong step.** 📁 §05 `radii` gives **12px
+     to *"Card, menu, popover, toast, chart container"*** and reserves 16px
+     for *"table plane, dialog, drawer, assistant panel"*. */
   return (
-    <div
-      data-testid="home-integration-health"
-      className="overflow-hidden rounded-xl border border-border-soft bg-surface shadow-e1"
-    >
-      <div className="flex items-center gap-2 border-b border-border-soft px-[18px] py-3">
-        <h2
-          className="text-label font-semibold text-content"
-        >
-          Integration health
-        </h2>
+    <Card data-testid="home-integration-health" className="overflow-hidden">
+      <div className="flex items-center gap-2 border-b border-border-soft px-5 py-3">
+        <h2 className="text-label font-semibold text-content">Integration health</h2>
         {count === undefined ? null : (
-          <span className="text-2xs font-semibold tabular-nums text-content-subtle">{count}</span>
+          <span className="text-2xs font-semibold tabular-nums text-content-subtle">
+            {count}
+          </span>
         )}
       </div>
       {children}
-    </div>
+    </Card>
   );
 }

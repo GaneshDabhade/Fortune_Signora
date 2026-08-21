@@ -17,5 +17,5 @@ import { SkeletonText } from '@/components/ui';
  * row is explicit that it is about REACH, not components.
  */
 export default function Loading() {
-  return <SkeletonText lines={5} />;
+  return <SkeletonText lines={5} label="your settings" />;
 }

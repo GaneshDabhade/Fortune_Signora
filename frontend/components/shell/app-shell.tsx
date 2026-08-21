@@ -13,7 +13,7 @@ import { SKIP_TARGETS, SkipLinks } from '@/components/shell/skip-links';
 import { TopBar } from '@/components/shell/top-bar';
 import { UtilityPanelDock, UtilityPanelProvider } from '@/components/shell/utility-panel';
 import { WorkspaceSwitcher } from '@/components/shell/workspace-switcher';
-import { Container, ShellBanners, type ShellBanner } from '@/components/ui';
+import { Container, IconButton, ShellBanners, type ShellBanner } from '@/components/ui';
 import { cn } from '@/lib/design/cn';
 import { BreadcrumbTrailProvider } from '@/components/shell/breadcrumb-trail';
 import type { Crumb } from '@/lib/shell/breadcrumb';
@@ -111,8 +111,12 @@ export interface AppShellProps {
  * including the sign-out control, which strands the user with nothing to
  * do but reload.
  *
- * Widths come from `--sidebar-width` and `--topbar-height` rather than
- * literals, so the layout is one edit and not three.
+ * ⚡ **The rail's two widths come from [`RAIL_WIDTH`](../../lib/shell/rail.ts)
+ * and the top bar's height from `--topbar-height`**, rather than from literals,
+ * so the layout is one edit and not three. ⚠️ **This sentence used to name
+ * `--sidebar-width`, a token that held 240px against the design's 232px and had
+ * no consumer** — it is deleted rather than corrected, because the rail's width
+ * has a home that also knows the collapsed state exists.
  */
 export function AppShell({
   children,
@@ -256,7 +260,13 @@ export function AppShell({
         data-collapsed={rail.collapsed}
         data-sheet-open={compact && navOpen ? 'true' : undefined}
         className={cn(
-          'shrink-0 border-r border-border-soft bg-surface',
+          // 📁 **§07 Navigation** — *"the rail … sits on a slightly lighter
+          // ground"*, and §02 gives the hairline to content. ⛔ **This was
+          // `bg-surface`** — the same white as a card — **so the rail and the
+          // planes on it were one colour and the frame lost the separation the
+          // design draws.** ⚡ `surface-raised` IS the design's `--bg-rail`
+          // token, in both themes now that the dark ramp is repaired.
+          'shrink-0 border-r border-border-soft bg-surface-raised',
           // 🔴 **A COLUMN, and this is a defect the sheet exposed rather than
           // introduced** — measured at 390×844: 📁 the rail's `<nav>` is
           // `h-full`, so it took the container's whole 844px **while starting
@@ -292,14 +302,12 @@ export function AppShell({
               the backdrop are not discoverable, and a pointer user who opened
               it must be able to close it the way they opened it. */}
           {compact ? (
-            <button
-              type="button"
-              onClick={closeNav}
-              aria-label="Close navigation"
-              className="rounded p-1 text-content-subtle transition-colors hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            >
+            /* 🔴 **`21 × 32`, measured at 390 × 844** — [`IconButton`](../ui/icon-button.tsx).
+               ⛔ **`rounded p-1` around a `✕` is padding, not a target**, and on
+               this band it is the only pointer route out of the sheet. */
+            <IconButton label="Close navigation" onClick={closeNav}>
               ✕
-            </button>
+            </IconButton>
           ) : !rail.canToggle ? (
             /* ⛔ **Absent, never disabled** — [TASK-1473](../../../docs/BACKLOG.md),
                📁 [D-233](../../../docs/DECISION_REGISTER.md) rule ⓐ. **At
@@ -309,17 +317,18 @@ export function AppShell({
                trust than an absent one. */
             null
           ) : (
-            <button
-              type="button"
+            /* 🔴 **`18 × 32`, measured at 1440 × 900** — the narrowest control
+               in the frame, against `2.5.8`'s 24px floor and the shell's own
+               32px. ⚡ [`IconButton`](../ui/icon-button.tsx) owns the geometry;
+               ♿ **the label still names the outcome rather than the glyph**,
+               because a screen-reader user cannot see which way `«` points. */
+            <IconButton
+              label={rail.collapsed ? 'Expand navigation' : 'Collapse navigation'}
+              expanded={!rail.collapsed}
               onClick={rail.toggle}
-              // ♿ The control names the outcome, not the glyph — a screen
-              // reader user cannot see which way the chevron points.
-              aria-label={rail.collapsed ? 'Expand navigation' : 'Collapse navigation'}
-              aria-expanded={!rail.collapsed}
-              className="rounded p-1 text-content-subtle transition-colors hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
               {rail.collapsed ? '»' : '«'}
-            </button>
+            </IconButton>
           )}
         </div>
         {/* 📁 **The rail's FIRST CHILD** — [TASK-1441](../../../docs/BACKLOG.md),

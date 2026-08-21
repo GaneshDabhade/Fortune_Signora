@@ -83,7 +83,14 @@ test.describe('a triager narrows the queue and clears several at once', () => {
     const bar = page.getByTestId('bulk-bar');
     await expect(bar).toContainText('1 selected');
     await expect(bar.getByRole('button', { name: 'Mark actioned' })).toBeVisible();
-    // ⛔ **The three the union cannot construct honestly in bulk.**
+    // 🔴 **CORRECTED — this said *"the three the union cannot construct
+    // honestly in bulk"*, and that is no longer the reason for two of them.**
+    // 📁 The design's `bulkActions` are *Assign · Snooze · Dismiss · Bookmark*,
+    // and **the per-signal snooze and assign now exist**, so bulk versions are
+    // constructible. ⛔ **They are out of this slice's scope, not out of the
+    // contract's reach** — 📁 bulk dismissal's refusal still stands on its own
+    // product argument, and `Bookmark` still has no producer. **The gap is
+    // [C-292](../../../docs/LANE_COORDINATION.md).**
     await expect(bar.getByRole('button', { name: /dismiss|snooze|assign/i })).toHaveCount(0);
   });
 
@@ -108,5 +115,106 @@ test.describe('a triager narrows the queue and clears several at once', () => {
     await filters.getByRole('button').first().click();
 
     await expect(page.getByTestId('bulk-bar')).toHaveCount(0);
+  });
+});
+
+
+/**
+ * 🔴 **The four exits the screen's own description promises** —
+ * 📁 *"Every one leaves the queue by being actioned, **assigned**, **snoozed**
+ * or dismissed with a reason."*
+ *
+ * ⚡ **What only a browser can say here**: that a snooze **produces a state the
+ * Snoozed view can surface.** ⛔ **A component test can prove the dialog sends
+ * `{kind:'snoozed'}`; it cannot prove the signal actually arrives in the other
+ * tab with its return date** — and a navigation destination whose state nothing
+ * can produce is the dead end this slice exists to close.
+ */
+test.describe('a triager routes and defers, not only closes', () => {
+  test('🔴 every exit the description promises has a control', async ({ page }) => {
+    await page.goto('/signals');
+    await expect(page.getByRole('heading', { name: 'Signals', level: 1 })).toBeVisible();
+    await settled(page);
+
+    const rows = page.getByRole('listitem');
+    test.skip((await rows.count()) === 0, 'this queue is empty');
+
+    const row = rows.first();
+    for (const name of ['Act on it', 'Assign', 'Snooze', 'Dismiss']) {
+      await expect(row.getByRole('button', { name, exact: true })).toBeVisible();
+    }
+  });
+
+  /**
+   * ⚡ **The whole loop, end to end**: defer a signal with a date, then find it
+   * in the view that exists to show deferred signals — **saying when it comes
+   * back**, which is 📁 `Resolution.snoozed_until` and not a guess.
+   */
+  test('🔴 a snoozed signal leaves the queue and returns a date in the Snoozed view', async ({
+    page,
+  }) => {
+    await page.goto('/signals');
+    await expect(page.getByRole('heading', { name: 'Signals', level: 1 })).toBeVisible();
+    await settled(page);
+
+    const rows = page.getByRole('listitem');
+    test.skip((await rows.count()) === 0, 'this queue is empty');
+
+    const before = await rows.count();
+    await rows.first().getByRole('button', { name: 'Snooze', exact: true }).click();
+
+    const confirm = page.getByRole('button', { name: 'Snooze signal' });
+    // ⛔ **Nothing is submittable until a date is named.**
+    await expect(confirm).toBeDisabled();
+
+    const soon = new Date();
+    soon.setDate(soon.getDate() + 7);
+    const day = soon.toISOString().slice(0, 10);
+    await page.getByLabel('Comes back on').fill(day);
+    await expect(confirm).toBeEnabled();
+    await confirm.click();
+
+    // ⚡ **The dialog closes on SUCCESS, never on the click** — so its
+    // disappearance is evidence the write landed.
+    await expect(confirm).toHaveCount(0);
+    await expect(rows).toHaveCount(before - 1);
+
+    await page.getByRole('tab', { name: 'Snoozed' }).click();
+    await expect(page.getByText(/^Returns /).first()).toBeVisible();
+  });
+
+  /**
+   * 🔴 **📁 `resolution.py`: *"Still open. Assigning is routing, not
+   * resolving."*** ⛔ **So the row stays** — and the chip is the only evidence
+   * the reader has that the control did anything at all.
+   */
+  test('🔴 an assigned signal stays in the queue, under a name', async ({ page }) => {
+    await page.goto('/signals');
+    await expect(page.getByRole('heading', { name: 'Signals', level: 1 })).toBeVisible();
+    await settled(page);
+
+    const rows = page.getByRole('listitem');
+    test.skip((await rows.count()) === 0, 'this queue is empty');
+
+    await rows.first().getByRole('button', { name: 'Assign', exact: true }).click();
+
+    const confirm = page.getByRole('button', { name: 'Assign signal' });
+    const picker = page.getByLabel('Colleague');
+
+    // ⚠️ **A workspace of one is a designed state, not a broken dialog** — 📁
+    // `colleaguesFrom` offers only members whose membership carries an address.
+    if ((await picker.count()) === 0) {
+      await expect(page.getByText(/nobody else here to assign this to/i)).toBeVisible();
+      return;
+    }
+
+    await expect(confirm).toBeDisabled();
+    await picker.selectOption({ index: 1 });
+    await expect(confirm).toBeEnabled();
+    await confirm.click();
+
+    await expect(confirm).toHaveCount(0);
+    // ⚡ **Still here, and now it says who owns the decision.**
+    await expect(page.getByText(/^Assigned to /).first()).toBeVisible();
   });
 });

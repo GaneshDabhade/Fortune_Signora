@@ -100,12 +100,18 @@ export function SystemStatus({ className }: { className?: string }) {
         data-status={tone}
         data-testid="system-status"
         className={cn(
-          'flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium',
-          'transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+          // 🔴 **`py-1` made this an 18px control** — measured `34 × 18` in the
+          // top bar. 📁 §04 `topBarSlots` gives system status *"auto × 32"*, and
+          // 📁 §21 `2.5.8` *"every top-bar control is a 32px target"*. ⛔ **A
+          // pill sized by its own text is not a slot**; `h-control-sm` is the
+          // frame's 32px token and every sibling in the bar already uses it.
+          'flex h-control-sm items-center gap-2 whitespace-nowrap rounded-full border px-3',
+          'text-xs font-semibold coarse:min-h-11',
+          'transition-colors ',
           tone === 'down'
-            ? 'border-danger/30 bg-danger-subtle text-danger'
+            ? 'border-danger-line bg-danger-subtle text-danger'
             : tone === 'degraded'
-              ? 'border-warning/30 bg-warning-subtle text-warning'
+              ? 'border-warning-line bg-warning-subtle text-warning'
               : 'border-border bg-surface-sunken text-content-muted',
         )}
       >
@@ -115,7 +121,11 @@ export function SystemStatus({ className }: { className?: string }) {
           aria-hidden
           className={cn(
             'h-2 w-2 shrink-0 rounded-full',
-            tone === 'down' ? 'bg-danger' : tone === 'degraded' ? 'bg-warning' : 'bg-success',
+            tone === 'down'
+              ? 'bg-danger'
+              : tone === 'degraded'
+                ? 'bg-warning'
+                : 'bg-success',
           )}
         />
         {labelVisible ? <span>{label}</span> : null}
@@ -133,7 +143,11 @@ export function SystemStatus({ className }: { className?: string }) {
               aria-hidden
               className={cn(
                 'h-2 w-2 shrink-0 rounded-full',
-                tone === 'down' ? 'bg-danger' : tone === 'degraded' ? 'bg-warning' : 'bg-success',
+                tone === 'down'
+                  ? 'bg-danger'
+                  : tone === 'degraded'
+                    ? 'bg-warning'
+                    : 'bg-success',
               )}
             />
             <span className="text-sm font-semibold text-content">{label}</span>
@@ -142,7 +156,9 @@ export function SystemStatus({ className }: { className?: string }) {
                 false for the rest — **a relative time nothing recomputes is the
                 one thing on this panel that could lie.** ✅ Said as the
                 interval, which is a fact about the product. */}
-            <span className="ml-auto text-2xs text-content-subtle">Checked every 30s</span>
+            <span className="ml-auto text-2xs text-content-subtle">
+              Checked every 30s
+            </span>
           </div>
           <ul>
             {services.map((service) => (

@@ -235,7 +235,7 @@ export function CommandPalette({
           aria-activedescendant={index >= 0 ? `${listId}-${index}` : undefined}
           className={cn(
             'w-full border-b border-border-soft bg-transparent px-4 py-3 text-sm',
-            'text-content placeholder:text-content-subtle focus:outline-none',
+            'text-content placeholder:text-content-subtle',
           )}
         />
 

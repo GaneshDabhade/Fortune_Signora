@@ -28,7 +28,13 @@ import { collapse, isRequired, isWellFormed, type Crumb } from '@/lib/shell/brea
  * available pixels.** **Two people on two screens see the same segments
  * removed** — and it is always the middle, never the parent.
  */
-export function Breadcrumb({ trail, className }: { trail: readonly Crumb[]; className?: string }) {
+export function Breadcrumb({
+  trail,
+  className,
+}: {
+  trail: readonly Crumb[];
+  className?: string;
+}) {
   // 📁 Rule 6 — *"mandatory below the first level"*, and nothing at it.
   if (!isRequired(trail)) return null;
 
@@ -128,7 +134,7 @@ function Segment({ crumb }: { crumb: Crumb }) {
       <button
         type="button"
         aria-label="Show hidden breadcrumb levels"
-        className="rounded px-1 text-content-subtle transition-colors hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        className="rounded px-1 text-content-subtle transition-colors hover:text-content "
       >
         {crumb.label}
       </button>
@@ -136,7 +142,9 @@ function Segment({ crumb }: { crumb: Crumb }) {
   }
 
   const label = (
-    <span className={cn('truncate', crumb.kind === 'workspace' && 'font-medium text-content')}>
+    <span
+      className={cn('truncate', crumb.kind === 'workspace' && 'font-medium text-content')}
+    >
       {crumb.label}
     </span>
   );
@@ -149,7 +157,7 @@ function Segment({ crumb }: { crumb: Crumb }) {
   ) : (
     <Link
       href={crumb.href}
-      className="flex min-w-0 items-center rounded text-content-muted transition-colors hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      className="flex min-w-0 items-center rounded text-content-muted transition-colors hover:text-content "
     >
       {label}
     </Link>

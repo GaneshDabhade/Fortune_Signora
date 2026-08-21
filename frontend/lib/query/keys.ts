@@ -172,6 +172,10 @@ export const queryKeys = {
   /** Lane B (Commercial Profile). The segments list — paginated, so the key
    * carries the cursor: two pages are two cache entries, and echoing a cursor
    * back must not overwrite the page it came from. */
+  /** ⚡ **Whether each declared criterion predicts a win** — measured against
+   *  decided accounts, never asserted. */
+  icpPerformance: (workspaceId: string) =>
+    ['workspace', workspaceId, 'icp-performance'] as const,
   icpSegments: (workspaceId: string, cursor: string | null) =>
     ['workspace', workspaceId, 'icp-segments', cursor ?? 'first'] as const,
 

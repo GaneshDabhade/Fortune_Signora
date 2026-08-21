@@ -68,9 +68,9 @@ export function Enrolment({ canEnrol, onFinished, onCancel }: EnrolmentProps) {
           You cannot add an authenticator app to this account.
         </p>
         <p className="mt-1 text-sm leading-6 text-content-muted">
-          Signora enrols a second factor by verifying your password, and your password lives
-          with your identity provider — Signora has never held it. Your second factors are
-          managed there, alongside your sign-in.
+          Signora enrols a second factor by verifying your password, and your password
+          lives with your identity provider — Signora has never held it. Your second
+          factors are managed there, alongside your sign-in.
         </p>
       </div>
     );
@@ -102,7 +102,10 @@ export function Enrolment({ canEnrol, onFinished, onCancel }: EnrolmentProps) {
     setStep('codes');
   }
 
-  const completed = STEPS.slice(0, STEPS.findIndex((s) => s.id === step)).map((s) => s.id);
+  const completed = STEPS.slice(
+    0,
+    STEPS.findIndex((s) => s.id === step),
+  ).map((s) => s.id);
 
   return (
     <div className="flex flex-col gap-5" data-testid="enrolment">
@@ -114,8 +117,8 @@ export function Enrolment({ canEnrol, onFinished, onCancel }: EnrolmentProps) {
       {secret === null ? (
         <form className="flex max-w-sm flex-col gap-3" onSubmit={begin}>
           <p className="text-sm leading-6 text-content-muted">
-            Confirm it is you before anything changes. Signora asks for a fresh factor even
-            inside a valid session.
+            Confirm it is you before anything changes. Signora asks for a fresh factor
+            even inside a valid session.
           </p>
           <PasswordField
             label="Your password"
@@ -129,7 +132,7 @@ export function Enrolment({ canEnrol, onFinished, onCancel }: EnrolmentProps) {
               {failed}
             </p>
           )}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button type="submit" loading={busy}>
               Continue
             </Button>
@@ -145,11 +148,16 @@ export function Enrolment({ canEnrol, onFinished, onCancel }: EnrolmentProps) {
           <p className="text-sm text-content">
             Enter the 6-digit code to confirm the app is working
           </p>
-          <CodeInput label="Verification code" value={code} onChange={setCode} invalid={wrong} />
+          <CodeInput
+            label="Verification code"
+            value={code}
+            onChange={setCode}
+            invalid={wrong}
+          />
           {wrong ? (
             <p role="alert" className="text-sm text-danger">
-              That code is not valid. Codes rotate every 30 seconds — a code from the previous
-              window is still accepted.
+              That code is not valid. Codes rotate every 30 seconds — a code from the
+              previous window is still accepted.
             </p>
           ) : null}
           <div>
@@ -190,7 +198,9 @@ export function groupInFours(secret: string): string {
  * stored separately — two copies of a shared secret is one copy too many.
  */
 export function manualKeyFrom(totpUri: string): string {
-  const secret = new URL(totpUri.replace(/^otpauth:/, 'https:')).searchParams.get('secret');
+  const secret = new URL(totpUri.replace(/^otpauth:/, 'https:')).searchParams.get(
+    'secret',
+  );
   return secret ?? '';
 }
 
@@ -198,8 +208,8 @@ function ScanStep({ secret, onNext }: { secret: string; onNext: () => void }) {
   return (
     <div className="flex flex-col gap-4">
       <p className="text-sm leading-6 text-content-muted">
-        Scan with any TOTP app — 1Password, Okta Verify, Authy, Google Authenticator. Signora
-        does not require a specific app: a code is a code.
+        Scan with any TOTP app — 1Password, Okta Verify, Authy, Google Authenticator.
+        Signora does not require a specific app: a code is a code.
       </p>
 
       {/**
@@ -241,29 +251,41 @@ function ScanStep({ secret, onNext }: { secret: string; onNext: () => void }) {
  * component state for one flow, and there is no call anywhere that could ask
  * for them again.
  */
-function BackupCodes({ codes, onNext }: { codes: readonly string[]; onNext: () => void }) {
+function BackupCodes({
+  codes,
+  onNext,
+}: {
+  codes: readonly string[];
+  onNext: () => void;
+}) {
   return (
     <div className="flex flex-col gap-4">
       <div>
         <p className="text-sm font-medium text-content">Backup codes · shown once</p>
         <p className="mt-1 text-sm leading-6 text-content-muted">
-          Single-use codes for when every device is unavailable. This is the only screen that
-          will ever display them — Signora stores hashes, so it cannot show them again.
+          Single-use codes for when every device is unavailable. This is the only screen
+          that will ever display them — Signora stores hashes, so it cannot show them
+          again.
         </p>
       </div>
 
       {/* ♿ 📁 *"Backup codes are readable, selectable and downloadable — never an
           image."* A list, in a monospace face, that a person can select. */}
-      <ol className="grid grid-cols-2 gap-1.5 font-mono text-sm" data-testid="backup-codes">
+      <ol
+        className="grid grid-cols-2 gap-1.5 font-mono text-sm"
+        data-testid="backup-codes"
+      >
         {codes.map((backupCode, index) => (
           <li key={backupCode} className="select-all text-content">
-            <span className="mr-2 text-content-muted">{String(index + 1).padStart(2, '0')}</span>
+            <span className="mr-2 text-content-muted">
+              {String(index + 1).padStart(2, '0')}
+            </span>
             {backupCode}
           </li>
         ))}
       </ol>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <DownloadCodes codes={codes} />
         <Button onClick={onNext}>I have saved them</Button>
       </div>
@@ -280,7 +302,7 @@ function DownloadCodes({ codes }: { codes: readonly string[] }) {
   const href = `data:text/plain;charset=utf-8,${encodeURIComponent(codes.join('\n'))}`;
   return (
     <a
-      className="inline-flex h-9 items-center rounded-md border border-border px-3 text-sm font-medium text-content hover:bg-surface-sunken focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      className="inline-flex h-9 items-center rounded-md border border-border px-3 text-sm font-medium text-content hover:bg-surface-sunken "
       href={href}
       download="signora-backup-codes.txt"
     >

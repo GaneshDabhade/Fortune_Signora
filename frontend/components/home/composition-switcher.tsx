@@ -100,7 +100,10 @@ export function CompositionSwitcher({
     <div
       role="radiogroup"
       aria-label="Home composition"
-      className={cn('flex flex-none gap-[3px] rounded-md bg-surface-sunken p-[3px]', className)}
+      className={cn(
+        'flex flex-none gap-[3px] rounded-md bg-surface-sunken p-[3px]',
+        className,
+      )}
     >
       {options.map((option) => {
         const active = option === current;
@@ -113,9 +116,11 @@ export function CompositionSwitcher({
             disabled={change.isPending}
             onClick={() => change.mutate({ home_composition: option })}
             className={cn(
-              'rounded-sm px-2.5 py-1 text-[11.5px] font-semibold transition-colors',
-              'disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
-              active ? 'bg-surface text-content shadow-sm' : 'text-content-subtle hover:text-content',
+              'rounded-sm px-2.5 py-1 text-2xs font-semibold transition-colors',
+              'disabled:opacity-50 ',
+              active
+                ? 'bg-surface text-content shadow-sm'
+                : 'text-content-subtle hover:text-content',
             )}
           >
             {COMPOSITION_NAME[option]}

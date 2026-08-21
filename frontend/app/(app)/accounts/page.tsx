@@ -13,6 +13,8 @@ import {
 } from '@/components/accounts/account-segments';
 import { NothingSaid, StageBadge } from '@/components/accounts/account-commercial';
 import { AccountTags, tagsFor } from '@/components/accounts/account-tags';
+import type { AccountSegment } from '@/lib/query/hooks/account-segments';
+import type { Membership } from '@/lib/api/types';
 import { AddTagControl } from '@/components/accounts/add-tag-control';
 import { BulkBar } from '@/components/accounts/bulk-bar';
 import type { Selection } from '@/lib/accounts/selection';
@@ -54,9 +56,11 @@ import {
   Button,
   Card,
   EmptyState,
+  IconButton,
   PageHeader,
   SkeletonText,
   TBody,
+  TabPanel,
   TD,
   TH,
   THead,
@@ -71,7 +75,7 @@ import {
 } from '@/lib/accounts/view';
 import { ContextDrawer } from './context-drawer';
 import { AccountsToolbar } from './toolbar';
-import { ViewTabs, type ViewMode } from './view-tabs';
+import { VIEW_TABS, ViewTabs, viewTabValue, type ViewMode } from './view-tabs';
 import {
   DEFAULT_COLUMNS,
   formatMoney,
@@ -142,16 +146,16 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
  * difference is an outage.** ✅ **`error` is checked before `data`, always.**
  */
 /** 📁 **The design's pager control** — *"height:28px; padding:0 10px;
- *  border-radius:7px; border:1px solid var(--line-soft)"*. ⚡ **`--line-soft`
- *  and not `--line`**, which is what the design draws here and is the
- *  distinction the product-wide border correction established: containers and
- *  dividers take the soft hairline. */
+ * border-radius:7px; border:1px solid var(--line-soft)"*. ⚡ **`--line-soft`
+ * and not `--line`**, which is what the design draws here and is the
+ * distinction the product-wide border correction established: containers and
+ * dividers take the soft hairline. */
 const PAGER =
   'inline-flex h-control-sm items-center rounded-md border border-border-soft px-2.5 ' +
   'text-xs font-medium text-content hover:bg-surface-sunken ' +
   'disabled:cursor-not-allowed disabled:text-content-subtle disabled:hover:bg-transparent ' +
-  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ' +
-  'focus-visible:outline-accent';
+  '' +
+  '';
 
 export default function CompaniesPage() {
   /**
@@ -203,9 +207,9 @@ export default function CompaniesPage() {
   const savedViews = useSavedViews(workspaceId);
   const [selectedView, setSelectedView] = useState<string | null>(null);
   /** ⚡ **Why the chosen view could not be opened**, or `null`. ⛔ **A sentence
-   *  rather than a boolean**, because the screen has to say which view and why
-   *  — 📁 the same rule `LockedField` applies: a lock with no reason is worse
-   *  than an absent field. */
+   * rather than a boolean**, because the screen has to say which view and why
+   * — 📁 the same rule `LockedField` applies: a lock with no reason is worse
+   * than an absent field. */
   const [viewRefusal, setViewRefusal] = useState<string | null>(null);
   const saveView = useSaveView(workspaceId);
 
@@ -244,8 +248,14 @@ export default function CompaniesPage() {
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const sort = useMemo(() => sortFromParam(params.get(ARRANGEMENT_PARAMS.sort)), [params]);
-  const group = useMemo(() => groupFromParam(params.get(ARRANGEMENT_PARAMS.group)), [params]);
+  const sort = useMemo(
+    () => sortFromParam(params.get(ARRANGEMENT_PARAMS.sort)),
+    [params],
+  );
+  const group = useMemo(
+    () => groupFromParam(params.get(ARRANGEMENT_PARAMS.group)),
+    [params],
+  );
   const arrange = (nextSort: Sort, nextGroup: GroupKey | null) => {
     const query = withArrangement(params, nextSort, nextGroup).toString();
     // ⛔ **`replace`, not `push`** — ⚡ reordering a list is not a place a
@@ -256,25 +266,25 @@ export default function CompaniesPage() {
   const setSort = (next: Sort) => arrange(next, group);
   const setGroup = (next: GroupKey | null) => arrange(sort, next);
   /** 📁 **The design's collapsible groups** — *"groups collapse, and a collapsed
-   *  group still shows its worst status."* ⚡ **Collapsed rather than expanded
-   *  is the stored set**, so changing the grouping opens everything rather than
-   *  hiding rows behind a label the customer has not seen before. */
+   * group still shows its worst status."* ⚡ **Collapsed rather than expanded
+   * is the stored set**, so changing the grouping opens everything rather than
+   * hiding rows behind a label the customer has not seen before. */
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
   /** 📁 **The active row — the one the design expands AND previews.** The mock's
-   *  expanded panel and its context drawer both name *Vantage Logistics*, so
-   *  one chevron opens both.
+   * expanded panel and its context drawer both name *Vantage Logistics*, so
+   * one chevron opens both.
    *
-   *  ⚡ **The row id, not the row**, so a refetch that replaces the page's
-   *  objects leaves both showing the current facts rather than a snapshot from
-   *  when they opened. */
+   * ⚡ **The row id, not the row**, so a refetch that replaces the page's
+   * objects leaves both showing the current facts rather than a snapshot from
+   * when they opened. */
   const [previewing, setPreviewing] = useState<string | null>(null);
   /** ⚠️ **The drawer's ✕ is its own control, and it closes its own panel.**
    *
-   *  ⛔ **The first version drove both from `previewing` alone**, and the
-   *  screenshot showed the cost: **dismissing the preview silently collapsed
-   *  the expanded row underneath it** — a customer who wanted the panel out of
-   *  the way lost the thing they had opened. ⚡ **Expansion outlives the
-   *  drawer**; expanding a row re-opens it. */
+   * ⛔ **The first version drove both from `previewing` alone**, and the
+   * screenshot showed the cost: **dismissing the preview silently collapsed
+   * the expanded row underneath it** — a customer who wanted the panel out of
+   * the way lost the thing they had opened. ⚡ **Expansion outlives the
+   * drawer**; expanding a row re-opens it. */
   const [previewOpen, setPreviewOpen] = useState(false);
   const [columns, setColumns] = useState<readonly ColumnId[]>(DEFAULT_COLUMNS);
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
@@ -292,8 +302,8 @@ export default function CompaniesPage() {
     [current, filters, sort],
   );
   /** 📁 **The design's grouped table**, or `null` when nothing is grouped —
-   *  ⛔ **`null` rather than one group of everything**, which would draw a
-   *  header a customer never asked for. */
+   * ⛔ **`null` rather than one group of everything**, which would draw a
+   * header a customer never asked for. */
   const groups = useMemo(() => groupRows(shown, group), [shown, group]);
   const shownColumns = useMemo(() => visibleColumns(columns), [columns]);
 
@@ -332,20 +342,35 @@ export default function CompaniesPage() {
    * `member_user_id` into somebody a person recognises. */
   const members = useWorkspaceMembers(columns.includes('owner') ? workspaceId : null);
   /** ⚡ So the expanded row's workflow line can say *you* rather than repeating
-   *  a name the reader would have to recognise as their own. */
+   * a name the reader would have to recognise as their own. */
   const viewerId = useSession().data?.user.id ?? null;
   /** ⛔ **Asked only when the column is on**, on the same terms as the owner
-   *  and tag reads. */
+   * and tag reads. */
   const segmentIds = useMemo(
     () => (columns.includes('segment') ? shown.map((r) => r.account.account_id) : []),
     [columns, shown],
   );
   const segmentMemberships = useAccountSegmentMemberships(workspaceId, segmentIds);
   /** ⚡ **The directory the screen already holds**, which is what turns a
-   *  `segment_id` into a name a person recognises — the same shape the tag
-   *  vocabulary serves for chips. */
+   * `segment_id` into a name a person recognises — the same shape the tag
+   * vocabulary serves for chips. */
   const segments = useAccountSegments(columns.includes('segment') ? workspaceId : null);
   const assignments = useAccountTagAssignments(workspaceId, taggable);
+
+  /**
+   * ⚡ **The joins the card view needs, assembled once.** 📁 The design's card
+   * draws `segment · ACV · renewal · owner · tags`, and three of those are
+   * another bounded context's fact — ⛔ **so the card reads exactly what the
+   * TABLE reads**, rather than describing one company two ways.
+   */
+  const cardJoins = {
+    owners,
+    segmentMemberships,
+    segmentList: segments.data?.segments ?? [],
+    tagAssignments: assignments,
+    tagVocabulary: vocabulary,
+    members: members.data?.items ?? [],
+  };
 
   const [selection, setSelection] = useState<Selection>(NOTHING_SELECTED);
   const createTag = useCreateTag(workspaceId);
@@ -468,7 +493,7 @@ export default function CompaniesPage() {
             {/* 🔴 **This sentence read *"Score, owner, value and renewal are
                 not on this list yet"* and three of the four have since landed**
                 — owner and segment on ADR-0411, Open ACV and Renewal on
-                **ADR-0409, ratified 2026-08-12.** ⛔ **A screen describing its
+              **ADR-0409, ratified 2026-08-12.** ⛔ **A screen describing its
                 own absences has to keep the list true**, or it is the
                 confidently wrong statement [§2](../../../../CLAUDE.md) is
                 written against.
@@ -476,10 +501,11 @@ export default function CompaniesPage() {
                 ⚡ **Signora score is the one that is genuinely nowhere**, and
                 naming only it is what makes the sentence worth reading. */}
             <span className="text-content-muted">
-              A Signora score is not on this list yet. Value, renewal and stage arrive from a
-              connected system — until one is connected they read as not reported, never as
-              zero.
-            </span>{' '}
+              A Signora score is not on this list yet. Value, renewal and stage arrive
+              from a connected system — until one is connected they read as not reported,
+              never as zero.
+            </span>
+            {' '}
             {/* 🔴 **Where the design's `Import` and `New company` are.** ⛔ **The
                 comment above `secondaryActions` claimed this sentence existed
                 and it did not** — 📁 [§2](../../../../CLAUDE.md): the
@@ -513,7 +539,7 @@ export default function CompaniesPage() {
       />
 
       {/* 📁 **The design places the drawer BESIDE the table**, not above it —
-          *"a non-modal panel that pushes content"* (Design System v2 §12).
+        *"a non-modal panel that pushes content"* (Design System v2 §12).
           ⛔ **`Drawer` deliberately does not push**: *"pushing is a layout
           decision belonging to whichever shell places it, and a component that
           reached out to reflow the page would be a primitive taking a
@@ -521,551 +547,624 @@ export default function CompaniesPage() {
           the component's own docstring says it belongs. */}
       <div className="flex items-start gap-4">
         <div className="min-w-0 flex-1">
-
-      {/* 🔴 **`isError` FIRST.** 📁 [P-A](../../../../docs/DOMAIN_DISCOVERY_REGISTER.md):
-          a failed read must never render as an empty result. ⚠️ **On this screen
-          the two are indistinguishable to a seller**, and the wrong one costs
-          them a morning of believing their book is gone. */}
-      {accounts.isError ? (
-        <StatedAbsence
-          as="page"
-          icon={Building2}
-          subject="your companies"
-          reassurance="Nothing has been lost — no account has been removed"
-        />
-      ) : accounts.isLoading ? (
-        <SkeletonText lines={6} />
-      ) : loadedAll.length === 0 ? (
-        <EmptyState
-          icon={Building2}
-          title="No companies yet"
-          description="Companies appear here as Signora resolves them from your connected sources. Connect a source and the first ones arrive with it."
-        />
-      ) : (
-        <>
-          {/* 📁 **The design's saved-view row, with the switcher on its right.**
-          ⛔ **The switcher was above the filters**, which is not a place the
-          design has. */}
-      <ViewTabs
-        views={savedViews.data?.items ?? []}
-        loading={savedViews.isLoading}
-        selected={selectedView}
-        /**
-         * 🔴 **Opening a view APPLIES it, or says why it cannot.**
-         *
-         * ⛔ **Never partly applied.** 📁 `working-list.ts` names the outcome:
-         * *"the customer gets a list that is neither what they saved nor what
-         * they asked for, and nothing says so."* ⚡ **The store is
-         * workspace-wide and holds four screens' declarations**, so a Reports
-         * definition sitting in this tab row is the ordinary case rather than
-         * an error — **and the refusal says which it is.**
-         */
-        onSelect={(id) => {
-          setSelectedView(id);
-          setViewRefusal(null);
-          if (id === null) {
-            setFilters(NO_FILTERS);
-            arrange(NO_SORT, null);
-            return;
-          }
-          const view = savedViews.data?.items.find((candidate) => candidate.id === id);
-          if (view === undefined) return;
-          const why = whyNotReadableHere(view.declaration);
-          if (why !== null) {
-            setViewRefusal(why);
-            return;
-          }
-          const applied = applyDeclaration(view.declaration as unknown as CompaniesDeclaration);
-          setFilters(applied.filters);
-          arrange(applied.sort, applied.group);
-          setPage(0);
-        }}
-        refusal={viewRefusal}
-        onSave={
-          // ⛔ **Offered only when it can work.** ⚡ A save with no workspace is
-          // a control that fails after the click, which is B-255 with a delay.
-          workspaceId === null
-            ? undefined
-            : (name: string) =>
-                saveView.mutate(
-                  {
-                    name,
-                    declaration: declareCompanies(filters, group, sort) as unknown as Record<
-                      string,
-                      unknown
-                    >,
-                  },
-                  { onSuccess: (view) => setSelectedView(view.id) },
-                )
-        }
-        saving={saveView.isPending}
-        mode={mode}
-        onMode={setMode}
-      />
-
-      <AccountsToolbar
-        density={density}
-        onDensity={setDensity}
-        columns={columns}
-        onColumns={setColumns}
-        filters={filters}
-        onFilters={setFilters}
-        sort={sort}
-        onSort={setSort}
-        group={group}
-        onGroup={setGroup}
-        kinds={choicesFor(current, 'kind')}
-        sources={choicesFor(current, 'source')}
-        total={typeof total.data?.total === 'number' ? total.data.total : null}
-        shown={shown.length}
-        loaded={current.length}
-      />
-
-          {/* ⛔ **A filter that matches nothing is not an empty book.** ⚡ **The
-              two are different sentences and this screen has both**: the empty
-              state above says no company exists; this says the narrowing
-              excluded them all. */}
-          {shown.length === 0 ? (
+          {/* 🔴 **`isError` FIRST.** 📁 [P-A](../../../../docs/DOMAIN_DISCOVERY_REGISTER.md):
+              a failed read must never render as an empty result. ⚠️ **On this screen
+              the two are indistinguishable to a seller**, and the wrong one costs
+              them a morning of believing their book is gone. */}
+          {accounts.isError ? (
+            <StatedAbsence
+              as="page"
+              icon={Building2}
+              subject="your companies"
+              reassurance="Nothing has been lost — no account has been removed"
+            />
+          ) : accounts.isLoading ? (
+            <SkeletonText lines={6} />
+          ) : loadedAll.length === 0 ? (
             <EmptyState
               icon={Building2}
-              title="No companies match these filters"
-              description="Nothing on this page matches. Clear a condition, or move to the next page — filters narrow what has been read, not the whole book."
+              title="No companies yet"
+              description="Companies appear here as Signora resolves them from your connected sources. Connect a source and the first ones arrive with it."
             />
-          ) : mode === 'board' ? (
-            /* 📁 **Board** — *"same data, same filters, same selection"*, laid
-               out as one lane per group. ⚡ **It IS the grouping**, rendered
-               sideways, which is why it reuses `groupRows` rather than
-               grouping a second time ([§2](../../../../CLAUDE.md)). */
-            <BoardLanes
-              groups={groups}
-              density={density}
-              onGroup={() => setGroup('renewal')}
-            />
-          ) : mode === 'cards' ? (
-            <CardGrid rows={shown} density={density} />
           ) : (
             <>
-            <BulkBar
-              count={selectedCount(selection)}
-              onSelectAll={
-                offersSelectAll(selection, onScreen, totalMatching)
-                  ? () => setSelection(selectAllMatching(totalMatching))
-                  : undefined
-              }
-              selectAllCount={
-                offersSelectAll(selection, onScreen, totalMatching) ? totalMatching : undefined
-              }
-              onClear={() => setSelection(NOTHING_SELECTED)}
-              onExport={exportSelection}
-              addTag={
-                <AddTagControl
-                  count={selectedCount(selection)}
-                  tags={vocabulary.data?.tags ?? []}
-                  /* ⛔ **`undefined` while the selection cannot be enumerated
-                     OR the vocabulary is unread.** The first is the same
-                     refusal Export makes; the second keeps an unread list from
-                     rendering as *"no tags"*. */
-                  onPropose={
-                    resolvedIds(selection) === null || vocabulary.data === undefined
-                      ? undefined
-                      : (tagId) => {
-                          proposeBatch.mutate(
-                            { tagId, accounts: resolvedIds(selection) ?? [] },
-                            { onSuccess: () => setSelection(NOTHING_SELECTED) },
-                          );
-                        }
+              {/* 📁 **The design's saved-view row, with the switcher on its right.**
+                  ⛔ **The switcher was above the filters**, which is not a place the
+                  design has. */}
+              <ViewTabs
+                views={savedViews.data?.items ?? []}
+                loading={savedViews.isLoading}
+                selected={selectedView}
+                /**
+                 * 🔴 **Opening a view APPLIES it, or says why it cannot.**
+                 *
+                 * ⛔ **Never partly applied.** 📁 `working-list.ts` names the outcome:
+                 * *"the customer gets a list that is neither what they saved nor what
+                 * they asked for, and nothing says so."* ⚡ **The store is
+                 * workspace-wide and holds four screens' declarations**, so a Reports
+                 * definition sitting in this tab row is the ordinary case rather than
+                 * an error — **and the refusal says which it is.**
+                 */
+                onSelect={(id) => {
+                  setSelectedView(id);
+                  setViewRefusal(null);
+                  if (id === null) {
+                    setFilters(NO_FILTERS);
+                    arrange(NO_SORT, null);
+                    return;
                   }
-                  onCreate={(name) => createTag.mutate({ name, tone: 'neutral' })}
-                  pending={proposeBatch.isPending || createTag.isPending}
-                />
-              }
-            />
-            {/**
-              * 🔴 **§20 — *"Tables become row cards; pinned columns become the
-              * card head."*** ⛔ **Below 1024 the table was 826px wide inside a
-              * 375px column**, scrolling horizontally: measured at 390 × 844,
-              * with `Company` — the pinned column — off-screen the moment a
-              * reader looked at `Open ACV`.
-              *
-              * ⚡ **The card presentation this renders is the DESIGN'S OWN**,
-              * the one the `Cards` view mode already draws — ⛔ **not a second
-              * card invented for the phone**, which would be the duplicate
-              * [§20c](../../../../CLAUDE.md) forbids. **The chosen view mode is
-              * unchanged**: the design says the *table* becomes row cards, not
-              * that a person's choice is overridden.
-              */}
-            {rowCards ? (
-              <CardGrid rows={shown} density={density} />
-            ) : (
-            <Table>
-              <THead>
-                <TR>
-                  <TH scope="col" className="w-8">
-                    <input
-                      type="checkbox"
-                      aria-label="Select the companies on this page"
-                      checked={headerState(selection, onScreen) === 'all'}
-                      /* ⚡ **Mixed is a real third state.** A box that showed
-                         ticked while half the rows were unselected would make
-                         *Select all* look like a no-op. */
-                      ref={(box) => {
-                        if (box !== null) {
-                          box.indeterminate = headerState(selection, onScreen) === 'some';
-                        }
-                      }}
-                      onChange={() =>
-                        setSelection(
-                          headerState(selection, onScreen) === 'all'
-                            ? NOTHING_SELECTED
-                            : selectOnScreen(onScreen),
+                  const view = savedViews.data?.items.find(
+                    (candidate) => candidate.id === id,
+                  );
+                  if (view === undefined) return;
+                  const why = whyNotReadableHere(view.declaration);
+                  if (why !== null) {
+                    setViewRefusal(why);
+                    return;
+                  }
+                  const applied = applyDeclaration(
+                    view.declaration as unknown as CompaniesDeclaration,
+                  );
+                  setFilters(applied.filters);
+                  arrange(applied.sort, applied.group);
+                  setPage(0);
+                }}
+                refusal={viewRefusal}
+                mode={mode}
+                onMode={setMode}
+              />
+
+              <AccountsToolbar
+                density={density}
+                onDensity={setDensity}
+                columns={columns}
+                onColumns={setColumns}
+                filters={filters}
+                onFilters={setFilters}
+                sort={sort}
+                onSort={setSort}
+                group={group}
+                onGroup={setGroup}
+                kinds={choicesFor(current, 'kind')}
+                sources={choicesFor(current, 'source')}
+                total={typeof total.data?.total === 'number' ? total.data.total : null}
+                shown={shown.length}
+                loaded={current.length}
+                onSave={
+                  // ⛔ **Offered only when it can work.** ⚡ A save with no workspace is
+                  // a control that fails after the click, which is B-255 with a delay.
+                  workspaceId === null
+                    ? undefined
+                    : (name: string) =>
+                        saveView.mutate(
+                          {
+                            name,
+                            declaration: declareCompanies(
+                              filters,
+                              group,
+                              sort,
+                            ) as unknown as Record<string, unknown>,
+                          },
+                          { onSuccess: (view) => setSelectedView(view.id) },
                         )
+                }
+                saving={saveView.isPending}
+              />
+
+              {/* ♿ **The panel the saved-view tabs control** — 📁
+                  [B-1055](../../../../docs/BUGS.md). ⛔ **The strip carried
+                  `role="tab"` and named nothing**, so a screen-reader user choosing
+                  a view was told *"tab, selected"* and left to find the list that
+                  changed. ⚡ **The panel is everything the view decides** — the
+                  narrowing's own empty state, the three modes, and the pager —
+                  🔴 **not just the table**, because opening a view changes all
+                  three. */}
+              <TabPanel idBase={VIEW_TABS} value={viewTabValue(selectedView)}>
+                {/* ⛔ **A filter that matches nothing is not an empty book.** ⚡ **The
+                    two are different sentences and this screen has both**: the empty
+                    state above says no company exists; this says the narrowing
+                    excluded them all. */}
+                {shown.length === 0 ? (
+                  <EmptyState
+                    icon={Building2}
+                    title="No companies match these filters"
+                    description="Nothing on this page matches. Clear a condition, or move to the next page — filters narrow what has been read, not the whole book."
+                  />
+                ) : mode === 'board' ? (
+                  /* 📁 **Board** — *"same data, same filters, same selection"*, laid
+                     out as one lane per group. ⚡ **It IS the grouping**, rendered
+                     sideways, which is why it reuses `groupRows` rather than
+                     grouping a second time ([§2](../../../../CLAUDE.md)). */
+                  <BoardLanes
+                    joins={cardJoins}
+                    groups={groups}
+                    density={density}
+                    onGroup={() => setGroup('renewal')}
+                  />
+                ) : mode === 'cards' ? (
+                  <CardGrid rows={shown} density={density} joins={cardJoins} />
+                ) : (
+                  <>
+                    <BulkBar
+                      count={selectedCount(selection)}
+                      onSelectAll={
+                        offersSelectAll(selection, onScreen, totalMatching)
+                          ? () => setSelection(selectAllMatching(totalMatching))
+                          : undefined
+                      }
+                      selectAllCount={
+                        offersSelectAll(selection, onScreen, totalMatching)
+                          ? totalMatching
+                          : undefined
+                      }
+                      onClear={() => setSelection(NOTHING_SELECTED)}
+                      onExport={exportSelection}
+                      addTag={
+                        <AddTagControl
+                          count={selectedCount(selection)}
+                          tags={vocabulary.data?.tags ?? []}
+                          /* ⛔ **`undefined` while the selection cannot be enumerated
+                             OR the vocabulary is unread.** The first is the same
+                             refusal Export makes; the second keeps an unread list from
+                             rendering as *"no tags"*. */
+                          onPropose={
+                            resolvedIds(selection) === null ||
+                            vocabulary.data === undefined
+                              ? undefined
+                              : (tagId) => {
+                                  proposeBatch.mutate(
+                                    { tagId, accounts: resolvedIds(selection) ?? [] },
+                                    { onSuccess: () => setSelection(NOTHING_SELECTED) },
+                                  );
+                                }
+                          }
+                          onCreate={(name) => createTag.mutate({ name, tone: 'neutral' })}
+                          pending={proposeBatch.isPending || createTag.isPending}
+                        />
                       }
                     />
-                  </TH>
-                  {/* 📁 **The design's 32px expander column**, between the
-                      checkbox and Company. ⚡ **It opens the context drawer** —
-                      the design's own pairing: *"↑↓ moves the row · the drawer
-                      follows."* */}
-                  <TH scope="col" className="w-8">
-                    <span className="sr-only">Preview</span>
-                  </TH>
-                  {shownColumns.map((column) => (
-                    <TH
-                      key={column.id}
-                      scope="col"
-                      /* 📁 **Rule ①, and the design's own words** — *"company
-                         and score pin left behind a soft gradient rather than a
-                         hard rule, so horizontal scroll never produces a
-                         seam."*
+                    {/**
+                     * 🔴 **§20 — *"Tables become row cards; pinned columns become the
+                     * card head."*** ⛔ **Below 1024 the table was 826px wide inside a
+                     * 375px column**, scrolling horizontally: measured at 390 × 844,
+                     * with `Company` — the pinned column — off-screen the moment a
+                     * reader looked at `Open ACV`.
+                     *
+                     * ⚡ **The card presentation this renders is the DESIGN'S OWN**,
+                     * the one the `Cards` view mode already draws — ⛔ **not a second
+                     * card invented for the phone**, which would be the duplicate
+                     * [§20c](../../../../CLAUDE.md) forbids. **The chosen view mode is
+                     * unchanged**: the design says the *table* becomes row cards, not
+                     * that a person's choice is overridden.
+                     */}
+                    {rowCards ? (
+                      <CardGrid rows={shown} density={density} joins={cardJoins} />
+                    ) : (
+                      <Table>
+                        <THead>
+                          <TR>
+                            <TH scope="col" className="w-8">
+                              {/* ♿ 📁 **Design System v2 §17 `2.5.8`** — *"Targets ≥ 24px with 8px
+                                  separation; the 26px compact button keeps a **32px hit area**."*
+                                  ⚠️ **Measured at `13 × 13`** — a bare native checkbox, on every row of
+                                  the book of accounts. ⛔ **The VISUAL stays small and the TARGET grows**,
+                                  which is what the design's own wording asks for: 📁 the design draws this
+                                  box at `14px`. ⚡ **A wrapping `<label>` is the target** — it forwards the
+                                  click to the input and costs no new component, and it is the pattern the
+                                  Columns panel beside it already uses. */}
+                              <label className="flex min-h-6 min-w-6 cursor-pointer items-center justify-center coarse:min-h-11 coarse:min-w-11">
+                                <input
+                                  className="h-4 w-4 shrink-0 accent-accent"
+                                  type="checkbox"
+                                  aria-label="Select the companies on this page"
+                                  checked={headerState(selection, onScreen) === 'all'}
+                                  /* ⚡ **Mixed is a real third state.** A box that showed
+                                     ticked while half the rows were unselected would make
+                                   *Select all* look like a no-op. */
+                                  ref={(box) => {
+                                    if (box !== null) {
+                                      box.indeterminate =
+                                        headerState(selection, onScreen) === 'some';
+                                    }
+                                  }}
+                                  onChange={() =>
+                                    setSelection(
+                                      headerState(selection, onScreen) === 'all'
+                                        ? NOTHING_SELECTED
+                                        : selectOnScreen(onScreen),
+                                    )
+                                  }
+                                />
+                              </label>
+                            </TH>
+                            {/* 📁 **The design's 32px expander column**, between the
+                                checkbox and Company. ⚡ **It opens the context drawer** —
+                                the design's own pairing: *"↑↓ moves the row · the drawer
+                                follows."* */}
+                            <TH scope="col" className="w-8">
+                              <span className="sr-only">Preview</span>
+                            </TH>
+                            {shownColumns.map((column) => (
+                              <TH
+                                key={column.id}
+                                scope="col"
+                                /* 📁 **Rule ①, and the design's own words** — *"company
+                                   and score pin left behind a soft gradient rather than a
+                                   hard rule, so horizontal scroll never produces a
+                                   seam."*
 
-                         🔴 **The shared `Table` already implemented the 24px
-                         `::after` fade; this screen was not consuming it.**
-                         ⚡ **The same defect class as the border audit**: the
-                         capability was correct at the shared layer and the page
-                         did not ask for it. ⛔ **`ColumnSpec.pinned` existed and
-                         did nothing visually.** */
-                      pin={column.pinned === true}
-                      /* 📁 **The design right-aligns the figures** — Open ACV
-                         and Renewal — **and the header follows the body.** ⛔ A
-                         heading that aligned differently from its column reads
-                         as a different column. */
-                      className={column.numeric ? 'text-right' : undefined}
-                    >
-                      {column.label}
-                    </TH>
-                  ))}
-                </TR>
-              </THead>
-              <TBody>
-                {(groups ?? [{ label: '', rows: shown, openAcv: null }]).map((bucket) => (
-                  <Fragment key={bucket.label}>
-                    {/* 📁 **The design's group header row** — *"Renewal in Q3
-                        FY26 · 18 companies · $7.42M"* — on `--bg`, spanning the
-                        table, with a soft hairline beneath.
+                                   🔴 **The shared `Table` already implemented the 24px
+                                   `::after` fade; this screen was not consuming it.**
+                                   ⚡ **The same defect class as the border audit**: the
+                                   capability was correct at the shared layer and the page
+                                   did not ask for it. ⛔ **`ColumnSpec.pinned` existed and
+                                   did nothing visually.** */
+                                pin={column.pinned === true}
+                                /* 📁 **The design right-aligns the figures** — Open ACV
+                                   and Renewal — **and the header follows the body.** ⛔ A
+                                   heading that aligned differently from its column reads
+                                   as a different column. */
+                                className={column.numeric ? 'text-right' : undefined}
+                              >
+                                {column.label}
+                              </TH>
+                            ))}
+                          </TR>
+                        </THead>
+                        <TBody>
+                          {(groups ?? [{ label: '', rows: shown, openAcv: null }]).map(
+                            (bucket) => (
+                              <Fragment key={bucket.label}>
+                                {/* 📁 **The design's group header row** — *"Renewal in Q3
+                                    FY26 · 18 companies · $7.42M"* — on `--bg`, spanning the
+                                    table, with a soft hairline beneath.
 
-                        ⛔ **Two figures, not four.** The design also prints a
-                        status badge and an average score; **a badge is a
-                        classification nothing stores and the average needs the
-                        score column that has no source.** ⚡ **A header carrying
-                        two true figures is worth more than one carrying two
-                        true and two invented.** */}
-                    {groups === null ? null : (
-                      <TR>
-                        <TD
-                          colSpan={shownColumns.length + 2}
-                          className="bg-canvas py-2.5 text-sm"
-                        >
-                          <span className="flex flex-wrap items-center gap-2.5">
-                            {/* 📁 **The design's chevron**, and it is the
-                                control rather than a decoration beside one. */}
-                            <button
-                              type="button"
-                              aria-expanded={!collapsed.has(bucket.label)}
-                              onClick={() =>
-                                setCollapsed((was) => {
-                                  const next = new Set(was);
-                                  if (!next.delete(bucket.label)) next.add(bucket.label);
-                                  return next;
-                                })
-                              }
-                              className="flex items-center gap-2.5 rounded text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-                            >
-                              <span aria-hidden="true" className="text-xs text-content-subtle">
-                                {collapsed.has(bucket.label) ? '▸' : '▾'}
-                              </span>
-                              <span className="font-semibold text-content">{bucket.label}</span>
-                            </button>
-                            <span className="tabular-nums text-content-subtle">
-                              {bucket.rows.length.toLocaleString()}
-                              {bucket.rows.length === 1 ? ' company' : ' companies'}
-                            </span>
-                            {/* ⛔ **Omitted, never zero.** 📁 A `$0` subtotal
-                                over a group nobody has reported a figure for
-                                would be the header stating a fact no source
-                                supplied — and `groupRows` also withholds it
-                                when two currencies are present, because
-                                ADR-0409 forbids converting one into the
-                                other. */}
-                            {bucket.openAcv === null ? null : (
-                              <span className="tabular-nums text-content-subtle">
-                                · {formatMoney(bucket.openAcv)}
-                              </span>
-                            )}
-                          </span>
-                        </TD>
-                      </TR>
+                                    ⛔ **Two figures, not four.** The design also prints a
+                                    status badge and an average score; **a badge is a
+                                    classification nothing stores and the average needs the
+                                    score column that has no source.** ⚡ **A header carrying
+                                    two true figures is worth more than one carrying two
+                                    true and two invented.** */}
+                                {groups === null ? null : (
+                                  <TR>
+                                    <TD
+                                      colSpan={shownColumns.length + 2}
+                                      className="bg-canvas py-2.5 text-sm"
+                                    >
+                                      <span className="flex flex-wrap items-center gap-2.5">
+                                        {/* 📁 **The design's chevron**, and it is the
+                                            control rather than a decoration beside one. */}
+                                        <button
+                                          type="button"
+                                          aria-expanded={!collapsed.has(bucket.label)}
+                                          onClick={() =>
+                                            setCollapsed((was) => {
+                                              const next = new Set(was);
+                                              if (!next.delete(bucket.label))
+                                                next.add(bucket.label);
+                                              return next;
+                                            })
+                                          }
+                                          className="flex items-center gap-2.5 rounded text-left "
+                                        >
+                                          <span
+                                            aria-hidden="true"
+                                            className="text-xs text-content-subtle"
+                                          >
+                                            {collapsed.has(bucket.label) ? '▸' : '▾'}
+                                          </span>
+                                          <span className="font-semibold text-content">
+                                            {bucket.label}
+                                          </span>
+                                        </button>
+                                        <span className="tabular-nums text-content-subtle">
+                                          {bucket.rows.length.toLocaleString()}
+                                          {bucket.rows.length === 1
+                                            ? ' company'
+                                            : ' companies'}
+                                        </span>
+                                        {/* ⛔ **Omitted, never zero.** 📁 A `$0` subtotal
+                                            over a group nobody has reported a figure for
+                                            would be the header stating a fact no source
+                                            supplied — and `groupRows` also withholds it
+                                            when two currencies are present, because
+                                            ADR-0409 forbids converting one into the
+                                            other. */}
+                                        {bucket.openAcv === null ? null : (
+                                          <span className="tabular-nums text-content-subtle">
+                                            · {formatMoney(bucket.openAcv)}
+                                          </span>
+                                        )}
+                                      </span>
+                                    </TD>
+                                  </TR>
+                                )}
+                                {(collapsed.has(bucket.label) ? [] : bucket.rows).map(
+                                  (row) => (
+                                    <Fragment key={row.account.account_id}>
+                                      <TR>
+                                        <TD className={ROW_PADDING[density]}>
+                                          {/* ♿ 📁 §17 `2.5.8`, as the header box above. */}
+                                          <label className="flex min-h-6 min-w-6 cursor-pointer items-center justify-center coarse:min-h-11 coarse:min-w-11">
+                                            <input
+                                              className="h-4 w-4 shrink-0 accent-accent"
+                                              type="checkbox"
+                                              aria-label={`Select ${row.account.name ?? row.account.account_id}`}
+                                              checked={isSelected(
+                                                selection,
+                                                row.account.account_id,
+                                              )}
+                                              onChange={() =>
+                                                setSelection(
+                                                  toggle(
+                                                    selection,
+                                                    row.account.account_id,
+                                                    onScreen,
+                                                  ),
+                                                )
+                                              }
+                                            />
+                                          </label>
+                                        </TD>
+                                        <TD className={ROW_PADDING[density]}>
+                                          {/* 🔴 **`14 × 21`, measured at every one of thirty-four
+                                              widths** — ♿ 📁 `2.5.8`, *"targets ≥ 24px"*. ⛔ `px-1`
+                                              around a `›` is padding round a narrow glyph, not a
+                                              target. ⚡ [`IconButton`](../../../components/ui/icon-button.tsx)
+                                              `sm` is the 24px floor as a token, and the same
+                                              component the shell's own controls now use. */}
+                                          <IconButton
+                                            size="sm"
+                                            label={`Expand ${row.account.name ?? row.account.account_id}`}
+                                            expanded={
+                                              previewing === row.account.account_id
+                                            }
+                                            onClick={() => {
+                                              const collapsing =
+                                                previewing === row.account.account_id;
+                                              setPreviewing(
+                                                collapsing
+                                                  ? null
+                                                  : row.account.account_id,
+                                              );
+                                              setPreviewOpen(!collapsing);
+                                            }}
+                                            className={cn(
+                                              'transition-transform',
+                                              // ⚡ **The chevron turns rather than being swapped**,
+                                              // so the control a reader is pointing at does not
+                                              // change shape under the cursor.
+                                              previewing === row.account.account_id &&
+                                                'rotate-90',
+                                            )}
+                                          >
+                                            ›
+                                          </IconButton>
+                                        </TD>
+                                        {shownColumns.map((column) => (
+                                          <TD
+                                            key={column.id}
+                                            pin={column.pinned === true}
+                                            className={cn(
+                                              ROW_PADDING[density],
+                                              // 📁 `font-variant-numeric:tabular-nums` — the design
+                                              // sets it on every figure so a column of numbers has
+                                              // one edge rather than a ragged one.
+                                              column.numeric && 'text-right tabular-nums',
+                                            )}
+                                          >
+                                            {column.id === 'company' ? (
+                                              /* ✅ **Reused, not rebuilt** — `EntityName` carries the
+                                                 name, the agreement state and the *no source has
+                                                 named it* fallback, and it is what the attention
+                                                 list and search both render. */
+                                              <EntityName
+                                                identity={row.account}
+                                                fallbackId={row.account.account_id}
+                                                href={`/accounts/${row.account.account_id}`}
+                                              />
+                                            ) : column.id === 'owner' ? (
+                                              /* ⛔ **Joined, never read from the row**, on the same
+                                                 terms as tags: an assignment is
+                                                 `commercial_profile`'s and an account is
+                                                 `knowledge_graph`'s (§5). ⚡ **And the id becomes a
+                                                 person only here** — ADR-0411 stores a reference
+                                                 precisely so a name is never duplicated. */
+                                              ownerFor(
+                                                row.account.account_id,
+                                                owners.data?.assignments,
+                                              ) === undefined ? (
+                                                /* ⚠️ **Only once the read has ARRIVED.** While it
+                                                   is in flight the cell renders nothing —
+                                                   forty rows saying *Unassigned* during a load is
+                                                   forty false statements (P-A). */
+                                                owners.isSuccess ? (
+                                                  <UnassignedOwner />
+                                                ) : null
+                                              ) : (
+                                                <AccountOwner
+                                                  assignment={ownerFor(
+                                                    row.account.account_id,
+                                                    owners.data?.assignments,
+                                                  )}
+                                                  members={members.data?.items ?? []}
+                                                />
+                                              )
+                                            ) : column.id === 'segment' ? (
+                                              /* ⛔ **Joined, never read from the row**, on the same
+                                                 terms as owner and tags (§5). ⚡ **A LIST rather
+                                                 than one value**: the design's panel counts overlap
+                                                 by construction, and rendering only the first would
+                                                 be this screen choosing which of a customer's
+                                                 groupings matters. */
+                                              membershipFor(
+                                                row.account.account_id,
+                                                segmentMemberships.data?.memberships,
+                                              ) === undefined ? (
+                                                /* ⚠️ **Only once the read has ARRIVED.** Forty rows
+                                                   saying *No segment* during a load is forty false
+                                                   statements (P-A). */
+                                                segmentMemberships.isSuccess ? (
+                                                  <UnsegmentedAccount />
+                                                ) : null
+                                              ) : (
+                                                <AccountSegments
+                                                  membership={membershipFor(
+                                                    row.account.account_id,
+                                                    segmentMemberships.data?.memberships,
+                                                  )}
+                                                  segments={segments.data?.segments ?? []}
+                                                />
+                                              )
+                                            ) : column.id === 'acv' ? (
+                                              /* ⛔ **Never a bare number, and never a zero.** ⚡ The
+                                                 currency travels with the figure or the fact does
+                                                 not exist (ADR-0409 §3) — and an unstated ACV is a
+                                                 dash, because `$0` is something a seller would act
+                                                 on. */
+                                              row.commercial.open_acv === null ? (
+                                                <NothingSaid />
+                                              ) : (
+                                                formatMoney(row.commercial.open_acv)
+                                              )
+                                            ) : column.id === 'renewal' ? (
+                                              row.commercial.renewal_date === null ? (
+                                                <NothingSaid />
+                                              ) : (
+                                                formatDay(row.commercial.renewal_date)
+                                              )
+                                            ) : column.id === 'stage' ? (
+                                              /* ⚠️ **The customer's own word, always** — 📁
+                                                 ADR-0409 §5: *"the tenant's stage label is
+                                                 provenance and is never reasoned over."* ⚡ **A
+                                                 stage Signora has not mapped still shows**, which
+                                                 is the state the CRM Integrations design counts
+                                                 rather than hides. */
+                                              row.commercial.stage === null ? (
+                                                <NothingSaid />
+                                              ) : (
+                                                <StageBadge
+                                                  stage={row.commercial.stage}
+                                                />
+                                              )
+                                            ) : column.id === 'tags' ? (
+                                              /* ⛔ **Joined, never read from the row.** A tag is
+                                                 `commercial_profile`'s and an account is
+                                                 `knowledge_graph`'s — the screen reads both and
+                                                 joins them rather than buying a cross-module
+                                                 dependency for a column (§5). */
+                                              <AccountTags
+                                                tags={tagsFor(
+                                                  row.account.account_id,
+                                                  assignments.data?.assignments,
+                                                  vocabulary.data?.tags,
+                                                )}
+                                              />
+                                            ) : (
+                                              column.read?.(row)
+                                            )}
+                                          </TD>
+                                        ))}
+                                      </TR>
+                                      {/* 📁 **The design expands the row it is previewing** — the
+                                          mock's expanded panel and its context drawer name the same
+                                          account, *Vantage Logistics*. ⚡ **So one chevron drives
+                                          both**, rather than two controls competing for the same
+                                          row. */}
+                                      {previewing === row.account.account_id ? (
+                                        <ExpandedRow
+                                          row={row}
+                                          /* ⚡ The checkbox and the expander, plus every shown
+                                             column. */
+                                          span={shownColumns.length + 2}
+                                          workspaceId={workspaceId}
+                                          viewerId={viewerId}
+                                          members={members.data?.items ?? []}
+                                        />
+                                      ) : null}
+                                    </Fragment>
+                                  ),
+                                )}
+                              </Fragment>
+                            ),
+                          )}
+                        </TBody>
+                      </Table>
                     )}
-                {(collapsed.has(bucket.label) ? [] : bucket.rows).map((row) => (
-                  <Fragment key={row.account.account_id}>
-                  <TR>
-                    <TD className={ROW_PADDING[density]}>
-                      <input
-                        type="checkbox"
-                        aria-label={`Select ${row.account.name ?? row.account.account_id}`}
-                        checked={isSelected(selection, row.account.account_id)}
-                        onChange={() =>
-                          setSelection(toggle(selection, row.account.account_id, onScreen))
-                        }
-                      />
-                    </TD>
-                    <TD className={ROW_PADDING[density]}>
-                      <button
-                        type="button"
-                        aria-label={`Expand ${row.account.name ?? row.account.account_id}`}
-                        aria-expanded={previewing === row.account.account_id}
-                        onClick={() => {
-                          const collapsing = previewing === row.account.account_id;
-                          setPreviewing(collapsing ? null : row.account.account_id);
-                          setPreviewOpen(!collapsing);
-                        }}
-                        className={cn(
-                          'rounded px-1 text-content-subtle transition-transform hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent',
-                          // ⚡ **The chevron turns rather than being swapped**,
-                          // so the control a reader is pointing at does not
-                          // change shape under the cursor.
-                          previewing === row.account.account_id && 'rotate-90',
-                        )}
-                      >
-                        ›
-                      </button>
-                    </TD>
-                    {shownColumns.map((column) => (
-                      <TD
-                        key={column.id}
-                        pin={column.pinned === true}
-                        className={cn(
-                          ROW_PADDING[density],
-                          // 📁 `font-variant-numeric:tabular-nums` — the design
-                          // sets it on every figure so a column of numbers has
-                          // one edge rather than a ragged one.
-                          column.numeric && 'text-right tabular-nums',
-                        )}
-                      >
-                        {column.id === 'company' ? (
-                          /* ✅ **Reused, not rebuilt** — `EntityName` carries the
-                             name, the agreement state and the *no source has
-                             named it* fallback, and it is what the attention
-                             list and search both render. */
-                          <EntityName
-                            identity={row.account}
-                            fallbackId={row.account.account_id}
-                            href={`/accounts/${row.account.account_id}`}
-                          />
-                        ) : column.id === 'owner' ? (
-                          /* ⛔ **Joined, never read from the row**, on the same
-                             terms as tags: an assignment is
-                             `commercial_profile`'s and an account is
-                             `knowledge_graph`'s (§5). ⚡ **And the id becomes a
-                             person only here** — ADR-0411 stores a reference
-                             precisely so a name is never duplicated. */
-                          ownerFor(row.account.account_id, owners.data?.assignments) ===
-                          undefined ? (
-                            /* ⚠️ **Only once the read has ARRIVED.** While it
-                               is in flight the cell renders nothing —
-                               forty rows saying *Unassigned* during a load is
-                               forty false statements (P-A). */
-                            owners.isSuccess ? (
-                              <UnassignedOwner />
-                            ) : null
-                          ) : (
-                            <AccountOwner
-                              assignment={ownerFor(
-                                row.account.account_id,
-                                owners.data?.assignments,
-                              )}
-                              members={members.data?.items ?? []}
-                            />
-                          )
-                        ) : column.id === 'segment' ? (
-                          /* ⛔ **Joined, never read from the row**, on the same
-                             terms as owner and tags (§5). ⚡ **A LIST rather
-                             than one value**: the design's panel counts overlap
-                             by construction, and rendering only the first would
-                             be this screen choosing which of a customer's
-                             groupings matters. */
-                          membershipFor(
-                            row.account.account_id,
-                            segmentMemberships.data?.memberships,
-                          ) === undefined ? (
-                            /* ⚠️ **Only once the read has ARRIVED.** Forty rows
-                               saying *No segment* during a load is forty false
-                               statements (P-A). */
-                            segmentMemberships.isSuccess ? (
-                              <UnsegmentedAccount />
-                            ) : null
-                          ) : (
-                            <AccountSegments
-                              membership={membershipFor(
-                                row.account.account_id,
-                                segmentMemberships.data?.memberships,
-                              )}
-                              segments={segments.data?.segments ?? []}
-                            />
-                          )
-                        ) : column.id === 'acv' ? (
-                          /* ⛔ **Never a bare number, and never a zero.** ⚡ The
-                             currency travels with the figure or the fact does
-                             not exist (ADR-0409 §3) — and an unstated ACV is a
-                             dash, because `$0` is something a seller would act
-                             on. */
-                          row.commercial.open_acv === null ? (
-                            <NothingSaid />
-                          ) : (
-                            formatMoney(row.commercial.open_acv)
-                          )
-                        ) : column.id === 'renewal' ? (
-                          row.commercial.renewal_date === null ? (
-                            <NothingSaid />
-                          ) : (
-                            formatDay(row.commercial.renewal_date)
-                          )
-                        ) : column.id === 'stage' ? (
-                          /* ⚠️ **The customer's own word, always** — 📁
-                             ADR-0409 §5: *"the tenant's stage label is
-                             provenance and is never reasoned over."* ⚡ **A
-                             stage Signora has not mapped still shows**, which
-                             is the state the CRM Integrations design counts
-                             rather than hides. */
-                          row.commercial.stage === null ? (
-                            <NothingSaid />
-                          ) : (
-                            <StageBadge stage={row.commercial.stage} />
-                          )
-                        ) : column.id === 'tags' ? (
-                          /* ⛔ **Joined, never read from the row.** A tag is
-                             `commercial_profile`'s and an account is
-                             `knowledge_graph`'s — the screen reads both and
-                             joins them rather than buying a cross-module
-                             dependency for a column (§5). */
-                          <AccountTags
-                            tags={tagsFor(
-                              row.account.account_id,
-                              assignments.data?.assignments,
-                              vocabulary.data?.tags,
-                            )}
-                          />
-                        ) : (
-                          column.read?.(row)
-                        )}
-                      </TD>
-                    ))}
-                  </TR>
-                  {/* 📁 **The design expands the row it is previewing** — the
-                      mock's expanded panel and its context drawer name the same
-                      account, *Vantage Logistics*. ⚡ **So one chevron drives
-                      both**, rather than two controls competing for the same
-                      row. */}
-                  {previewing === row.account.account_id ? (
-                    <ExpandedRow
-                      row={row}
-                      /* ⚡ The checkbox and the expander, plus every shown
-                         column. */
-                      span={shownColumns.length + 2}
-                      workspaceId={workspaceId}
-                      viewerId={viewerId}
-                      members={members.data?.items ?? []}
-                    />
-                  ) : null}
-                  </Fragment>
-                ))}
-                  </Fragment>
-                ))}
-              </TBody>
-            </Table>
-            )}
+                  </>
+                )}
+
+                <nav
+                  aria-label="Pages"
+                  data-testid="accounts-pager"
+                  className="mt-4 flex flex-wrap items-center gap-3 border-t border-border-soft pt-3"
+                >
+                  {/* 📁 **The design's own sentence** — *"Rows 1–8 of 312"*, 12px,
+                      `--ink-3`, tabular numerals, on the row's left.
+
+                      ⛔ **The denominator is the WORKSPACE total, and only when the
+                      count has answered.** ⚡ **Never the loaded figure in its
+                      place**: it would read correctly on the first page and be wrong
+                      by more with every page after it.
+
+                      ⚠️ **The design also says *"virtualised beyond 100"***. **This
+                      table renders every row it has read** — a page is 50 — **so the
+                      clause is omitted rather than claimed.** */}
+                  <span className="text-2xs tabular-nums text-content-subtle">
+                    {shown.length === 0
+                      ? 'No rows'
+                      : `Rows ${(page * PAGE_SIZE + 1).toLocaleString()}–${(
+                          page * PAGE_SIZE +
+                          shown.length
+                        ).toLocaleString()}${
+                          typeof total.data?.total === 'number'
+                            ? ` of ${total.data.total.toLocaleString()}`
+                            : ''
+                        }`}
+                  </span>
+
+                  <span className="ml-auto flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setPage((was) => Math.max(0, was - 1))}
+                      disabled={page === 0}
+                      className={PAGER}
+                    >
+                      Previous
+                    </button>
+                    {/* 🔴 **The current page, and no numbers around it.**
+
+                        📁 **The design draws *1 2 3*.** ⛔ **Keyset pagination cannot
+                        offer them**: a cursor names where the NEXT page resumes, so
+                        page 3 is unreachable without walking pages 1 and 2 — and the
+                        endpoint refuses offsets for a stated reason: *"the graph is
+                        written continuously, so an offset page would skip or repeat
+                        rows between two requests and a customer paging the list would
+                        silently miss accounts."*
+
+                        ⚡ **So the current page renders in the design's brand pill and
+                        the neighbours are absent rather than dead.** 📁
+                        [B-255](../../../../docs/BUGS.md): a control that silently
+                        does nothing is worse than one that is absent. */}
+                    <span
+                      aria-current="page"
+                      className="inline-flex h-control-sm min-w-[2rem] items-center justify-center rounded-md bg-accent px-2.5 text-xs font-semibold tabular-nums text-accent-contrast"
+                    >
+                      {page + 1}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={goNext}
+                      disabled={!hasNext || accounts.isFetchingNextPage}
+                      className={PAGER}
+                    >
+                      {accounts.isFetchingNextPage ? 'Loading…' : 'Next'}
+                    </button>
+                  </span>
+                </nav>
+              </TabPanel>
             </>
           )}
-
-          <nav
-            aria-label="Pages"
-            data-testid="accounts-pager"
-            className="mt-4 flex flex-wrap items-center gap-3 border-t border-border-soft pt-3"
-          >
-            {/* 📁 **The design's own sentence** — *"Rows 1–8 of 312"*, 12px,
-                `--ink-3`, tabular numerals, on the row's left.
-
-                ⛔ **The denominator is the WORKSPACE total, and only when the
-                count has answered.** ⚡ **Never the loaded figure in its
-                place**: it would read correctly on the first page and be wrong
-                by more with every page after it.
-
-                ⚠️ **The design also says *"virtualised beyond 100"***. **This
-                table renders every row it has read** — a page is 50 — **so the
-                clause is omitted rather than claimed.** */}
-            <span className="text-2xs tabular-nums text-content-subtle">
-              {shown.length === 0
-                ? 'No rows'
-                : `Rows ${(page * PAGE_SIZE + 1).toLocaleString()}–${(
-                    page * PAGE_SIZE + shown.length
-                  ).toLocaleString()}${
-                    typeof total.data?.total === 'number'
-                      ? ` of ${total.data.total.toLocaleString()}`
-                      : ''
-                  }`}
-            </span>
-
-            <span className="ml-auto flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => setPage((was) => Math.max(0, was - 1))}
-                disabled={page === 0}
-                className={PAGER}
-              >
-                Previous
-              </button>
-              {/* 🔴 **The current page, and no numbers around it.**
-
-                  📁 **The design draws *1 2 3*.** ⛔ **Keyset pagination cannot
-                  offer them**: a cursor names where the NEXT page resumes, so
-                  page 3 is unreachable without walking pages 1 and 2 — and the
-                  endpoint refuses offsets for a stated reason: *"the graph is
-                  written continuously, so an offset page would skip or repeat
-                  rows between two requests and a customer paging the list would
-                  silently miss accounts."*
-
-                  ⚡ **So the current page renders in the design's brand pill and
-                  the neighbours are absent rather than dead.** 📁
-                  [B-255](../../../../docs/BUGS.md): a control that silently
-                  does nothing is worse than one that is absent. */}
-              <span
-                aria-current="page"
-                className="inline-flex h-control-sm min-w-[2rem] items-center justify-center rounded-md bg-accent px-2.5 text-xs font-semibold tabular-nums text-accent-contrast"
-              >
-                {page + 1}
-              </span>
-              <button
-                type="button"
-                onClick={goNext}
-                disabled={!hasNext || accounts.isFetchingNextPage}
-                className={PAGER}
-              >
-                {accounts.isFetchingNextPage ? 'Loading…' : 'Next'}
-              </button>
-            </span>
-          </nav>
-        </>
-      )}
-
         </div>
 
         {/* 📁 **360px, and the number travels as a value** — `Drawer`'s own
@@ -1080,9 +1179,16 @@ export default function CompaniesPage() {
               onClose={() => setPreviewOpen(false)}
               assignment={ownerFor(previewing ?? '', owners.data?.assignments)}
               members={members.data?.items ?? []}
-              segments={membershipFor(previewing ?? '', segmentMemberships.data?.memberships)}
+              segments={membershipFor(
+                previewing ?? '',
+                segmentMemberships.data?.memberships,
+              )}
               vocabulary={segments.data?.segments ?? []}
-              tags={tagsFor(previewing ?? '', assignments.data?.assignments, vocabulary.data?.tags)}
+              tags={tagsFor(
+                previewing ?? '',
+                assignments.data?.assignments,
+                vocabulary.data?.tags,
+              )}
             />
           </div>
         )}
@@ -1117,14 +1223,18 @@ function BoardLanes({
   groups,
   density,
   onGroup,
+  joins,
 }: {
-  groups: readonly {
-    label: string;
-    rows: readonly import('@/lib/api/types').ListedAccount[];
-    openAcv: import('@/lib/api/types').Money | null;
-  }[] | null;
+  groups:
+    | readonly {
+        label: string;
+        rows: readonly import('@/lib/api/types').ListedAccount[];
+        openAcv: import('@/lib/api/types').Money | null;
+      }[]
+    | null;
   density: Density;
   onGroup: () => void;
+  joins: CardJoins;
 }) {
   if (groups === null) {
     return (
@@ -1164,7 +1274,7 @@ function BoardLanes({
             )}
           </header>
           <div className="min-h-0 flex-1 overflow-y-auto p-2">
-            <CardGrid rows={lane.rows} density={density} board />
+            <CardGrid rows={lane.rows} density={density} joins={joins} board />
           </div>
         </section>
       ))}
@@ -1172,17 +1282,36 @@ function BoardLanes({
   );
 }
 
+interface CardJoins {
+  owners: ReturnType<typeof useAccountAssignments>;
+  segmentMemberships: ReturnType<typeof useAccountSegmentMemberships>;
+  segmentList: readonly AccountSegment[];
+  tagAssignments: ReturnType<typeof useAccountTagAssignments>;
+  tagVocabulary: ReturnType<typeof useAccountTags>;
+  members: readonly Membership[];
+}
+
 function CardGrid({
   rows,
   density,
+  joins,
   board = false,
 }: {
   rows: readonly import('@/lib/api/types').ListedAccount[];
   density: Density;
+  /**
+   * ⚡ **The four joins the TABLE already makes, handed to the card unchanged.**
+   * 📁 §5 — segment, owner and tags belong to `commercial_profile` and the
+   * account to `knowledge_graph`, so the screen joins them rather than buying a
+   * cross-module dependency. ⛔ **One object rather than six threaded props**:
+   * `BoardLanes` sits between this and its caller, and six pass-throughs there
+   * would be six chances to drift.
+   */
+  joins: CardJoins;
   /** ⚡ **One column inside a lane**, where the grid is three across. ⛔ **The
-   *  CARD is unchanged** — 📁 the design's board and card views draw the same
-   *  card, and a board-specific variant would be the second definition
-   *  [§20c](../../../../CLAUDE.md) forbids. */
+   * CARD is unchanged** — 📁 the design's board and card views draw the same
+   * card, and a board-specific variant would be the second definition
+   * [§20c](../../../../CLAUDE.md) forbids. */
   board?: boolean;
 }) {
   return (
@@ -1205,27 +1334,89 @@ function CardGrid({
         density === 'compact' && 'gap-2',
       )}
     >
-      {rows.map((row) => (
-        <li key={row.account.account_id}>
-          <Card className={cn('h-full', density === 'compact' ? 'p-3' : 'p-4')}>
-            <EntityName
-              identity={row.account}
-              fallbackId={row.account.account_id}
-              href={`/accounts/${row.account.account_id}`}
-            />
-            <dl className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-content-muted">
-              <div className="flex gap-1">
-                <dt>Kind</dt>
-                <dd className="text-content">{row.kind}</dd>
-              </div>
-              <div className="flex gap-1">
-                <dt>Sources</dt>
-                <dd className="text-content">{row.account.source_count}</dd>
-              </div>
-            </dl>
-          </Card>
-        </li>
-      ))}
+      {rows.map((row) => {
+        const owner = ownerFor(row.account.account_id, joins.owners.data?.assignments);
+        const tags = tagsFor(
+          row.account.account_id,
+          joins.tagAssignments.data?.assignments,
+          joins.tagVocabulary.data?.tags,
+        );
+        return (
+          <li key={row.account.account_id}>
+            <Card
+              className={cn(
+                'flex h-full flex-col gap-2',
+                density === 'compact' ? 'p-3' : 'p-4',
+              )}
+            >
+              <EntityName
+                identity={row.account}
+                fallbackId={row.account.account_id}
+                href={`/accounts/${row.account.account_id}`}
+              />
+
+              {/* 📁 **The design's card, field for field** — `segment · status ·
+                  ACV · score · renewal · owner`. ⛔ **It drew `Kind` and
+                  `Sources` instead**, and neither is on the design's card: they
+                  are graph provenance, not the commercial facts a seller scans
+                  a card for. ⚡ **Same joins and same components as the table**,
+                  so one company reads identically in both views rather than
+                  being described twice.
+
+                  ⛔ **`Signora score` is absent here for the reason it is
+                  absent from the table** — `ListedAccount` carries none
+                  (C-289), and the page header says so to the reader. */}
+              <AccountSegments
+                membership={membershipFor(
+                  row.account.account_id,
+                  joins.segmentMemberships.data?.memberships,
+                )}
+                segments={joins.segmentList}
+              />
+
+              {/* ⛔ **Absent, never dashed.** 📁 [ADR-0409](../../../../docs/architecture/adr/0409-commercial-account-facts.md)
+                  §5 — *"absence is never inferred, defaulted or zero-filled"*.
+                  ⚠️ **A table cell prints `—` because a grid must keep its
+                  columns aligned; a card has no such obligation**, so it simply
+                  says less. */}
+              {row.commercial.open_acv !== null ||
+              row.commercial.renewal_date !== null ? (
+                <dl className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-content-muted">
+                  {row.commercial.open_acv !== null ? (
+                    <div className="flex gap-1">
+                      <dt>Open ACV</dt>
+                      <dd className="font-semibold tabular-nums text-content">
+                        {formatMoney(row.commercial.open_acv)}
+                      </dd>
+                    </div>
+                  ) : null}
+                  {row.commercial.renewal_date !== null ? (
+                    <div className="flex gap-1">
+                      <dt>Renewal</dt>
+                      <dd className="font-semibold tabular-nums text-content">
+                        {formatDay(row.commercial.renewal_date)}
+                      </dd>
+                    </div>
+                  ) : null}
+                </dl>
+              ) : null}
+
+              <AccountTags tags={tags} />
+
+              {/* ⚠️ **Only once the read has ARRIVED** — a card saying
+                *Unassigned* while the assignment is in flight is a false
+                  statement, which is the same rule the table's cell keeps. */}
+              {owner === undefined ? (
+                joins.owners.isSuccess ? (
+                  <UnassignedOwner />
+                ) : null
+              ) : (
+                <AccountOwner assignment={owner} members={joins.members} />
+              )}
+            </Card>
+          </li>
+        );
+      })}
     </ul>
   );
 }

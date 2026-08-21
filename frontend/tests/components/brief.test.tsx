@@ -34,6 +34,8 @@ const accounts = vi.hoisted(() => vi.fn());
 const identities = vi.hoisted(() => vi.fn());
 const timeline = vi.hoisted(() => vi.fn());
 const observations = vi.hoisted(() => vi.fn());
+const commercials = vi.hoisted(() => vi.fn());
+const decision = vi.hoisted(() => vi.fn());
 
 vi.mock('next/navigation', () => ({
   // The attention list and the brief read `?owner=` so a seller's view
@@ -57,6 +59,30 @@ vi.mock('@/lib/auth/client', () => ({ useSession: session }));
 
 vi.mock('@/lib/query/hooks/timeline', () => ({ useAccountTimeline: timeline }));
 
+// ⚡ **The record header's facts strip** — 📁 §08's *"four key facts as a
+// quiet strip"*, read from the same commercial contract the Companies table
+// reads. ⛔ Mocked so the strip's ABSENCE rule is exercised deliberately
+// rather than by a failed request.
+vi.mock('@/lib/query/hooks/scoring', () => ({ useAccountCommercials: commercials }));
+
+/**
+ * 🔴 **📁 §08's `headerTags`** — the design draws neutral chips beside the
+ * title, and **the segment is the one with a producer.**
+ *
+ * ⛔ **It rendered on the Companies list and the context drawer and NOWHERE on
+ * the record it describes** — producer-backed and unsurfaced, the same class as
+ * the Decision Package and ICP Performance.
+ */
+vi.mock('@/lib/query/hooks/account-segments', () => ({
+  useAccountSegments: () => ({
+    data: { segments: [{ segment_id: 'seg-1', name: 'Enterprise' }] },
+  }),
+  useAccountSegmentMemberships: () => ({
+    data: { // ⛔ **The literal, not `ACCOUNT`** — `vi.mock` hoists above the const.
+      memberships: [{ account_id: '22222222-2222-4222-8222-222222222222', segment_ids: ['seg-1'] }] },
+  }),
+}));
+
 vi.mock('@/lib/query/hooks', () => ({
   useAccountScore: score,
   useAccountOpportunity: opportunity,
@@ -65,6 +91,10 @@ vi.mock('@/lib/query/hooks', () => ({
   useAccountResearch: research,
   useAccounts: accounts,
   useAccountIdentities: identities,
+  // ⚡ **The design's `#reasoning` card in the 340px track.** 📁 The endpoint,
+  // the hook and the contract all ship, and the Companies list has consumed
+  // them since they did — ⛔ the record page was the surface that did not.
+  useAccountDecisionPackage: decision,
   // TASK-417 wave 1 — what changed, and who says so. Stubbed rather than
   // exercised here: this file is about the brief's own sentences, and the
   // section has its own tests in observations.test.tsx.
@@ -81,7 +111,19 @@ import AccountBriefPage from '@/app/(app)/accounts/[accountId]/page';
 
 const WORKSPACE = 'aaaaaaaa-1111-4111-8111-111111111111';
 const ACCOUNT = '22222222-2222-4222-8222-222222222222';
-const IDLE = { data: undefined, isLoading: false, isError: false, error: null };
+/**
+ * ⚠️ **`isSuccess` is part of `useQuery`'s shape and this fixture omitted it.**
+ * ⛔ **A mock that is missing the field under test cannot fail the test** — the
+ * same class of gap that let [B-1053](../../../docs/BUGS.md) exist: *not
+ * settled yet* and *settled and absent* looked identical to every caller.
+ */
+const IDLE = {
+  data: undefined,
+  isLoading: false,
+  isError: false,
+  isSuccess: false,
+  error: null,
+};
 
 const SCORE: AccountScore = {
   account_id: ACCOUNT,
@@ -135,6 +177,17 @@ beforeEach(() => {
   accounts.mockReturnValue({ ...IDLE, data: { items: [] } });
   identities.mockReturnValue(IDLE);
   observations.mockReturnValue(IDLE);
+  commercials.mockReturnValue(IDLE);
+  // ⛔ **404 is the ordinary state** — Signora has concluded nothing yet, which
+  // is an answer rather than a failure.
+  decision.mockReturnValue({
+    ...IDLE,
+    error: new ApiError(404, {
+      code: 'not_found',
+      message: 'No conclusion for this account.',
+      correlation_id: '00000000-0000-4000-8000-000000000000',
+    }),
+  });
   timeline.mockReturnValue({
     data: { pages: [{ items: [], next_cursor: null, has_more: false }] },
     hasNextPage: false,
@@ -169,6 +222,190 @@ describe('the brief has a document outline — B-313', () => {
 
     expect(Math.min(...levels)).toBe(1);
     expect(levels.filter((level) => level === 1)).toHaveLength(1);
+  });
+});
+
+describe('the record header is §08\'s, not a bespoke one — Companies 360', () => {
+  it('carries the account in the approved record header rather than a hand-rolled one', () => {
+    /**
+     * 🔴 **The screen hand-rolled its own header while `RecordHeader` had zero
+     * consumers**, which is the *"another bespoke version of an existing common
+     * component"* §20c forbids. 📁 §08's plane is the tell: the identity tile,
+     * the `Title` role and the facts strip all live inside one `<header>`.
+     */
+    identities.mockReturnValue({
+      ...IDLE,
+      data: new Map([
+        [
+          ACCOUNT,
+          {
+            account_id: ACCOUNT,
+            name: 'Vantage Logistics',
+            agreement: 'agreed',
+            source: 'crm',
+            source_count: 1,
+            observed_at: '2026-08-01T09:00:00Z',
+            last_observed_at: '2026-08-01T09:00:00Z',
+          },
+        ],
+      ]),
+    });
+
+    const { container } = render(withQuery(<AccountBriefPage />));
+
+    const heading = screen.getByRole('heading', { level: 1, name: 'Vantage Logistics' });
+    // 📁 §04's `Title` role — the approved header applies it; the old one did
+    // not, and rendered the name at `text-lg`.
+    expect(heading).toHaveClass('text-title');
+    // ⚡ **The identity tile the design draws**, derived from the name Signora
+    // already holds — ⛔ never a fabricated logo.
+    expect(screen.getByText('VL')).toBeInTheDocument();
+    expect(container.querySelector('header')?.contains(heading)).toBe(true);
+  });
+
+  it('draws no fact nobody has stated — ADR-0409', () => {
+    /**
+     * ⛔ **§08 draws six facts and the platform supplies two.** 📁 ADR-0409 §5
+     * — *"absence is never inferred, defaulted or zero-filled"* — and
+     * [§20c](../../../CLAUDE.md): **an absent fact beats a column of `—`.**
+     * ⚠️ *Total contract value*, *Seats* and *Employees* have no provider
+     * behind them, so the strip must not invent a row for them.
+     */
+    commercials.mockReturnValue({
+      ...IDLE,
+      data: new Map([
+        [ACCOUNT, { open_acv: { amount: 1_240_000, currency: 'USD' }, renewal_date: null, stage: null }],
+      ]),
+    });
+
+    render(withQuery(<AccountBriefPage />));
+
+    expect(screen.getByText('Open ACV')).toBeInTheDocument();
+    // ⛔ **No renewal was stated, so there is no Renewal fact** — not a dash,
+    // not an empty value, not the label on its own.
+    expect(screen.queryByText('Renewal')).toBeNull();
+    expect(screen.queryByText('—')).toBeNull();
+  });
+
+  it('renders no strip at all when no source has said anything', () => {
+    render(withQuery(<AccountBriefPage />));
+
+    // ⚡ A record with nothing commercial behind it gets no quiet strip, rather
+    // than an empty one.
+    expect(screen.queryByText('Open ACV')).toBeNull();
+    expect(screen.queryByText('Renewal')).toBeNull();
+  });
+
+  it('offers one way back, and it is the breadcrumb the design draws', () => {
+    /**
+     * 🔴 **The page carried a *"← All accounts"* link the design does not
+     * draw.** 📁 §04 puts *"breadcrumb only"* on the left, and the trail
+     * *Accounts / <this company>* is published by this screen itself. ⛔ **Two
+     * wayfinding controls for one journey** is exactly the residue this
+     * migration removes.
+     */
+    render(withQuery(<AccountBriefPage />));
+
+    expect(screen.queryByRole('link', { name: 'All accounts' })).toBeNull();
+  });
+});
+
+describe("the record's secondary column carries what the product can produce", () => {
+  /**
+   * 📁 **`Design Documents/Fortune Signora Account 360.html`** —
+   * `minmax(0,1fr) 340px`, and the second track holds **Risk indicators ·
+   * Recommendations · AI reasoning · Evidence**.
+   *
+   * 🔴 **This lane reported that *"not one of the four has a producer"* and it
+   * was wrong.** ✅ `GET …/accounts/{id}/decision-package` is routed,
+   * `useAccountDecisionPackage` ships, and the Companies list's expanded row
+   * has consumed it since it shipped — **the record page was the surface that
+   * did not.**
+   */
+  /**
+   * 🔴 **📁 §08's `headerTags`** — *Enterprise · EMEA · Denmark · Logistics ·
+   * Strategic*, neutral chips on the title's line.
+   *
+   * ⚡ **Only the SEGMENT has a producer**, and it rendered on the Companies
+   * list and the context drawer **and nowhere on this record.** ⛔ **Region,
+   * industry and tier are firmographics nothing publishes** and stay absent
+   * rather than becoming placeholders.
+   */
+  it("🔴 carries the design's segment chip in the header band", () => {
+    render(withQuery(<AccountBriefPage />));
+    expect(screen.getByText('Enterprise')).toBeInTheDocument();
+  });
+
+  it('renders the AI reasoning the design draws, from the shipped contract', () => {
+    decision.mockReturnValue({
+      ...IDLE,
+      data: {
+        account_id: ACCOUNT,
+        summary: { text: 'Expansion is live and under-served.', evidence: ['event:1'] },
+        stated_reasoning: [
+          { text: 'Headcount grew 18% in two quarters.', evidence: ['event:1', 'event:2'] },
+          { text: 'No competitor has been mentioned.', evidence: ['event:3'] },
+        ],
+        supporting_evidence: ['event:1', 'event:2', 'event:3'],
+        support: {
+          level: 'moderate',
+          corroborating_providers: ['apollo', 'crunchbase'],
+          contributing_events: 3,
+          evidence_state: 'current',
+          contested: false,
+          dissenting_signals: 0,
+        },
+        model: 'claude-sonnet-5',
+        prompt_name: 'reasoning',
+        prompt_version: 1,
+      },
+    });
+
+    render(withQuery(<AccountBriefPage />));
+
+    expect(screen.getByText('AI reasoning')).toBeInTheDocument();
+    expect(screen.getByText('Expansion is live and under-served.')).toBeInTheDocument();
+    expect(screen.getByText('Headcount grew 18% in two quarters.')).toBeInTheDocument();
+    // ⚡ **Provenance beside the sentence, never behind a hover** — 📁 a reader
+    // is entitled to know what generated the language WHILE they read it.
+    expect(screen.getByText(/claude-sonnet-5/)).toBeInTheDocument();
+    // 📁 §14's fourth term, drawn from `corroborating_providers` rather than
+    // from a number somebody chose.
+    expect(screen.getByText(/Confidence 4 of 5/)).toBeInTheDocument();
+    /**
+     * 🔴 **📁 The design's source count** — *"6 sources"*, right-aligned in the
+     * card header at `--ai-tint` on `--ai-ink`.
+     *
+     * ⛔ **`supporting_evidence` was rendering NOWHERE**, and an earlier pass
+     * filed it as a producer *surplus* — *"no design document draws it"*.
+     * ⚠️ **The design draws it in a HEADER rather than as a section**, which is
+     * why searching for a section missed it.
+     */
+    expect(screen.getByText('3 sources')).toBeInTheDocument();
+  });
+
+  it('says Signora has concluded nothing rather than drawing an empty panel', () => {
+    // ⛔ **404 is an ANSWER** — the account has no conclusion yet, which is a
+    // different sentence from *the request failed*.
+    render(withQuery(<AccountBriefPage />));
+
+    expect(screen.getByText('AI reasoning')).toBeInTheDocument();
+    expect(
+      screen.getByText(/has not reached a conclusion about this account yet/),
+    ).toBeInTheDocument();
+  });
+
+  it('invents neither of the two cards that have no producer', () => {
+    /**
+     * ⛔ **Risk indicators and Recommendations are drawn by the design and have
+     * NO producer** — nothing on the contract, no hook, no endpoint. 📁
+     * [§20c](../../../CLAUDE.md): a screen without a shipped module behind it
+     * ships a designed absence, **and a fabricated risk list is not one.**
+     */
+    render(withQuery(<AccountBriefPage />));
+
+    expect(screen.queryByText('Risk indicators')).toBeNull();
+    expect(screen.queryByText('Recommendations')).toBeNull();
   });
 });
 
@@ -416,7 +653,7 @@ describe('the account says what has actually happened to it — C-024', () => {
     const { container } = render(withQuery(<AccountBriefPage />));
     const text = container.textContent ?? '';
 
-    expect(text.indexOf('What contributed')).toBeLessThan(text.indexOf('What has happened'));
+    expect(text.indexOf('Account score')).toBeLessThan(text.indexOf('What has happened'));
   });
 });
 
@@ -432,6 +669,7 @@ describe('the brief says how current its evidence is — A4', () => {
   function named(lastObservedAt: string | null) {
     return {
       ...IDLE,
+      isSuccess: true,
       data: new Map([
         [
           ACCOUNT,
@@ -456,7 +694,7 @@ describe('the brief says how current its evidence is — A4', () => {
     const text = container.textContent ?? '';
 
     expect(screen.getByText(/Latest evidence · 2 weeks ago/)).toBeVisible();
-    expect(text.indexOf('Latest evidence')).toBeLessThan(text.indexOf('What contributed'));
+    expect(text.indexOf('Latest evidence')).toBeLessThan(text.indexOf('Account score'));
   });
 
   it('says an account has nothing rather than leaving the line out', () => {
@@ -485,7 +723,7 @@ describe('an account with no data still says what it has no data about — TASK-
   it('keeps every derived section on the page', () => {
     render(withQuery(<AccountBriefPage />));
 
-    for (const heading of ['What contributed', 'What changed', 'What has happened']) {
+    for (const heading of ['Account score', 'Signals timeline', 'What has happened']) {
       expect(screen.getByRole('heading', { name: heading })).toBeVisible();
     }
   });
@@ -540,7 +778,13 @@ describe('a page must say when it could not find out — P-A, TASK-442', () => {
   /** Every read the brief makes, in the failed state the API can actually
    * produce. `isError` with `data: undefined` is what react-query hands a
    * component when a request rejects. */
-  const FAILED = { data: undefined, isLoading: false, isError: true, error: new Error('x') };
+  const FAILED = {
+    data: undefined,
+    isLoading: false,
+    isError: true,
+    isSuccess: false,
+    error: new Error('x'),
+  };
 
   /** **The sentences a customer must never be shown instead.** Each one
    * asserts something the page cannot know when every read has failed: that
@@ -648,5 +892,122 @@ describe('a page must say when it could not find out — P-A, TASK-442', () => {
     expect(container.textContent).toMatch(
       /could not|couldn't|unavailable|unable to|try again|reload/i,
     );
+  });
+});
+
+/**
+ * 🔴 **[B-1053](../../../docs/BUGS.md) — an account that does not exist rendered
+ * as an account that exists with no data.**
+ *
+ * ⛔ **QE navigated to `/accounts/00000000-0000-0000-0000-000000000000` and got
+ * HTTP 200 and a full record**, headed `00000000 — no source has named this
+ * account yet` — **the raw UUID's first group, presented as the record's name**
+ * — with every section showing its designed empty state. **Twenty API calls on
+ * the page and not one of them fetched the account.**
+ *
+ * ⚡ **The evidence needed was already on the page**, which is what makes this a
+ * defect rather than a missing capability.
+ */
+describe('🔴 an account that does not exist says so', () => {
+  /** ⚡ **Settled, and this account is not among the identities returned.** */
+  function settledWithout() {
+    identities.mockReturnValue({ ...IDLE, isSuccess: true, data: new Map() });
+  }
+
+  it('⛔ renders a not-found state instead of a record with a name from the URL', () => {
+    settledWithout();
+    render(withQuery(<AccountBriefPage />));
+
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/not here/i);
+    // 🔴 **The name derived from the URL** — the first group of the UUID — must
+    // be nowhere on the page.
+    expect(screen.queryByText(/^22222222/)).toBeNull();
+    // ⛔ **And no section's empty state**, which is what made the record look
+    // real: *"No evidence collected yet"* about a company that is not there.
+    expect(screen.queryByRole('region', { name: 'Signals timeline' })).toBeNull();
+  });
+
+  /**
+   * ⚠️ **The distinction this must not lose** — 📁
+   * [P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md) and
+   * [B-207](../../../docs/BUGS.md)'s withdrawal: *could not find out* and *is
+   * not there* are different sentences.
+   */
+  it('⛔ a FAILED identity read is never reported as not found', () => {
+    identities.mockReturnValue({
+      ...IDLE,
+      isError: true,
+      isSuccess: false,
+      error: new Error('x'),
+    });
+    render(withQuery(<AccountBriefPage />));
+
+    expect(screen.queryByText(/not here/i)).toBeNull();
+  });
+
+  it('⛔ nor is a read still in flight', () => {
+    identities.mockReturnValue({ ...IDLE, isLoading: true });
+    render(withQuery(<AccountBriefPage />));
+
+    expect(screen.queryByText(/not here/i)).toBeNull();
+  });
+
+  /**
+   * ⚡ **The state names no cause, and it cannot.** 📁 `/account-identities`
+   * omits an account the workspace does not own **for the same reason it omits
+   * one that does not exist** — 📁 [§7](../../../CLAUDE.md), *404 never 403* —
+   * so a member of another organization and a mistyped id reach this identical
+   * branch. ⛔ **A sentence claiming either would be inventing it.**
+   */
+  it('♿ says nothing about access, and offers the way back', () => {
+    settledWithout();
+    render(withQuery(<AccountBriefPage />));
+
+    const page = screen.getByRole('heading', { level: 1 }).closest('div');
+    expect(page?.textContent ?? '').not.toMatch(/access|permission|not allowed|another organization/i);
+    expect(screen.getByRole('link', { name: /back to the companies/i })).toHaveAttribute(
+      'href',
+      '/accounts',
+    );
+  });
+
+  /**
+   * ✅ **The behaviour [B-207](../../../docs/BUGS.md)'s withdrawal vindicated,
+   * asserted so this row cannot disturb it**: an account that EXISTS and has
+   * never been scored still says *"Nothing has scored this account yet"* — a
+   * 404 from the score read is a settled answer about a real record.
+   */
+  it('✅ an account that EXISTS and has no score is untouched', () => {
+    identities.mockReturnValue({
+      ...IDLE,
+      isSuccess: true,
+      data: new Map([
+        [
+          ACCOUNT,
+          {
+            account_id: ACCOUNT,
+            name: 'Northwind Traders',
+            agreement: 'agreed',
+            source_count: 2,
+            source: 'apollo',
+            observed_at: '2026-01-05T00:00:00Z',
+            last_observed_at: null,
+          },
+        ],
+      ]),
+    });
+    score.mockReturnValue({
+      ...IDLE,
+      isError: true,
+      error: new ApiError(404, {
+        code: 'not_found',
+        message: 'not found',
+        correlation_id: 'corr-1053',
+      }),
+    });
+    render(withQuery(<AccountBriefPage />));
+
+    expect(screen.queryByText(/not here/i)).toBeNull();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Northwind Traders');
   });
 });

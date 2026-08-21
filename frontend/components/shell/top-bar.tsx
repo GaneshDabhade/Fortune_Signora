@@ -7,7 +7,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { AccountSearch } from '@/components/intelligence/account-search';
 import { AccountMenu } from '@/components/shell/account-menu';
 import { Notifications } from '@/components/shell/notifications';
-import { Breadcrumb, OfflineStatus, SystemStatus } from '@/components/ui';
+import { Breadcrumb, IconButton, OfflineStatus, SystemStatus } from '@/components/ui';
 import { RegionBoundary } from '@/components/ui/region-boundary';
 import { cn } from '@/lib/design/cn';
 import { useBreadcrumbTrail } from '@/components/shell/breadcrumb-trail';
@@ -140,7 +140,9 @@ export function TopBar({
    * cannot know the viewport**, so the first paint is the design's reference
    * layout — never a guess that a customer sees jump.
    */
-  const [viewportWidth, setViewportWidth] = useState<number>(SEARCH_WIDTH.focusWidensAbove);
+  const [viewportWidth, setViewportWidth] = useState<number>(
+    SEARCH_WIDTH.focusWidensAbove,
+  );
   useEffect(() => {
     const measure = () => setViewportWidth(window.innerWidth);
     measure();
@@ -164,32 +166,30 @@ export function TopBar({
           reach navigation at this width, and a control that IS the navigation
           cannot sit after the identity. */}
       {onOpenNavigation === undefined ? null : (
-        <button
-          type="button"
-          onClick={onOpenNavigation}
-          aria-label="Open navigation"
-          aria-expanded={navigationOpen}
+        /* ⚡ **[`IconButton`](../ui/icon-button.tsx) owns the 32px target** —
+           this control was already correct at `32 × 32`, and it moves onto the
+           shared component so it cannot drift from the three that were not. */
+        <IconButton
+          label="Open navigation"
+          expanded={navigationOpen}
           aria-haspopup="dialog"
-          className={cn(
-            'flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-content-subtle',
-            'transition-colors hover:bg-surface-sunken hover:text-content',
-            'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-            'focus-visible:outline-accent',
-            // ⛔ **The rail is in flow at and above 1024**, so the trigger is
-            // not merely redundant there — it would open a sheet over a rail
-            // that is already visible.
-            'smalllaptop:hidden',
-          )}
+          onClick={onOpenNavigation}
+          // ⛔ **The rail is in flow at and above 1024**, so the trigger is
+          // not merely redundant there — it would open a sheet over a rail
+          // that is already visible.
+          className="smalllaptop:hidden"
         >
-          <Menu className="h-4 w-4" aria-hidden />
-        </button>
+          <Menu className="h-4 w-4" />
+        </IconButton>
       )}
 
       {/* **The wordmark lives in the rail, which does not exist on a phone.**
           Shown here below `md` so the product is still named on the one
           viewport where the frame is otherwise anonymous. ⛔ Not a slot — the
           design's five begin after it, and above `md` it is absent. */}
-      <span className="shrink-0 text-sm font-semibold tracking-tight smalllaptop:hidden">Signora</span>
+      <span className="shrink-0 text-sm font-semibold tracking-tight smalllaptop:hidden">
+        Signora
+      </span>
 
       {/* ── Slot 1 · Breadcrumb ────────────────────────────────────────────
           📁 *"flex, min 0. Truncates from the middle. Never wraps. Always
@@ -230,12 +230,12 @@ export function TopBar({
 
           ⚠️ **`Signora`, not `Fortune Signora`** — [TASK-1466](../../../docs/BACKLOG.md),
           on the product owner's ruling at [C-1422](../../../docs/LANE_COORDINATION.md):
-          ***"the application is already inside Signora; the newer brand rule
+        ***"the application is already inside Signora; the newer brand rule
           explicitly says the in-product product name is `Signora`; the
           finalized design copy is therefore superseded for this specific
           wording."*** 📁 **App Shell §21 `landmarks` still reads *"Search
           Fortune Signora"*, and it is NOT edited** — ⛔ [D-138](../../../docs/DECISION_REGISTER.md):
-          **a snapshot is refreshed, never edited**, and the discrepancy is
+        **a snapshot is refreshed, never edited**, and the discrepancy is
           recorded on C-1422 for the next refresh. */}
       {/* 🔴 **§07's focus rule, which the contract has always held and nothing
           called** — [TASK-1474](../../../docs/BACKLOG.md). 📁 *"Search — opens
@@ -272,7 +272,7 @@ export function TopBar({
           `statusLabelVisible`** — ✅ **read, not assumed.** ⛔ **And it is
           correct not to**: the helper's whole content is what the GREEN tone
           does, and `OfflineStatus` never renders a green tone. 📁 Its own note:
-          *"online with an empty queue renders `null` — not a green 'Online'
+        *"online with an empty queue renders `null` — not a green 'Online'
           pill… a pill whose only content is everything is fine is chrome that
           costs a slot every screen inherits."*
 
@@ -285,10 +285,10 @@ export function TopBar({
           which any module publishes.** 🔴 **It was wrong that nothing did**:
           📁 `GET /ready` has reported the database and the authentication
           subsystem since the platform shipped, and 📁 the row's own bound is
-          *"render what `/ready` returns and nothing else."*
+        *"render what `/ready` returns and nothing else."*
 
           ⚡ **Two components, two facts, one slot.** `OfflineStatus` answers
-          *is this browser online*; `SystemStatus` answers *is Signora
+        *is this browser online*; `SystemStatus` answers *is Signora
           degraded*. ⛔ **Neither is the other**, and each renders nothing when
           it has nothing to say. */}
       <div data-slot="system-status" className="flex shrink-0 items-center gap-2">
@@ -302,7 +302,7 @@ export function TopBar({
 
           ⚠️ **The comment that stood here said the absence was deliberate**, and
           it was right at the time: 📁 [C-275](../../../docs/LANE_COORDINATION.md),
-          *"a bell that opens an empty 400px panel is the defect
+        *"a bell that opens an empty 400px panel is the defect
           [TASK-1433](../../../docs/BACKLOG.md) was parked for"*, and it recorded
           the measurement — **no notification endpoint, no feed, no unread count
           anywhere in `lib/api`.**
@@ -330,8 +330,6 @@ export function TopBar({
         className={cn(
           'flex shrink-0 items-center justify-center rounded-md text-content-subtle',
           'transition-colors hover:bg-surface-sunken hover:text-content',
-          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-          'focus-visible:outline-accent',
         )}
       >
         <HelpCircle className="h-4 w-4" aria-hidden />

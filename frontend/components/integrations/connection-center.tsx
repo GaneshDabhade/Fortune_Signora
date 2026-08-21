@@ -245,7 +245,7 @@ function ConnectionRow({
     <div className="flex flex-col gap-0.5 border-l-2 border-border pl-3">
       <div className="flex items-baseline justify-between gap-3">
         <span className="text-sm text-content">{connection.label}</span>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Badge tone={attentionTone(connection.attention)}>
             {CONNECTION_STATE[connection.state] ?? connection.state}
           </Badge>

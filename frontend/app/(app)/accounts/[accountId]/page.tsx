@@ -1,9 +1,9 @@
 'use client';
 
-import { ArrowLeft, Briefcase, Lock, Scale } from 'lucide-react';
+import { Briefcase, Lock, Scale, SearchX } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, type ReactNode } from 'react';
 
 import {
   ContestedMark,
@@ -18,10 +18,13 @@ import {
   PostureSplit,
   ReadingValidity,
   ScoreArithmetic,
+  WhatMovedIt,
 } from '@/components/intelligence/contributions';
 import { usePublishBreadcrumb } from '@/components/shell/breadcrumb-trail';
 import { useUtilityPanel } from '@/components/shell/utility-panel';
+import { AccountSegments, membershipFor } from '@/components/accounts/account-segments';
 import { AbsentSection, OnThisPage } from '@/components/accounts/sections';
+import { ReasoningCard } from '@/components/accounts/reasoning';
 import { AccountSectionShell } from '@/components/accounts/section';
 import {
   contributionSeverities,
@@ -33,7 +36,7 @@ import { ACCOUNT_SECTIONS, absent } from '@/lib/accounts/sections';
 import { CompetitorContext } from '@/components/intelligence/competitors';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { SystemState } from '@/components/ui/system-state';
-import { EntityName } from '@/components/intelligence/entity-name';
+import { NameDispute } from '@/components/intelligence/entity-name';
 import { DecisionHistory } from '@/components/intelligence/decision-history';
 import { EvidenceDrawer, useEvidenceDrawer } from '@/components/intelligence/evidence';
 import { Freshness } from '@/components/intelligence/freshness';
@@ -52,7 +55,19 @@ import { WorkflowActions } from '@/components/intelligence/workflow';
 import { colleaguesFrom, peopleFrom } from '@/components/team/people';
 import { AccountHistory } from '@/components/timeline/feed';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
-import { Card, CardBody, EmptyState, SkeletonText } from '@/components/ui';
+import {
+  Card,
+  CardBody,
+  Column,
+  Columns,
+  EmptyState,
+  RecordHeader,
+  SkeletonText,
+  initialsFor,
+  type RecordFact,
+} from '@/components/ui';
+import { daysUntil, formatDay } from '@/components/intelligence/dates';
+import { formatMoney } from '@/lib/accounts/table';
 import { ApiError } from '@/lib/api/client';
 import { useSession } from '@/lib/auth/client';
 import {
@@ -72,11 +87,99 @@ import {
   useProductCatalog,
 } from '@/lib/query/hooks/commercial';
 import { useAccountTimeline } from '@/lib/query/hooks/timeline';
+import {
+  useAccountSegmentMemberships,
+  useAccountSegments,
+} from '@/lib/query/hooks/account-segments';
 import { useWorkspaceMembers } from '@/lib/query/hooks/team';
+import { useAccountCommercials } from '@/lib/query/hooks/scoring';
 import { scopeFrom } from '@/lib/state/owner-scope';
 import { useRecordView } from '@/lib/query/hooks/recently-viewed';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 import { ReadingColumn } from '../../reading-column';
+
+/**
+ * 🔴 **Account 360's own layout, and it is the final document's** — 📁
+ * `Design Documents/Fortune Signora Account 360.html`:
+ *
+ * ```
+ * display:flex; align-items:flex-start
+ * ├── 184px "On this page", position:sticky, align-self:flex-start
+ * └── flex:1 min-width:0 the record
+ * ```
+ *
+ * ⛔ **`ReadingColumn` cannot express it** — it is a single `span={8}` and the
+ * design puts a second region beside it. ⚡ **So this route composes the grid
+ * itself and the other eight `ReadingColumn` screens are untouched**, which is
+ * the opposite of bending a shared component to suit one caller
+ * ([§20c](../../../../../CLAUDE.md)).
+ *
+ * ⚡ **`184px`, `1fr` and `340px` are the design's own three numbers** and are
+ * used as written. 📁 The rule allows a fixed dimension *"where the final
+ * design explicitly defines it"* — ⛔ **and a span was tried first and measured
+ * wrong**: `span={2}` is ≈173px at 1440 but **126px at 1024**, where
+ * *"Contacts & decision makers"* wraps to three lines. **A nav rail's width is
+ * a function of its labels, not of the viewport.**
+ *
+ * ⚡ **The 340px track carries what the product can actually produce.** 📁 The
+ * design fills it with four cards — Risk indicators · Recommendations · AI
+ * reasoning · Evidence. 🔴 **This lane previously reported that *"not one of
+ * the four has a producer"* and that was WRONG**: `GET
+ * …/accounts/{id}/decision-package` is routed, `useAccountDecisionPackage` is
+ * shipped, and the Companies list has consumed it since it shipped. ✅ **AI
+ * reasoning is built from it** ([`ReasoningCard`](../../../../components/accounts/reasoning.tsx));
+ * ⛔ **Risk indicators and Recommendations genuinely have none and are absent
+ * rather than faked** ([§20c](../../../../../CLAUDE.md)).
+ *
+ * ⚠️ **The rail appears from `laptop:` (1280) up, not from 1024.** 📁 The App
+ * Shell: *"The shell yields in a fixed order as width disappears: utility panel
+ * first, then the rail"*, and the design system's *"chrome yields before
+ * data."* ⛔ **At 1024 the shell's own 232px rail is still open, leaving 744px
+ * — a 184px page nav there costs a quarter of the record.** ⚡ **Below 1280 it
+ * yields to the strip rather than vanishing**, because an anchor nav that
+ * disappears takes the record's map with it.
+ */
+function RecordLayout({
+  header,
+  rail,
+  aside,
+  children,
+}: {
+  header: ReactNode;
+  rail: ReactNode;
+  aside: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <Columns>
+      {/* 📁 **The record header spans the content region and the rail begins
+          beneath it**, which is the order the final document draws. */}
+      <Column span={12}>{header}</Column>
+      <Column
+        span={12}
+        className="flex flex-col gap-6 laptop:flex-row laptop:items-start"
+      >
+        {/* ⚡ **`self-start` is what makes `sticky` mean anything** — a
+            stretched flex child is as tall as its row and can never scroll
+            within it. ⛔ **`top-6` rather than the design's `top:0`**: that 0
+            is measured inside its own scroll region, and this shell scrolls
+            the document under a sticky top bar. */}
+        <div className="laptop:sticky laptop:top-6 laptop:w-[184px] laptop:flex-none laptop:self-start">
+          {rail}
+        </div>
+        {/* 📁 *"minmax(0,1fr) 340px"* — ⛔ `min-w-0` so a table shrinks the
+            track instead of pushing the grid past the viewport. ⚡ **Below
+            `laptop:` the aside stacks beneath the record** rather than being
+            dropped: it carries the conclusion, and the design system's *"chrome
+            yields before data"* protects it rather than sheds it. */}
+        <div className="grid min-w-0 flex-1 gap-6 laptop:grid-cols-[minmax(0,1fr)_340px] laptop:gap-4">
+          <div className="flex min-w-0 flex-col gap-6">{children}</div>
+          <div className="flex min-w-0 flex-col gap-4">{aside}</div>
+        </div>
+      </Column>
+    </Columns>
+  );
+}
 
 /**
  * The account brief — *"why this account?"*
@@ -108,14 +211,60 @@ import { ReadingColumn } from '../../reading-column';
  * ratified graph reaches all three. Composing them here was the option that
  * needed no architectural change (37-product-surface.md §7).
  *
+ * ### The header is §08's, and it is the approved one
+ *
+ * 🔴 **This screen hand-rolled its own record header for four milestones while
+ * `RecordHeader` sat in the library with ZERO consumers** — 📁
+ * [`components/ui/page-header.tsx`](../../../../components/ui/page-header.tsx),
+ * and exactly the *"another bespoke version of an existing common component"*
+ * [§20c](../../../../../CLAUDE.md) forbids.
+ *
+ * ⚡ **What arrived with the migration**: §08's identity tile · §04's `Title`
+ * role on the name (it was `text-lg`) · the status chips beside the title
+ * rather than floated opposite it · §08's *"four key facts as a quiet strip"* ·
+ * the meta line beneath the actions.
+ *
+ * ⛔ **What left**: a *"← All accounts"* link the design does not draw. 📁 §04
+ * puts **breadcrumb only** on the left, and this screen already publishes
+ * *Accounts / <this company>*. **Two wayfinding controls for one journey** is
+ * residue, not redundancy — and six Playwright specs were using the one the
+ * design removed as their proof that the page had arrived.
+ *
+ * ⚠️ **The design draws six facts and two are rendered.** 📁 [ADR-0409](../../../../../docs/architecture/adr/0409-commercial-account-facts.md)
+ * §5 — *"absence is never inferred, defaulted or zero-filled"*. **Total
+ * contract value, Seats and Employees have no provider behind them**, so the
+ * strip is short rather than dashed: 📁 [§20c](../../../../../CLAUDE.md), *an
+ * absent fact beats a column of `—`*.
+ *
  * ### What is deliberately not here yet
  *
- * The Decision Package —
- * which stays unbuilt until `reasoning@1` holds a release, because UI around an
- * unavailable capability is a panel that cannot be filled. **Nothing on this
- * page hints at it.** A control that looks clickable and is not costs more
- * trust than the missing feature does — and a panel that says *"coming soon"*
- * costs more than both.
+ * 🔴 **CORRECTED 2026-08-20.** This paragraph said the Decision Package
+ * *"stays unbuilt until `reasoning@1` holds a release"* and that ***"nothing on
+ * this page hints at it."*** ⛔ **Both halves were false**, and the sentence was
+ * load-bearing: it is why the design's 340px track was reported as having no
+ * producer at all.
+ *
+ * ✅ **Measured rather than recalled**: `GET
+ * …/accounts/{id}/decision-package` is routed, `useAccountDecisionPackage` is
+ * a shipped hook, `DecisionPackage` is on the contract, and
+ * [`expanded-row.tsx`](../../expanded-row.tsx) has consumed it on the Companies
+ * list since it shipped. ⚡ **The record page was simply the surface that did
+ * not** — it does now, as
+ * [`ReasoningCard`](../../../../components/accounts/reasoning.tsx).
+ *
+ * ⛔ **What genuinely has no producer**, and is therefore absent rather than
+ * faked: 📁 the design's **Risk indicators** and **Recommendations** cards —
+ * nothing on the contract, no hook, no endpoint. ⚡ **The original reasoning
+ * still holds for those two**: *a control that looks clickable and is not costs
+ * more trust than the missing feature does, and a panel that says "coming soon"
+ * costs more than both.*
+ *
+ * ⚠️ **Also absent: §04's seven-tab record navigation.** 📁 The final document
+ * draws `Overview · Opportunities · Contacts · Conversations · Activity ·
+ * Files · Settings` — **four of the seven have no producer of any kind**, and
+ * building a tab bar where four destinations lead nowhere is the same
+ * false-affordance class. **This needs a product decision, not an
+ * implementation one.**
  */
 export default function AccountBriefPage() {
   const { accountId } = useParams<{ accountId: string }>();
@@ -199,7 +348,8 @@ export default function AccountBriefPage() {
   // The third section on this page to need the split, after narration and
   // research. Without it the workflow controls simply vanish, and an account
   // somebody is actively working reads as one nobody has touched.
-  const neverTaken = opportunityError instanceof ApiError && opportunityError.status === 404;
+  const neverTaken =
+    opportunityError instanceof ApiError && opportunityError.status === 404;
   const workflowUnavailable = opportunityError !== null && !neverTaken;
   const { data: narration, error: narrationError } = useAccountNarration(
     workspaceId,
@@ -213,12 +363,16 @@ export default function AccountBriefPage() {
     workspaceId,
     accountId,
   );
-  const { data: research, error: researchError } = useAccountResearch(workspaceId, accountId);
+  const { data: research, error: researchError } = useAccountResearch(
+    workspaceId,
+    accountId,
+  );
   // **404 is "nobody has asked yet"; anything else is an outage.** The same
   // split the narration block above makes, and for the same reason: without it
   // both render as absence, and absence here is an invitation to start a run
   // that may already exist.
-  const neverResearched = researchError instanceof ApiError && researchError.status === 404;
+  const neverResearched =
+    researchError instanceof ApiError && researchError.status === 404;
 
   /**
    * 🔴 **Which anchored sections actually RENDER**, and this is a correction to
@@ -292,10 +446,45 @@ export default function AccountBriefPage() {
   // describes two people to a reader who knows there is one.
   const people = peopleFrom(roster?.items);
   const evidence = useEvidenceDrawer();
-  const { data: identities, isLoading: nameLoading } = useAccountIdentities(workspaceId, [
-    accountId,
-  ]);
+  const {
+    data: identities,
+    isLoading: nameLoading,
+    isSuccess: nameSettled,
+  } = useAccountIdentities(workspaceId, [accountId]);
   const identity = identities?.get(accountId);
+
+  /**
+   * 🔴 **[B-1053](../../../../docs/BUGS.md) — this screen never asked whether
+   * the account exists.**
+   *
+   * ⛔ **QE counted 20 calls to `/api/proxy/**` on this page and not one of
+   * them fetched the account.** ⚡ **So `/accounts/00000000-…-000000000000`
+   * returned HTTP 200 and rendered a full record**, headed
+   * `00000000 — no source has named this account yet` — **a name derived from
+   * the URL for a record nothing had confirmed** — with every section showing
+   * its designed empty state.
+   *
+   * ## ✅ The oracle already existed and this page was already calling it
+   *
+   * 📁 **`/account-identities` says so in its own docstring**: *"An account the
+   * workspace does not own is simply **absent** rather than reported, which is
+   * the same reason a non-member sees 404."* ⛔ **No new endpoint, no new
+   * contract, and no second read** — the identity request is the one this
+   * header has always made to get the name.
+   *
+   * ⚠️ **`isSuccess`, not `!isLoading`.** 🔴 **A FAILED identity read must
+   * never render *not found*** — 📁
+   * [P-A](../../../../docs/DOMAIN_DISCOVERY_REGISTER.md): *could not find out*
+   * and *is not there* are different sentences, and this is the exact
+   * distinction [B-207](../../../../docs/BUGS.md)'s withdrawal established one
+   * level down for the score.
+   *
+   * ⚡ **Cross-workspace and non-existent render identically, and that is not an
+   * accident of this code** — 📁 [§7](../../../../CLAUDE.md), *404 never 403*:
+   * **the endpoint omits both**, so this branch cannot tell them apart even if
+   * it wanted to.
+   */
+  const accountAbsent = nameSettled && identities !== undefined && !identities.has(accountId);
 
   /**
    * 📁 **§05 — *"Mandatory below the first level, because most sessions start
@@ -337,6 +526,52 @@ export default function AccountBriefPage() {
 
   const notScored = error instanceof ApiError && error.status === 404;
 
+  /**
+   * 🔴 **§08's *"four key facts as a quiet strip"*, and only the ones a
+   * provider actually supplied** — the same read the Companies table's `acv`
+   * and `renewal` columns make, so one company reads identically in the list
+   * and on its own page.
+   *
+   * ⛔ **A fact nobody has stated is ABSENT, never `—`.** 📁 [ADR-0409](../../../../../docs/architecture/adr/0409-commercial-account-facts.md)
+   * §5: *"absence is never inferred, defaulted or zero-filled"*, and **a zero
+   * ACV is a figure a seller would act on.** ⚠️ The table prints a dash because
+   * a grid must keep its columns aligned; **a header strip has no such
+   * obligation**, so it simply says less.
+   */
+  const commercials = useAccountCommercials(workspaceId, [accountId]);
+  /**
+   * 🔴 **📁 §08's `headerTags`** — the design draws neutral chips beside the
+   * title: *Enterprise · EMEA · Denmark · Logistics · Strategic*.
+   *
+   * ⚡ **The SEGMENT is the one with a producer**, and it was rendering on the
+   * Companies list and the context drawer **and nowhere on the record it is
+   * about.** ⛔ **Region, industry and tier are firmographics nothing
+   * publishes**, so the strip carries what the product knows and states the
+   * rest by absence rather than by a placeholder.
+   *
+   * ⚡ **Same two reads the list already holds**, same cache keys, so opening a
+   * record costs no request the list did not already make.
+   */
+  const segmentMemberships = useAccountSegmentMemberships(workspaceId, [accountId]);
+  const segments = useAccountSegments(workspaceId);
+  const commercial = commercials.data?.get(accountId);
+  const facts: RecordFact[] = [];
+  if (commercial?.open_acv) {
+    facts.push({ label: 'Open ACV', value: formatMoney(commercial.open_acv) });
+  }
+  if (commercial?.renewal_date) {
+    // 📁 **§08 draws the distance beside the date** — *"12 Oct 2026 · 69 days"*.
+    // ⚡ **Derived from the date already published**, so no producer is invented.
+    // ⛔ **Neutral tone**: the design colours this `warn`, which implies a
+    // threshold at which a renewal becomes urgent, and the product defines none.
+    const until = daysUntil(commercial.renewal_date);
+    facts.push({
+      label: 'Renewal',
+      value: formatDay(commercial.renewal_date),
+      ...(until === null ? {} : { delta: until }),
+    });
+  }
+
   // **Where the morning continues, offered at the moment a decision is made**
   // (R10-02). The same ranking the sequence at the foot of the page uses, and
   // the same rule — one definition of *next*, or a reader could be offered two
@@ -356,6 +591,50 @@ export default function AccountBriefPage() {
    * screen protects is the reader's understanding**, which a half-rendered
    * page destroys.
    */
+  /**
+   * ⛔ **Before the record header, and that ordering is the fix** — 📁
+   * [B-1053](../../../../docs/BUGS.md): *"the screen establishes existence
+   * before rendering a record header; never derives a display name from the URL
+   * for a record it has not confirmed."*
+   *
+   * ⚡ **The voice is the product's own 404**, from 📁 `app/not-found.tsx` —
+   * ⛔ **not a fifth wording of *nothing here***, and the `SystemState` ladder
+   * is what renders it, the same way every other page-level state does.
+   *
+   * ✅ **Nothing about the score's behaviour moves.** 📁
+   * [B-207](../../../../docs/BUGS.md)'s withdrawal vindicated *"a 404 from the
+   * score read renders **Nothing has scored this account yet**"* — **that is a
+   * statement about an account that EXISTS**, and this branch is reached before
+   * the score is ever consulted.
+   */
+  if (accountAbsent) {
+    return (
+      <ReadingColumn>
+        <SystemState
+          scope="page"
+          state="404"
+          glyph={SearchX}
+          title="That company is not here"
+          // ⛔ **It asserts no cause.** ⚠️ **`/account-identities` omits an
+          // account the workspace does not own for the SAME reason it omits one
+          // that does not exist** — 📁 [§7](../../../../CLAUDE.md) — so naming
+          // either would be inventing the one thing this screen cannot know.
+          // ✅ **And it says what survived**, which is 📁 `3.3.1`'s fourth
+          // clause and the sentence `not-found.tsx` already ends on.
+          description="Nothing in your organization sits at this link. It may have been removed, or it may never have existed — either way, nothing about your other companies has changed."
+          primaryAction={
+            <Link
+              href="/accounts"
+              className="rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent "
+            >
+              Back to the companies you can see
+            </Link>
+          }
+        />
+      </ReadingColumn>
+    );
+  }
+
   if (forbidden) {
     return (
       <ReadingColumn>
@@ -373,7 +652,7 @@ export default function AccountBriefPage() {
           primaryAction={
             <Link
               href="/accounts"
-              className="rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className="rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent "
             >
               Back to the accounts you can see
             </Link>
@@ -384,96 +663,184 @@ export default function AccountBriefPage() {
   }
 
   return (
-    <ReadingColumn>
-      <BackToList />
+    <RecordLayout
+      header={
+        <>
+          {/* 🔴 **§08's record header, and it is the APPROVED one** —
+              `RecordHeader` in [`components/ui/page-header.tsx`](../../../../components/ui/page-header.tsx).
+              ⛔ **This screen hand-rolled its own for four milestones while the
+              shared component had ZERO consumers**, which is precisely the
+            *"another bespoke version of an existing common component"* §20c
+              forbids.
 
-      {/* **The name gets the width it needs before the score takes any.** A
-          company name is the longest thing on this page and the one a reader
-          is looking for; at 320px, sharing the row with the score block leaves
-          it a few characters. Stacked below `sm`, side by side above it. */}
-      <header className="flex flex-col gap-3 phone:flex-row phone:items-start phone:justify-between phone:gap-4">
-        <div className="min-w-0">
-          {/* **The page's only level-1 heading** (B-313). The brief had none,
-              so its two `<h2>`s hung under nothing and a reader navigating by
-              structure landed on *"What contributed"* without learning which
-              account they were looking at.
+              📁 **§04 draws, in order**: the identity tile · the name at `Title`
+              · the status chips beside it · the facts strip · the actions · the
+              meta line beneath them.
 
-              **The heading is here rather than inside `EntityName`**, which is
-              shared with Companies — a name that is a page title on
-              one screen and a row label on another cannot be one element, and
-              bending the component to suit this caller would make it slightly
-              wrong for every other (§20c). The `<h1>` carries no styling of
-              its own: preflight resets it, so the name looks exactly as it
-              did. */}
-          <h1 className="min-w-0">
-            <EntityName
-              identity={identity}
-              fallbackId={accountId}
-              isLoading={nameLoading}
-              className="text-lg"
-            />
-          </h1>
-          {/* **Directly under the name, because it qualifies the whole page**
-              rather than any one card. Everything below — the score, its
-              contributions, the narration, the validations — is built on
-              evidence, and a reader who does not know how old that evidence is
-              cannot calibrate any of it.
+              ⛔ **The design's six facts are NOT all rendered, and that is
+              deliberate.** 📁 [ADR-0409](../../../../../docs/architecture/adr/0409-commercial-account-facts.md)
+              — *"absence is never inferred, defaulted or zero-filled"* — and
+              [§20c](../../../../../CLAUDE.md): **an absent fact is better than a
+              column of `—`.** *Total contract value*, *Seats* and *Employees* have
+              no provider behind them, so they are absent rather than empty; *Open
+              ACV* and *Renewal* are read from the same commercial contract the
+              Companies table reads, and each appears only where a source actually
+              said something. */}
+          <RecordHeader
+            // 📁 §08's 46px tile. ⚡ **Derived from the name Signora already
+            // holds**, by the library's own helper — ⛔ never a fabricated logo.
+            {...(identity?.name ? { initials: initialsFor(identity.name) } : {})}
+            // ⛔ **The identifier, never a placeholder** — the same fallback
+            // `EntityName` uses everywhere else. **Being told the truth badly
+            // beats being told a fiction well.**
+            title={identity?.name ?? accountId.slice(0, 8)}
+            // ⚡ **B-313's level-1 heading survives the wait.** `RecordHeader`
+            // keeps the `<h1>` and skeletons only its text, so every `<h2>` below
+            // has a parent from the first paint.
+            titleLoading={nameLoading && identity === undefined}
+            status={
+              <>
+                {/* ⚡ **Where §04 puts the chips.** ⛔ Both are silent on the
+                    ordinary case — a mark on every record is a mark nobody
+                    reads. */}
+                {identity ? <NameDispute identity={identity} /> : null}
+                {score ? <ContestedMark contested={score.contested} /> : null}
+                {/* 📁 **§08's `headerTags`, in the design's position** — after
+                    the marks, on the title's line. ⛔ **`AccountSegments`
+                    already renders the design's neutral chip**, so this is the
+                    shared component rather than a header-local one, and it
+                    brings its own *"no segment"* statement with it. */}
+                <AccountSegments
+                  membership={membershipFor(
+                    accountId,
+                    segmentMemberships.data?.memberships,
+                  )}
+                  segments={segments.data?.segments ?? []}
+                />
+              </>
+            }
+            facts={facts}
+            {...(opportunity
+              ? {
+                  secondaryActions: (
+                    <WorkflowActions
+                      colleagues={colleaguesFrom(roster?.items, viewerId)}
+                      opportunity={opportunity}
+                      workspaceId={workspaceId}
+                      viewerId={viewerId}
+                      // **Named or not offered.** A row whose name has not
+                      // resolved would read as *"Next: "* — the sequence below has
+                      // the same rule, and an offer that cannot say where it goes
+                      // is the affordance this surface refuses everywhere else.
+                      {...(upNext && upNextName
+                        ? {
+                            next: {
+                              name: upNextName,
+                              go: () => router.push(`/accounts/${upNext.account_id}`),
+                            },
+                          }
+                        : {})}
+                    />
+                  ),
+                }
+              : {})}
+            meta={
+              <>
+                {/* **Directly under the actions, because it qualifies the whole
+                    page** rather than any one card. Everything below — the score,
+                    its contributions, the narration, the validations — is built on
+                    evidence, and a reader who does not know how old that evidence
+                    is cannot calibrate any of it.
 
-              **Outside the heading**, deliberately: freshness qualifies the
-              page, but it is not part of the page's name, and a document
-              outline that read "Northwind Health — collected 3 days ago"
-              would be an outline entry that changes under the reader.
-
-              **Only once the identity has actually arrived.** Absent means
-              *we do not know yet, or the request failed*; rendering "No
-              evidence collected yet" for either would state something false
-              about the account, which is the one thing this line exists not
-              to do. It also keeps two skeletons off the page on arrival. */}
-          {identity ? <Freshness observedAt={identity.last_observed_at} /> : null}
-          {/* The workflow line sits under the name rather than in the score
-              card: it is about the *account*, not about the number, and a
-              seller reads it once on arrival and never again.
-
-              **The decision sits with it**, so workflow lives in exactly one
-              place on the screen. An AE who arrived already knowing they are
-              working this account should not have to read a brief to say so;
-              a reader who is still deciding scrolls, decides, and comes back
-              to a control they have already seen. */}
-          {workflowUnavailable ? (
-            /* **Said, rather than omitted.** The controls must not render —
-               nobody should act on state Signora could not read — but a silent
-               gap tells a seller this account is untouched, which is a claim
-               about their pipeline rather than about our request. */
-            <StatedAbsence subject="where this account stands" reassurance="Nothing has changed about the account" />
-          ) : null}
-
-          {opportunity ? (
-            <div className="mt-0.5 flex flex-col gap-2.5">
-              <WorkflowStage opportunity={opportunity} viewerId={viewerId} people={people} />
-              <WorkflowActions
-                colleagues={colleaguesFrom(roster?.items, viewerId)}
-                opportunity={opportunity}
-                workspaceId={workspaceId}
-                viewerId={viewerId}
-                // **Named or not offered.** A row whose name has not resolved
-                // would read as *"Next: "* — the sequence below has the same
-                // rule, and an offer that cannot say where it goes is the
-                // affordance this surface refuses everywhere else.
-                {...(upNext && upNextName
-                  ? {
-                      next: {
-                        name: upNextName,
-                        go: () => router.push(`/accounts/${upNext.account_id}`),
-                      },
-                    }
-                  : {})}
-              />
-            </div>
-          ) : null}
-        </div>
-        {score ? <ContestedMark contested={score.contested} /> : null}
-      </header>
-
+                  **Only once the identity has actually arrived.** Absent means
+                  *we do not know yet, or the request failed*; rendering "No
+                    evidence collected yet" for either would state something false
+                    about the account. */}
+                {identity ? <Freshness observedAt={identity.last_observed_at} /> : null}
+                {/* **Said, rather than omitted.** The controls must not render —
+                    nobody should act on state Signora could not read — but a
+                    silent gap tells a seller this account is untouched, which is a
+                    claim about their pipeline rather than about our request. */}
+                {workflowUnavailable ? (
+                  <StatedAbsence
+                    subject="where this account stands"
+                    reassurance="Nothing has changed about the account"
+                  />
+                ) : null}
+                {/* The workflow line rides with the meta rather than in the score
+                    card: it is about the *account*, not about the number, and a
+                    seller reads it once on arrival and never again. */}
+                {opportunity ? (
+                  <WorkflowStage
+                    opportunity={opportunity}
+                    viewerId={viewerId}
+                    people={people}
+                  />
+                ) : null}
+              </>
+            }
+          />
+        </>
+      }
+      aside={<ReasoningCard accountId={accountId} workspaceId={workspaceId} />}
+      rail={
+        score ? (
+          <OnThisPage
+            // ⚡ **What this page actually renders**, in the design's order.
+            // ⛔ **`score`, `signals` and `activity` are the supplied sections
+            // that have a section here**; the seven absent ones all carry an id.
+            // ⚠️ **`activity` only when the utility panel is not carrying it**,
+            // which is why `history.carrying` decides it.
+            anchored={[
+              // ⚡ **`summary`, `research` and `competitors` join the rail** —
+              // [TASK-1476](../../../../docs/BACKLOG.md). ⛔ **They rendered on
+              // this page all along and carried no `id`**, so the rail could not
+              // link to them and its docstring recorded that as a limitation.
+              // ✅ **The limitation is closed rather than restated.**
+              // ⚡ **`summary` is unconditional now.** 📁 *"Header, title and
+              // counts paint from cache; only the body skeletons"* — **the
+              // section renders in all four of its states**, so the rail entry
+              // is stable and nothing below it moves when the read lands.
+              'summary',
+              'score',
+              'health',
+              'intent',
+              'signals',
+              // 🔴 **`contacts` joins the rail — TASK-1476.** ⚠️ It was
+              // classified `supplied` and had no section here, so the rail could
+              // never anchor it. **It is `absent` now and states why**, which is
+              // the treatment §20c requires and the one every other unfillable
+              // section already gets.
+              'contacts',
+              // ⚡ **`research` is unconditional** — `ResearchPanel` always
+              // renders its section, because the invitation to start research is
+              // itself the content when there is none.
+              'research',
+              // 🔴 **`opportunities` was missing from this list and the section
+              // renders unconditionally** — so *Open opportunities* existed
+              // on the page and **On this page could not reach it.**
+              // ⚠️ **The exact INVERSE of [TASK-1483](../../../../docs/BACKLOG.md)'s
+              // defect**, which was *"the anchor existed and the section did
+              // not"*. **This is the section existing and the anchor not** —
+              // the same class, pointed the other way, and invisible for the
+              // same reason: nothing fails, the entry is simply absent.
+              // ⚡ **Unconditional, because `AccountSectionShell` renders in all
+              // of its states** — loading, empty, error and populated — so
+              // the entry never points at something that is not there.
+              'opportunities',
+              ...(rendersCompetitors ? ['competitors'] : []),
+              'org-chart',
+              'relationships',
+              'tech-stack',
+              'market',
+              ...(history.carrying ? [] : ['activity']),
+              'meetings',
+            ]}
+            className="phone:flex-row phone:flex-wrap phone:items-center phone:gap-1"
+          />
+        ) : null
+      }
+    >
       {/* Same as the list: with no workspace every query is disabled and
           nothing rendered. Reachable directly by URL, so it needs its own
           answer rather than relying on the list to have given one (D36). */}
@@ -489,49 +856,6 @@ export default function AccountBriefPage() {
           and two rails competing for one edge is a layout that serves neither.
           ⛔ **It lists every section, including the seven nothing can fill** —
           a map that hides the empty rooms is one nobody can trust. */}
-      {score ? (
-        <OnThisPage
-          // ⚡ **What this page actually renders**, in the design's order.
-          // ⛔ **`score`, `signals` and `activity` are the supplied sections
-          // that have a section here**; the seven absent ones all carry an id.
-          // ⚠️ **`activity` only when the utility panel is not carrying it**,
-          // which is why `history.carrying` decides it.
-          anchored={[
-            // ⚡ **`summary`, `research` and `competitors` join the rail** —
-            // [TASK-1476](../../../../docs/BACKLOG.md). ⛔ **They rendered on
-            // this page all along and carried no `id`**, so the rail could not
-            // link to them and its docstring recorded that as a limitation.
-            // ✅ **The limitation is closed rather than restated.**
-            // ⚡ **`summary` is unconditional now.** 📁 *"Header, title and
-            // counts paint from cache; only the body skeletons"* — **the
-            // section renders in all four of its states**, so the rail entry
-            // is stable and nothing below it moves when the read lands.
-            'summary',
-            'score',
-            'health',
-            'intent',
-            'signals',
-            // 🔴 **`contacts` joins the rail — TASK-1476.** ⚠️ It was
-            // classified `supplied` and had no section here, so the rail could
-            // never anchor it. **It is `absent` now and states why**, which is
-            // the treatment §20c requires and the one every other unfillable
-            // section already gets.
-            'contacts',
-            // ⚡ **`research` is unconditional** — `ResearchPanel` always
-            // renders its section, because the invitation to start research is
-            // itself the content when there is none.
-            'research',
-            ...(rendersCompetitors ? ['competitors'] : []),
-            'org-chart',
-            'relationships',
-            'tech-stack',
-            'market',
-            ...(history.carrying ? [] : ['activity']),
-            'meetings',
-          ]}
-          className="phone:flex-row phone:flex-wrap phone:items-center phone:gap-1"
-        />
-      ) : null}
 
       {score ? (
         <>
@@ -546,7 +870,7 @@ export default function AccountBriefPage() {
                   A score is a position; the movement since somebody committed
                   is the story, and it is the one figure no other screen has.
 
-                  **The evidence badge sits beside it, and it is the list's own
+                **The evidence badge sits beside it, and it is the list's own
                   component** (R1-04). The list showed *Cooling* on two accounts
                   and the brief never said the word — it rendered `is_current`,
                   which is true of a different fact, so the two screens
@@ -612,7 +936,7 @@ export default function AccountBriefPage() {
               progressive disclosure means on a page — information ordered so
               most of it is never read.
 
-              **Rendered whatever the answer is** (R2-03). *"Nothing is
+            **Rendered whatever the answer is** (R2-03). *"Nothing is
               currently held about this account"* is actionable on a page whose
               subject is an open commitment, and a failed request is a third
               thing again — the section used to render all three as absence,
@@ -654,7 +978,9 @@ export default function AccountBriefPage() {
                 new URLSearchParams(searchParams.toString()),
                 next ? 'research' : null,
               ).toString();
-              router.replace(query === '' ? pathname : `${pathname}?${query}`, { scroll: false });
+              router.replace(query === '' ? pathname : `${pathname}?${query}`, {
+                scroll: false,
+              });
             }}
             {...(score === null
               ? {}
@@ -710,7 +1036,11 @@ export default function AccountBriefPage() {
                  split** — 📁 it already exists above for exactly this, and a
                  parallel `neverQualified` would have been two answers to one
                  question ([§2](../../../../CLAUDE.md)). */
-              <StatedAbsence as="card" icon={Briefcase} subject="this account's opportunity" />
+              <StatedAbsence
+                as="card"
+                icon={Briefcase}
+                subject="this account's opportunity"
+              />
             ) : opportunity ? (
               <Card>
                 <CardBody className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3">
@@ -727,7 +1057,10 @@ export default function AccountBriefPage() {
                       `AccountAttention`'s, and computing one here would be a
                       second author for a field this module does not own
                       ([§2](../../../../CLAUDE.md)). */}
-                  <ScoreMovement trend={null} change={opportunity.score_change_since_open} />
+                  <ScoreMovement
+                    trend={null}
+                    change={opportunity.score_change_since_open}
+                  />
                   <ContestedMark contested={opportunity.contested_at_open} />
                 </CardBody>
               </Card>
@@ -751,14 +1084,28 @@ export default function AccountBriefPage() {
               sits where the page turns from Signora's argument to the record
               of what people did with it. */}
           {opportunity ? (
-            <DecisionHistory opportunity={opportunity} viewerId={viewerId} people={people} />
+            <DecisionHistory
+              opportunity={opportunity}
+              viewerId={viewerId}
+              people={people}
+            />
           ) : null}
 
           {/* ⚡ **`id="score"`** — the design calls this section *Account
               score*, and the rail links to it by that id. */}
+          {/* 🔴 **The heading is the DESIGN's, and this one was invented.**
+              📁 `Design Documents/Fortune Signora Account 360.html` titles the
+              `#score` card ***"Account score"***, which is also what
+              [`sections.ts`](../../../../lib/accounts/sections.ts) already
+              calls it in the rail. ⛔ **The section heading read *"What
+              contributed"***, a phrase that appears **ZERO times in the whole
+              final design corpus** — measured across all 17 documents — **so
+              the rail and the heading named the same section two different
+              things.** ⚡ **Aligning the heading to the rail closes both at
+              once.** */}
           <AccountSectionShell
             id="score"
-            heading="What contributed"
+            heading="Account score"
             // ⚡ **A contribution's own direction is its severity** — ⛔ nothing
             // is invented: the ledger already says whether a contribution
             // pushed the score up or down, and the header folds those.
@@ -769,8 +1116,45 @@ export default function AccountBriefPage() {
             lastKnownCount={score?.contributions?.length ?? null}
           >
             <Card>
-              <CardBody className="py-1">
+              <CardBody className="flex flex-col gap-3 py-3">
+                {/* 🔴 **📁 The design draws ONE `#score` card and this page
+                    draws TWO blocks, one of them unanchored.**
+
+                    📁 `Design Documents/Fortune Signora Account 360.html`, the
+                    `#score` card, in order: **`Account score` · an `AI` badge ·
+                    the figure at 36px/700 · `/ 100` · the change chip · the
+                    trend · the contributions.** ⛔ **Here the figure and its
+                    validity sit in a card ABOVE the summary with no `id` at
+                    all, and the contributions sit in `#score`** — so the rail's
+                    *Account score* entry lands on half of the thing it names,
+                    and the half a reader looks for first is the half it skips.
+
+                    ⚠️ **CORRECTED — an earlier note here said the figure
+                    *"rendered nowhere"*.** ⛔ **It renders; the probe that said
+                    otherwise was scoped to `#score`** — 📁 the
+                    truncation-that-reads-as-a-result failure this lane has met
+                    five times now. ✅ **The real finding is the split, not an
+                    absence**, and the fix is consolidation rather than another
+                    figure. **Recorded as [C-1542](../../../../docs/LANE_COORDINATION.md)
+                    with the two producer-backed blocks the design's card has no
+                    place for** — `PostureSplit` and `WhyNow` — **because
+                    consolidating without deciding those would delete them.** */}
                 <ContributionList score={score} onOpenEvidence={evidence.open} />
+                {/* 🔴 **📁 *"What moved it"* — Opportunity Intelligence's
+                    waterfall, and it rendered NOWHERE in the product.**
+                    ⚡ **Every field it needs is already on this page**:
+                    `score.contributions` carries `reason`, `points` and
+                    `posture`, and the design's `left`/`width` are the running
+                    total rather than authored numbers.
+                    ⛔ **Here rather than at a new route**: 📁
+                    [D38](../../../../../docs/architecture/39-product-review-findings.md)
+                    removed *Opportunities* from navigation from first
+                    principles, and **a route is how that gets reversed by
+                    accident** ([TASK-441](../../../../../docs/BACKLOG.md)).
+                    ⚡ **The cockpit's content is this page's** — every one of
+                    the nineteen intelligence components renders here and
+                    nowhere else, measured. */}
+                <WhatMovedIt score={score} />
               </CardBody>
             </Card>
           </AccountSectionShell>
@@ -785,8 +1169,8 @@ export default function AccountBriefPage() {
               answers *what has occurred* — the question a reader asks last,
               and usually because they are about to decide.
 
-              **Option A of three, and B was already ruled out**: D38 retired
-              *Timeline* as a menu entry, because navigation is journeys
+            **Option A of three, and B was already ruled out**: D38 retired
+            *Timeline* as a menu entry, because navigation is journeys
               rather than data. C — a collapsed disclosure — was refused for
               the reason C-024 itself gives: it would hide the one surface
               that answers *what changed since I last looked* (R9-04). */}
@@ -808,7 +1192,7 @@ export default function AccountBriefPage() {
               what Signora derived about *this* account, and these two are what
               the customer told us about themselves.
 
-              **Before competitors**, because *what we sell and who signs for
+            **Before competitors**, because *what we sell and who signs for
               it* is the frame a seller reads *who we are up against* inside.
 
               ⛔ **No ideal customer here, and that is the ruling rather than a
@@ -848,22 +1232,26 @@ export default function AccountBriefPage() {
 
           {/* **Between the ledger and the record of events** (TASK-417, wave 1
               of the approved Account 360). The contribution list above says
-              *what Signora weighed*; the timeline below says *what occurred*.
+            *what Signora weighed*; the timeline below says *what occurred*.
               This is the layer between them — **the raw provider readings the
               weighing rests on, each naming the provider that reported it.**
 
-              **It goes above the timeline rather than beside it** because a
+            **It goes above the timeline rather than beside it** because a
               reader who has just seen a contribution they doubt is asking
-              *"says who?"*, and that question has to be answerable without
+            *"says who?"*, and that question has to be answerable without
               scrolling past everything that happened this year.
 
               The endpoint has shipped since M3B and reached no screen —
               the same shape as [C-024](../../../../docs/LANE_COORDINATION.md),
               which is what wave 1 exists to close. */}
           {/* ⚡ **`id="signals"`** — the design's *Signals timeline*. */}
+          {/* 🔴 **📁 The design titles `#signals` *"Signals timeline"***, and so
+              does the rail. ⛔ **This heading read *"What changed"*** — 📁 the
+              phrase appears in the corpus only in the Design System's own
+              changelog and a gap-closure card, **never on Account 360.** */}
           <AccountSectionShell
             id="signals"
-            heading="What changed"
+            heading="Signals timeline"
             // ⚠️ **No severity is claimed for an observation.** ⛔ An
             // observation is a reading, and whether a reading is bad is
             // `buying_score_engine`'s judgement rather than this screen's — so
@@ -872,6 +1260,11 @@ export default function AccountBriefPage() {
             viewerId={viewerId}
             kind={accountKind}
             isLoading={observations.isLoading}
+            // 🔴 **[B-1054](../../../../docs/BUGS.md)** — with `observations`
+            // forced to 500 this heading read *"What changed 0"* above a body
+            // saying the read failed. ⛔ **The prose was right and the number
+            // was wrong.**
+            isError={observations.isError}
             lastKnownCount={observations.data?.length ?? null}
           >
             <ObservationList
@@ -943,28 +1336,7 @@ export default function AccountBriefPage() {
         accounts={ranked}
         identities={rankedIdentities}
       />
-    </ReadingColumn>
-  );
-}
-
-function BackToList() {
-  return (
-    <Link
-      // 🔴 **`/accounts`, and it used to be `/attention`.** 📁 The App Shell's
-      // nine destinations are **Home · Forecast · Pipeline · Accounts · Deals ·
-      // Conversations · Signals · Reports** — ⛔ **Attention is not among them**,
-      // and no approved design defines it as a screen. **Companies is the list a
-      // reader came from**, which is what the label below has always said.
-      //
-      // ⚠️ **`/` is the shell's entry resolver and is not the answer either** —
-      // 📁 the Authenticated Entry document. *Back* pointing there would resolve
-      // a workspace and land on Home rather than on a list.
-      href="/accounts"
-      className="inline-flex w-fit items-center gap-1.5 rounded text-sm text-content-muted transition-colors hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-    >
-      <ArrowLeft aria-hidden className="h-3.5 w-3.5" />
-      All accounts
-    </Link>
+    </RecordLayout>
   );
 }
 
@@ -1020,11 +1392,5 @@ function NeverScored() {
 }
 
 function Unavailable() {
-  return (
-    <StatedAbsence
-      as="page"
-      icon={Scale}
-      subject="this account"
-    />
-  );
+  return <StatedAbsence as="page" icon={Scale} subject="this account" />;
 }

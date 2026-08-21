@@ -72,7 +72,7 @@ function SettingsLink({ href, children }: { href: string; children: string }) {
   return (
     <Link
       href={href}
-      className="mt-3 inline-block rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      className="mt-3 inline-block rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent "
     >
       {children}
     </Link>
@@ -88,35 +88,38 @@ export default function SettingsPage() {
   const [name, setName] = useState('');
 
   const submit = () => {
-    createWorkspace.mutate({ name: name.trim(), slug: suggestSlug(name) }, {
-      onSuccess: (workspace) => {
-        setActiveWorkspace(workspace.id);
-        setDialogOpen(false);
-        setName('');
-        toast({ tone: 'success', message: `Created ${workspace.name}` });
+    createWorkspace.mutate(
+      { name: name.trim(), slug: suggestSlug(name) },
+      {
+        onSuccess: (workspace) => {
+          setActiveWorkspace(workspace.id);
+          setDialogOpen(false);
+          setName('');
+          toast({ tone: 'success', message: `Created ${workspace.name}` });
+        },
+        onError: (error) => {
+          // The correlation id is surfaced to the user, not just logged. It
+          // is what turns "it didn't work" into a request an engineer can
+          // find in seconds (19-api-conventions.md).
+          toast({
+            tone: 'error',
+            message:
+              error instanceof ApiError
+                ? error.message
+                : 'Could not create the organization.',
+            detail:
+              error instanceof ApiError ? `Reference: ${error.correlationId}` : undefined,
+          });
+        },
       },
-      onError: (error) => {
-        // The correlation id is surfaced to the user, not just logged. It
-        // is what turns "it didn't work" into a request an engineer can
-        // find in seconds (19-api-conventions.md).
-        toast({
-          tone: 'error',
-          message:
-            error instanceof ApiError
-              ? error.message
-              : 'Could not create the organization.',
-          detail:
-            error instanceof ApiError ? `Reference: ${error.correlationId}` : undefined,
-        });
-      },
-    });
+    );
   };
 
   return (
     <ReadingColumn>
       <header className="flex flex-col gap-3 phone:flex-row phone:items-start phone:justify-between phone:gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-content">Settings</h1>
+          <h1 className="text-title text-content">Settings</h1>
           <p className="mt-1 text-sm text-content-muted">
             The organizations you belong to.
           </p>
@@ -138,7 +141,9 @@ export default function SettingsPage() {
                 including a member can reach it (CX-05); this card authors it.
                 Without this sentence an owner meets two pages headed *Your
                 business* and has to work out which one they are on. */}
-            Everyone in your organization can <strong className="font-medium">read</strong>{' '}
+            Everyone in your organization can{' '}
+            <strong className="font-medium">read</strong>
+            {' '}
             this under <em>Your business</em>; changing it is yours.
           </p>
           <SettingsLink href="/settings/products">Change what you sell</SettingsLink>
@@ -164,8 +169,8 @@ export default function SettingsPage() {
         </CardHeader>
         <CardBody>
           <p className="text-sm text-content-muted">
-            Everyone who can see this organization&apos;s accounts, and everyone on
-            their way in. Invite a colleague, or withdraw an invitation.
+            Everyone who can see this organization&apos;s accounts, and everyone on their
+            way in. Invite a colleague, or withdraw an invitation.
           </p>
           <SettingsLink href="/settings/team">Your team</SettingsLink>
         </CardBody>

@@ -499,6 +499,31 @@ class GraphQueries:
         accounts needs to know which came back, and an entity the workspace
         does not own is simply absent rather than represented by an empty
         identity it might render.
+
+        🔴 **B-1053 — that last sentence was false, and this is where.** The
+        result was seeded with ``{entity_id: [] for entity_id in entity_ids}``,
+        so **every requested id came back** whether the workspace owned it or
+        not, carrying ``name=None, agreement="unknown", source_count=0``.
+
+        ⚠️ **Measured, not inferred.** ``GET …/account-identities?ids=00000000-
+        0000-0000-0000-000000000000`` returned **200 with one row**, and
+        Account 360 rendered that row as *"no source has named this account
+        yet"* — **a full record page for a company that does not exist.**
+
+        ⛔ **The zero-filled row is exactly what ADR-0409 §5 forbids** —
+        *absence is never inferred, defaulted or zero-filled* — and it is the
+        opposite of what the sibling ``commercial()`` does *deliberately*:
+        that one returns every requested id **because a caller already holding
+        those accounts is asking what they are worth**, and *nothing has been
+        said* is a real answer about a real account. **Here the question is
+        who this account IS, and the workspace not knowing it at all is a
+        different answer from nobody having named it.**
+
+        ✅ **So the result is seeded from the BINDINGS**, which are already
+        scoped to ``workspace_id`` by the read above. An id the workspace does
+        not own has no binding here, so it is absent — **which is also why a
+        member of another organization and a mistyped id are indistinguishable
+        to the caller**, per ``CLAUDE.md`` §7: *404, never 403*.
         """
         if not entity_ids:
             return {}
@@ -516,7 +541,16 @@ class GraphQueries:
             for binding in bindings
             if binding.entity_id is not None
         }
-        grouped: dict[UUID, list[ClaimView]] = {entity_id: [] for entity_id in entity_ids}
+        # 🔴 **Seeded from the bindings this workspace holds, not from what the
+        # caller asked about** (B-1053). ⛔ **`{entity_id: [] for entity_id in
+        # entity_ids}` answered for every id in the request**, which made
+        # *"this account is not yours"* and *"nobody has named it"* identical.
+        owned = {
+            binding.entity_id
+            for binding in bindings
+            if binding.entity_id is not None and binding.entity_id in set(entity_ids)
+        }
+        grouped: dict[UUID, list[ClaimView]] = {entity_id: [] for entity_id in owned}
         for claim in claims:
             entity_id = owner.get((claim.provider, claim.subject_external_id))
             if entity_id is not None and entity_id in grouped:

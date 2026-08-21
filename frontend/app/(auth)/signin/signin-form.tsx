@@ -172,7 +172,9 @@ export function SignInForm({
   // in place under a pause notice offers a control the server will refuse for
   // the next several seconds — and every use of it makes the wait longer.
   if (throttled) {
-    return <Throttled retryAfterSeconds={throttled.retryAfterSeconds} onExpire={resume} />;
+    return (
+      <Throttled retryAfterSeconds={throttled.retryAfterSeconds} onExpire={resume} />
+    );
   }
 
   // Design 15. It renders nothing for the first 800ms, so a fast sign-in never
@@ -269,7 +271,9 @@ export function SignInForm({
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               aria-describedby={error ? summaryId : undefined}
-              {...(fieldError === 'password' && fieldMessage ? { error: fieldMessage } : {})}
+              {...(fieldError === 'password' && fieldMessage
+                ? { error: fieldMessage }
+                : {})}
             />
             {/* ⚠️ **The design places this beside the *label*; it is placed
                 beside the *field* instead.** `Input` renders its own label and
@@ -289,7 +293,7 @@ export function SignInForm({
               type="checkbox"
               checked={remember}
               onChange={(event) => setRemember(event.target.checked)}
-              className="h-4 w-4 rounded border-border-strong text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+              className="h-4 w-4 rounded border-border-strong text-accent "
             />
             Keep me signed in for 30 days
           </label>

@@ -113,6 +113,63 @@ describe('📁 Table and Cards are one view of one selection', () => {
   });
 
   /**
+   * 📁 **`Design Documents/Fortune Signora Companies.html`** — the card's
+   * fields are `name · initials · segment · status · ACV · score · renewal ·
+   * owner · trend`.
+   *
+   * 🔴 **It drew `Kind` and `Sources` instead**, and neither is on the design's
+   * card: they are graph provenance, not the commercial facts a seller scans a
+   * card for. ⛔ **An extension the final design does not support**, so it is
+   * removed rather than kept because it rendered.
+   *
+   * ⛔ **`Signora score` stays absent** for the reason it is absent from the
+   * table — `ListedAccount` carries none (C-289).
+   */
+  it('⛔ the card draws the design’s fields, not the graph provenance it used to', async () => {
+    renderPage();
+    await screen.findByRole('table');
+
+    await userEvent.click(screen.getByRole('button', { name: 'cards' }));
+    const cards = await screen.findByTestId('accounts-cards');
+
+    expect(within(cards).queryByText('Kind')).toBeNull();
+    expect(within(cards).queryByText('Sources')).toBeNull();
+  });
+
+  /**
+   * ⛔ **Absent, never dashed** — 📁 [ADR-0409](../../../docs/architecture/adr/0409-commercial-account-facts.md)
+   * §5. ⚠️ **A table cell prints `—` because a grid must keep its columns
+   * aligned; a card has no such obligation**, so it says less rather than
+   * saying nothing truthfully.
+   */
+  it('✅ a card states Open ACV when a source has, and omits it when none has', async () => {
+    servePages(
+      page([
+        {
+          ...listed('11111111-1111-4111-8111-111111111111', 'Vantage Logistics'),
+          commercial: {
+            open_acv: { amount: 1_240_000, currency: 'USD' },
+            renewal_date: null,
+            stage: null,
+          },
+        },
+        listed('22222222-2222-4222-8222-222222222222', 'Meridian Freight'),
+      ]),
+    );
+
+    renderPage();
+    await screen.findByRole('table');
+    await userEvent.click(screen.getByRole('button', { name: 'cards' }));
+    const cards = await screen.findByTestId('accounts-cards');
+
+    // ⚡ **Stated once, on the card that has it.**
+    expect(within(cards).getAllByText('Open ACV')).toHaveLength(1);
+    // ⛔ **And no dash on the one that does not** — a zero-filled ACV is a
+    // figure a seller would act on.
+    expect(within(cards).queryByText('—')).toBeNull();
+  });
+
+  /**
    * 🔴 **The design's rule, and the reason cards are a VIEW**: *"same data,
    * same filters, same selection."* ⛔ **A filter that applied to one and not
    * the other would make them two screens.**

@@ -91,13 +91,13 @@ export function SetupCompleteStrip({
      */
     <div
       role="status"
-      className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-success/30 bg-success-subtle px-4 py-3"
+      className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-success-line bg-success-subtle px-4 py-3"
       data-testid="setup-complete"
     >
       <span
         aria-hidden
         /* 📁 The design's completed mark — *"`markBg: var(--pos)`, `markFg:
-           #fff`"*. ⛔ **`text-accent-contrast` rather than a new token**: the
+           the design's white"*. ⛔ **`text-accent-contrast` rather than a new token**: the
            design's hero states *"0 new components or tokens"*, and
            `shell/activation.tsx:230` already pairs exactly this filled-success
            chip with that foreground. */

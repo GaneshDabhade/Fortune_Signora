@@ -11,7 +11,12 @@ import { size } from '@/components/commercial/vocabulary';
 import { formatDay } from '@/components/intelligence/dates';
 import { Button, Dialog, EmptyState, Input } from '@/components/ui';
 import { ApiError } from '@/lib/api/client';
-import type { IcpDeclaration, Product, ProductCatalog, ProductIcp } from '@/lib/api/types';
+import type {
+  IcpDeclaration,
+  Product,
+  ProductCatalog,
+  ProductIcp,
+} from '@/lib/api/types';
 import { useDeclareIcp } from '@/lib/query/hooks/commercial';
 
 /**
@@ -22,12 +27,18 @@ import { useDeclareIcp } from '@/lib/query/hooks/commercial';
  * is for, which is what everything Signora goes looking for is eventually
  * checked against.
  *
- * ### It describes; it never matches
+ * ### It describes; it does not match — but it is no longer unmeasured
  *
- * Nothing on this screen says whether a real company fits. Comparing an
- * account to a description needs resolved facts about that account, which is
- * built elsewhere and deliberately separate — so this screen has no verdict to
- * show and no field that could carry one.
+ * Nothing in *this component* says whether a real company fits: comparing an
+ * account to a description needs resolved facts about that account, and
+ * `ProductIcp` has no field that could carry a verdict.
+ *
+ * 🔴 **CORRECTED 2026-08-20.** This paragraph ended *"so this screen has no
+ * verdict to show and no field that could carry one"* — ⛔ **true of the
+ * declaration, and false of the screen** since `GET …/icp-performance`
+ * shipped. ⚡ **[`IcpPerformance`](./icp-performance.tsx) renders it directly
+ * beneath this editor**, which is the ICP Builder design's central claim:
+ * *"Every criterion is scored against closed-won evidence, not opinion."*
  *
  * ### In the customer's own words
  *
@@ -224,8 +235,7 @@ function IcpDialog({
   // The server refuses a description with no criteria, and so does this — but
   // here it is a disabled button rather than an error, because refusing before
   // somebody has typed anything is not news to them.
-  const stated =
-    industries.length > 0 || countries.length > 0 || employees !== null;
+  const stated = industries.length > 0 || countries.length > 0 || employees !== null;
 
   const submit = () => {
     if (product === null || !stated) return;
@@ -335,7 +345,10 @@ function TagField({
     const entry = draft.trim();
     // Case-insensitively already there: the server refuses a duplicate, and
     // silently keeping one copy is what the customer meant either way.
-    if (entry === '' || values.some((value) => value.toLowerCase() === entry.toLowerCase()))
+    if (
+      entry === '' ||
+      values.some((value) => value.toLowerCase() === entry.toLowerCase())
+    )
       return setDraft('');
     onChange([...values, entry]);
     setDraft('');
@@ -382,7 +395,7 @@ function TagField({
               <button
                 type="button"
                 aria-label={`Remove ${value}`}
-                className="rounded text-content-subtle transition-colors hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                className="rounded text-content-subtle transition-colors hover:text-content "
                 onClick={() => onChange(values.filter((other) => other !== value))}
               >
                 <X aria-hidden className="h-3.5 w-3.5" />

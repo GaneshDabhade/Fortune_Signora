@@ -62,7 +62,7 @@ export function AuthenticatedShell({
   return (
     <WorkspaceProvider>
       {/* **Inside the provider, deliberately.** A role is a fact about a person
-          *in a workspace*, so it cannot be resolved above the thing that knows
+        *in a workspace*, so it cannot be resolved above the thing that knows
           which workspace is active. */}
       <ShellForViewer email={email} name={name}>
         {children}
@@ -197,7 +197,7 @@ function SignOutButton({ email }: { email: string }) {
           entrance" `infra/reachability.py` refused. */}
       <Link
         href="/profile"
-        className="hidden rounded text-sm text-content-muted underline decoration-border underline-offset-4 transition-colors hover:text-content hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent phone:inline"
+        className="hidden rounded text-sm text-content-muted underline decoration-border underline-offset-4 transition-colors hover:text-content hover:decoration-accent phone:inline"
       >
         {email}
       </Link>

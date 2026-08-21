@@ -13,10 +13,22 @@ const VARIANTS: Record<ButtonVariant, string> = {
   danger: 'bg-danger text-accent-contrast hover:bg-danger-hover',
 };
 
+/**
+ * 📁 **§10 Controls** — *"Buttons and inputs move to 8px radius and 34px default
+ * height."* ⚡ **The heights are the control tokens**, corrected by this row from
+ * an invented 32/40/44 to the design's 32/34/40; ⛔ **no literal appears here**,
+ * which is what keeps a height change one edit rather than three.
+ *
+ * ♿ **`coarse:min-h-11` is the design's other sentence about size** — 📁 §17
+ * `2.5.8`, *"44px on touch"*, and 📁 Home `1.4.10`, *"on mobile every primary
+ * action is 44px tall."* ⛔ **A `min-height`, not a `height`**: it raises the
+ * control on a touch screen and leaves the design's 34px everywhere a mouse is
+ * pointing, so one component satisfies both sentences instead of choosing.
+ */
 const SIZES: Record<ButtonSize, string> = {
-  sm: 'h-control-sm px-3 text-sm',
-  md: 'h-control-md px-4 text-sm',
-  lg: 'h-control-lg px-6 text-base',
+  sm: 'h-control-sm px-3 text-sm coarse:min-h-11',
+  md: 'h-control-md px-4 text-sm coarse:min-h-11',
+  lg: 'h-control-lg px-6 text-base coarse:min-h-11',
 };
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -48,7 +60,18 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       aria-busy={loading || undefined}
       disabled={disabled ?? loading}
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded font-medium',
+        // 📁 §10 — *"Labels are 600 and sentence case, and centred inside the
+        // control."* ⛔ **`font-medium` is 500**, and the design says 600 for
+        // every interface label; the critique's own line is *"600 replaces 800
+        // for every interface label — the difference between a system that
+        // whispers and one that shouts."*
+        'inline-flex items-center justify-center gap-2 rounded font-semibold',
+        // ⚡ **`shrink-0` and `whitespace-nowrap` are the layout half.** ⛔ A
+        // button in a flex row with neither is squeezed to its ellipsis by a
+        // long sibling, and its label wraps to two lines inside a fixed height —
+        // which is the *"buttons wrapping incorrectly"* class of defect rather
+        // than a styling preference. **The row wraps; the control does not.**
+        'shrink-0 whitespace-nowrap',
         'transition-colors disabled:pointer-events-none disabled:opacity-50',
         VARIANTS[variant],
         SIZES[size],

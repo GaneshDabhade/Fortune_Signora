@@ -69,7 +69,8 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
  * each names something that is actually on that composition's page.
  */
 const WHAT_TO_DO: Readonly<Record<Composition, string>> = Object.freeze({
-  activation: 'Start by connecting a CRM below — everything on this page fills in from there.',
+  activation:
+    'Start by connecting a CRM below — everything on this page fills in from there.',
   seller: 'Start with what needs you today — every item below says why it is there.',
   executive: 'Start with the figures below — each one says what it was derived from.',
   revenue_operations:
@@ -103,12 +104,23 @@ export function FirstRunOverlay({ composition }: { composition: Composition }) {
       // `role="dialog"` would trap focus and make an orientation something a
       // person has to escape.
       aria-labelledby="first-run-heading"
-      className="flex items-start gap-4 rounded-lg border border-accent-subtle bg-accent-soft px-4 py-3.5"
+      /* 🔴 **`bg-accent-soft` was the wrong role.** ⚠️ **`--accent-soft` is the
+         blue ramp's step 300** — 📁 Design System v2's `BLUE[3]` —
+       **a FILL for a progress track or a chart band, not a ground for a strip
+         of text.** ⛔ Measured on Home at 1440: a solid mid-blue block across the
+         content region, against every other strip in the product, which are
+         tints.
+         ⚡ **`accent-subtle` IS the design's `--brand-tint`**, which
+         is what §07 and Home both draw an orientation strip on — and it is the
+         same token the border already used, so the strip now reads as one
+         object rather than a fill inside an outline. */
+      className="flex flex-wrap items-start gap-x-4 gap-y-2 rounded-lg border border-accent-subtle bg-accent-subtle px-4 py-3.5"
     >
       <div className="flex flex-col gap-1">
         <h2 id="first-run-heading" className="text-sm font-semibold text-content">
           {/* 📁 **Sentence one — what this is.** */}
-          Signora reads what your systems already record and tells you which accounts need you.
+          Signora reads what your systems already record and tells you which accounts need
+          you.
         </h2>
         <p className="text-sm leading-6 text-content-muted">
           {/* 📁 **Sentence two — what to do.** ⛔ It names the step below rather
@@ -127,7 +139,7 @@ export function FirstRunOverlay({ composition }: { composition: Composition }) {
         // is doing.
         disabled={dismiss.isPending}
         aria-label="Dismiss"
-        className="ml-auto shrink-0 rounded p-1 text-content-subtle transition-colors hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed"
+        className="ml-auto shrink-0 rounded p-1 text-content-subtle transition-colors hover:text-content disabled:cursor-not-allowed"
       >
         <X className="h-4 w-4" aria-hidden />
       </button>

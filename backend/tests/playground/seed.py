@@ -183,16 +183,51 @@ async def _enrol_everyone(
         for user_id, email in users:
             await session.execute(
                 text(
-                    "INSERT INTO membership (id, workspace_id, user_id, role, created_at,"
-                    " updated_at, created_by, updated_by)"
-                    " VALUES (gen_random_uuid(), :w, :u, :r, now(), now(), :u, :u)"
+                    "INSERT INTO membership (id, workspace_id, user_id, role, member_email,"
+                    " created_at, updated_at, created_by, updated_by)"
+                    " VALUES (gen_random_uuid(), :w, :u, :r, :e, now(), now(), :u, :u)"
                     " ON CONFLICT DO NOTHING"
                 ),
                 # A demo persona keeps the role its entry declares; anybody
                 # else who has signed in is the developer, and owning the
                 # workspace is what lets them look at everything.
-                {"w": workspace_id, "u": user_id, "r": roles.get(email, "owner")},
+                #
+                # `member_email` is the address the membership was created
+                # with, exactly as the invitation flow records it. It was
+                # selected on the line above and then thrown away, which made
+                # every person in the Playground anonymous to the product
+                # (B-293): 61 memberships, none nameable, so `peopleFrom`
+                # correctly withheld 61 names and every colleague picker in
+                # the product offered nobody. The column has existed since
+                # migration 0034; only this insert had not caught up.
+                {
+                    "w": workspace_id,
+                    "u": user_id,
+                    "r": roles.get(email, "owner"),
+                    "e": email,
+                },
             )
+
+        # `ON CONFLICT DO NOTHING` above leaves an existing membership exactly
+        # as it was, so re-seeding could never repair one written before this
+        # fix — and every Playground in existence has 61 of them. Backfilling
+        # only where the column is null keeps this idempotent and never
+        # overwrites an address a real invitation established.
+        await session.execute(
+            text(
+                'UPDATE membership m SET member_email = u.email, updated_at = now()'
+                f' FROM {schema}."user" u'
+                # Better Auth owns its own schema and stores `user.id` as
+                # `text`; `membership.user_id` is a `uuid`. The cast is the
+                # boundary between two systems ADR-0026 keeps apart, not a
+                # shortcut — and it is explicit so nobody later "fixes" it by
+                # changing a column type one of the two systems owns.
+                " WHERE m.user_id::text = u.id"
+                " AND m.workspace_id = :w"
+                " AND m.member_email IS NULL"
+            ),
+            {"w": workspace_id},
+        )
         await session.commit()
         return len(users)
 

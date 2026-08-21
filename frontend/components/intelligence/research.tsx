@@ -30,8 +30,8 @@ import type { AccountResearch, ResearchFinding, ResearchStatus } from '@/lib/api
  * So the brief is shown in two parts, and **the deterministic half comes
  * first**:
  *
- *     what was compared    DERIVED   — recomputable by the customer
- *     what it means        INFERRED  — a model wrote this
+ * what was compared DERIVED — recomputable by the customer
+ * what it means INFERRED — a model wrote this
  *
  * That order is the argument. A reader who scrolls no further has still seen
  * the checkable half, and a reader who does scroll reaches the model's
@@ -90,14 +90,14 @@ export function ResearchPanel({
    */
   isError?: boolean;
   /** 📁 The design's *"Open all evidence"* — ⛔ **absent rather than inert**
-   *  when the page has no evidence surface to open. */
+   * when the page has no evidence surface to open. */
   onOpenEvidence?: () => void;
   /** 📁 The collapse law's key is per viewer per account KIND — ⛔ never per
-   *  record ([`collapseKey`](../../lib/accounts/section-state.ts)). */
+   * record ([`collapseKey`](../../lib/accounts/section-state.ts)). */
   viewerId?: string | null;
   kind?: string | null;
   /** ⚡ **Expanded is the URL's**, so the view is shareable — 📁 the design:
-   *  *"keeps the URL so the expanded view is shareable."* */
+   * *"keeps the URL so the expanded view is shareable."* */
   isExpanded?: boolean;
   onToggleExpanded?: (next: boolean) => void;
 }) {
@@ -109,9 +109,10 @@ export function ResearchPanel({
   // the shared law rather than being built here** — ⛔ a second key shape would
   // be a second definition of a rule `section-state.ts` already owns.
   const [expandedBody, setExpandedBody] = useState(true);
-  const persistKey = viewerId === null || kind === null || id === undefined
-    ? null
-    : collapseKey(viewerId, kind, id);
+  const persistKey =
+    viewerId === null || kind === null || id === undefined
+      ? null
+      : collapseKey(viewerId, kind, id);
 
   // ⚠️ **Read after mount, never during render** — `localStorage` does not
   // exist on the server, and a value read during render would make the first
@@ -181,14 +182,20 @@ export function ResearchPanel({
               onClick={toggleBody}
               aria-expanded={expandedBody}
               aria-controls={id === undefined ? undefined : `${id}-body`}
+              /* ♿ 📁 §17 `2.5.8` — *"Targets ≥ 24px."* ⚠️ **Measured at
+                 `165 × 21`**, the same line-box shortfall
+                 `AccountSectionShell`'s heading had, and the same fix: a
+                 floor, not a height, so the heading keeps its type. */
               className={[
-                'flex items-center gap-1.5 rounded text-left',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                'flex min-h-6 items-center gap-1.5 rounded text-left coarse:min-h-11',
               ].join(' ')}
             >
               <ChevronDown
                 aria-hidden
-                className={['h-3.5 w-3.5 transition-transform', expandedBody ? '' : '-rotate-90'].join(' ')}
+                className={[
+                  'h-3.5 w-3.5 transition-transform',
+                  expandedBody ? '' : '-rotate-90',
+                ].join(' ')}
               />
               Research summary
             </button>
@@ -219,10 +226,15 @@ export function ResearchPanel({
                inert** when the page cannot carry the URL that makes the
                expanded view shareable. */
             aria-label={isExpanded ? 'Leave focus mode' : 'Open research in focus mode'}
+            /* ♿ 📁 §17 `2.5.8` — *"Targets ≥ 24px."* ⚠️ **Measured at
+               `22 × 22`**: a 14px glyph and 4px of padding, two pixels under
+               the floor. ⛔ **A minimum on both axes rather than a bigger
+               icon** — the glyph is the design's size and stays it; only the
+               box it sits in grows. */
             className={[
-              'shrink-0 rounded p-1 text-content-subtle',
+              'inline-flex min-h-6 min-w-6 shrink-0 items-center justify-center rounded p-1 text-content-subtle',
+              'coarse:min-h-11 coarse:min-w-11',
               'transition-colors hover:text-content',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
             ].join(' ')}
           >
             {isExpanded ? (
@@ -237,48 +249,51 @@ export function ResearchPanel({
       {/* ── The body ─────────────────────────────────────────────────────
           ⚡ **Four states share this region and only one of them is the grid.** */}
       <div id={id === undefined ? undefined : `${id}-body`} hidden={!expandedBody}>
-      {isError ? (
-        <div className="px-4 py-4">
-          <Unavailable {...(correlationId === undefined ? {} : { correlationId })} />
-        </div>
-      ) : isRequesting || research?.status === 'requested' || research?.status === 'running' ? (
-        <Waiting status={research?.status ?? 'requested'} />
-      ) : research === null ? (
-        <div className="px-4 py-4">
-          <Invitation />
-        </div>
-      ) : artifactCells.length === 0 ? (
-        <div className="px-4 py-4">
-          <Status research={research} />
-        </div>
-      ) : (
-        <>
-          {/* 📁 *"grid-template-columns:repeat(2,1fr)"* — ⚡ **two columns from
-              `smalllaptop` up, one below it**: a 12.5px paragraph in half of a
-              phone is four words a line. */}
-          <div
-            className={[
-              'grid grid-cols-1',
-              /* 📁 *"Expansion widens to the full content region."* ⚡ **Three
-                 columns at `laptop` in focus mode, two otherwise** — ⛔ the
-                 widening is real rather than a class name. */
-              isExpanded ? 'smalllaptop:grid-cols-2 laptop:grid-cols-3' : 'smalllaptop:grid-cols-2',
-            ].join(' ')}
-          >
-            {artifactCells.map((cell) => (
-              <ResearchCell key={cell.key} cell={cell} onOpen={(f) => setOpen(f)} />
-            ))}
+        {isError ? (
+          <div className="px-4 py-4">
+            <Unavailable {...(correlationId === undefined ? {} : { correlationId })} />
           </div>
-          <Footer artifact={artifact!} onOpenEvidence={onOpenEvidence} />
-        </>
-      )}
+        ) : isRequesting ||
+          research?.status === 'requested' ||
+          research?.status === 'running' ? (
+          <Waiting status={research?.status ?? 'requested'} />
+        ) : research === null ? (
+          <div className="px-4 py-4">
+            <Invitation />
+          </div>
+        ) : artifactCells.length === 0 ? (
+          <div className="px-4 py-4">
+            <Status research={research} />
+          </div>
+        ) : (
+          <>
+            {/* 📁 *"grid-template-columns:repeat(2,1fr)"* — ⚡ **two columns from
+                `smalllaptop` up, one below it**: a 12.5px paragraph in half of a
+                phone is four words a line. */}
+            <div
+              className={[
+                'grid grid-cols-1',
+                /* 📁 *"Expansion widens to the full content region."* ⚡ **Three
+                   columns at `laptop` in focus mode, two otherwise** — ⛔ the
+                   widening is real rather than a class name. */
+                isExpanded
+                  ? 'smalllaptop:grid-cols-2 laptop:grid-cols-3'
+                  : 'smalllaptop:grid-cols-2',
+              ].join(' ')}
+            >
+              {artifactCells.map((cell) => (
+                <ResearchCell key={cell.key} cell={cell} onOpen={(f) => setOpen(f)} />
+              ))}
+            </div>
+            <Footer artifact={artifact!} onOpenEvidence={onOpenEvidence} />
+          </>
+        )}
       </div>
 
       <FindingDialog finding={open} onClose={() => setOpen(null)} />
     </section>
   );
 }
-
 
 /**
  * 📁 ***"A collapsed section still states its count and its worst status, so
@@ -367,11 +382,11 @@ function Footer({
   artifact: NonNullable<AccountResearch['artifact']>;
   onOpenEvidence?: () => void;
   /** 📁 The collapse law's key is per viewer per account KIND — ⛔ never per
-   *  record ([`collapseKey`](../../lib/accounts/section-state.ts)). */
+   * record ([`collapseKey`](../../lib/accounts/section-state.ts)). */
   viewerId?: string | null;
   kind?: string | null;
   /** ⚡ **Expanded is the URL's**, so the view is shareable — 📁 the design:
-   *  *"keeps the URL so the expanded view is shareable."* */
+   * *"keeps the URL so the expanded view is shareable."* */
   isExpanded?: boolean;
   onToggleExpanded?: (next: boolean) => void;
 }) {
@@ -390,7 +405,6 @@ function Footer({
           className={[
             'ml-auto rounded text-xs font-semibold text-ai',
             'transition-colors hover:underline',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
           ].join(' ')}
         >
           Open all evidence
@@ -417,7 +431,10 @@ function Waiting({ status }: { status: ResearchStatus }) {
       </p>
       <div className="grid grid-cols-1 smalllaptop:grid-cols-2" aria-hidden>
         {[0, 1, 2, 3].map((n) => (
-          <div key={n} className="border-b border-border px-4 py-4 smalllaptop:[&:nth-child(odd)]:border-r">
+          <div
+            key={n}
+            className="border-b border-border px-4 py-4 smalllaptop:[&:nth-child(odd)]:border-r"
+          >
             <SkeletonText lines={1} />
             <div className="mt-2">
               <SkeletonText lines={3} />
@@ -433,8 +450,8 @@ function Waiting({ status }: { status: ResearchStatus }) {
 interface Cell {
   key: string;
   /** ⛔ **`null` when no cited finding resolves** — the design has no cell
-   *  without a key, and inventing one would be this layer naming a question a
-   *  domain expert did not write. */
+   * without a key, and inventing one would be this layer naming a question a
+   * domain expert did not write. */
   question: string | null;
   text: string;
   cites: string[];
@@ -576,11 +593,15 @@ function Refresh({
       type="button"
       onClick={onRequest}
       disabled={disabled}
+      /* ♿ 📁 §17 `2.5.8` — *"Targets ≥ 24px."* ⚠️ **Measured at `116 × 18`.**
+         ⛔ **`min-h-6`, not a padded button**: 📁 the finalized design calls
+         this *"a text action in the header band, not a button below the
+         heading"*, so it keeps its type and gains only the floor. */
       className={[
-        'ml-auto shrink-0 rounded text-xs font-semibold text-ai',
+        'ml-auto inline-flex min-h-6 shrink-0 items-center rounded text-xs font-semibold text-ai',
+        'coarse:min-h-11',
         'transition-colors hover:underline',
         'disabled:cursor-not-allowed disabled:text-content-subtle disabled:no-underline',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
       ].join(' ')}
     >
       {status === null ? 'Research this account' : 'Refresh research'}
@@ -609,7 +630,9 @@ function Cited({
 
   if (finding === undefined) {
     return (
-      <div className="mt-2 text-xs font-semibold tabular-nums text-content-subtle">{label}</div>
+      <div className="mt-2 text-xs font-semibold tabular-nums text-content-subtle">
+        {label}
+      </div>
     );
   }
 
@@ -620,7 +643,6 @@ function Cited({
       className={[
         'mt-2 block rounded text-xs font-semibold tabular-nums text-ai',
         'transition-colors hover:underline',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
       ].join(' ')}
     >
       {label}
@@ -663,7 +685,8 @@ function FindingDialog({
 
           <div className="flex flex-col items-start gap-1.5 border-t border-border pt-3">
             <Badge tone="neutral">
-              {finding.cites.length}{' '}
+              {finding.cites.length}
+              {' '}
               {finding.cites.length === 1 ? 'record compared' : 'records compared'}
             </Badge>
             <p className="text-xs leading-5 text-content-muted">

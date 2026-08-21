@@ -81,7 +81,7 @@ export function RoleChangeNotice({ change }: RoleChangeNoticeProps) {
       data-testid="role-change"
       className={cn(
         'flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg px-4 py-3',
-        'border border-warning/30 bg-warning-subtle',
+        'border border-warning-line bg-warning-subtle',
       )}
     >
       <span
@@ -91,7 +91,10 @@ export function RoleChangeNotice({ change }: RoleChangeNoticeProps) {
         <UserCog className="h-3 w-3" />
       </span>
       <p className="text-label leading-[1.5] text-content">
-        {what} <span className="text-content-muted">What you can see here may have changed.</span>
+        {what}{' '}
+        <span className="text-content-muted">
+          What you can see here may have changed.
+        </span>
       </p>
       {/* 📁 **Dismissible.** ⚡ It is a notice about something already done — there
           is nothing to act on, and a strip with no dismiss on a page somebody
@@ -100,7 +103,7 @@ export function RoleChangeNotice({ change }: RoleChangeNoticeProps) {
       <button
         type="button"
         onClick={() => setDismissed(true)}
-        className="ml-auto inline-flex h-control-sm items-center rounded-md px-2 text-2xs font-semibold text-content-subtle transition-colors hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="ml-auto inline-flex h-control-sm items-center rounded-md px-2 text-2xs font-semibold text-content-subtle transition-colors hover:text-content "
       >
         Dismiss
       </button>

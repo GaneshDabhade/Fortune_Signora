@@ -85,7 +85,7 @@ export function AuthShell({
     >
       {/* ⚡ **`max-w-card`, not an arbitrary 400px** — TASK-491 gap ⑦, and
           [D-162](../../../docs/DECISION_REGISTER.md) ④ named this exact line.
-          **The measurement is the Design System's**, so the screen consumes it
+        **The measurement is the Design System's**, so the screen consumes it
           rather than restating it. */}
       <div className="flex w-full flex-col phone:max-w-card">
         {/* The product mark, above the card. `Fortune Signora` is the combined
@@ -102,7 +102,7 @@ export function AuthShell({
         {mark ? (
           <Link
             href="/welcome"
-            className="mb-6 flex items-center justify-center gap-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+            className="mb-6 flex items-center justify-center gap-2 rounded "
           >
             <span
               aria-hidden
@@ -128,7 +128,7 @@ export function AuthShell({
                 heading in the design is `font-size:20px;font-weight:700`
                 (Welcome's is 22px, and **the Design System's scale has no
                 22px**). It was `text-lg`/600. [D-163](../../../docs/DECISION_REGISTER.md):
-                *"do not introduce workflow-specific visual overrides where the
+              *"do not introduce workflow-specific visual overrides where the
                 Design System should define the behavior"* — so the token is
                 used and an arbitrary 22px size is not written.
 
@@ -185,7 +185,6 @@ export function AuthShell({
   );
 }
 
-
 /**
  * A link inside the card.
  *
@@ -199,7 +198,7 @@ export function AuthLink({ href, children }: { href: string; children: ReactNode
   return (
     <Link
       href={href}
-      className="rounded font-medium text-content underline decoration-border underline-offset-4 transition-colors hover:decoration-content-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+      className="rounded font-medium text-content underline decoration-border underline-offset-4 transition-colors hover:decoration-content-muted "
     >
       {children}
     </Link>

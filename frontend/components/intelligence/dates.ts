@@ -32,3 +32,30 @@ export function howLongAgo(iso: string, now: Date = new Date()): string {
   if (days < 365) return `${Math.floor(days / 30)} months ago`;
   return `${Math.floor(days / 365)} years ago`;
 }
+
+/**
+ * 🔴 **📁 §08's second term on a date fact** — the design draws *"12 Oct 2026
+ * **69 days**"*, and the qualifier is the distance to the date.
+ *
+ * ⚡ **Arithmetic on a published field, not a new fact.** ⛔ **No producer is
+ * invented**: `renewal_date` is already on `AccountCommercial`, and this is the
+ * same shape {@link howLongAgo} already applies in the other direction.
+ *
+ * ⚠️ **Day precision and rounded toward the reader**, matching this module's
+ * rule — *"precision nobody uses is precision that only creates doubt."*
+ *
+ * ⛔ **Says nothing about urgency.** 📁 The design colours *"69 days"* in
+ * `warn`, which implies a threshold — **the product defines none**, so this
+ * returns the count and the caller renders it neutral.
+ */
+export function daysUntil(iso: string, now: Date = new Date()): string | null {
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return null;
+  const days = Math.round((then - now.getTime()) / 86_400_000);
+  // ⚡ **A date that has passed is not a countdown**, and calling it
+  // "−3 days" would read as a measurement rather than a lapse.
+  if (days < 0) return 'passed';
+  if (days === 0) return 'today';
+  if (days === 1) return 'tomorrow';
+  return `${days} days`;
+}

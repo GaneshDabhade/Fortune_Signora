@@ -13,41 +13,20 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-const UI_DIR = join(process.cwd(), 'components', 'ui');
-const SHELL_DIR = join(process.cwd(), 'components', 'shell');
-const FEEDBACK_DIR = join(process.cwd(), 'components', 'feedback');
-/** **Added at M12.2.** These compose *from* the design system rather than
- * belonging to it, and were therefore outside this check while there were two
- * of them. A third made the omission worth closing: the rule that a theme
- * change is a token edit is not weaker for a component that renders a buying
- * score than for one that renders a button. */
-const INTELLIGENCE_DIR = join(process.cwd(), 'components', 'intelligence');
-/** **Added at M12.3 (ADR-0033), and it found something.** This check scanned
- * `components/` and nothing else, so `app/(auth)` — **the first screen every
- * customer sees** — had been using `bg-white`, `border-slate-200` and
- * `text-slate-500` since M1.5, forbidden everywhere the check could reach.
+/**
+ * 🔴 **Eleven directory constants stood here and are deleted with the list they
+ * fed.** ⚠️ **Their history is worth one line each, because it is the argument
+ * for walking the tree instead**: `components/ui`, `shell` and `feedback` were
+ * the original three; `intelligence` was added at M12.2; `app/(auth)` at M12.3,
+ * where **the first screen every customer sees** had carried `bg-white` and
+ * `text-slate-500` since M1.5; `workspace`, `integrations`, `timeline`,
+ * `commercial` and `app/(app)` were added in 2026-08 after
+ * [B-200](../../../docs/BUGS.md) put **thirty uses of a token that does not
+ * exist** across five unscanned files.
  *
- * A rule with a gap in its enforcement is a rule the code eventually finds the
- * gap in. The authentication screens are now inside it. */
-const AUTH_DIR = join(process.cwd(), 'app', '(auth)');
-/** Tenancy-state UI. Composed from the design system on the same terms as
- * `components/intelligence/` — never added to it. */
-const WORKSPACE_DIR = join(process.cwd(), 'components', 'workspace');
-/** **Added 2026-08-03, and they are where [B-200](../../../docs/BUGS.md) lived
- * undetected.** Both compose from the design system, and both were outside
- * every assertion in this file — so 30 uses of a token that does not exist
- * accumulated across five files, one of them on the account brief.
- *
- * The omission was not a judgement that these directories mattered less. They
- * simply were not written down, which is the failure mode of any list a human
- * maintains: **it is correct on the day it is written and silently incomplete
- * every day after.** */
-const INTEGRATIONS_DIR = join(process.cwd(), 'components', 'integrations');
-const TIMELINE_DIR = join(process.cwd(), 'components', 'timeline');
-const COMMERCIAL_DIR = join(process.cwd(), 'components', 'commercial');
-/** The application's own routes, on the same reasoning as `app/(auth)` above:
- * `settings/connections` carried four of B-200's thirty. */
-const APP_DIR = join(process.cwd(), 'app', '(app)');
+ * ⛔ **Every one of those additions was made *after* the omission had already
+ * cost something**, which is the pattern a hand-maintained list guarantees.
+ */
 
 function sourceFiles(dir: string, prefix?: string): { name: string; source: string }[] {
   const label = prefix ?? (dir.split('/').pop() as string);
@@ -60,17 +39,29 @@ function sourceFiles(dir: string, prefix?: string): { name: string; source: stri
   });
 }
 
+/**
+ * 🔴 **The list is gone, and its absence is the fix.**
+ *
+ * ⚠️ **Eleven directories were named here by hand, and the file's own header
+ * predicted what would happen**: *"it is correct on the day it is written and
+ * silently incomplete every day after."* ✅ **It came true three times.**
+ * `app/(auth)` carried `bg-white` for four milestones. `components/integrations`
+ * and two siblings carried thirty uses of a token that does not exist. **And
+ * this row found two more in the two directories still missing** —
+ * `components/home`, where five card surfaces carried `shadow-e1`, **a utility
+ * this repository does not define**, so they rendered flat; and
+ * `components/accounts`, where `text-muted-foreground` — **shadcn's vocabulary,
+ * which `FOREGROUND_TOKEN` below exists specifically to refuse** — resolved to
+ * nothing and printed *"No segment"* at full ink on every row of the table.
+ *
+ * ⛔ **Each time the answer was to add a directory, and each time the next
+ * directory was already drifting.** ⚡ **So the check now walks `components/`
+ * and `app/` whole.** A new directory is inside it on the day it is created,
+ * which is the only version of this rule that does not decay.
+ */
 const ALL_COMPONENTS = [
-  ...sourceFiles(UI_DIR),
-  ...sourceFiles(SHELL_DIR),
-  ...sourceFiles(FEEDBACK_DIR),
-  ...sourceFiles(INTELLIGENCE_DIR),
-  ...sourceFiles(AUTH_DIR, '(auth)'),
-  ...sourceFiles(WORKSPACE_DIR),
-  ...sourceFiles(INTEGRATIONS_DIR),
-  ...sourceFiles(TIMELINE_DIR),
-  ...sourceFiles(COMMERCIAL_DIR),
-  ...sourceFiles(APP_DIR, '(app)'),
+  ...sourceFiles(join(process.cwd(), 'components'), 'components'),
+  ...sourceFiles(join(process.cwd(), 'app'), 'app'),
 ];
 
 /**
@@ -203,7 +194,7 @@ describe('theme switching requires no component change', () => {
     // branching on it would need editing when a third theme is added.
     const readers = ALL_COMPONENTS.filter(
       ({ name, source }) =>
-        name !== 'shell/theme-toggle.tsx' && source.includes('useTheme'),
+        name !== 'components/shell/theme-toggle.tsx' && source.includes('useTheme'),
     );
 
     expect(readers.map((r) => r.name)).toEqual([]);
@@ -321,7 +312,11 @@ describe('control heights are tokens', () => {
    * sizing itself with `h-…` is an icon or a layout, which have no control
    * scale to belong to — and a check that forbade every literal height would
    * be forbidding the wrong thing to catch the right one. */
-  const CONTROLS = ['ui/button.tsx', 'ui/input.tsx', 'ui/select.tsx'];
+  const CONTROLS = [
+    'components/ui/button.tsx',
+    'components/ui/input.tsx',
+    'components/ui/select.tsx',
+  ];
 
   it.each(CONTROLS)('%s takes its height from a control token', (name) => {
     const { source } = ALL_COMPONENTS.find((c) => c.name === name)!;

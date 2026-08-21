@@ -3,7 +3,7 @@
 import Link from 'next/link';
 
 import { CardFailure } from '@/components/home/card-failure';
-import { Skeleton } from '@/components/ui';
+import { Card, Skeleton } from '@/components/ui';
 import { useCardPhase } from '@/lib/home/loading';
 
 import type { ViewedRecord } from '@/lib/api/types';
@@ -81,7 +81,7 @@ export function RecentsCard() {
       <CardFailure
         title="Signora could not read what you opened recently"
         /* 📁 Session Continuity tier 4's failure rule: *"recents unavailable…
-           **no fabricated history**"* — ⛔ **an empty list and an unread list
+         **no fabricated history**"* — ⛔ **an empty list and an unread list
            are different answers**, and this is the one that says which. */
         description="Nothing you opened has been lost. Everything else on this page is unaffected."
         error={recents.error}
@@ -93,8 +93,8 @@ export function RecentsCard() {
   }
 
   /** 📁 **State 07** — skeletonised at the declared footprint. ⛔ **And nothing at
-   *  all for the first 300ms** — 📁 *"a placeholder shown and removed inside 300ms
-   *  reads as a flicker."* */
+   * all for the first 300ms** — 📁 *"a placeholder shown and removed inside 300ms
+   * reads as a flicker."* */
   if (recents.isPending) {
     return (
       <Frame>
@@ -119,7 +119,7 @@ export function RecentsCard() {
          * screen renders empty rather than reconstructing a plausible state.
          * Fabricated continuity is worse than none."*
          */
-        <p className="mt-2.5 text-[12.5px] leading-[1.55] text-content-muted">
+        <p className="mt-2.5 text-label leading-[1.55] text-content-muted">
           Nothing opened yet in this organization.
         </p>
       ) : (
@@ -162,22 +162,22 @@ function Row({
   return (
     <Link
       href={`/accounts/${record.entity_id}`}
-      className="flex items-center gap-[11px] border-b border-border-soft py-2 last:border-b-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      className="flex items-center gap-[11px] border-b border-border-soft py-2 last:border-b-0 "
     >
       {/* 📁 Entry §05's *"20px initial tile"*. ♿ `aria-hidden`: the name beside
           it already carries the meaning, so a reader hears it once. */}
       <span
         aria-hidden
-        className="grid h-5 w-5 flex-none place-items-center rounded-md bg-surface-sunken text-[8.5px] font-bold text-content-muted"
+        className="grid h-5 w-5 flex-none place-items-center rounded-md bg-surface-sunken text-2xs font-bold text-content-muted"
       >
         {pending ? null : initials(label)}
       </span>
       {pending ? (
         <Skeleton className="h-4 w-32" />
       ) : (
-        <span className="min-w-0 truncate text-[12.5px] text-content">{label}</span>
+        <span className="min-w-0 truncate text-label text-content">{label}</span>
       )}
-      <span className="ml-auto flex-none text-[11px] text-content-subtle">
+      <span className="ml-auto flex-none text-2xs text-content-subtle">
         {when(record.viewed_at)}
       </span>
     </Link>
@@ -206,7 +206,9 @@ function when(iso: string): string {
   if (days <= 0) return 'Today';
   if (days === 1) return 'Yesterday';
   if (days < 7) return new Intl.DateTimeFormat(undefined, { weekday: 'long' }).format(at);
-  return new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' }).format(at);
+  return new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' }).format(
+    at,
+  );
 }
 
 /**
@@ -233,18 +235,34 @@ function when(iso: string): string {
  * is answered, because the status quo is the design's own drawing.
  */
 function Frame({ children }: { children: React.ReactNode }) {
+  /* 🔴 **The shared [`Card`](../ui/card.tsx), and the class string it
+     replaces was not merely inconsistent — it carried `shadow-e1`, **a
+     utility that does not exist**. `boxShadow` in `tailwind.config.ts`
+     defines `sm`, `DEFAULT`, `lg` and `xl` and no `e1`, so Tailwind emitted
+     nothing and **five Home cards rendered with no elevation** while every
+     other card in the product carried `--e1`. ⚠️ **Invisible in review,
+     because no two of them appear on one screen beside a correct card.**
+
+     ⛔ **`rounded-xl` was also the wrong step.** 📁 §05 `radii` gives **12px
+     to *"Card, menu, popover, toast, chart container"*** and reserves 16px
+     for *"table plane, dialog, drawer, assistant panel"*. */
   return (
-    <div
+    <Card
       data-testid="home-recents"
-      className="h-[160px] overflow-hidden rounded-xl border border-border-soft bg-surface p-[18px] shadow-e1"
+      /* 📁 **`160px` is the card registry's declared footprint** — Home §04,
+         `1fr × 160px` — **and it is a design constant rather than a number that
+         makes one screenshot line up**: the loading skeleton uses the same
+         figure so nothing reflows when the data lands. ⚡ **`p-5` is the
+         design's card padding** (§05, *"20–24px, was 16px in v1"*), replacing an
+         `18px` taken from §08's illustrative mockup — 📁 [C-1414](../../../docs/LANE_COORDINATION.md)
+         rules the token roles authoritative over that section's inline pixels. */
+      className="h-[160px] overflow-hidden p-5"
     >
       {/* 📁 Entry §05's uppercase eyebrow, not a card title bar. */}
-      <h2
-        className="text-2xs font-semibold uppercase tracking-[0.05em] text-content-subtle"
-      >
+      <h2 className="text-2xs font-semibold uppercase tracking-[0.05em] text-content-subtle">
         Pick up where you left off
       </h2>
       {children}
-    </div>
+    </Card>
   );
 }

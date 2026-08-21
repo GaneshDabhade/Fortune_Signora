@@ -136,7 +136,7 @@ export function AttributionStrip({
   return (
     <div className={cn('flex flex-col gap-2', className)}>
       {/* ⚡ **`flex-wrap` and no `truncate`** — 📁 the row's responsive rule:
-          *"the attribution strip wraps rather than truncating; a truncated
+        *"the attribution strip wraps rather than truncating; a truncated
           source count is a false claim about evidence."* */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-content-muted">
         {reasoning === undefined ? null : (
@@ -215,7 +215,6 @@ function Disclosure({
         'rounded font-medium tabular-nums text-ai',
         'underline decoration-dotted underline-offset-4',
         'transition-all hover:decoration-solid',
-        'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
       )}
     >
       {label}
@@ -256,7 +255,6 @@ function SourceList({ id, sources }: { id: string; sources: AttributionSource[] 
                     'rounded text-left text-content',
                     'underline decoration-dotted underline-offset-4',
                     'transition-all hover:decoration-solid',
-                    'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
                   )}
                 >
                   {source.title}

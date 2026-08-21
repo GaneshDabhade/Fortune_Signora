@@ -44,7 +44,7 @@ async function findAccountOffering(
 
   for (const href of hrefs.slice(0, 6)) {
     await page.goto(href);
-    await expect(page.getByText(/Attention score \d+ out of 100/)).toBeVisible({
+    await expect(page.getByText(/Account score \d+ out of 100/)).toBeVisible({
       timeout: 20_000,
     });
     if ((await page.getByRole('button', { name: action }).count()) > 0) return href;
@@ -99,7 +99,7 @@ test.describe('committing to an account', () => {
 
     for (const href of hrefs.slice(0, 6)) {
       await page.goto(href);
-      await expect(page.getByText(/Attention score \d+ out of 100/)).toBeVisible({
+      await expect(page.getByText(/Account score \d+ out of 100/)).toBeVisible({
         timeout: 20_000,
       });
       const history = page.getByText('What has been decided');
@@ -164,7 +164,7 @@ test.describe('walking away from an account', () => {
     // **Wait for the page before reading it.** Comparing a loaded page with a
     // loading one reports a decision that was never recorded as a decision
     // that vanished.
-    await expect(page.getByText(/Attention score \d+ out of 100/)).toBeVisible({
+    await expect(page.getByText(/Account score \d+ out of 100/)).toBeVisible({
       timeout: 20_000,
     });
     expect(await read()).toBe(before);

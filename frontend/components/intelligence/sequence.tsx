@@ -117,10 +117,16 @@ function Step({
   return (
     <Link
       href={`/accounts/${account.account_id}`}
+      /* ♿ 📁 §17 `2.5.8` — *"Targets ≥ 24px."* ⚠️ **Measured at `h:21` at every
+         width from 320 to 1920** — a line box, and the last two controls on
+         Company 360 under the floor. ⛔ **`min-h-6` rather than padding**: the
+         pager sits on a hairline and padding would move it off the rhythm the
+         design draws; a minimum grows the box a pointer lands in and leaves
+         the type where it is. */
       className={[
-        'inline-flex min-w-0 flex-1 items-center gap-1.5 rounded text-sm text-content-muted',
+        'inline-flex min-h-6 min-w-0 flex-1 items-center gap-1.5 rounded text-sm text-content-muted',
+        'coarse:min-h-11',
         'transition-colors hover:text-content',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
         forwards ? 'justify-end text-right' : '',
       ].join(' ')}
     >

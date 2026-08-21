@@ -24,6 +24,7 @@ import type {
   DeclareIcp,
   DeclareTargetAccounts,
   IcpDeclaration,
+  IcpMeasurement,
   IcpSegmentSummary,
   ProductCatalog,
   PublishProductCatalog,
@@ -96,6 +97,34 @@ export function useIcpDeclaration(workspaceId: string | null) {
         workspaceId: workspaceId ?? undefined,
       }),
     enabled: workspaceId !== null,
+  });
+}
+
+/**
+ * 🔴 **Whether the ideal-customer description is any good** — measured.
+ *
+ * ⛔ **The ICP has been declarable since M12 and nothing told a customer
+ * whether it was right.** ⚡ The endpoint, the measurement service and its
+ * tests all shipped, and **no surface consumed them** — the same orphan the
+ * Decision Package turned out to be.
+ *
+ * ⚠️ **An empty list is an ANSWER, not a failure**: 📁 *"Empty when no ICP has
+ * been declared — not an error. A workspace that has not described who buys
+ * from it is in a state to wait in, and the surface says so rather than showing
+ * zeroes."*
+ *
+ * ⚡ **Held longer than a list read.** A measurement moves when a deal is
+ * decided or the description changes, not when somebody opens the screen.
+ */
+export function useIcpPerformance(workspaceId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.icpPerformance(workspaceId ?? ''),
+    queryFn: () =>
+      apiRequest<IcpMeasurement[]>(`/workspaces/${workspaceId}/icp-performance`, {
+        workspaceId: workspaceId ?? undefined,
+      }),
+    enabled: workspaceId !== null,
+    staleTime: 5 * 60_000,
   });
 }
 

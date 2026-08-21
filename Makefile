@@ -233,7 +233,7 @@ refuse-slot-0:
 demo: demo-prepare
 	@echo ""
 	@echo "  backend   cd backend && uv run uvicorn apps.api.main:create_app --factory --reload --port $(SIGNORA_API)"
-	@echo "  frontend  cd frontend && npm run dev"
+	@echo "  frontend  cd frontend && npm run dev -- --port $(SIGNORA_WEB)"
 	@echo "  then      http://localhost:$(SIGNORA_WEB) — sign in as dana.reyes@northwind.example"
 	@echo "  sign up   http://localhost:$(SIGNORA_WEB)/sign-up — the verification link"
 	@echo "            prints to the frontend console; requireEmailVerification stays on"

@@ -32,7 +32,7 @@ export function GateScreen({ reason }: { reason: GateReason }) {
       {copy.action === null ? null : (
         <Link
           href={copy.action.href}
-          className="w-fit rounded bg-accent px-3 py-1.5 text-sm font-medium text-accent-contrast hover:bg-accent-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          className="w-fit rounded bg-accent px-3 py-1.5 text-sm font-medium text-accent-contrast hover:bg-accent-hover "
         >
           {copy.action.label}
         </Link>

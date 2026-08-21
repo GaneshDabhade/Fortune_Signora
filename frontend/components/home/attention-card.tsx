@@ -90,16 +90,16 @@ export function AttentionCard() {
   const entries = queue.data?.items ?? [];
   const shown = entries.slice(0, MAX);
   /** ⚡ **Only the rows on screen are joined.** ⛔ Naming and pricing the whole
-   *  queue to render five of it is the wasteful read [§14](../../../CLAUDE.md)
-   *  calls a defect at write time. */
+   * queue to render five of it is the wasteful read [§14](../../../CLAUDE.md)
+   * calls a defect at write time. */
   const ids = shown.map((entry) => entry.entity_id);
   const names = useAccountIdentities(workspaceId, ids);
   const commercials = useAccountCommercials(workspaceId, ids);
 
   /** 📁 **`HM-COPY-06` names what was checked** — *"41 accounts and 11 open
-   *  deals"*. ⚡ **Two separate facts from two owners**: the graph counts
-   *  accounts, the pipeline counts open deals. ⛔ Neither is inferred from the
-   *  other. */
+   * deals"*. ⚡ **Two separate facts from two owners**: the graph counts
+   * accounts, the pipeline counts open deals. ⛔ Neither is inferred from the
+   * other. */
   const count = useAccountsCount(workspaceId);
   const pipeline = usePipelineHealth(workspaceId);
 
@@ -113,13 +113,16 @@ export function AttentionCard() {
   if (queue.isPending && phase !== 'timeout') {
     return (
       <Frame>
-        <div role="status" className="flex flex-col gap-3 p-[18px]">
+        <div role="status" className="flex flex-col gap-3 p-5">
           {/* ⛔ **Nothing drawn for the first 300ms** — 📁 *"a placeholder shown
               and removed inside 300ms reads as a flicker."* ⚡ **The frame still
               holds its footprint**, so nothing reflows when the data lands. */}
           {phase === 'skeleton'
             ? [0, 1, 2].map((i) => (
-                <div key={i} className="h-[46px] animate-pulse rounded-lg bg-surface-sunken" />
+                <div
+                  key={i}
+                  className="h-[46px] animate-pulse rounded-lg bg-surface-sunken"
+                />
               ))
             : null}
           {/* ♿ **Announced from the first frame**, whatever is drawn. A reader
@@ -167,26 +170,28 @@ export function AttentionCard() {
 
   return (
     <Frame>
-      <header className="flex flex-wrap items-center gap-2.5 border-b border-border-soft px-[18px] py-[15px]">
-        <h2 className="text-md font-semibold tracking-[-0.014em] text-content">Needs you today</h2>
+      <header className="flex flex-wrap items-center gap-2.5 border-b border-border-soft px-5 py-[15px]">
+        <h2 className="text-md font-semibold tracking-[-0.014em] text-content">
+          Needs you today
+        </h2>
         <span className="rounded-sm bg-surface-sunken px-2 py-px text-2xs font-semibold tabular-nums text-content-subtle">
           {entries.length}
         </span>
         {/* 📁 The design's own subtitle. */}
-        <span className="ml-auto text-[11.5px] text-content-subtle">
+        <span className="ml-auto text-2xs text-content-subtle">
           Ranked by what it costs to ignore
         </span>
       </header>
 
       {entries.length === 0 ? (
-        <div className="p-[18px]">
+        <div className="p-5">
           {records === 0 ? (
             /* ⚠️ **State 05's half.** ⛔ Not HM-COPY-06 — records are absent, so
-               *"nothing needs you"* would be a success message about a workspace
+             *"nothing needs you"* would be a success message about a workspace
                that has nothing in it. */
-            <p className="text-[13px] leading-[1.6] text-content-muted">
-              Signora has no records to work from yet. Connect a source and it starts reading
-              straight away.
+            <p className="text-sm leading-[1.6] text-content-muted">
+              Signora has no records to work from yet. Connect a source and it starts
+              reading straight away.
             </p>
           ) : records === null || openDeals === null ? (
             /* 🔴 **[P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md): a read that
@@ -194,13 +199,13 @@ export function AttentionCard() {
                `HM-COPY-06` names *what was checked*, and a sentence naming two
                counts Signora does not have would be the fabrication the design's
                own credibility test exists to prevent. */
-            <p className="text-[13px] leading-[1.6] text-content-muted">
+            <p className="text-sm leading-[1.6] text-content-muted">
               Nothing needs you this morning. Signora could not say how much it checked.
             </p>
           ) : (
             /* ✅ **State 06b, `HM-COPY-06` verbatim.** 📁 A success state, and it
                names what was checked and when — the design's own credibility test. */
-            <p className="text-[13px] leading-[1.6] text-content-muted">
+            <p className="text-sm leading-[1.6] text-content-muted">
               {HM_COPY_06(records, openDeals, checkedAt(queue.dataUpdatedAt))}
             </p>
           )}
@@ -255,7 +260,7 @@ export function AttentionCard() {
             <Link
               href="/signals"
               className={cn(
-                'border-b border-border-soft px-[18px] py-3 text-[12.5px] font-semibold text-accent hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent',
+                'border-b border-border-soft px-5 py-3 text-label font-semibold text-accent hover:underline ',
                 // ⚡ **Above the phone floor the link is the design's sixth-item
                 // rule**; at or below it, it stands in for rows four and five.
                 entries.length > MAX ? 'block' : 'block phone:hidden',
@@ -264,7 +269,7 @@ export function AttentionCard() {
               See all {entries.length} in Signals
             </Link>
           ) : null}
-          <p className="px-[18px] py-[13px] text-[11.5px] leading-[1.5] text-content-subtle">
+          <p className="px-5 py-[13px] text-2xs leading-[1.5] text-content-subtle">
             Home is a starting point, not a queue.
           </p>
         </>
@@ -309,7 +314,7 @@ function Item({
   return (
     <div
       className={cn(
-        'flex flex-wrap items-start gap-x-3 gap-y-2.5 border-b border-l-2 border-border-soft px-[18px] py-[15px]',
+        'flex flex-wrap items-start gap-x-3 gap-y-2.5 border-b border-l-2 border-border-soft px-5 py-[15px]',
         hiddenOnPhone && 'hidden phone:flex',
         tone === 'risk'
           ? 'border-l-danger'
@@ -350,18 +355,20 @@ function Item({
               no source has stated one** — ADR-0409 §5, and a `$0` beside an
               account name is a figure a seller would act on. */}
           {value === null ? null : (
-            <span className="text-[11.5px] font-semibold tabular-nums text-content-subtle">
+            <span className="text-2xs font-semibold tabular-nums text-content-subtle">
               {formatMoney(value)}
             </span>
           )}
         </div>
         {/* 📁 **The reason, authored per signal where the reasoning happened.** */}
-        <p className="mt-1.5 text-[12.5px] leading-[1.55] text-content-muted">{entry.rationale}</p>
+        <p className="mt-1.5 text-label leading-[1.55] text-content-muted">
+          {entry.rationale}
+        </p>
       </div>
       <Link
         href={`/accounts/${entry.entity_id}`}
         className={cn(
-          'inline-flex items-center rounded-md px-3 text-[12.5px] font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+          'inline-flex items-center rounded-md px-3 text-label font-semibold transition-colors ',
           /**
            * 🔴 **The phone's row anatomy** — 📁 the 390 viewport: *"attention
            * items become full-width rows with the action as a **44px full-width
@@ -386,7 +393,6 @@ function Item({
   );
 }
 
-
 /**
  * 📁 The design's *"at 07:00"*.
  *
@@ -397,9 +403,10 @@ function Item({
  * page re-renders.
  */
 function checkedAt(at: number): string {
-  return new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(
-    new Date(at),
-  );
+  return new Intl.DateTimeFormat(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(at));
 }
 
 /** 📁 *"Card 14px --e1"* — the design's own card, from §10's inventory. */

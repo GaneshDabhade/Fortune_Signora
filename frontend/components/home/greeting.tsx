@@ -86,7 +86,7 @@ export const HomeGreeting = forwardRef<HTMLHeadingElement, HomeGreetingProps>(
         <h1
           ref={ref}
           tabIndex={-1}
-          className="text-[27px] font-bold leading-tight tracking-[-0.028em] text-content outline-none"
+          className="text-title font-bold leading-tight tracking-[-0.028em] text-content outline-none"
         >
           {activation === null || workspace === null
             ? `${greet()}${name === null ? '' : `, ${firstName(name)}`}`
@@ -100,7 +100,7 @@ export const HomeGreeting = forwardRef<HTMLHeadingElement, HomeGreetingProps>(
             which is exactly the sentence the design says a reader hears once. */}
         <p
           aria-live="polite"
-          className="mt-1.5 text-[13px] text-content-muted"
+          className="mt-1.5 text-sm text-content-muted"
         >
           {[
             today(),

@@ -26,7 +26,11 @@ import { workspaceHome } from '@/lib/entry';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 import { Tooltip } from '@/components/ui';
 import { cn } from '@/lib/design/cn';
-import { railViolations, visibleDestinations, type RailDestination } from '@/lib/shell/rail';
+import {
+  railViolations,
+  visibleDestinations,
+  type RailDestination,
+} from '@/lib/shell/rail';
 import {
   can,
   guardFor,
@@ -190,7 +194,13 @@ const DESTINATIONS: readonly RailItem[] = [
   // reads as having no entrance at all. ⛔ **The check would have been right to
   // fail: it cannot verify what it cannot see.**
   { id: 'home', label: 'Home', href: '/w/[workspace]/home', icon: Home, depth: 1 },
-  { id: 'business', label: 'Your business', href: '/business', icon: Briefcase, depth: 1 },
+  {
+    id: 'business',
+    label: 'Your business',
+    href: '/business',
+    icon: Briefcase,
+    depth: 1,
+  },
   // 📁 *"Counts are neutral; a dot means unread and only Signals uses it."*
   // ⛔ **No count is passed** — nothing publishes one, and a rail that invents
   // a number is worse than a rail without one.
@@ -260,7 +270,14 @@ const UTILITIES: readonly RailEntry[] = [
    * gives the assistant `⌘⇧A`, and [TASK-1458](../../../docs/BACKLOG.md) built
    * it. ⛔ **Printing `⌘K` here would teach a key that opens something else.**
    */
-  { id: 'assistant', label: 'Ask Signora', opens: 'assistant', meta: '⌘⇧A', icon: Sparkles, depth: 1 },
+  {
+    id: 'assistant',
+    label: 'Ask Signora',
+    opens: 'assistant',
+    meta: '⌘⇧A',
+    icon: Sparkles,
+    depth: 1,
+  },
   { id: 'settings', label: 'Settings', href: '/settings', icon: SettingsIcon, depth: 1 },
   // ✅ **`Docs & support` gains its route** — [TASK-1420](../../../docs/BACKLOG.md).
   // ⛔ **It was absent for the reason [C-269](../../../docs/LANE_COORDINATION.md)
@@ -270,7 +287,14 @@ const UTILITIES: readonly RailEntry[] = [
   // ✅ **`Shortcuts`** — [TASK-1458](../../../docs/BACKLOG.md).
   // ⛔ **It OPENS rather than navigates**, which is what `meta: '?'` means in
   // the design: it is the thing the `?` key opens, reached a second way.
-  { id: 'shortcuts', label: 'Shortcuts', opens: 'shortcuts', meta: '?', icon: KeyRound, depth: 1 },
+  {
+    id: 'shortcuts',
+    label: 'Shortcuts',
+    opens: 'shortcuts',
+    meta: '?',
+    icon: KeyRound,
+    depth: 1,
+  },
   { id: 'help', label: 'Docs & support', href: '/help', icon: BookOpen, depth: 1 },
 ];
 
@@ -419,10 +443,11 @@ function railShape(depth: number, collapsed: boolean): string {
     depth === 2 && !collapsed && 'pl-[30px]',
     collapsed && 'justify-center px-0',
     // 📁 *"Focus: 1px brand border plus a 3px tint halo — never the browser
-    // ring."* ⛔ `outline-none` alone would be an accessibility defect; this
-    // replaces the ring rather than removing it.
-    'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent',
-    'focus-visible:ring-offset-[3px] focus-visible:ring-offset-accent-subtle',
+    // ring."* ✅ **That is now what `globals.css` draws for every control in the
+    // product**, so this entry states nothing of its own
+    // ([B-1058](../../../docs/BUGS.md)). ⚡ **The design's own sentence, quoted
+    // here long before the row, is also the evidence that the indicator is a
+    // PAIR** — a brand line AND a tint halo, not a halo alone.
   );
 }
 
@@ -580,18 +605,22 @@ function RailLink({
    * *"presentational… never enforcement"*, so being briefly generous costs a
    * refusal the server was always going to give.
    */
-  const restricted = roleKnown && guard !== undefined && !can(role, guard.requires as Capability);
+  const restricted =
+    roleKnown && guard !== undefined && !can(role, guard.requires as Capability);
   const isActive = pathname === item.href;
   const Icon = item.icon;
 
   const body = (
     <>
       <Icon
-        className={cn('h-4 w-4 shrink-0', isActive ? 'text-accent' : 'text-content-subtle')}
+        className={cn(
+          'h-4 w-4 shrink-0',
+          isActive ? 'text-accent' : 'text-content-subtle',
+        )}
         aria-hidden
       />
       {/* ⛔ **Collapsed hides the LABEL, never the accessible name** — 📁
-          *"collapsed items expose their label as an accessible name."* The
+        *"collapsed items expose their label as an accessible name."* The
           `aria-label` on the control carries it either way. */}
       {collapsed ? null : (
         <>
@@ -636,7 +665,11 @@ function RailLink({
             guard ? `Requires ${GRANTED_BY[guard.requires as Capability]}.` : ''
           }`}
           // 📁 *"stay visible at 45%"* — the design's own number.
-          className={cn(shape, 'w-full opacity-45', 'text-content-muted hover:bg-surface-sunken')}
+          className={cn(
+            shape,
+            'w-full opacity-45',
+            'text-content-muted hover:bg-surface-sunken',
+          )}
         >
           {body}
         </button>
@@ -647,9 +680,10 @@ function RailLink({
           >
             {/* ⛔ **It names who can grant it rather than saying *no*.** 📁 The
                 design's reason, in `rail.ts`: a person who is only refused
-                *"asks for the wrong thing or asks nobody."* */}
-            {item.label} is available to {guard ? GRANTED_BY[guard.requires as Capability] : 'an owner'}.
-            Ask someone with that role to open it for you.
+              *"asks for the wrong thing or asks nobody."* */}
+            {item.label} is available to{' '}
+            {guard ? GRANTED_BY[guard.requires as Capability] : 'an owner'}. Ask someone
+            with that role to open it for you.
           </p>
         ) : null}
       </div>
@@ -719,8 +753,13 @@ export function Navigation({
    * between."* ⛔ **Not a second answer**: the shell's copy governs whether the
    * CONTENT is guarded, and this one governs whether a DESTINATION exists.
    */
-  const workspaceKnown = !isLoading && (activeWorkspace !== null || workspaces.length === 0);
-  const destinations = resolved(DESTINATIONS, activeWorkspace?.id ?? null, workspaceKnown);
+  const workspaceKnown =
+    !isLoading && (activeWorkspace !== null || workspaces.length === 0);
+  const destinations = resolved(
+    DESTINATIONS,
+    activeWorkspace?.id ?? null,
+    workspaceKnown,
+  );
 
   return (
     // 📁 **`nav[navigation]`, labelled "Primary"** — TASK-1444. ⛔ It said
@@ -748,7 +787,13 @@ export function Navigation({
         return isPendingEntry(entry) ? (
           <RailPendingRow key={entry.id} item={entry} collapsed={collapsed} />
         ) : goesSomewhere(entry) ? (
-          <RailLink key={entry.id} item={entry} role={role} roleKnown={roleKnown} collapsed={collapsed} />
+          <RailLink
+            key={entry.id}
+            item={entry}
+            role={role}
+            roleKnown={roleKnown}
+            collapsed={collapsed}
+          />
         ) : null;
       })}
 
@@ -764,7 +809,15 @@ export function Navigation({
           // segment**, so a pending entry cannot occur here — ⚡ **and the
           // exhaustive branch says so rather than casting it away.**
           if (goesSomewhere(entry)) {
-            return <RailLink key={entry.id} item={entry} role={role} roleKnown={roleKnown} collapsed={collapsed} />;
+            return (
+              <RailLink
+                key={entry.id}
+                item={entry}
+                role={role}
+                roleKnown={roleKnown}
+                collapsed={collapsed}
+              />
+            );
           }
           return isPendingEntry(entry) ? null : (
             <RailAction key={entry.id} item={entry} collapsed={collapsed} />
@@ -814,6 +867,6 @@ export function Navigation({
 if (process.env.NODE_ENV !== 'production') {
   const problems = railViolations(RAIL_DESTINATIONS);
   if (problems.length > 0) {
-    throw new Error(`The rail breaks its own law:\n  ${problems.join('\n  ')}`);
+    throw new Error(`The rail breaks its own law:\n ${problems.join('\n ')}`);
   }
 }

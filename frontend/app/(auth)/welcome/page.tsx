@@ -66,7 +66,7 @@ export default function WelcomePage() {
       <div className="flex flex-col gap-2.5">
         <Link
           href="/signin"
-          className="flex h-control-md items-center justify-center rounded-md bg-accent text-sm font-semibold text-accent-contrast shadow-sm transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          className="flex h-control-md items-center justify-center rounded-md bg-accent text-sm font-semibold text-accent-contrast shadow-sm transition-colors hover:bg-accent-hover "
         >
           Sign in
         </Link>
@@ -77,7 +77,7 @@ export default function WelcomePage() {
         {canCreateAccount ? (
           <Link
             href="/register"
-            className="flex h-control-md items-center justify-center rounded-md border border-border-strong bg-surface text-sm font-semibold text-content transition-colors hover:bg-surface-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+            className="flex h-control-md items-center justify-center rounded-md border border-border-strong bg-surface text-sm font-semibold text-content transition-colors hover:bg-surface-sunken "
           >
             Create an organization
           </Link>
@@ -96,7 +96,7 @@ export default function WelcomePage() {
 
         <Link
           href="/sso"
-          className="flex h-control-md items-center justify-center gap-2 rounded-md bg-surface-sunken text-sm font-semibold text-content-muted transition-colors hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          className="flex h-control-md items-center justify-center gap-2 rounded-md bg-surface-sunken text-sm font-semibold text-content-muted transition-colors hover:text-content "
         >
           <ShieldCheck aria-hidden className="h-3.5 w-3.5" />
           Sign in with SSO

@@ -94,7 +94,8 @@ export function ShellBanners({
       {admitted.map(({ banner: source, rule }, i) => {
         if (dismissed.has(i)) return null;
 
-        const tone = rule.kind === 'environment' && !rule.dismissible ? 'risky' : rule.kind;
+        const tone =
+          rule.kind === 'environment' && !rule.dismissible ? 'risky' : rule.kind;
 
         return (
           <div
@@ -116,7 +117,7 @@ export function ShellBanners({
                 <button
                   type="button"
                   onClick={() => setDismissed((d) => new Set(d).add(i))}
-                  className="rounded px-1 text-content-subtle transition-colors hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                  className="rounded px-1 text-content-subtle transition-colors hover:text-content "
                   aria-label={`Dismiss: ${source.title}`}
                 >
                   Dismiss

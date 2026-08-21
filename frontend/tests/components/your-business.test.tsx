@@ -30,6 +30,10 @@ vi.mock('@/lib/state/workspace-provider', () => ({
 vi.mock('@/lib/query/hooks/commercial', () => ({
   useProductCatalog: products,
   useIcpDeclaration: icp,
+  // ⚡ **The ICP Builder design's central claim, measured** — this screen does
+  // not render it (`/settings/products` does), but the module it imports from
+  // now exports it, so the mock must carry it or the import fails.
+  useIcpPerformance: () => ({ data: [], isPending: false, isError: false }),
   useBuyingCommittee: committee,
   useCommercialFocus: focus,
   useTargetAccounts: targets,

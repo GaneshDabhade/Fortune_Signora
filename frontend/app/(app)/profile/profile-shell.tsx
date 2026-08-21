@@ -2,7 +2,6 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-
 import { cn } from '@/lib/design/cn';
 
 import { AccessibilityPanel } from './accessibility-panel';
@@ -86,7 +85,9 @@ export const SECTION_PARAM = 'section';
  */
 export function resolveSection(asked: string | null): string {
   if (asked === null) return DEFAULT_SECTION;
-  return PROFILE_SECTIONS.some((section) => section.id === asked) ? asked : DEFAULT_SECTION;
+  return PROFILE_SECTIONS.some((section) => section.id === asked)
+    ? asked
+    : DEFAULT_SECTION;
 }
 
 /**
@@ -143,8 +144,6 @@ export function ProfileShell({ name, email }: { name: string | null; email: stri
                   aria-current={selected ? 'page' : undefined}
                   className={cn(
                     'w-full rounded-md px-2.5 py-1.5 text-left text-sm',
-                    'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-                    'focus-visible:outline-accent',
                     selected
                       ? 'bg-surface font-semibold text-content shadow-sm'
                       : 'font-medium text-content-muted hover:bg-surface hover:text-content',
@@ -210,7 +209,9 @@ function SectionNotBuilt({ section }: { section: string }) {
   return (
     <div className="rounded-md border border-border-soft bg-surface-sunken p-5">
       <p className="text-sm leading-6 text-content-muted">{WHAT[section]}</p>
-      <p className="mt-2 text-xs leading-5 text-content-subtle">This section is not built yet.</p>
+      <p className="mt-2 text-xs leading-5 text-content-subtle">
+        This section is not built yet.
+      </p>
     </div>
   );
 }

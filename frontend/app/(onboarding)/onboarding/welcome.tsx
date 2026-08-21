@@ -49,21 +49,25 @@ export function OnboardingWelcome({
           completedIds={[]}
           footer={
             <RailNote>
-              About 90 seconds. You can leave at any point — everything is saved as you go.
+              About 90 seconds. You can leave at any point — everything is saved as you
+              go.
             </RailNote>
           }
         />
       }
     >
       {emailVerified ? (
-        <span className="mb-4 inline-flex items-center gap-1.5 rounded-md bg-success-subtle px-2.5 py-0.5 text-[11.5px] font-semibold text-success">
+        <span className="mb-4 inline-flex items-center gap-1.5 rounded-md bg-success-subtle px-2.5 py-0.5 text-2xs font-semibold text-success">
           Email verified
         </span>
       ) : null}
 
-      <StepHeading large title={firstName === null ? 'Welcome to Signora' : `Welcome, ${firstName}`}>
-        Signora reads your CRM, calls and email to tell you which deals are moving, which are
-        stalling, and why. Four questions and it will be reading yours.
+      <StepHeading
+        large
+        title={firstName === null ? 'Welcome to Signora' : `Welcome, ${firstName}`}
+      >
+        Signora reads your CRM, calls and email to tell you which deals are moving, which
+        are stalling, and why. Four questions and it will be reading yours.
       </StepHeading>
 
       {/* 📁 *"grid-template-columns:1fr 1fr; gap:12px; margin-top:28px"*, each
@@ -77,7 +81,7 @@ export function OnboardingWelcome({
             <span className="grid h-[26px] w-[26px] place-items-center rounded-md bg-surface text-accent">
               {capability.icon}
             </span>
-            <span className="mt-3 block text-[13px] font-semibold text-content">
+            <span className="mt-3 block text-sm font-semibold text-content">
               {capability.title}
             </span>
             <span className="mt-1 block text-xs leading-relaxed text-content-muted">
@@ -95,13 +99,19 @@ export function OnboardingWelcome({
             `--control-md` is exactly that. */}
         <Link
           href="/onboarding/introduction"
-          className="inline-flex h-control-md items-center justify-center rounded-md bg-accent px-[18px] text-[13.5px] font-semibold text-accent-contrast shadow-sm transition-colors hover:bg-accent-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          /* ⛔ **A link, so it cannot be [`Button`](../../../components/ui/button.tsx)** —
+             that component renders a `<button>` and has no `asChild`, and wrapping
+             one around an anchor would give the control two roles. ⚡ **It takes
+             the canonical control's own geometry rather than restating a
+             literal**: the `md` height token, `rounded` (the design's 8px step,
+             not `rounded-md`), `px-4`, and 📁 `2.5.8`'s touch floor. */
+          className="inline-flex h-control-md shrink-0 items-center justify-center whitespace-nowrap rounded bg-accent px-4 text-sm font-semibold text-accent-contrast shadow-sm transition-colors hover:bg-accent-hover coarse:min-h-11 "
         >
           Get started
         </Link>
         <Link
           href="/onboarding/introduction"
-          className="text-[13px] font-semibold text-content-subtle hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          className="text-sm font-semibold text-content-subtle hover:text-content "
         >
           Take the tour first
         </Link>

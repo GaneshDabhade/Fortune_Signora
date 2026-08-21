@@ -19,5 +19,5 @@ import { SkeletonText } from '@/components/ui';
  * is the same lie held open.**
  */
 export default function Loading() {
-  return <SkeletonText lines={5} />;
+  return <SkeletonText lines={5} label="your home" />;
 }

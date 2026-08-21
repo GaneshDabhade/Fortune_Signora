@@ -65,19 +65,19 @@ export function SourceStrip({ systems, loading }: SourceStripProps) {
       role="status"
       className={cn(
         'flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg px-4 py-3',
-        'border border-danger/30 bg-danger-subtle',
+        'border border-danger-line bg-danger-subtle',
       )}
     >
       <span aria-hidden className="grid h-5 w-5 flex-none place-items-center rounded-sm bg-surface text-xs font-bold text-danger">
         !
       </span>
-      <p className="text-[12.5px] leading-[1.5] text-content">
+      <p className="text-label leading-[1.5] text-content">
         {/* 📁 `HM-COPY-09`, verbatim. */}
         {HM_COPY_09(systemName(first.integration), stoppedOn, 'and are marked as such below')}
       </p>
       {/* ⛔ **No dismiss.** 📁 State 10's strip is *"not dismissible"* — the
           figures under it are stale for as long as the source is. */}
-      <span className="ml-auto text-[11.5px] font-semibold text-content-subtle">
+      <span className="ml-auto text-2xs font-semibold text-content-subtle">
         Reconnect from Settings → Connections
       </span>
       {/* ⛔ **No dismiss state is held here at all.** ⚠️ A `dismissed` flag with

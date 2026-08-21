@@ -9,20 +9,34 @@
  * screen must not invent the words for a signal type, and it must not print a
  * field the platform does not publish.
  */
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
+import { formatDay } from '@/components/intelligence/dates';
 import type { QueueEntry, SignalTypeName } from '@/lib/api/types';
 
 const triage = vi.hoisted(() => vi.fn());
 const resolveMutate = vi.hoisted(() => vi.fn());
+const resolveReset = vi.hoisted(() => vi.fn());
+/** ⚡ **Mutable, so a REFUSAL can be rendered** — a write that fails is a state
+ *  this screen owes the reader, and a fixed mock can only ever show success. */
+const resolveState = vi.hoisted(() => ({ isError: false, error: null as unknown }));
 const catalog = vi.hoisted(() => vi.fn());
 const identities = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/query/hooks/triage', () => ({
   useWorkspaceTriage: triage,
-  useResolveSignal: () => ({ mutate: resolveMutate, isPending: false }),
+  // ⚡ **The mutation's real shape, not the two fields the screen used to
+  // read.** ⛔ **A thin mock hid a genuine dependency**: the dialogs clear a
+  // previous refusal with `reset()` on close, and a mock without it threw
+  // where the product does not.
+  useResolveSignal: () => ({
+    mutate: resolveMutate,
+    reset: resolveReset,
+    isPending: false,
+    ...resolveState,
+  }),
 }));
 vi.mock('@/lib/query/hooks', () => ({
   useSignalCatalog: catalog,
@@ -31,6 +45,23 @@ vi.mock('@/lib/query/hooks', () => ({
 vi.mock('@/lib/state/workspace-provider', () => ({
   useWorkspaceContext: () => ({ activeWorkspace: { id: 'ws-1' } }),
 }));
+/**
+ * ⚡ **The roster the assign picker offers**, and 📁 `peopleFrom`'s rule that
+ * only a membership carrying an address is offerable — so ONE of these two is
+ * a choosable colleague and the other is deliberately not.
+ */
+vi.mock('@/lib/query/hooks/team', () => ({
+  useWorkspaceMembers: () => ({
+    data: {
+      items: [
+        { user_id: 'me', role: 'owner', member_email: 'me@acme.com' },
+        { user_id: 'ana', role: 'member', member_email: 'ana@acme.com' },
+        { user_id: 'ghost', role: 'member', member_email: null },
+      ],
+    },
+  }),
+}));
+vi.mock('@/lib/auth/client', () => ({ useSession: () => ({ data: { user: { id: 'me' } } }) }));
 
 import { SignalQueue } from '@/app/(app)/signals/signal-queue';
 
@@ -67,6 +98,8 @@ const TYPES: SignalTypeName[] = [
 ];
 
 beforeEach(() => {
+  resolveState.isError = false;
+  resolveState.error = null;
   resolveMutate.mockClear();
   catalog.mockReturnValue({
     data: new Map(TYPES.map((t) => [t.key, t])),
@@ -155,14 +188,138 @@ describe('🔴 the two fields with no source are absent, not invented — C-251'
   });
 });
 
+/**
+ * ⚡ **What was recorded, ignoring how it was recorded.**
+ *
+ * ⛔ **`toHaveBeenCalledWith` would assert the mutation's second argument too**
+ * — the `onSuccess` callback that closes a dialog — **and that is plumbing, not
+ * a decision.** ⚠️ **A test that breaks when a dialog changes when it closes is
+ * testing the dialog**, and the property here is *what the API was told*.
+ */
+function recorded(call = 0): unknown {
+  return (resolveMutate.mock.calls[call] as unknown[])[0];
+}
+
 describe('every signal leaves by a decision', () => {
+  /**
+   * 🔴 **📁 The design's four exits, and the screen's own description promises
+   * all four** — *"Every one leaves the queue by being actioned, assigned,
+   * snoozed or dismissed with a reason."*
+   *
+   * ⛔ **Two of them had no control**, so the sentence was a claim the product
+   * would not perform and the *Snoozed* view showed the result of an action
+   * nobody could take.
+   */
+  it('🔴 offers every exit its own description promises', () => {
+    render(<SignalQueue />);
+    for (const name of ['Act on it', 'Assign', 'Snooze', 'Dismiss']) {
+      expect(screen.getByRole('button', { name }), name).toBeInTheDocument();
+    }
+  });
+
   it('records an action', async () => {
     render(<SignalQueue />);
-    await userEvent.click(screen.getByRole('button', { name: 'Actioned' }));
-    expect(resolveMutate).toHaveBeenCalledWith({
-      signalId: 'sig-1',
-      outcome: { kind: 'actioned' },
-    });
+    // 📁 ***"Act on it"*** — the design's label for the button. *Actioned* is
+    // its name for the resulting STATE, and a button labelled with an outcome
+    // reads as a filter.
+    await userEvent.click(screen.getByRole('button', { name: 'Act on it' }));
+    expect(recorded()).toEqual({ signalId: 'sig-1', outcome: { kind: 'actioned' } });
+  });
+
+  /**
+   * 🔴 **📁 *"Assign to someone"*** — and 📁 `resolution.py`'s rule that it is
+   * **routing, not resolving**: *"a queue that treated it as an ending would
+   * lose every signal handed to a colleague."*
+   */
+  it('🔴 assigns to a named colleague, and offers nobody who cannot be named', async () => {
+    render(<SignalQueue />);
+    await userEvent.click(screen.getByRole('button', { name: 'Assign' }));
+
+    const confirm = screen.getByRole('button', { name: 'Assign signal' });
+    // ⛔ **No default.** 📁 *"the first colleague in a list is not a guess, it
+    // is a person"* — so nothing is submittable until somebody is named.
+    expect(confirm).toBeDisabled();
+
+    const picker = screen.getByLabelText('Colleague');
+    // ⛔ **The viewer is not offered their own signal to hand to themselves**,
+    // and ⛔ **`ghost` has no address, so `colleaguesFrom` withholds it** —
+    // 📁 *"'Somebody here' in a picker is a row nobody can choose between."*
+    expect(within(picker).queryByText('me@acme.com')).not.toBeInTheDocument();
+    expect(within(picker).queryByText(/somebody here/i)).not.toBeInTheDocument();
+
+    await userEvent.selectOptions(picker, 'ana');
+    await waitFor(() => expect(confirm).toBeEnabled());
+    await userEvent.click(confirm);
+
+    expect(recorded()).toEqual({ signalId: 'sig-1', outcome: { kind: 'assigned', to: 'ana' } });
+  });
+
+  /**
+   * 🔴 **📁 *"Snooze with a date"***, and 📁 `resolution.py` refuses one that has
+   * already elapsed — *"the signal would come straight back."*
+   */
+  it('🔴 refuses a snooze that is not in the future, and sends an instant with a zone', async () => {
+    render(<SignalQueue />);
+    await userEvent.click(screen.getByRole('button', { name: 'Snooze' }));
+
+    const confirm = screen.getByRole('button', { name: 'Snooze signal' });
+    expect(confirm).toBeDisabled();
+
+    const field = screen.getByLabelText('Comes back on');
+    // ⛔ **Yesterday is refused at the control**, not left to a `422` after the
+    // customer has committed to it.
+    await userEvent.type(field, '2020-01-01');
+    expect(confirm).toBeDisabled();
+
+    const soon = new Date();
+    soon.setDate(soon.getDate() + 7);
+    const day = soon.toISOString().slice(0, 10);
+    await userEvent.clear(field);
+    await userEvent.type(field, day);
+    await waitFor(() => expect(confirm).toBeEnabled());
+    await userEvent.click(confirm);
+
+    const call = recorded() as { outcome: { kind: string; until: string } };
+    expect(call.outcome.kind).toBe('snoozed');
+    // ⚡ **A real instant, and in the future** — 📁 the schema requires both:
+    // *"Must be in the future and carry a timezone."*
+    expect(new Date(call.outcome.until).getTime()).toBeGreaterThan(Date.now());
+  });
+
+  /**
+   * 🔴 **📁 The design's keyboard grammar** — *"E assigns · S snoozes · D
+   * dismisses"*. ⚡ **Focus is the cursor**, because the design's `current` row
+   * needs `J`/`K` and a detail pane that are not built.
+   */
+  it('🔴 opens the right dialog from the row the keyboard is in', async () => {
+    render(<SignalQueue />);
+    const row = screen.getByRole('listitem');
+
+    await userEvent.click(within(row).getByRole('checkbox'));
+    await userEvent.keyboard('e');
+    expect(screen.getByRole('button', { name: 'Assign signal' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    within(row).getByRole('checkbox').focus();
+    await userEvent.keyboard('s');
+    expect(screen.getByRole('button', { name: 'Snooze signal' })).toBeInTheDocument();
+  });
+
+  /**
+   * ⚠️ **The guard that stops a single-letter key being hostile** — 📁
+   * `shortcuts.ts`: *"a single-letter binding that fired inside a text field
+   * would be the shape that makes people distrust every shortcut."*
+   */
+  it('⛔ never fires a shortcut while somebody is typing a reason', async () => {
+    render(<SignalQueue />);
+    await userEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+
+    const field = screen.getByLabelText(/reason/i);
+    await userEvent.type(field, 'sales escalated it');
+
+    expect(field).toHaveValue('sales escalated it');
+    expect(screen.queryByRole('button', { name: 'Assign signal' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Snooze signal' })).not.toBeInTheDocument();
   });
 
   it('🔴 refuses a dismissal with no reason, and the type says why', async () => {
@@ -186,10 +343,81 @@ describe('every signal leaves by a decision', () => {
     await waitFor(() => expect(confirm).toBeEnabled());
     await userEvent.click(confirm);
 
-    expect(resolveMutate).toHaveBeenCalledWith({
+    expect(recorded()).toEqual({
       signalId: 'sig-1',
       outcome: { kind: 'dismissed', reason: 'Already handled on the call' },
     });
+  });
+
+  /**
+   * 🔴 **Assigning does not close a signal** — 📁 `resolution.py`: *"Still open.
+   * Assigning is routing, not resolving."*
+   *
+   * ⛔ **So without a chip, pressing *Assign* changes nothing a reader can
+   * see**, and a control whose effect is invisible is indistinguishable from
+   * one that was never wired up. 📁 The design draws it: *"Assigned · JO"*.
+   */
+  it('🔴 says who an open signal was routed to, and keeps its actions', () => {
+    triage.mockReturnValue({
+      data: {
+        items: [
+          entry({
+            resolution: { outcome: 'assigned', assigned_to: 'ana', snoozed_until: null } as never,
+          }),
+        ],
+      },
+      isPending: false,
+      isError: false,
+    });
+    render(<SignalQueue />);
+    expect(screen.getByText('Assigned to ana@acme.com')).toBeInTheDocument();
+    // ⚡ **Still actionable**, because assigning did not end it.
+    expect(screen.getByRole('button', { name: 'Act on it' })).toBeInTheDocument();
+  });
+
+  /**
+   * 🔴 **📁 The design draws the return on the row** — *"Snoozed · 2d"*.
+   * ⛔ **This printed the bare word `snoozed`**, which told a reader the one
+   * thing the tab they were standing on had already told them.
+   */
+  it('🔴 says when a snoozed signal comes back', () => {
+    triage.mockReturnValue({
+      data: {
+        items: [
+          entry({
+            state: 'snoozed',
+            resolution: {
+              outcome: 'snoozed',
+              assigned_to: null,
+              snoozed_until: '2026-09-24T00:00:00Z',
+            } as never,
+          }),
+        ],
+      },
+      isPending: false,
+      isError: false,
+    });
+    render(<SignalQueue />);
+    // ⚡ **Formatted by the product's one date function**, not by a literal —
+    // 📁 `dates.ts` renders in the READER's locale, so a hardcoded *"24 Sep"*
+    // would assert the machine the suite happens to run on.
+    expect(
+      screen.getByText(`Returns ${formatDay('2026-09-24T00:00:00Z')}`),
+    ).toBeInTheDocument();
+  });
+
+  /**
+   * 🔴 **A refused write must say so.** ⛔ ***Act on it*** **calls the API with
+   * no dialog to report into**, so a failure left the row where it was and the
+   * reader's only evidence that anything happened was the row moving — and it
+   * did not. ⚡ **[P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md)'s rule
+   * pointed at a write instead of a read.**
+   */
+  it('🔴 says when a decision could not be recorded', () => {
+    resolveState.isError = true;
+    resolveState.error = new Error('nope');
+    render(<SignalQueue />);
+    expect(screen.getByRole('alert')).toHaveTextContent(/could not be recorded/i);
   });
 
   it('offers no decision on a signal that has already left the queue', () => {

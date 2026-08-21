@@ -68,8 +68,11 @@ const AWAITING_A_CALLER: Readonly<Record<string, string>> = {
   // 📁 §11's editable table — *"reps edit close dates and amounts dozens of
   // times a day"* — is the Deals screen, which does not exist.
   EditableCell: 'TASK-1452',
-  // 📁 §08's record half; the migration is named in TASK-1446's own sweep.
-  RecordHeader: 'TASK-1446',
+  // ✅ **`RecordHeader` LEFT this list when Company 360 adopted it** —
+  // 📁 [`app/(app)/accounts/[accountId]/page.tsx`](../../app/(app)/accounts/[accountId]/page.tsx)
+  // replaced its hand-rolled header with §08's approved one. ⚡ **This test is
+  // what required the removal**, exactly as it did for `Drawer` and
+  // `CommandPalette`.
   // 📁 The Executive Dashboard's metric cards and Reports draw these, and
   // TASK-1450 was explicit that it builds the primitives those two screens
   // need rather than a charting library.

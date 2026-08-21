@@ -16,6 +16,7 @@ import {
 } from '@/lib/query/hooks/integrations';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 import { ReadingColumn } from '../../reading-column';
+import { usePublishBreadcrumb } from '@/components/shell/breadcrumb-trail';
 
 /**
  * The Connection Center.
@@ -38,6 +39,25 @@ import { ReadingColumn } from '../../reading-column';
  * they land where they can see the result *and* the state it produced.
  */
 export default function ConnectionsPage() {
+  /**
+   * 📁 **§05 Breadcrumbs — *"Mandatory below the first level, because most
+   * sessions start from a deep link in Slack or email."***
+   *
+   * ⛔ **Six routes below the first level published nothing**, so the top bar's
+   * slot rendered empty on every settings screen and a person arriving from a
+   * link had no route back up. ⚡ **The channel already existed and was
+   * correct** — [`usePublishBreadcrumb`](../../../../components/shell/breadcrumb-trail.tsx),
+   * which `accounts` has used since it shipped — **so this is a consumer
+   * adopting the canonical surface, not a new one.**
+   *
+   * 📁 *"They mirror the data hierarchy, not the click path"*, and the last
+   * crumb is the current record and is not a link.
+   */
+  usePublishBreadcrumb([
+    { label: 'Settings', kind: 'link', href: '/settings' },
+    { label: 'Connections', kind: 'current' },
+  ]);
+
   const { activeWorkspace, isLoading: workspacesLoading } = useWorkspaceContext();
   const workspaceId = activeWorkspace?.id ?? null;
   const { data, isLoading, isError } = useIntegrations(workspaceId);
@@ -62,7 +82,7 @@ export default function ConnectionsPage() {
   return (
     <ReadingColumn>
       <header className="flex flex-col gap-1">
-        <h1 className="text-lg font-medium text-content">Connections</h1>
+        <h1 className="text-title text-content">Connections</h1>
         <p className="text-sm text-content-muted">
           The systems Signora reads from to work out which accounts deserve your attention.
         </p>

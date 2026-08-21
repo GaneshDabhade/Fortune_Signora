@@ -237,7 +237,6 @@ function HomeContent() {
    */
   const outcomes = useCardOutcomes();
 
-
   /**
    * ⚡ **`working` is *"at least one connection Signora can currently use"*.**
    * 📁 Rule 1 asks whether one has ever *completed a sync*, and a working
@@ -323,7 +322,8 @@ function HomeContent() {
    * checked"*, and a composition that silently produced no DOM would be the
    * alternate Home §03 exists to forbid.
    */
-  const nothingComposed = composition !== 'activation' && rendered.length === 0 && !resolving;
+  const nothingComposed =
+    composition !== 'activation' && rendered.length === 0 && !resolving;
 
   /**
    * 📁 **State 08's page condition** — *"if EVERY card fails."*
@@ -398,7 +398,7 @@ function HomeContent() {
       />
 
       {/* ⚠️ Above the greeting but below the confirmation: 📁 state 10's strip
-          *"changes how every figure below it should be read"*, and hierarchy puts
+        *"changes how every figure below it should be read"*, and hierarchy puts
           continuity and confirmation first. */}
       <SourceStrip systems={systems} loading={resolving} />
 
@@ -443,7 +443,7 @@ function HomeContent() {
              get you connected"* to somebody who already has.
 
              🔴 **And `null` on state 12**, which is the same rule as the design's
-             *"never a progress bar at 0 of 0"* applied to the sentence above it:
+           *"never a progress bar at 0 of 0"* applied to the sentence above it:
              ⚠️ **`HM-COPY-01` with a total of zero reads *"Let us get Playground
              connected. Zero steps."*** — ⛔ **a count asserted from a registry
              that could not be read.** ⚡ The time-of-day greeting is never false,
@@ -452,7 +452,10 @@ function HomeContent() {
             composition === 'activation' &&
             activationState.resolved &&
             activationState.progress.total > 0
-              ? { done: activationState.progress.done, total: activationState.progress.total }
+              ? {
+                  done: activationState.progress.done,
+                  total: activationState.progress.total,
+                }
               : null
           }
         />
@@ -469,41 +472,41 @@ function HomeContent() {
           {customisable ? (
             <CustomiseButton
               controls={customise}
-              className="inline-flex h-control-sm items-center gap-1.5 rounded-md border border-border px-3 text-2xs font-semibold text-content-muted transition-colors hover:border-accent hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="inline-flex h-control-sm items-center gap-1.5 rounded-md border border-border px-3 text-2xs font-semibold text-content-muted transition-colors hover:border-accent hover:text-accent "
             />
           ) : null}
         </div>
       </div>
 
       {/**
-        * 🔴 **Over whichever composition resolved, never instead of one** — 📁
-        * Entry rule 20 and Home's own words. ⛔ It is not a fifth composition.
-        *
-        * ⚠️ **Below the greeting, and the position is load-bearing.** ⛔ It used
-        * to sit ABOVE it, and it arrives when the preference read lands — **so
-        * every first-login Home moved its own `h1` and scope line down 95px
-        * several seconds in**, which is 📁 contract 12's *"nothing reflows when
-        * data lands"* failing on the one element contract 11 says renders
-        * first. ⚡ **The design puts it *over the composition***, and the
-        * composition is the cards — so the top of the card region is where it
-        * belongs, not above the page heading.
-        */}
+       * 🔴 **Over whichever composition resolved, never instead of one** — 📁
+       * Entry rule 20 and Home's own words. ⛔ It is not a fifth composition.
+       *
+       * ⚠️ **Below the greeting, and the position is load-bearing.** ⛔ It used
+       * to sit ABOVE it, and it arrives when the preference read lands — **so
+       * every first-login Home moved its own `h1` and scope line down 95px
+       * several seconds in**, which is 📁 contract 12's *"nothing reflows when
+       * data lands"* failing on the one element contract 11 says renders
+       * first. ⚡ **The design puts it *over the composition***, and the
+       * composition is the cards — so the top of the card region is where it
+       * belongs, not above the page heading.
+       */}
       <FirstRunOverlay composition={composition} />
 
       {/* 📁 ***"Progress counts blocking cards only"***, activation only. */}
       {composition === 'activation' && !registryEmpty ? <ActivationProgress /> : null}
 
       {/**
-        * 📁 **State 08, the page half.** ⛔ **Above the grid rather than instead
-        * of it**: *"the composition never collapses"*, so every failed card keeps
-        * its own footprint and its own correlation ID underneath this line.
-        *
-        * ⚡ **`everyCardFailed` needs at least one card** — a composition with
-        * nothing rendered is state 12 or the designed empty state, not a failure,
-        * and `0 === 0` would have claimed otherwise.
-        */}
+       * 📁 **State 08, the page half.** ⛔ **Above the grid rather than instead
+       * of it**: *"the composition never collapses"*, so every failed card keeps
+       * its own footprint and its own correlation ID underneath this line.
+       *
+       * ⚡ **`everyCardFailed` needs at least one card** — a composition with
+       * nothing rendered is state 12 or the designed empty state, not a failure,
+       * and `0 === 0` would have claimed otherwise.
+       */}
       {/* 📁 **The drawer, placed by Home rather than by the button** — `Drawer`
-          *"renders in the flow its parent gives it"*, so a panel mounted inside
+        *"renders in the flow its parent gives it"*, so a panel mounted inside
           the header row would be a 420px flex item beside the switcher. */}
       {customisable ? (
         <CustomiseDrawer
@@ -528,7 +531,7 @@ function HomeContent() {
         <div
           role="status"
           data-testid="home-all-failed"
-          className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-danger/30 bg-danger-subtle px-4 py-3"
+          className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-danger-line bg-danger-subtle px-4 py-3"
         >
           <span
             aria-hidden
@@ -539,13 +542,13 @@ function HomeContent() {
           {/* ⛔ **Names the scope and what survived**, which is the failure
               grammar `3.3.1` asks for — and ⛔ never *"something went wrong"*. */}
           <p className="text-label leading-[1.5] text-content">
-            Nothing on your home could be loaded. Signora is reachable and your accounts, signals
-            and settings all work — every card here failed its own read.
+            Nothing on your home could be loaded. Signora is reachable and your accounts,
+            signals and settings all work — every card here failed its own read.
           </p>
           <button
             type="button"
             onClick={outcomes.retryAll}
-            className="ml-auto inline-flex h-control-sm items-center rounded-md border border-border bg-surface px-3 text-2xs font-semibold text-content transition-colors hover:border-accent hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="ml-auto inline-flex h-control-sm items-center rounded-md border border-border bg-surface px-3 text-2xs font-semibold text-content transition-colors hover:border-accent hover:text-accent "
           >
             Retry all
           </button>
@@ -563,8 +566,9 @@ function HomeContent() {
           {/* ⛔ **Names what was checked**, which is the design's own credibility
               test for an empty state — and never *"coming soon"*. */}
           <p className="mt-1.5 text-xs leading-[1.5] text-content-muted">
-            Home is composed from what each part of Signora publishes, and nothing it checked has a
-            card for you today. Your accounts, signals and settings all work.
+            Home is composed from what each part of Signora publishes, and nothing it
+            checked has a card for you today. Your accounts, signals and settings all
+            work.
           </p>
         </section>
       ) : registryEmpty ? (
@@ -634,74 +638,76 @@ function HomeContent() {
               className="h-[164px] animate-pulse rounded-lg border border-border-soft bg-surface-sunken"
             />
           ) : null}
-          {resolving ? null : rendered.map((card) => {
-            const Card = RENDERERS[card.id];
-            if (Card === undefined) return null;
-            /**
-             * 📁 **State 09** — *"the card is replaced IN PLACE by a
-             * same-footprint panel naming the missing permission and the
-             * approvers. **Never hidden.**"*
-             *
-             * ⚠️ **`requires` used to remove the card from this list**, on the
-             * rail's rule that a link nobody can follow is not rendered. ⛔ P-11
-             * says the opposite for a card, and gives the reason: *"hidden
-             * capability is the most common cause of 'the product does not do X'
-             * when it does."*
-             */
-            const barred = forbidden(card, role);
-            return (
-              /**
-               * ♿ **Each card is a `<section>` with its own heading** — 📁 1.3.1
-               * and contract item 19. ⚡ **DOM order is visual order**, which is
-               * why the grid places rather than reorders.
-               */
-              <section
-                key={card.id}
-                data-card={card.id}
-                aria-label={card.title}
+          {resolving
+            ? null
+            : rendered.map((card) => {
+                const Card = RENDERERS[card.id];
+                if (Card === undefined) return null;
                 /**
-                 * 🔴 **`col-start-2` is a PIN, and it was unconditional.**
+                 * 📁 **State 09** — *"the card is replaced IN PLACE by a
+                 * same-footprint panel naming the missing permission and the
+                 * approvers. **Never hidden.**"*
                  *
-                 * ⛔ **Every card that is not in `WIDE` was pinned to column
-                 * two** — which is right while `card.attention` holds column
-                 * one, and **wrong for every composition that has no wide card
-                 * at all.** ⚠️ **The Executive composition has none**, so all
-                 * three of its cards stacked in the right-hand column against
-                 * an empty left one. **Widening the template did not fix it;
-                 * the pin did.**
-                 *
-                 * ✅ **With no wide card the cards simply FLOW**, filling both
-                 * equal columns in DOM order — 📁 which is the order the design
-                 * ranks them in, and *"DOM order is visual order"* above.
+                 * ⚠️ **`requires` used to remove the card from this list**, on the
+                 * rail's rule that a link nobody can follow is not rendered. ⛔ P-11
+                 * says the opposite for a card, and gives the reason: *"hidden
+                 * capability is the most common cause of 'the product does not do X'
+                 * when it does."*
                  */
-                /* ⚠️ **`smalllaptop:` now, because the two columns start
-                   there** — 📁 the tablet-landscape row's *"two columns
-                   return"*. ⛔ Pins at `laptop:` would have left every card
-                   flowing into one stack between 1024 and 1279 while the grid
-                   underneath them was already two columns wide. */
-                className={
-                  FULL.has(card.id)
-                    ? 'smalllaptop:col-span-2'
-                    : WIDE.has(card.id)
-                      ? 'smalllaptop:col-start-1'
-                      : hasWide
-                        ? 'smalllaptop:col-start-2'
-                        : undefined
-                }
-              >
-                {barred ? (
-                  <ForbiddenCard
-                    card={card.title}
-                    permission={PERMISSION_NAME[card.requires!]}
-                    workspaceId={workspaceId}
-                    testId={`${card.id}-forbidden`}
-                  />
-                ) : (
-                  <Card />
-                )}
-              </section>
-            );
-          })}
+                const barred = forbidden(card, role);
+                return (
+                  /**
+                   * ♿ **Each card is a `<section>` with its own heading** — 📁 1.3.1
+                   * and contract item 19. ⚡ **DOM order is visual order**, which is
+                   * why the grid places rather than reorders.
+                   */
+                  <section
+                    key={card.id}
+                    data-card={card.id}
+                    aria-label={card.title}
+                    /**
+                     * 🔴 **`col-start-2` is a PIN, and it was unconditional.**
+                     *
+                     * ⛔ **Every card that is not in `WIDE` was pinned to column
+                     * two** — which is right while `card.attention` holds column
+                     * one, and **wrong for every composition that has no wide card
+                     * at all.** ⚠️ **The Executive composition has none**, so all
+                     * three of its cards stacked in the right-hand column against
+                     * an empty left one. **Widening the template did not fix it;
+                     * the pin did.**
+                     *
+                     * ✅ **With no wide card the cards simply FLOW**, filling both
+                     * equal columns in DOM order — 📁 which is the order the design
+                     * ranks them in, and *"DOM order is visual order"* above.
+                     */
+                    /* ⚠️ **`smalllaptop:` now, because the two columns start
+                       there** — 📁 the tablet-landscape row's *"two columns
+                       return"*. ⛔ Pins at `laptop:` would have left every card
+                       flowing into one stack between 1024 and 1279 while the grid
+                       underneath them was already two columns wide. */
+                    className={
+                      FULL.has(card.id)
+                        ? 'smalllaptop:col-span-2'
+                        : WIDE.has(card.id)
+                          ? 'smalllaptop:col-start-1'
+                          : hasWide
+                            ? 'smalllaptop:col-start-2'
+                            : undefined
+                    }
+                  >
+                    {barred ? (
+                      <ForbiddenCard
+                        card={card.title}
+                        permission={PERMISSION_NAME[card.requires!]}
+                        workspaceId={workspaceId}
+                        testId={`${card.id}-forbidden`}
+                      />
+                    ) : (
+                      <Card />
+                    )}
+                  </section>
+                );
+              })}
         </div>
       )}
     </div>
@@ -717,9 +723,7 @@ function HomeContent() {
  * column**, which is the design's default for everything in the right-hand
  * stack.
  */
-const WIDE: ReadonlySet<CardContract['id']> = new Set([
-  'needs-you-today',
-]);
+const WIDE: ReadonlySet<CardContract['id']> = new Set(['needs-you-today']);
 
 /**
  * 📁 **The registry's `full × auto` footprint.**
@@ -748,21 +752,22 @@ const FULL: ReadonlySet<CardContract['id']> = new Set([
  * written ahead of the cards, and a registered card with no renderer would draw
  * a hole — which is why `Home` filters on this map rather than on `REGISTRY`.
  */
-const RENDERERS: Readonly<Partial<Record<CardContract['id'], () => React.ReactElement | null>>> =
-  Object.freeze({
-    'needs-you-today': AttentionCard,
-    'pipeline-health': PipelineHealthCard,
-    'integration-health': IntegrationHealthCard,
-    recents: RecentsCard,
-    // 📁 The Executive composition's two ranked lists, partitioned from one
-    // queue by the posture the Buying Score Engine publishes.
-    'top-risks': TopRisksCard,
-    'top-opportunities': TopOpportunitiesCard,
-    // 📁 Both read `agents.runs` — the queue takes the runs with something to
-    // read, the runs card ranks every run failures first.
-    'agent-queue': AgentQueueCard,
-    'agent-runs': AgentRunsCard,
-    'connect-a-crm': ConnectCrmCard,
-    'connect-calls': ConnectCallsCard,
-    'invite-the-team': InviteTheTeamCard,
-  });
+const RENDERERS: Readonly<
+  Partial<Record<CardContract['id'], () => React.ReactElement | null>>
+> = Object.freeze({
+  'needs-you-today': AttentionCard,
+  'pipeline-health': PipelineHealthCard,
+  'integration-health': IntegrationHealthCard,
+  recents: RecentsCard,
+  // 📁 The Executive composition's two ranked lists, partitioned from one
+  // queue by the posture the Buying Score Engine publishes.
+  'top-risks': TopRisksCard,
+  'top-opportunities': TopOpportunitiesCard,
+  // 📁 Both read `agents.runs` — the queue takes the runs with something to
+  // read, the runs card ranks every run failures first.
+  'agent-queue': AgentQueueCard,
+  'agent-runs': AgentRunsCard,
+  'connect-a-crm': ConnectCrmCard,
+  'connect-calls': ConnectCallsCard,
+  'invite-the-team': InviteTheTeamCard,
+});

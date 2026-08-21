@@ -236,9 +236,22 @@ export function visibleColumns(chosen: readonly ColumnId[]): readonly ColumnSpec
  */
 export type Density = 'comfortable' | 'compact';
 
+/**
+ * 📁 **The design's two row heights** — `--row-h` 44px · `--row-h-compact` 34px.
+ *
+ * ⛔ **This was `py-3` / `py-1.5` and it measured 49px, not 44.** ⚡ **Density
+ * in this design is a ROW HEIGHT, not a padding**, and the difference is not
+ * pedantry: 📁 the Design Review names *"tables at 44px rows"* as one of the
+ * two things that make this product beat a CRM, and a padding-derived height
+ * drifts the moment the type scale moves.
+ *
+ * ⚠️ **The padding stays, smaller.** A height on a `td` is a **minimum**, so a
+ * wrapped cell still grows — the padding is what keeps two lines off the
+ * hairline when it does.
+ */
 export const ROW_PADDING: Record<Density, string> = {
-  comfortable: 'py-3',
-  compact: 'py-1.5',
+  comfortable: 'h-row py-1.5',
+  compact: 'h-row-compact py-1',
 };
 
 /**

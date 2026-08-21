@@ -48,7 +48,10 @@ export function EvidenceDrawer({
     <Dialog
       open={eventId !== null}
       onClose={onClose}
-      title={data ? data.summary : 'The evidence behind this'}
+      // 🔴 **📁 The design calls the section *"Evidence"***, with *"6 sources"*
+      // as its meta — `#evidence`. ⛔ ***"The evidence behind this"*** appears
+      // **ZERO times** in the final design corpus.
+      title={data ? data.summary : 'Evidence'}
       description={
         data
           ? `${describeProviders(data.corroborating_providers)} · ${formatDay(data.occurred_at)}`

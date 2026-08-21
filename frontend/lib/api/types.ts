@@ -859,6 +859,60 @@ export interface IcpDeclaration {
   updated_by: string | null;
 }
 
+/**
+ * 🔴 **What one declared criterion actually predicted** — `GET
+ * /workspaces/{id}/icp-performance`.
+ *
+ * 📁 The endpoint's own words: ***"lift is `P(won | criterion holds) ÷ P(won
+ * overall)`. Above 1.0 the criterion predicts; at 1.0 it tells you nothing;
+ * below 1.0 it is selecting against you"*** — the last being the most useful
+ * thing it can say and the one nobody expects.
+ *
+ * ⚡ **This is the sentence the ICP Builder design opens with**: 📁 `Design
+ * Documents/Fortune Signora ICP Builder.html` — ***"Every criterion is scored
+ * against closed-won evidence, not opinion."***
+ */
+export interface CriterionLift {
+  /** Which part of the description this measures — `industry`, `country` or
+   *  `employees`. */
+  criterion: string;
+  /**
+   * ⛔ **`null` when it cannot be measured** — nothing satisfied it, nothing
+   * was measured, or nothing has been won yet. 📁 The schema is emphatic:
+   * ***"Never render null as 1.0."***
+   */
+  lift: number | null;
+  /** Decided accounts where this criterion held. **The sample size behind
+   *  `lift`** — read it before the multiple. */
+  satisfied: number;
+  satisfied_won: number;
+  /** Every decided account this could be measured on, satisfied or not. */
+  measured: number;
+  measured_won: number;
+  /** ⛔ **Dropped because no source described the account**, and they do NOT
+   *  count against the criterion. */
+  unmeasured: number;
+  /** 📁 True below 22 satisfying accounts — **the threshold the design itself
+   *  states**: *"treat as directional, not settled."* */
+  is_directional: boolean;
+}
+
+/**
+ * What one product's ideal-customer description predicted.
+ *
+ * ⛔ **No overall verdict, and that is the endpoint's deliberate choice**:
+ * rolling the criteria into *"your ICP is good"* needs a rule for the ones
+ * nothing was observed for, and every available rule is a judgement.
+ */
+export interface IcpMeasurement {
+  product_id: string;
+  /** **The honest denominator** — if this is small, nothing above it is
+   *  settled. */
+  decided: number;
+  /** One entry per criterion kind, always all three, in a stable order. */
+  criteria: CriterionLift[];
+}
+
 /** A complete statement of the ideal customer, replacing `expected_version`. */
 export interface DeclareIcp {
   expected_version: number;

@@ -3,13 +3,19 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { Inferred } from '@/components/ui';
+import { Button, Inferred } from '@/components/ui';
 import { cn } from '@/lib/design/cn';
 import { confirmCompany, type Answer } from '@/lib/api/onboarding';
 
 import { OnboardingShell } from '../onboarding-shell';
 import { OnboardingRail } from './rail';
-import { SIZE_BANDS, INDUSTRIES, COUNTED_STEPS, COUNTED_TOTAL, positionOf } from './steps';
+import {
+  SIZE_BANDS,
+  INDUSTRIES,
+  COUNTED_STEPS,
+  COUNTED_TOTAL,
+  positionOf,
+} from './steps';
 import { SkipSetup } from './skip-setup';
 import { useOnboarding } from './use-onboarding';
 
@@ -56,7 +62,9 @@ export function CompanyForm() {
     if (run === null || run.timezone !== null) return;
     const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     if (!zone) return;
-    void save((id) => confirmCompany(id, { timezone: { value: zone, provenance: 'inferred' } }));
+    void save((id) =>
+      confirmCompany(id, { timezone: { value: zone, provenance: 'inferred' } }),
+    );
   }, [run, save]);
 
   if (isLoading) {
@@ -70,7 +78,7 @@ export function CompanyForm() {
           <OnboardingRail
             steps={COUNTED_STEPS}
             currentId="company"
-            completedIds={[...([]), 'workspace']}
+            completedIds={[...[], 'workspace']}
             progress={{ step: positionOf('company'), of: COUNTED_TOTAL }}
           />
         }
@@ -83,8 +91,9 @@ export function CompanyForm() {
     );
   }
 
-  const current = (field: 'industry' | 'company_size' | 'region' | 'timezone'): Answer | null =>
-    dirty[field] ?? run?.[field] ?? null;
+  const current = (
+    field: 'industry' | 'company_size' | 'region' | 'timezone',
+  ): Answer | null => dirty[field] ?? run?.[field] ?? null;
 
   /** A correction. **The provenance becomes `entered`** — they typed it, so
    * it is theirs, and the badge goes. */
@@ -116,7 +125,6 @@ export function CompanyForm() {
   const region = current('region');
   const timezone = current('timezone');
 
-
   const inferredAnything = [industry, size, region, timezone].some(
     (answer) => answer?.provenance === 'inferred',
   );
@@ -137,9 +145,9 @@ export function CompanyForm() {
                   standing claim that the screen was filled in from a public
                   record would be false on every run where nothing was. */}
               {inferredAnything ? (
-                <div className="mt-[22px] rounded-md border border-ai/30 bg-ai-subtle p-3">
-                  <p className="text-[11.5px] font-semibold text-ai">Pre-filled for you</p>
-                  <p className="mt-1 text-[11.5px] leading-6 text-content-muted">
+                <div className="mt-[22px] rounded-md border border-ai-line bg-ai-subtle p-3">
+                  <p className="text-2xs font-semibold text-ai">Pre-filled for you</p>
+                  <p className="mt-1 text-2xs leading-6 text-content-muted">
                     Nothing is sent to your CRM.
                   </p>
                 </div>
@@ -156,14 +164,9 @@ export function CompanyForm() {
       description="We filled in what we could. Correct anything that is wrong — it changes which benchmarks Signora compares you against."
       actions={
         <>
-          <button
-            type="button"
-            onClick={submit}
-            disabled={isSaving}
-            className="inline-flex h-control-md items-center rounded-md bg-accent px-[18px] text-[13.5px] font-semibold text-accent-contrast shadow-sm transition-colors hover:bg-accent-hover disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-          >
+          <Button onClick={submit} disabled={isSaving}>
             {isSaving ? 'Saving…' : 'Looks right, continue'}
-          </button>
+          </Button>
           <button
             type="button"
             onClick={async () => {
@@ -173,7 +176,7 @@ export function CompanyForm() {
               await advance('you');
               router.push('/onboarding/you');
             }}
-            className="text-[13px] font-semibold text-content-subtle hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="text-sm font-semibold text-content-subtle hover:text-content "
           >
             Skip for now
           </button>
@@ -195,8 +198,7 @@ export function CompanyForm() {
                   aria-checked={chosen}
                   onClick={() => correct('industry', choice.value)}
                   className={cn(
-                    'inline-flex h-8 items-center rounded-md border px-[13px] text-[12.5px] transition-colors',
-                    'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+                    'inline-flex h-8 items-center rounded-md border px-[13px] text-label transition-colors',
                     chosen
                       ? 'border-accent bg-accent-subtle font-semibold text-accent'
                       : 'border-border bg-surface text-content-muted hover:text-content',
@@ -241,7 +243,7 @@ export function CompanyForm() {
             onChange={(event) => correct('timezone', event.target.value)}
             className={CONTROL}
           />
-          <p className="mt-[7px] text-[11.5px] text-content-subtle">
+          <p className="mt-[7px] text-2xs text-content-subtle">
             Sets when digests arrive and what &ldquo;today&rdquo; means in every report.
           </p>
         </Labelled>
@@ -257,9 +259,9 @@ export function CompanyForm() {
 }
 
 /** 📁 The design's control: *"height:40px; padding:0 13px; border-radius:8px;
- *  border:1px solid var(--line); font-size:13.5px."* */
+ * border:1px solid var(--line); font-size:13.5px."* */
 const CONTROL =
-  'h-control-md w-full rounded-md border border-border bg-surface px-[13px] text-[13.5px] text-content outline-none transition-shadow focus-visible:border-accent focus-visible:ring-[3px] focus-visible:ring-accent-subtle';
+  'h-control-md w-full rounded-md border border-border bg-surface px-[13px] text-sm text-content outline-none transition-shadow ';
 
 /**
  * 📁 **The design's label row** — the field name at 12.5px/600 with its
@@ -281,7 +283,7 @@ function Labelled({
   return (
     <div>
       <div className="mb-[7px] flex items-center gap-2">
-        <span className="text-[12.5px] font-semibold text-content">{label}</span>
+        <span className="text-label font-semibold text-content">{label}</span>
         {answer?.provenance === 'inferred' ? (
           <Inferred from={label === 'Timezone' ? 'browser' : 'inference'} />
         ) : null}
@@ -292,7 +294,7 @@ function Labelled({
 }
 
 /** A native select, styled to the design's control. ♿ **Native rather than a
- *  bespoke menu** — it carries its own keyboard, focus and announcement. */
+ * bespoke menu** — it carries its own keyboard, focus and announcement. */
 function Picker({
   label,
   value,

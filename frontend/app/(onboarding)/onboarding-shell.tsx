@@ -145,8 +145,8 @@ export function StepHeading({
         className={cn(
           'font-bold text-content outline-none',
           large
-            ? 'text-[28px] leading-[1.15] tracking-[-0.028em]'
-            : 'text-2xl tracking-[-0.026em]',
+            ? 'text-title leading-[1.15] tracking-[-0.028em]'
+            : 'text-title',
         )}
       >
         {title}

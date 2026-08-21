@@ -8,6 +8,7 @@ import { NoWorkspace } from '@/components/workspace/no-workspace';
 import { Card, CardBody, CardHeader, CardTitle, LockedField, PageHeader } from '@/components/ui';
 import { useOrganizationHistory } from '@/lib/query/hooks/team';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
+import { usePublishBreadcrumb } from '@/components/shell/breadcrumb-trail';
 
 /**
  * **The audit log** — [TASK-1412](../../../../../docs/BACKLOG.md),
@@ -60,6 +61,25 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
  * because a customer would rely on it in an audit.
  */
 export default function AuditLogPage() {
+  /**
+   * 📁 **§05 Breadcrumbs — *"Mandatory below the first level, because most
+   * sessions start from a deep link in Slack or email."***
+   *
+   * ⛔ **Six routes below the first level published nothing**, so the top bar's
+   * slot rendered empty on every settings screen and a person arriving from a
+   * link had no route back up. ⚡ **The channel already existed and was
+   * correct** — [`usePublishBreadcrumb`](../../../../components/shell/breadcrumb-trail.tsx),
+   * which `accounts` has used since it shipped — **so this is a consumer
+   * adopting the canonical surface, not a new one.**
+   *
+   * 📁 *"They mirror the data hierarchy, not the click path"*, and the last
+   * crumb is the current record and is not a link.
+   */
+  usePublishBreadcrumb([
+    { label: 'Settings', kind: 'link', href: '/settings' },
+    { label: 'Audit log', kind: 'current' },
+  ]);
+
   const { activeWorkspace, isLoading: workspaceLoading, error } = useWorkspaceContext();
   const history = useOrganizationHistory(activeWorkspace?.id ?? null);
 

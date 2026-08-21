@@ -13,5 +13,5 @@ import { SkeletonText } from '@/components/ui';
  * the empty result would read as *nothing is wrong*.**
  */
 export default function Loading() {
-  return <SkeletonText lines={6} />;
+  return <SkeletonText lines={6} label="your security settings" />;
 }

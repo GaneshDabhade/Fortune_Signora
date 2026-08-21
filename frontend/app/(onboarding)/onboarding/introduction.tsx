@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { cn } from '@/lib/design/cn';
+import { Button } from '@/components/ui';
 
 /**
  * **Screen `02 · Product introduction`** — 📁 the design's own heading:
@@ -76,7 +77,7 @@ export function ProductIntroduction() {
               possible is cheaper than declaring an exception.** */}
           <Link
             href="/onboarding/organization"
-            className="ml-auto text-[12.5px] font-semibold text-content-subtle hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="ml-auto text-label font-semibold text-content-subtle hover:text-content "
           >
             Skip introduction
           </Link>
@@ -84,32 +85,21 @@ export function ProductIntroduction() {
 
         <div className="mt-6 grid items-center gap-8 smalllaptop:grid-cols-2">
           <div>
-            <h1
-              tabIndex={-1}
-              className="text-2xl font-bold leading-tight tracking-[-0.026em] text-content outline-none"
-            >
+            <h1 tabIndex={-1} className="text-title text-content outline-none">
               {current.title}
             </h1>
-            <p className="mt-3 text-sm leading-relaxed text-content-muted">{current.body}</p>
+            <p className="mt-3 text-sm leading-relaxed text-content-muted">
+              {current.body}
+            </p>
             <div className="mt-[22px] flex gap-2">
-              <button
-                type="button"
-                onClick={forward}
-                className="inline-flex h-9 items-center rounded-md bg-accent px-[15px] text-[13px] font-semibold text-accent-contrast shadow-sm transition-colors hover:bg-accent-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-              >
-                {last ? 'Continue' : 'Next'}
-              </button>
+              <Button onClick={forward}>{last ? 'Continue' : 'Next'}</Button>
               {/* ⛔ **Back is absent on the first panel rather than disabled** —
                   📁 a control that cannot act is the one this repository keeps
                   refusing to draw. */}
               {panel === 0 ? null : (
-                <button
-                  type="button"
-                  onClick={() => setPanel((was) => was - 1)}
-                  className="inline-flex h-9 items-center rounded-md border border-border px-3.5 text-[13px] font-semibold text-content transition-colors hover:bg-surface-sunken focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-                >
+                <Button variant="secondary" onClick={() => setPanel((was) => was - 1)}>
                   Back
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -119,7 +109,7 @@ export function ProductIntroduction() {
               reserved** — §14 — and this is content a model authored, which is
               the one thing that may wear it. */}
           <div className="rounded-lg bg-surface-sunken p-[18px]">
-            <div className="rounded-md border border-ai/30 bg-surface p-3.5">
+            <div className="rounded-md border border-ai-line bg-surface p-3.5">
               <div className="flex items-center gap-1.5">
                 <span className="grid h-4 w-4 place-items-center rounded-sm bg-ai text-accent-contrast">
                   <svg
@@ -135,14 +125,14 @@ export function ProductIntroduction() {
                     <path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14" />
                   </svg>
                 </span>
-                <span className="text-[11px] font-semibold text-ai">AI insight</span>
+                <span className="text-2xs font-semibold text-ai">AI insight</span>
                 <span className="ml-auto text-2xs text-content-subtle">4 of 5</span>
               </div>
-              <p className="mt-2 text-[12.5px] leading-relaxed text-content">
+              <p className="mt-2 text-label leading-relaxed text-content">
                 Pricing pushback appears in three deals within a week of each slip
-                <sup className="text-[10px] font-semibold text-ai">1</sup>.
+                <sup className="text-2xs font-semibold text-ai">1</sup>.
               </p>
-              <p className="mt-2 border-t border-border-soft pt-2 text-[11px] text-content-subtle">
+              <p className="mt-2 border-t border-border-soft pt-2 text-2xs text-content-subtle">
                 1 · Vantage QBR, 14 Jul, 38:12
               </p>
             </div>

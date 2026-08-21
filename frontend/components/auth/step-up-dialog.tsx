@@ -136,7 +136,9 @@ export function StepUpDialog({
           </p>
         ) : (
           <p role="status" className="text-xs text-content-subtle">
-            {expired ? 'That code has expired — ask for another.' : `Expires in ${clock(left)}`}
+            {expired
+              ? 'That code has expired — ask for another.'
+              : `Expires in ${clock(left)}`}
           </p>
         )}
 
@@ -153,7 +155,7 @@ export function StepUpDialog({
             <button
               type="button"
               onClick={onUseBackupCode}
-              className="rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className="rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent "
             >
               Use a backup code
             </button>

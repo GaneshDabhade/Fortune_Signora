@@ -123,7 +123,7 @@ export function CommercialFocusEditor({
             hint="Your words. Read by a colleague, never by a rule."
             autoFocus
           />
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button type="submit" size="sm" disabled={declare.isPending}>
               Save
             </Button>

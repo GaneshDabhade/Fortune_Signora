@@ -20,7 +20,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('@/components/shell/navigation', () => ({
   Navigation: () => <nav aria-label="Primary" />,
 }));
-vi.mock('@/components/shell/workspace-selector', () => ({ WorkspaceSelector: () => null }));
 vi.mock('@/components/intelligence/account-search', () => ({ AccountSearch: () => null }));
 // ⚡ **Was `theme-toggle`** — TASK-1440 moved the theme control off the frame
 // and into the account menu, so the leaf this suite stubs moved with it. ⛔ The

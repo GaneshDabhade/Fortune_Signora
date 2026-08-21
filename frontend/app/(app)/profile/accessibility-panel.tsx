@@ -3,7 +3,11 @@
 import { useEffect, useState } from 'react';
 
 import { FieldOriginTag, SegmentedControl } from '@/components/ui';
-import { changePreferences, getPreferences, type Preferences } from '@/lib/api/preferences';
+import {
+  changePreferences,
+  getPreferences,
+  type Preferences,
+} from '@/lib/api/preferences';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -135,7 +139,8 @@ export function AccessibilityPanel() {
           Accessibility
         </h2>
         <p className="text-sm leading-6 text-content-muted">
-          Applies to this account on every device you sign in from — not just this browser.
+          Applies to this account on every device you sign in from — not just this
+          browser.
         </p>
       </header>
 
@@ -159,82 +164,85 @@ export function AccessibilityPanel() {
           a shared component to suit one page is what [§20c](../../../../CLAUDE.md)
           forbids. */}
       {prefs === null ? null : (
-      <div className="flex flex-col gap-6">
-        <Toggle
-          label="Reduce motion"
-          /* 🔴 **The description says what OFF means**, because it is not what
-             a reader assumes. ⛔ Off does not mean *animate everything*; it
-             means *follow the device*, and a toggle that let somebody believe
-             otherwise would read as broken on a machine already set to
-             reduce. */
-          description="Removes every transform and drops transitions to short opacity fades. Your device’s own setting is already respected — turn this on to reduce motion everywhere, whatever the device says."
-          checked={prefs?.reduce_motion ?? false}
-          disabled={prefs === null}
-          onChange={(value) => change({ reduce_motion: value })}
-        />
-
-        <Toggle
-          label="Increase contrast"
-          description="Raises borders, darkens secondary text, and removes tinted backgrounds behind text."
-          checked={prefs?.increase_contrast ?? false}
-          disabled={prefs === null}
-          onChange={(value) => change({ increase_contrast: value })}
-        />
-
-        <Toggle
-          label="Always show focus ring"
-          /* ⚡ **The ring is always there for a keyboard**, and this asks for
-             it after a pointer too — ⛔ so the description says which case it
-             changes rather than implying focus is otherwise invisible. */
-          description="Keeps the focus outline visible after a mouse click, not only when moving by keyboard."
-          checked={prefs?.always_show_focus_ring ?? false}
-          disabled={prefs === null}
-          onChange={(value) => change({ always_show_focus_ring: value })}
-        />
-
-        <Toggle
-          label="Underline links"
-          description="Underlines links in body text rather than relying on colour alone."
-          checked={prefs?.underline_links ?? true}
-          disabled={prefs === null}
-          onChange={(value) => change({ underline_links: value })}
-        />
-
-        <div className="flex flex-col gap-1.5">
-          <SegmentedControl
-            legend="Text size"
-            name="text_size"
-            segments={TEXT_SIZES}
-            value={prefs?.text_size ?? '100'}
-            onChange={(value) => change({ text_size: value as Preferences['text_size'] })}
+        <div className="flex flex-col gap-6">
+          <Toggle
+            label="Reduce motion"
+            /* 🔴 **The description says what OFF means**, because it is not what
+               a reader assumes. ⛔ Off does not mean *animate everything*; it
+               means *follow the device*, and a toggle that let somebody believe
+               otherwise would read as broken on a machine already set to
+               reduce. */
+            description="Removes every transform and drops transitions to short opacity fades. Your device’s own setting is already respected — turn this on to reduce motion everywhere, whatever the device says."
+            checked={prefs?.reduce_motion ?? false}
+            disabled={prefs === null}
+            onChange={(value) => change({ reduce_motion: value })}
           />
-          {/* 📁 The design's own line. ⚡ **The floor is stated because it is a
-              promise**: nothing shrinks below 12.5px at any setting. */}
-          <p className="text-xs leading-5 text-content-muted">
-            Scales interface text. Data tables keep tabular alignment at every size.
-          </p>
-          <FieldOriginTag origin="yours" className="self-start" />
-        </div>
 
-        <div className="flex flex-col gap-1.5">
-          <SegmentedControl
-            legend="Screen reader verbosity"
-            name="screen_reader_verbosity"
-            segments={VERBOSITIES}
-            value={prefs?.screen_reader_verbosity ?? 'detailed'}
-            onChange={(value) =>
-              change({
-                screen_reader_verbosity: value as Preferences['screen_reader_verbosity'],
-              })
-            }
+          <Toggle
+            label="Increase contrast"
+            description="Raises borders, darkens secondary text, and removes tinted backgrounds behind text."
+            checked={prefs?.increase_contrast ?? false}
+            disabled={prefs === null}
+            onChange={(value) => change({ increase_contrast: value })}
           />
-          <p className="text-xs leading-5 text-content-muted">
-            Detailed announces the evidence and confidence behind a figure. Concise announces
-            the figure.
-          </p>
-          <FieldOriginTag origin="yours" className="self-start" />
+
+          <Toggle
+            label="Always show focus ring"
+            /* ⚡ **The ring is always there for a keyboard**, and this asks for
+               it after a pointer too — ⛔ so the description says which case it
+               changes rather than implying focus is otherwise invisible. */
+            description="Keeps the focus outline visible after a mouse click, not only when moving by keyboard."
+            checked={prefs?.always_show_focus_ring ?? false}
+            disabled={prefs === null}
+            onChange={(value) => change({ always_show_focus_ring: value })}
+          />
+
+          <Toggle
+            label="Underline links"
+            description="Underlines links in body text rather than relying on colour alone."
+            checked={prefs?.underline_links ?? true}
+            disabled={prefs === null}
+            onChange={(value) => change({ underline_links: value })}
+          />
+
+          <div className="flex flex-col gap-1.5">
+            <SegmentedControl
+              legend="Text size"
+              name="text_size"
+              segments={TEXT_SIZES}
+              value={prefs?.text_size ?? '100'}
+              onChange={(value) =>
+                change({ text_size: value as Preferences['text_size'] })
+              }
+            />
+            {/* 📁 The design's own line. ⚡ **The floor is stated because it is a
+                promise**: nothing shrinks below 12.5px at any setting. */}
+            <p className="text-xs leading-5 text-content-muted">
+              Scales interface text. Data tables keep tabular alignment at every size.
+            </p>
+            <FieldOriginTag origin="yours" className="self-start" />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <SegmentedControl
+              legend="Screen reader verbosity"
+              name="screen_reader_verbosity"
+              segments={VERBOSITIES}
+              value={prefs?.screen_reader_verbosity ?? 'detailed'}
+              onChange={(value) =>
+                change({
+                  screen_reader_verbosity:
+                    value as Preferences['screen_reader_verbosity'],
+                })
+              }
+            />
+            <p className="text-xs leading-5 text-content-muted">
+              Detailed announces the evidence and confidence behind a figure. Concise
+              announces the figure.
+            </p>
+            <FieldOriginTag origin="yours" className="self-start" />
+          </div>
         </div>
-      </div>
       )}
 
       {/* A status, not an alert — 4.1.3. Changing a preference must not interrupt. */}
@@ -298,7 +306,7 @@ function Toggle({
           checked={checked}
           disabled={disabled}
           onChange={(event) => onChange(event.target.checked)}
-          className="mt-0.5 h-4 w-4 shrink-0 rounded border-border text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60"
+          className="mt-0.5 h-4 w-4 shrink-0 rounded border-border text-accent disabled:cursor-not-allowed disabled:opacity-60"
         />
         <span className="flex flex-col gap-0.5">
           <span className="text-sm font-medium text-content">{label}</span>

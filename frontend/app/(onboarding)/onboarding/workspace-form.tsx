@@ -13,6 +13,7 @@ import { MAX_SLUG, MIN_SLUG, suggestSlug } from '@/lib/workspace/slug';
 import { OnboardingShell } from '../onboarding-shell';
 import { OnboardingRail } from './rail';
 import { COUNTED_STEPS, COUNTED_TOTAL, positionOf } from './steps';
+import { Button } from '@/components/ui';
 
 /** 📁 *"Checked as you type, **300ms after you stop**."* */
 const SETTLE_MS = 300;
@@ -101,7 +102,7 @@ export function WorkspaceForm() {
            *
            * 🔴 **This also compared `answer.slug === candidate` and that was a
            * DEFECT.** ⚡ The server answers with the *normalized* slug, so
-           * anything needing normalization — `North Wind!`, `  Northwind  ` —
+           * anything needing normalization — `North Wind!`, ` Northwind ` —
            * came back with a different string and **its verdict was silently
            * thrown away.** ⛔ **The field showed *Checking…* forever**, which is
            * the shape [B-277](../../../../docs/BUGS.md) has one screen over: a
@@ -134,7 +135,10 @@ export function WorkspaceForm() {
   const submit = async () => {
     setFailure(null);
     try {
-      const workspace = await create.mutateAsync({ name: shownName.trim(), slug: shownSlug });
+      const workspace = await create.mutateAsync({
+        name: shownName.trim(),
+        slug: shownSlug,
+      });
       // ⚡ **The context must know before the next screen reads it** — every
       // step after this one is workspace-scoped, and 📁 [B-277](../../../../docs/BUGS.md)
       // is exactly what an onboarding screen does with no active organization.
@@ -147,7 +151,8 @@ export function WorkspaceForm() {
 
   const tooShort = shownSlug.length < MIN_SLUG;
   const blocked = availability !== null && !availability.available;
-  const canCreate = shownName.trim().length > 0 && !tooShort && !blocked && !create.isPending;
+  const canCreate =
+    shownName.trim().length > 0 && !tooShort && !blocked && !create.isPending;
 
   // 📁 **The design's *creating* state is a named-step list, not a spinner** —
   // screen `08`. It replaces the form while the workspace is being made.
@@ -167,14 +172,9 @@ export function WorkspaceForm() {
       description="This is what your team will see. You can change it later."
       actions={
         <>
-          <button
-            type="button"
-            onClick={submit}
-            disabled={!canCreate}
-            className="inline-flex h-control-md items-center rounded-md bg-accent px-[18px] text-[13.5px] font-semibold text-accent-contrast shadow-sm transition-colors hover:bg-accent-hover disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-          >
+          <Button onClick={submit} disabled={!canCreate}>
             Create organization
-          </button>
+          </Button>
           {/* 📁 *"You'll be the owner. Data region is EU, set by your
               account."* ⚠️ **The data region half is NOT rendered** — nothing
               in this product records or chooses a region, and stating one
@@ -189,7 +189,7 @@ export function WorkspaceForm() {
       <div>
         <label
           htmlFor="workspace-name"
-          className="mb-1.5 mt-1 block text-[12.5px] font-semibold text-content"
+          className="mb-1.5 mt-1 block text-label font-semibold text-content"
         >
           Organization name
         </label>
@@ -206,13 +206,13 @@ export function WorkspaceForm() {
           }}
           // 📁 *"height:42px; font-size:14px"* — taller than a step control,
           // because this field is the screen.
-          className="h-[42px] w-full rounded-md border border-border bg-surface px-[13px] text-sm text-content outline-none transition-shadow focus-visible:border-accent focus-visible:ring-[3px] focus-visible:ring-accent-subtle"
+          className="h-[42px] w-full rounded-md border border-border bg-surface px-[13px] text-sm text-content outline-none transition-shadow "
         />
         {domain === null ? null : (
           // 📁 *"Filled from northwind.com — edit if it's wrong"*, in `--ai-ink`
           // with the spark. ⚡ **The domain is real** — it is the address the
           // person signed in with.
-          <p className="mt-[7px] flex items-center gap-[7px] text-[11.5px] text-ai">
+          <p className="mt-[7px] flex items-center gap-[7px] text-2xs text-ai">
             <svg
               aria-hidden
               width="12"
@@ -232,7 +232,7 @@ export function WorkspaceForm() {
 
         <label
           htmlFor="workspace-slug"
-          className="mb-1.5 mt-5 block text-[12.5px] font-semibold text-content"
+          className="mb-1.5 mt-5 block text-label font-semibold text-content"
         >
           Organization URL
         </label>
@@ -241,11 +241,18 @@ export function WorkspaceForm() {
         <div
           className={cn(
             'flex h-[42px] items-center overflow-hidden rounded-md border bg-surface transition-shadow',
+            // ♿ **`focus-proxy` because of `overflow-hidden`** — 📁
+            // [B-1058](../../../../docs/BUGS.md). ⛔ **The input inside is
+            // perfectly visible, but its indicator is CLIPPED by the joined
+            // control's own clipping**, so the ring has to be drawn on the
+            // element doing the clipping. ⚡ **Same declaration, moved outward.**
+            'focus-proxy',
+            // ⚠️ **`blocked` is a VALIDATION state, not a focus one** — it is
+            // unconditional and stays.
             blocked ? 'border-danger ring-[3px] ring-danger-subtle' : 'border-border',
-            'focus-within:border-accent focus-within:ring-[3px] focus-within:ring-accent-subtle',
           )}
         >
-          <span className="flex h-full flex-none items-center border-r border-border-soft bg-surface-sunken px-3 font-mono text-[13.5px] text-content-subtle">
+          <span className="flex h-full flex-none items-center border-r border-border-soft bg-surface-sunken px-3 font-mono text-sm text-content-subtle">
             signora.app/
           </span>
           <input
@@ -258,18 +265,24 @@ export function WorkspaceForm() {
             className="min-w-0 flex-1 bg-transparent px-3 font-mono text-sm text-content outline-none"
           />
           <span id="slug-state" role="status" className="flex-none pr-3">
-            <Verdict checking={checking} tooShort={tooShort} availability={availability} />
+            <Verdict
+              checking={checking}
+              tooShort={tooShort}
+              availability={availability}
+            />
           </span>
         </div>
         {/* ⚠️ **The REASON goes here, not inside the control.** 📁 The design's
             in-field marker is a short 12px verdict — *"Available"* — and a
             sentence in that slot squeezes the address until it is unreadable.
-            **Found in a screenshot**: `North Wind!` rendered as `North Wind`
+          **Found in a screenshot**: `North Wind!` rendered as `North Wind`
             with the message sitting on top of the rest. */}
         {blocked && availability?.reason ? (
-          <p className="mt-[7px] text-[11.5px] font-semibold text-danger">{availability.reason}</p>
+          <p className="mt-[7px] text-2xs font-semibold text-danger">
+            {availability.reason}
+          </p>
         ) : (
-          <p className="mt-[7px] text-[11.5px] text-content-subtle">
+          <p className="mt-[7px] text-2xs text-content-subtle">
             Checked as you type. Permanent once created.
           </p>
         )}
@@ -278,7 +291,7 @@ export function WorkspaceForm() {
           // 📁 Screen `08`'s error card — *"nothing typed is lost"*.
           <div
             role="alert"
-            className="mt-[14px] flex items-start gap-[11px] rounded-lg border border-danger/30 bg-danger-subtle px-[15px] py-[13px]"
+            className="mt-[14px] flex items-start gap-[11px] rounded-lg border border-danger-line bg-danger-subtle px-[15px] py-[13px]"
           >
             <svg
               aria-hidden
@@ -294,7 +307,7 @@ export function WorkspaceForm() {
               <circle cx="8" cy="8" r="6.2" />
               <path d="M8 5v3.5M8 11h.01" />
             </svg>
-            <p className="text-[12.5px] leading-[1.55] text-content">{failure}</p>
+            <p className="text-label leading-[1.55] text-content">{failure}</p>
           </div>
         )}
       </div>
@@ -320,9 +333,7 @@ function Verdict({
 }) {
   if (tooShort) {
     return (
-      <span className="text-xs text-content-subtle">
-        {MIN_SLUG} characters or more
-      </span>
+      <span className="text-xs text-content-subtle">{MIN_SLUG} characters or more</span>
     );
   }
   if (checking || availability === null) {
@@ -411,7 +422,7 @@ export function CreatingWorkspace({ name }: { name: string }) {
             <div
               key={step.label}
               className={cn(
-                'flex items-center gap-[11px] text-[13px] transition-colors',
+                'flex items-center gap-[11px] text-sm transition-colors',
                 reached ? 'text-content-muted' : 'text-content-subtle',
               )}
             >
@@ -437,9 +448,9 @@ export function CreatingWorkspace({ name }: { name: string }) {
           exists, and every screen after this one needs it. **Offering it would
           be a control that could not do what it said.** */}
       {elapsed >= 6 ? (
-        <p className="mt-5 text-[11.5px] leading-[1.5] text-content-subtle">
-          This is taking longer than usual. Nothing is lost — stay on this page and it will
-          finish.
+        <p className="mt-5 text-2xs leading-[1.5] text-content-subtle">
+          This is taking longer than usual. Nothing is lost — stay on this page and it
+          will finish.
         </p>
       ) : null}
     </OnboardingShell>
@@ -457,12 +468,21 @@ function emailDomain(email: string | null): string | null {
 }
 
 const FREE_MAIL = new Set([
-  'gmail.com', 'googlemail.com', 'outlook.com', 'hotmail.com', 'live.com',
-  'yahoo.com', 'icloud.com', 'me.com', 'proton.me', 'protonmail.com', 'aol.com',
+  'gmail.com',
+  'googlemail.com',
+  'outlook.com',
+  'hotmail.com',
+  'live.com',
+  'yahoo.com',
+  'icloud.com',
+  'me.com',
+  'proton.me',
+  'protonmail.com',
+  'aol.com',
 ]);
 
 /** *northwind.com* → *Northwind*. ⚡ **The registrable label only** — a
- *  suffix in the name is nobody's company. */
+ * suffix in the name is nobody's company. */
 function titleFromDomain(domain: string): string {
   const label = domain.split('.')[0] ?? '';
   return label.charAt(0).toUpperCase() + label.slice(1);

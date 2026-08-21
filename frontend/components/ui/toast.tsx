@@ -183,7 +183,7 @@ function ToastViewport({
                 toast.action?.onAction();
                 onDismiss(toast.id);
               }}
-              className="shrink-0 rounded text-sm font-semibold underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
+              className="shrink-0 rounded text-sm font-semibold underline underline-offset-4 "
             >
               {toast.action.label}
             </button>

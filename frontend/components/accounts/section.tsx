@@ -83,6 +83,7 @@ export function AccountSectionShell({
   kind,
   isLoading,
   lastKnownCount,
+  isError = false,
   children,
 }: {
   id: string;
@@ -92,6 +93,22 @@ export function AccountSectionShell({
   kind: string | null;
   isLoading?: boolean;
   lastKnownCount?: number | null;
+  /**
+   * 🔴 **[B-1054](../../../docs/BUGS.md) — a failed read rendered its count as
+   * `0` beside a body correctly saying the read failed.**
+   *
+   * ⛔ **`0` is a MEASUREMENT and no measurement was obtained.** ⚡ **A reader
+   * scanning headings — which is what a count beside a heading is FOR — read
+   * *nothing changed at this account*, the exact inference the sentence below
+   * it was written to prevent.** 🔴 **The section contradicted itself and the
+   * half that was wrong was the half read first.**
+   *
+   * ⚠️ **This does not soften the rule the count exists for.** 📁 *"A positive
+   * empty is good news, not a gap"* — ✅ **a read that SUCCEEDS and returns
+   * nothing still says `0`.** ⛔ **What changes is only the case where nobody
+   * counted anything.**
+   */
+  isError?: boolean;
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(true);
@@ -112,7 +129,8 @@ export function AccountSectionShell({
   // section a reader is already on changes the hash and nothing else.
   useEffect(() => {
     const openIfTargeted = () => {
-      if (expansionFromAnchor(window.location.hash, ACCOUNT_SECTIONS) === id) setOpen(true);
+      if (expansionFromAnchor(window.location.hash, ACCOUNT_SECTIONS) === id)
+        setOpen(true);
     };
     openIfTargeted();
     window.addEventListener('hashchange', openIfTargeted);
@@ -136,7 +154,7 @@ export function AccountSectionShell({
       aria-labelledby={`${id}-heading`}
       className="flex flex-col gap-3"
     >
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {/* 🔴 **The heading is an `h2` and the button lives INSIDE it** — the
             standard disclosure pattern, and it is a correction rather than a
             preference. ⛔ **The first version made the heading a `span` inside
@@ -153,10 +171,18 @@ export function AccountSectionShell({
             onClick={toggle}
             aria-expanded={open}
             aria-controls={`${id}-body`}
+            /* ♿ 📁 **Design System v2 §17 `2.5.8`** — *"Targets ≥ 24px with
+               8px separation; the 26px compact button keeps a 32px hit
+               area."* ⚠️ **Measured at `159 × 21` on Company 360, and
+               identically at 1440 and 390** — a line box and nothing more.
+               ⛔ **`min-h-6` rather than a height**: the design's treatment
+               here is a heading, not a button, so the control keeps its type
+               and gains only the floor it was under. ⚡ **`coarse:min-h-11` is
+               the pointer rule** — 📁 the same variant the top bar, the team
+               page and the session panel already use, and a section heading
+               is a control a thumb has to hit on a phone. */
             className={cn(
-              'flex items-center gap-1.5 rounded text-left',
-              'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-              'focus-visible:outline-accent',
+              'flex min-h-6 items-center gap-1.5 rounded text-left coarse:min-h-11',
             )}
           >
             <ChevronDown
@@ -171,15 +197,28 @@ export function AccountSectionShell({
             ⛔ **This is the design's safety rule, not a decoration**: a section
             folded to its heading alone can hide a risk, and that is the one
             outcome collapsing must never produce. */}
+        {/* ⛔ **No count when the read failed** — 📁
+            [B-1054](../../../docs/BUGS.md). ⚡ **Nothing here, rather than a
+            zero**: 📁 [P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md) in its
+            quietest form — *a failed read must never render as an empty
+            result*, and **`0` IS the empty result rendered as a fact.**
+            ⚠️ **And no stale count either**: the number comes from this
+            render's `severities`, so a previous render's figure cannot survive
+            into a failure. */}
+        {isError ? null : (
         <span className="flex items-center gap-1.5 text-2xs text-content-subtle">
           <span>{header.count}</span>
           {header.worst === 'none' ? null : (
             <>
-              <span aria-hidden className={cn('h-1.5 w-1.5 rounded-full', SEVERITY_DOT[header.worst])} />
+              <span
+                aria-hidden
+                className={cn('h-1.5 w-1.5 rounded-full', SEVERITY_DOT[header.worst])}
+              />
               <span className="sr-only">{SEVERITY_LABEL[header.worst]}</span>
             </>
           )}
         </span>
+        )}
       </div>
 
       <div id={`${id}-body`} hidden={!open}>

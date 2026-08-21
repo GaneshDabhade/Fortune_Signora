@@ -133,7 +133,13 @@ describe('📁 §08 — the record header', () => {
     // pairs rather than as four loose strings.
     for (const fact of facts) {
       expect(screen.getByText(fact.label).tagName).toBe('DT');
-      expect(screen.getByText(fact.value).tagName).toBe('DD');
+      // ⚡ **WITHIN its `<dd>`, not necessarily AS it.** 📁 §08 pairs the value
+      // with a qualifier on one baseline — *"12 Oct 2026 · 69 days"* — so the
+      // value is wrapped to make that row. ⛔ **The guarantee is unchanged and
+      // this still fails if the `<dd>` goes**: the assertion moved from the
+      // element's tag to the pair it belongs to, which is what the `<dl>`
+      // exists to express.
+      expect(screen.getByText(fact.value).closest('dd')).not.toBeNull();
     }
   });
 
@@ -167,6 +173,48 @@ describe('📁 §08 — the record header', () => {
     expect(container.querySelectorAll('[data-primary-action]')).toHaveLength(0);
   });
 
+  it('✅ the meta line renders beneath the actions, and is not a paragraph', () => {
+    /**
+     * 📁 **§08's line under the actions** — *"Owner M. Reinhardt · CSM P. Lund
+     * · Synced 4m ago."*
+     *
+     * 🔴 **It is a slot rather than `description`, and this test is why.**
+     * ⛔ **`description` renders a `<p>`**, and every record line the product
+     * already has is itself a paragraph — `Freshness`, `WorkflowStage`. **A
+     * `<p>` inside a `<p>` is closed by the parser**, so the second half of the
+     * header would fall out of the header element entirely. ⚡ **Asserted on the
+     * DOM rather than trusted**: the paragraph must still be inside the
+     * `<header>` after the browser has parsed it.
+     */
+    const { container } = render(
+      <RecordHeader
+        title="Vantage Logistics"
+        primaryAction={<button type="button">Brief me</button>}
+        meta={<p>Synced 4m ago</p>}
+      />,
+    );
+
+    const header = container.querySelector('header');
+    expect(header).not.toBeNull();
+    expect(header?.contains(screen.getByText('Synced 4m ago'))).toBe(true);
+    expect(header?.contains(screen.getByRole('button', { name: 'Brief me' }))).toBe(true);
+  });
+
+  it('⛔ the h1 survives the wait — loading skeletons its text, never the heading', () => {
+    /**
+     * 📁 [B-313](../../../docs/BUGS.md) — **a record page carries exactly one
+     * level-1 heading so every `<h2>` has a parent in the outline.** ⚠️ **A
+     * heading that appears a moment later is the same defect for as long as it
+     * lasts**, which is what the record page's identity read costs.
+     *
+     * ⛔ **Absence is NOT loading.** A record nobody has named passes the
+     * identifier as `title`; this flag means only *the read is in flight*.
+     */
+    const { container } = render(<RecordHeader title="" titleLoading />);
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+    expect(container.querySelector('h1 [data-testid="skeleton"], h1 .animate-pulse')).not.toBeNull();
+  });
+
   it('⛔ the identity tile is not a circle', () => {
     /**
      * 📁 §05 reserves 999px for *"avatar, status dot, count badge, progress
@@ -178,5 +226,52 @@ describe('📁 §08 — the record header', () => {
     const tile = screen.getByText('VL');
     expect(tile).toHaveClass('rounded-lg');
     expect(container.querySelector('.rounded-full')).toBeNull();
+  });
+});
+
+/**
+ * 🔴 **📁 §08's fact carries a SECOND term** — *"$1.24M **−12%**"*, *"12 Oct
+ * 2026 **69 days**"* — **and the slot did not exist.**
+ */
+describe("a header fact's qualifier", () => {
+  it('📁 renders the value and its qualifier on one baseline', () => {
+    render(
+      <RecordHeader
+        title="Vantage Logistics"
+        facts={[{ label: 'Renewal', value: '12 Oct 2026', delta: '69 days' }]}
+      />,
+    );
+    expect(screen.getByText('12 Oct 2026')).toBeInTheDocument();
+    expect(screen.getByText('69 days')).toBeInTheDocument();
+  });
+
+  /**
+   * ⛔ **Neutral unless a producer establishes the judgement.** 📁 The design
+   * colours *"69 days"* in `warn`, which implies a threshold the product does
+   * not define — **rendering it as a warning would invent the rule.**
+   */
+  it('⛔ colours a qualifier only when a tone is given', () => {
+    const { rerender } = render(
+      <RecordHeader title="A" facts={[{ label: 'Renewal', value: 'x', delta: 'soon' }]} />,
+    );
+    expect(screen.getByText('soon')).toHaveClass('text-content-subtle');
+
+    rerender(
+      <RecordHeader
+        title="A"
+        facts={[{ label: 'Renewal', value: 'x', delta: 'soon', deltaTone: 'critical' }]}
+      />,
+    );
+    expect(screen.getByText('soon')).toHaveClass('text-danger');
+  });
+
+  /** ⚡ **Every existing caller is unchanged** — a fact with no qualifier
+   *  renders exactly as it did, rather than gaining an empty second element. */
+  it('leaves a fact without a qualifier exactly as it was', () => {
+    const { container } = render(
+      <RecordHeader title="A" facts={[{ label: 'Open ACV', value: '$1.24M' }]} />,
+    );
+    expect(screen.getByText('$1.24M')).toBeInTheDocument();
+    expect(container.querySelectorAll('dd > span')).toHaveLength(1);
   });
 });

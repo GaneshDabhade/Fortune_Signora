@@ -124,7 +124,6 @@ export function AccountMenu({ email, name, role, signOut }: AccountMenuProps) {
     };
   }, [open]);
 
-
   return (
     <div ref={containerRef} className="relative">
       <button
@@ -140,8 +139,6 @@ export function AccountMenu({ email, name, role, signOut }: AccountMenuProps) {
         className={cn(
           'flex shrink-0 items-center justify-center rounded-full',
           'transition-colors hover:text-content',
-          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-          'focus-visible:outline-accent',
         )}
       >
         {/* ⚡ **The shared `Avatar`** — [TASK-1448](../../../docs/BACKLOG.md).
@@ -161,12 +158,18 @@ export function AccountMenu({ email, name, role, signOut }: AccountMenuProps) {
           role="menu"
           aria-label="Account"
           // 📁 *"280px, right-aligned to the avatar, 8px below the top bar."*
-          className="absolute right-0 top-[calc(100%+8px)] z-20 w-[280px] rounded-md border border-border-soft bg-surface shadow-lg"
+          // ⚡ **`rounded-lg`, not `rounded-md`** — 📁 Design System v2 §05 gives
+          // a MENU 12px (`--r-lg`) and reserves 8px for button, input, select
+          // and nav item. 🔴 **[B-1059](../../../docs/BUGS.md): the last
+          // instance of the class 499 §1 found in `Dialog`** — the product's
+          // four other overlay containers (workspace switcher, notifications,
+          // system status, offline status) already measure 12px.
+          className="absolute right-0 top-[calc(100%+8px)] z-20 w-[280px] rounded-lg border border-border-soft bg-surface shadow-lg"
         >
           {/* 📁 *"Always states name, email, role and workspace."*
               🔴 **[B-429](../../../docs/BUGS.md): the name is stated now, and
               the comment that used to sit here was a false claim.** It read
-              *"the platform does not publish one"* — ⛔ **and registration
+            *"the platform does not publish one"* — ⛔ **and registration
               REQUIRES a full name**, so it always had. 📁
               [`layout.tsx`](../../app/\(app\)/layout.tsx) had
               `session.user.name` in scope and was not passing it, one line
@@ -233,7 +236,7 @@ export function AccountMenu({ email, name, role, signOut }: AccountMenuProps) {
                 href={item.href as string}
                 role="menuitem"
                 onClick={() => setOpen(false)}
-                className="block px-3 py-2 text-sm text-content-muted transition-colors hover:bg-surface-sunken hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
+                className="block px-3 py-2 text-sm text-content-muted transition-colors hover:bg-surface-sunken hover:text-content "
               >
                 {item.label}
               </Link>

@@ -104,7 +104,7 @@ export function DisconnectDialog({
           </p>
         ) : null}
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="danger" onClick={onConfirm} disabled={isPending}>
             {isPending ? 'Disconnecting…' : `Disconnect ${name}`}
           </Button>

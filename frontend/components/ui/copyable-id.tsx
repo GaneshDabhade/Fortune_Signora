@@ -46,7 +46,6 @@ export function CopyableId({ value, className }: { value: string; className?: st
       className={cn(
         'mt-1 rounded px-2 py-1 font-mono text-2xs text-content-subtle transition-colors',
         'hover:bg-surface-sunken hover:text-content-muted',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
         className,
       )}
     >

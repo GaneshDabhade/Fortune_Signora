@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Card } from '@/components/ui';
 
 import { CardFailure } from '@/components/home/card-failure';
 import { useCardPhase, type CardPhase } from '@/lib/home/loading';
@@ -79,10 +80,12 @@ export function AgentQueueCard() {
      * asked**, and collapsing them would tell somebody nothing had happened
      * while Signora was mid-run.
      */
-    const working = all.filter((run) => run.status === 'requested' || run.status === 'running');
+    const working = all.filter(
+      (run) => run.status === 'requested' || run.status === 'running',
+    );
     return (
       <QueueFrame>
-        <p className="px-[18px] py-[15px] text-[12.5px] leading-[1.55] text-content-muted">
+        <p className="px-5 py-[15px] text-label leading-[1.55] text-content-muted">
           {working.length > 0
             ? `Signora is researching ${working.length === 1 ? 'an account' : `${working.length} accounts`}. Nothing is ready to read yet.`
             : 'Signora has not been asked to research anything here yet.'}
@@ -99,7 +102,9 @@ export function AgentQueueCard() {
           tone="pos"
           href={`/accounts/${run.account_id}`}
           title={`Research on ${names.get(run.account_id) ?? 'this account'} finished`}
-          meta={[asked(run, mine), sources(run)].filter((part) => part !== null).join(' · ')}
+          meta={[asked(run, mine), sources(run)]
+            .filter((part) => part !== null)
+            .join(' · ')}
           /** 📁 The drawn row's own word for research output. */
           action="Open"
         />
@@ -136,7 +141,7 @@ export function AgentRunsCard() {
   if (ordered.length === 0) {
     return (
       <RunsFrame>
-        <p className="px-[18px] py-[15px] text-[12.5px] leading-[1.55] text-content-muted">
+        <p className="px-5 py-[15px] text-label leading-[1.55] text-content-muted">
           Signora has not been asked to research anything here yet.
         </p>
       </RunsFrame>
@@ -190,10 +195,9 @@ function useRuns() {
      */
     mine: session?.user.id ?? null,
     names: new Map(
-      (identities.data === undefined ? [] : [...identities.data]).map(([id, identity]) => [
-        id,
-        identity.name,
-      ]),
+      (identities.data === undefined ? [] : [...identities.data]).map(
+        ([id, identity]) => [id, identity.name],
+      ),
     ),
   };
 }
@@ -243,13 +247,14 @@ const OUTCOME: Readonly<Record<ResearchRun['status'], string>> = Object.freeze({
  * uses the same three: *"`--pos` completed · `--warn` paused · `--risk` failed
  * / reverted"*.
  */
-const TONE: Readonly<Record<ResearchRun['status'], 'pos' | 'warn' | 'risk'>> = Object.freeze({
-  requested: 'warn',
-  running: 'warn',
-  completed: 'pos',
-  nothing_to_research: 'pos',
-  failed: 'risk',
-});
+const TONE: Readonly<Record<ResearchRun['status'], 'pos' | 'warn' | 'risk'>> =
+  Object.freeze({
+    requested: 'warn',
+    running: 'warn',
+    completed: 'pos',
+    nothing_to_research: 'pos',
+    failed: 'risk',
+  });
 
 /**
  * 📁 **The drawn row**: *"a 7px dot · the title · its meta · the action,
@@ -271,7 +276,7 @@ function Row({
   return (
     <Link
       href={href}
-      className="flex flex-wrap items-center gap-x-[11px] gap-y-2 border-b border-border-soft px-[18px] py-3 last:border-b-0 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
+      className="flex flex-wrap items-center gap-x-[11px] gap-y-2 border-b border-border-soft px-5 py-3 last:border-b-0 "
     >
       {/* ♿ `aria-hidden`: the outcome is in the title beside it, so a reader
           hears it once rather than as an unnamed colour. */}
@@ -283,12 +288,12 @@ function Row({
         )}
       />
       <span className="min-w-[8.75rem] flex-1">
-        <span className="block text-[12.5px] font-semibold leading-[1.4] text-content">
+        <span className="block text-label font-semibold leading-[1.4] text-content">
           {title}
         </span>
-        <span className="mt-0.5 block text-[11.5px] text-content-subtle">{meta}</span>
+        <span className="mt-0.5 block text-2xs text-content-subtle">{meta}</span>
       </span>
-      <span className="flex-none text-[12px] font-semibold text-accent">{action}</span>
+      <span className="flex-none text-xs font-semibold text-accent">{action}</span>
     </Link>
   );
 }
@@ -328,7 +333,7 @@ function skeleton(phase: CardPhase) {
     /* ⛔ **Empty for the first 300ms** — 📁 *"a placeholder shown and removed
        inside 300ms reads as a flicker."* ⚡ The frame keeps its footprint either
        way, so nothing reflows when the data lands. */
-    <div aria-hidden className="space-y-3 px-[18px] py-[15px]">
+    <div aria-hidden className="space-y-3 px-5 py-[15px]">
       {phase === 'skeleton' ? (
         <>
           <div className="h-4 w-2/3 animate-pulse rounded bg-surface-sunken" />
@@ -340,14 +345,20 @@ function skeleton(phase: CardPhase) {
 }
 
 function QueueFrame({ children }: { children: React.ReactNode }) {
+  /* 🔴 **The shared [`Card`](../ui/card.tsx), and the class string it
+     replaces was not merely inconsistent — it carried `shadow-e1`, **a
+     utility that does not exist**. `boxShadow` in `tailwind.config.ts`
+     defines `sm`, `DEFAULT`, `lg` and `xl` and no `e1`, so Tailwind emitted
+     nothing and **five Home cards rendered with no elevation** while every
+     other card in the product carried `--e1`. ⚠️ **Invisible in review,
+     because no two of them appear on one screen beside a correct card.**
+
+     ⛔ **`rounded-xl` was also the wrong step.** 📁 §05 `radii` gives **12px
+     to *"Card, menu, popover, toast, chart container"*** and reserves 16px
+     for *"table plane, dialog, drawer, assistant panel"*. */
   return (
-    <div
-      data-testid="home-agent-queue"
-      className="overflow-hidden rounded-xl border border-border-soft bg-surface shadow-e1"
-    >
-      <h2
-        className="border-b border-border-soft px-[18px] py-[14px] text-label font-semibold text-content"
-      >
+    <Card data-testid="home-agent-queue" className="overflow-hidden">
+      <h2 className="border-b border-border-soft px-5 py-[14px] text-label font-semibold text-content">
         Signora worked overnight
       </h2>
       {children}
@@ -357,26 +368,21 @@ function QueueFrame({ children }: { children: React.ReactNode }) {
        * promise, and it holds structurally: research reads and derives, and
        * 📁 `source.py` is *"read-only. `fetch` is the only verb."*
        */}
-      <p className="px-[18px] py-3 text-[11.5px] leading-[1.5] text-content-subtle">
+      <p className="px-5 py-3 text-2xs leading-[1.5] text-content-subtle">
         Nothing here was sent or written. Agent output waits for a person.
       </p>
-    </div>
+    </Card>
   );
 }
 
 function RunsFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div
-      data-testid="home-agent-runs"
-      className="overflow-hidden rounded-xl border border-border-soft bg-surface shadow-e1"
-    >
-      <h2
-        className="border-b border-border-soft px-[18px] py-[14px] text-label font-semibold text-content"
-      >
+    <Card data-testid="home-agent-runs" className="overflow-hidden">
+      <h2 className="border-b border-border-soft px-5 py-[14px] text-label font-semibold text-content">
         Agent runs
       </h2>
       {children}
-    </div>
+    </Card>
   );
 }
 
@@ -392,5 +398,7 @@ function when(iso: string): string {
   if (days <= 0) return 'today';
   if (days === 1) return 'yesterday';
   if (days < 7) return new Intl.DateTimeFormat(undefined, { weekday: 'long' }).format(at);
-  return new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' }).format(at);
+  return new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' }).format(
+    at,
+  );
 }

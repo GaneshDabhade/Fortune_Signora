@@ -9,7 +9,10 @@ import { Input } from './input';
  * labels.** Screen `09 · Set a new password` draws two of these in one card,
  * *New password* and *Confirm password*, so the prop stays overridable.
  */
-export type PasswordFieldProps = Omit<ComponentPropsWithoutRef<typeof Input>, 'type' | 'label'> & {
+export type PasswordFieldProps = Omit<
+  ComponentPropsWithoutRef<typeof Input>,
+  'type' | 'label'
+> & {
   label?: string;
 };
 
@@ -41,14 +44,14 @@ export const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(
           ref={ref}
           label={label}
           type={reveal ? 'text' : 'password'}
-          className={['pr-16', className].filter(Boolean).join(' ')}
+          className={['pr-16', className].filter(Boolean).join('')}
           {...props}
         />
         <button
           type="button"
           onClick={() => setReveal((shown) => !shown)}
           aria-pressed={reveal}
-          className="absolute right-2 top-8 rounded px-2 py-1 text-xs font-medium text-content-muted transition-colors hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          className="absolute right-2 top-8 rounded px-2 py-1 text-xs font-medium text-content-muted transition-colors hover:text-content "
         >
           {reveal ? 'Hide' : 'Show'}
         </button>

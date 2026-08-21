@@ -95,7 +95,11 @@ function useReducedMotion(): boolean {
   return reduced;
 }
 
-export function WorkspaceStrip({ workspaceId, workspaceName, memberships }: WorkspaceStripProps) {
+export function WorkspaceStrip({
+  workspaceId,
+  workspaceName,
+  memberships,
+}: WorkspaceStripProps) {
   const record = useRecordEntry(workspaceId);
   const [firstToday, setFirstToday] = useState<boolean | null>(null);
   /** 📁 **Rule 22** — *"the welcome strip replaces the confirmation strip."* */
@@ -197,55 +201,53 @@ export function WorkspaceStrip({ workspaceId, workspaceName, memberships }: Work
   return (
     <>
       {notice}
-    /**
-     * ♿ **`role="status"`** — 📁 4.1.3, *"entry announces once"*, and the greeting
-     * already owns that sentence. ⛔ **Not `alert`**: confirming where somebody
-     * already is is not an interruption.
-     *
-     * ⛔ **In flow, never overlaid** — 📁 `2.4.11`: *"reduce the scroll area rather
-     * than overlaying it."* ⚡ **And it fades rather than slides**, which the
-     * design says by name: *"never slides — it is not an alert."*
-     */
-    <div
-      role="status"
-      data-testid={welcoming ? 'workspace-welcome' : 'workspace-confirmation'}
-      className={cn(
-        'flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-border-soft bg-surface px-4 py-2.5 shadow-sm',
-        // ⛔ **Opacity only. Never a transform** — 📁 *"never slides."*
-        'transition-opacity duration-150 motion-reduce:transition-none',
-        faded ? 'opacity-0' : 'opacity-100',
-      )}
-    >
-      {/* 📁 **The customer's word is *organization*** — ADR-0034, and the strip is
-          the one place the product names where somebody is. */}
-      <p className="text-label leading-[1.5] text-content-muted">
-        {welcoming ? (
-          <>
-            {/* 📁 **Rule 22's own word is *welcome*.** ⚠️ Home bans *"Welcome
-                back!"* by name — ⛔ **that is a greeting for a returning person**,
-                and this is somebody's first arrival. ⚡ **The second clause is the
-                join page's own sentence**, so the two screens say one thing. */}
-            Welcome to <span className="font-semibold text-content">{workspaceName}</span>. Its
-            accounts and intelligence are yours to read.
-          </>
-        ) : (
-          <>
-            You are working in{' '}
-            <span className="font-semibold text-content">{workspaceName}</span>.
-          </>
+      /** * ♿ **`role="status"`** — 📁 4.1.3, *"entry announces once"*, and the greeting
+      * already owns that sentence. ⛔ **Not `alert`**: confirming where somebody *
+      already is is not an interruption. * * ⛔ **In flow, never overlaid** — 📁 `2.4.11`:
+      *"reduce the scroll area rather * than overlaying it."* ⚡ **And it fades rather
+      than slides**, which the * design says by name: *"never slides — it is not an
+      alert."* */
+      <div
+        role="status"
+        data-testid={welcoming ? 'workspace-welcome' : 'workspace-confirmation'}
+        className={cn(
+          'flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-border-soft bg-surface px-4 py-2.5 shadow-sm',
+          // ⛔ **Opacity only. Never a transform** — 📁 *"never slides."*
+          'transition-opacity duration-150 motion-reduce:transition-none',
+          faded ? 'opacity-0' : 'opacity-100',
         )}
-      </p>
-      {/* 📁 *"Dismissible, never blocking."* ⛔ **No switcher here** — the App
-          Shell owns switching, and Home's non-goals keep it there. */}
-      <button
-        type="button"
-        onClick={() => setDismissed(true)}
-        aria-label="Dismiss"
-        className="ml-auto grid h-6 w-6 place-items-center rounded-md text-content-subtle transition-colors hover:bg-surface-sunken hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
-        <X className="h-3.5 w-3.5" aria-hidden />
-      </button>
-    </div>
+        {/* 📁 **The customer's word is *organization*** — ADR-0034, and the strip is
+            the one place the product names where somebody is. */}
+        <p className="text-label leading-[1.5] text-content-muted">
+          {welcoming ? (
+            <>
+              {/* 📁 **Rule 22's own word is *welcome*.** ⚠️ Home bans *"Welcome
+                  back!"* by name — ⛔ **that is a greeting for a returning person**,
+                  and this is somebody's first arrival. ⚡ **The second clause is the
+                  join page's own sentence**, so the two screens say one thing. */}
+              Welcome to{' '}
+              <span className="font-semibold text-content">{workspaceName}</span>. Its
+              accounts and intelligence are yours to read.
+            </>
+          ) : (
+            <>
+              You are working in{' '}
+              <span className="font-semibold text-content">{workspaceName}</span>.
+            </>
+          )}
+        </p>
+        {/* 📁 *"Dismissible, never blocking."* ⛔ **No switcher here** — the App
+            Shell owns switching, and Home's non-goals keep it there. */}
+        <button
+          type="button"
+          onClick={() => setDismissed(true)}
+          aria-label="Dismiss"
+          className="ml-auto grid h-6 w-6 place-items-center rounded-md text-content-subtle transition-colors hover:bg-surface-sunken hover:text-content "
+        >
+          <X className="h-3.5 w-3.5" aria-hidden />
+        </button>
+      </div>
     </>
   );
 }

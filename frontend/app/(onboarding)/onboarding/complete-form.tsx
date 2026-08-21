@@ -9,6 +9,7 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 import { OnboardingShell } from '../onboarding-shell';
 import { useOnboardingExit } from './exit';
+import { Button } from '@/components/ui';
 
 /**
  * **Screen `09 Completion` — *"the payoff is the product, not a
@@ -77,7 +78,7 @@ export function CompleteForm() {
          */
         <span
           aria-hidden
-          className="mb-[18px] grid h-11 w-11 place-items-center rounded-full border border-success/30 bg-success-subtle text-success"
+          className="mb-[18px] grid h-11 w-11 place-items-center rounded-full border border-success-line bg-success-subtle text-success"
         >
           <svg
             width="21"
@@ -101,17 +102,17 @@ export function CompleteForm() {
       }
       actions={
         <>
-          <button
-            type="button"
-            onClick={exit}
-            className="inline-flex h-control-md items-center rounded-md bg-accent px-[18px] text-[13.5px] font-semibold text-accent-contrast shadow-sm transition-colors hover:bg-accent-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-          >
-            Go to my home page
-          </button>
+          <Button onClick={exit}>Go to my home page</Button>
           {/* 📁 The design's second action, and it goes somewhere real. */}
           <Link
             href="/settings/team"
-            className="inline-flex h-control-md items-center rounded-md border border-border px-[15px] text-[13.5px] font-semibold text-content transition-colors hover:border-accent hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            /* ⛔ **A link, so it cannot be [`Button`](../../../components/ui/button.tsx)** —
+               that component renders a `<button>` and has no `asChild`, and wrapping
+               one around an anchor would give the control two roles. ⚡ **It takes
+               the canonical control's own geometry rather than restating a
+               literal**: the `md` height token, `rounded` (the design's 8px step,
+               not `rounded-md`), `px-4`, and 📁 `2.5.8`'s touch floor. */
+            className="inline-flex h-control-md shrink-0 items-center whitespace-nowrap rounded border border-border-strong px-4 text-sm font-semibold text-content transition-colors hover:bg-surface-sunken coarse:min-h-11 "
           >
             Invite your team
           </Link>
@@ -128,7 +129,13 @@ export function CompleteForm() {
       <div className="grid gap-3 smalllaptop:grid-cols-3">
         <Finding
           label="Accounts on your list"
-          value={accounts.isLoading ? null : accounts.isError ? null : watching.toLocaleString()}
+          value={
+            accounts.isLoading
+              ? null
+              : accounts.isError
+                ? null
+                : watching.toLocaleString()
+          }
           detail={
             accounts.isError
               ? 'We could not read this just now. It will be on your home page.'
@@ -139,7 +146,9 @@ export function CompleteForm() {
         />
         <Finding
           label="Needing a look"
-          value={accounts.isLoading || accounts.isError ? null : unsettled.toLocaleString()}
+          value={
+            accounts.isLoading || accounts.isError ? null : unsettled.toLocaleString()
+          }
           detail={
             accounts.isError
               ? 'We could not read this just now.'
@@ -161,7 +170,7 @@ export function CompleteForm() {
           product actually did with the answers** — the goals ordered the home
           page — **and names no deal count and no money figure**, because
           neither has a producer. */}
-      <div className="mt-3.5 flex items-start gap-3 rounded-lg border border-ai/30 bg-ai-subtle px-[17px] py-[15px]">
+      <div className="mt-3.5 flex items-start gap-3 rounded-lg border border-ai-line bg-ai-subtle px-[17px] py-[15px]">
         <span
           aria-hidden
           className="mt-px grid h-5 w-5 flex-none place-items-center rounded-sm bg-ai"
@@ -179,9 +188,9 @@ export function CompleteForm() {
             <path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14M4 4l1.8 1.8M10.2 10.2 12 12" />
           </svg>
         </span>
-        <p className="text-[13.5px] leading-[1.6] text-content">
-          Your home page is ordered by what you told us you are trying to fix. Everything Signora
-          shows you cites the evidence behind it — change any of it in Settings.
+        <p className="text-sm leading-[1.6] text-content">
+          Your home page is ordered by what you told us you are trying to fix. Everything
+          Signora shows you cites the evidence behind it — change any of it in Settings.
         </p>
       </div>
     </OnboardingShell>
@@ -216,7 +225,7 @@ function Finding({
         absent ? 'bg-surface-sunken' : 'bg-surface shadow-sm',
       )}
     >
-      <p className="text-[11.5px] text-content-subtle">{label}</p>
+      <p className="text-2xs text-content-subtle">{label}</p>
       {value === null ? (
         // ⛔ **A word, never a dash or a zero.**
         <p
@@ -228,9 +237,7 @@ function Finding({
           {absent ? 'Not something Signora produces' : 'Not available'}
         </p>
       ) : (
-        <p className="mt-2 text-2xl font-bold tabular-nums tracking-[-0.026em] text-content">
-          {value}
-        </p>
+        <p className="mt-2 text-title tabular-nums text-content">{value}</p>
       )}
       <p className="mt-1.5 text-xs leading-[1.5] text-content-muted">{detail}</p>
     </div>

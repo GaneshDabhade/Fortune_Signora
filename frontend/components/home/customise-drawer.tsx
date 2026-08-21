@@ -116,11 +116,7 @@ export function CustomiseDrawer({
           <Button variant="secondary" size="sm" onClick={onClose}>
             Cancel
           </Button>
-          <Button
-            size="sm"
-            loading={saving}
-            onClick={() => onSave({ order, hidden })}
-          >
+          <Button size="sm" loading={saving} onClick={() => onSave({ order, hidden })}>
             Save
           </Button>
         </div>
@@ -129,7 +125,7 @@ export function CustomiseDrawer({
       <p className="text-xs leading-[1.55] text-content-muted">
         {/* ⛔ **States the scope rather than promising more** — 📁 `U-05`'s
             interim is reorder and remove only, and Home's non-goals rule out
-            *"configurable dashboards or a widget marketplace"*. */}
+          *"configurable dashboards or a widget marketplace"*. */}
         Reorder these cards or take one away. This changes your home only, in{' '}
         {COMPOSITION_NAME[composition]}.
       </p>
@@ -144,7 +140,9 @@ export function CustomiseDrawer({
             >
               <span
                 className={
-                  away ? 'flex-1 text-xs text-content-subtle line-through' : 'flex-1 text-xs text-content'
+                  away
+                    ? 'flex-1 text-xs text-content-subtle line-through'
+                    : 'flex-1 text-xs text-content'
                 }
               >
                 {titles.get(id) ?? id}
@@ -156,7 +154,7 @@ export function CustomiseDrawer({
                 aria-label={`Move ${titles.get(id) ?? id} up`}
                 disabled={index === 0 || away}
                 onClick={() => move(index, -1)}
-                className="grid h-7 w-7 place-items-center rounded-md text-content-subtle transition-colors hover:bg-surface-sunken hover:text-content disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                className="grid h-7 w-7 place-items-center rounded-md text-content-subtle transition-colors hover:bg-surface-sunken hover:text-content disabled:opacity-40 "
               >
                 <ArrowUp className="h-3.5 w-3.5" aria-hidden />
               </button>
@@ -165,7 +163,7 @@ export function CustomiseDrawer({
                 aria-label={`Move ${titles.get(id) ?? id} down`}
                 disabled={index === order.length - 1 || away}
                 onClick={() => move(index, 1)}
-                className="grid h-7 w-7 place-items-center rounded-md text-content-subtle transition-colors hover:bg-surface-sunken hover:text-content disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                className="grid h-7 w-7 place-items-center rounded-md text-content-subtle transition-colors hover:bg-surface-sunken hover:text-content disabled:opacity-40 "
               >
                 <ArrowDown className="h-3.5 w-3.5" aria-hidden />
               </button>
@@ -175,7 +173,7 @@ export function CustomiseDrawer({
                 type="button"
                 aria-label={`${away ? 'Restore' : 'Remove'} ${titles.get(id) ?? id}`}
                 onClick={() => toggle(id)}
-                className="grid h-7 w-7 place-items-center rounded-md text-content-subtle transition-colors hover:bg-surface-sunken hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                className="grid h-7 w-7 place-items-center rounded-md text-content-subtle transition-colors hover:bg-surface-sunken hover:text-content "
               >
                 {away ? (
                   <Eye className="h-3.5 w-3.5" aria-hidden />

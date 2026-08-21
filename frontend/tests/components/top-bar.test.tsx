@@ -20,17 +20,17 @@ import { WorkspaceProvider } from '@/lib/state/workspace-provider';
  * the law disagreed.**
  */
 
-// ⚡ Leaves this suite is not about. `AccountSearch` and `WorkspaceSelector`
-// each need their own network fixtures, and neither is a slot's behaviour.
+// ⚡ A leaf this suite is not about. `AccountSearch` needs its own network
+// fixtures and is not a slot's behaviour.
 vi.mock('@/components/intelligence/account-search', () => ({
   AccountSearch: () => <div data-testid="account-search" />,
 }));
-// ⚡ **Kept after the switcher left the bar, and deliberately.** If a future
-// change re-mounts `WorkspaceSelector` here, the assertion below sees it — ⛔ a
-// removed mock would make that test pass by accident.
-vi.mock('@/components/shell/workspace-selector', () => ({
-  WorkspaceSelector: () => <div data-testid="workspace-selector" />,
-}));
+// ✅ **`WorkspaceSelector`'s mock is GONE with the component.** ⚠️ It stood here
+// so that re-mounting the selector in the bar would fail this suite — ⛔ **but
+// the component had no production caller at all**, in the bar or anywhere else,
+// so the guard was watching for a return that nothing could make. **The
+// component is deleted; the mock and its assertion go with it** ([§2](../../../CLAUDE.md),
+// *a guard that cannot fail is documentation pretending to be code*).
 // ⚡ **The panel reads the workspace context and the query client**, and this
 // suite is about the frame — the same reason the account menu is stubbed.
 vi.mock('@/components/shell/notifications', () => ({ Notifications: () => null }));
@@ -114,7 +114,6 @@ describe('📁 the slots the design draws', () => {
      * asserted in `tests/components/workspace-switcher.test.tsx`.
      */
     const { container } = bar();
-    expect(screen.queryByTestId('workspace-selector')).toBeNull();
     expect(container.querySelector('[data-not-a-slot="workspace-switcher"]')).toBeNull();
   });
 });

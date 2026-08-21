@@ -35,7 +35,6 @@ vi.mock('@/lib/state/workspace-provider', () => ({
   }),
 }));
 vi.mock('@/components/shell/workspace-switcher', () => ({ WorkspaceSwitcher: () => null }));
-vi.mock('@/components/shell/workspace-selector', () => ({ WorkspaceSelector: () => null }));
 vi.mock('@/components/intelligence/account-search', () => ({ AccountSearch: () => null }));
 vi.mock('@/components/shell/account-menu', () => ({ AccountMenu: () => null }));
 vi.mock('@/components/shell/shell-palette', () => ({ ShellPalette: () => null }));

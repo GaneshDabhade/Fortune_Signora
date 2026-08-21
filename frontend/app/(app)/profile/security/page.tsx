@@ -77,7 +77,7 @@ export default async function SecurityPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight text-content">Security</h1>
+        <h1 className="text-title text-content">Security</h1>
         <p className="mt-1 max-w-[80ch] text-sm leading-6 text-content-muted">
           Everything on this page is about your own account. If you think somebody else has
           got into it, the sessions below are what you end first.

@@ -58,7 +58,7 @@ export function ActivationProgress() {
           type="button"
           onClick={() => skip.mutate(false)}
           disabled={skip.isPending}
-          className="rounded underline decoration-border underline-offset-4 transition-colors hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed"
+          className="rounded underline decoration-border underline-offset-4 transition-colors hover:text-content disabled:cursor-not-allowed"
         >
           Show the skipped step
         </button>

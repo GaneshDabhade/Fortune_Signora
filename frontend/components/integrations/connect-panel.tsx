@@ -96,7 +96,7 @@ export function ConnectPanel({ system, outcome, onConnect, onDismiss }: ConnectP
       </div>
 
       {system.connectable ? (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button onClick={onConnect}>Continue to {name}</Button>
           <Button variant="ghost" onClick={onDismiss}>
             Not now
@@ -136,7 +136,7 @@ function ConnectResult({
 
   return (
     <section className="flex flex-col gap-3">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Badge tone={succeeded ? 'success' : 'warning'}>
           {succeeded ? 'Connected' : 'Not connected'}
         </Badge>
@@ -159,7 +159,7 @@ function ConnectResult({
         </>
       )}
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {/* Retry offered only where trying again could plausibly work. Inviting
             somebody to press a button that will fail identically is the product
             wasting their afternoon. */}

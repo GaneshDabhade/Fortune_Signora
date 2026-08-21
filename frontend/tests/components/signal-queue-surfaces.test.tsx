@@ -15,12 +15,23 @@ import type { QueueEntry, SignalTypeName } from '@/lib/api/types';
 
 const triage = vi.hoisted(() => vi.fn());
 const resolveMutate = vi.hoisted(() => vi.fn());
+const resolveReset = vi.hoisted(() => vi.fn());
 const catalog = vi.hoisted(() => vi.fn());
 const identities = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/query/hooks/triage', () => ({
   useWorkspaceTriage: triage,
-  useResolveSignal: () => ({ mutate: resolveMutate, isPending: false }),
+  // ⚡ **The mutation's real shape, not the two fields the screen used to
+  // read.** ⛔ **A thin mock hid a genuine dependency**: the dialogs clear a
+  // previous refusal with `reset()` on close, and a mock without it threw
+  // where the product does not.
+  useResolveSignal: () => ({
+    mutate: resolveMutate,
+    reset: resolveReset,
+    isPending: false,
+    isError: false,
+    error: null,
+  }),
 }));
 vi.mock('@/lib/query/hooks', () => ({
   useSignalCatalog: catalog,
@@ -29,6 +40,23 @@ vi.mock('@/lib/query/hooks', () => ({
 vi.mock('@/lib/state/workspace-provider', () => ({
   useWorkspaceContext: () => ({ activeWorkspace: { id: 'ws-1' } }),
 }));
+/**
+ * ⚡ **The roster the assign picker offers**, and 📁 `peopleFrom`'s rule that
+ * only a membership carrying an address is offerable — so ONE of these two is
+ * a choosable colleague and the other is deliberately not.
+ */
+vi.mock('@/lib/query/hooks/team', () => ({
+  useWorkspaceMembers: () => ({
+    data: {
+      items: [
+        { user_id: 'me', role: 'owner', member_email: 'me@acme.com' },
+        { user_id: 'ana', role: 'member', member_email: 'ana@acme.com' },
+        { user_id: 'ghost', role: 'member', member_email: null },
+      ],
+    },
+  }),
+}));
+vi.mock('@/lib/auth/client', () => ({ useSession: () => ({ data: { user: { id: 'me' } } }) }));
 
 import { SignalQueue } from '@/app/(app)/signals/signal-queue';
 

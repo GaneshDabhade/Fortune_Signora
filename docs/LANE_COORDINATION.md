@@ -353,7 +353,10 @@ databaseUrl: required(
 
 | Id | What | Requester | Owner | Status | Blocks |
 |---|---|---|---|---|---|
+| [C-1541](#c-1541--a-design-snapshot-measuring-instrument-exists-and-infra-is-lane-cs) | 🟢 **A design-snapshot measuring instrument exists, and `infra/` is Lane C's** — offered for adoption, not filed there | **Lane A**, 2026-08-21, after QE flagged [D-022](DECISION_REGISTER.md) | ⛔ **Lane C** — 📁 **[D-022](DECISION_REGISTER.md) reserves `infra/`** | 🟢 **`OPEN`** | ✅ **Nothing blocked.** ⚡ **It works today under `frontend/tests/support/`** |
+| [C-1540](#c-1540--design-system-v2-specifies-a-6px-inline-edit-ring-in-prose-and-draws-the-standard-3px-focus-pair-in-markup) | 🟢 **Design System v2 specifies a `6px` inline-edit ring in PROSE and draws the standard focus pair in MARKUP** | **Lane A**, 2026-08-21, fixing [B-1058](BUGS.md) | ⛔ **Product Owner** — 📁 the design disagrees with itself; a lane must not pick | 🟢 **`OPEN`** | ⛔ **One declaration in `table.tsx`.** ✅ **Implemented as the drawn value, which is also the product-wide one** |
 | [C-1533](#c-1533--home-state-14s-entry-condition-and-its-copy-describe-different-cards) | 🟠 **Home state 14's entry condition and its copy describe different cards** — the sentence is false exactly when the state fires | **Lane A**, 2026-08-19, implementing the fourteen states | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **State 14 only.** ✅ **Thirteen of fourteen states are implemented and browser-verified** |
+| [C-1537](#c-1537--the-opportunity-intelligence-design-draws-a-cockpit-d38-removed-and-four-of-its-six-header-facts-have-no-producer) | 🔴 **ARCHITECTURAL BLOCKER** · **The Opportunity Intelligence design draws a cockpit D38 removed, and four of its six header facts have no producer** | **Lane A**, 2026-08-20, starting the Opportunity Intelligence conformance slice | ⛔ **Product Owner** — 📁 **[D38](architecture/39-product-review-findings.md) is a ratified information-architecture decision** | 🔴 **`OPEN`** | ⛔ **The cockpit as a screen.** ✅ **Its content already renders — Account 360 and the stage grouping — and needs nothing** |
 | [C-1536](#c-1536--the-people-intelligence-screen-is-drawn-entirely-in-named-people-and-the-domain-is-anonymous-by-specification) | 🔴 **ARCHITECTURAL BLOCKER** · **The People Intelligence screen is drawn entirely in named people, and the domain is anonymous by specification** | **Lane A**, 2026-08-19, starting [TASK-430](BACKLOG.md) | ⛔ **Product Owner** — 📁 **[D-074](DECISION_REGISTER.md) already says *"I am not approving the full People Intelligence feature set"*** | 🔴 **`OPEN`** | ⛔ **[TASK-430](BACKLOG.md)'s screen half.** ✅ **Its Global Search half is already DELIVERED and needs nothing** |
 | [C-1535](#c-1535--the-first-journey-that-needs-the-background-tier-and-no-environment-starts-one) | 🟠 **The first journey that needs the background tier, and no environment starts one** | **Lane A**, 2026-08-19, writing [TASK-495](BACKLOG.md) ⓑ's required journey | **QE** — 📁 [`RUNNING.md`](RUNNING.md) is QE's file and the environments are QE's | 🟠 **`OPEN`** | ⛔ **One spec — `notification-arrival.spec.ts`.** ✅ **Nothing else in the suite touches a worker** |
 | [C-1534](#c-1534--six-home-cards-name-a-dependency-that-no-approved-document-assigns-a-producer) | 🟠 **Six Home cards name a dependency that no approved document assigns a producer** | **Lane A**, 2026-08-19, after extracting all 35 design documents | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Six of sixteen cards, and states 02 and 11.** ✅ **Home renders completely without them** |
@@ -675,6 +678,279 @@ copy table holding a sentence nothing renders is honest in a way a fabricated
 substitute would not be.
 
 ---
+
+## C-1541 · A design-snapshot measuring instrument exists, and `infra/` is Lane C's
+
+| | |
+|---|---|
+| **Raised** | **Lane A**, 2026-08-21 — ⚡ **by QE, who caught it before validation rather than at it** |
+| **Owner of the answer** | ⛔ **Lane C** — 📁 **[D-022](DECISION_REGISTER.md)**: *"Lane C's responsibilities are formally expanded to include Platform Foundation work that belongs to no product bounded context"*, reserving **`infra/` · `Makefile` · environment profiles** |
+| **Severity** | 🟢 **P3** — ⛔ **nothing is blocked.** ✅ **The instrument works today** |
+| **Status** | 🟢 **`OPEN`** — **an offer, not a request** |
+
+### 🔴 What happened, stated plainly
+
+⛔ **Lane A wrote `infra/design-tokens.py` and did not check who owns `infra/`.** ⚠️ **QE flagged it, Lane A verified [D-022](DECISION_REGISTER.md) directly rather than taking the flag on trust, and QE was right.** ✅ **The file was removed and rewritten as 📁 [`frontend/tests/support/design-snapshot.ts`](../frontend/tests/support/design-snapshot.ts)**, where it is unambiguously this lane's.
+
+⚡ **The rewrite is an improvement rather than a relocation.** 📁 **`design-foundation.test.tsx` had its OWN copy of the extraction**, so the repository briefly held two — **which is the precise failure the instrument exists to prevent, arriving at closer range.** ✅ **The guard imports it now; there is one implementation.** 📁 **The precedent is [`support/source.ts`](../frontend/tests/support/source.ts)**, extracted for [B-252](BUGS.md) for the same reason.
+
+### ⚡ What it measures, and why it was worth building
+
+📁 **The 35 screen documents' `tokens()` blocks — 37 roles, both themes, zero disagreements.** ⛔ **Two lanes measuring them produced different numbers three times in one audit:**
+
+| | |
+|---|---|
+| **Lane A** read ONE document's summary table | 🔴 ruled `--ink-4`, `--ai-ink`, `--ai-line` "mock chrome" — **wrong** |
+| **QE** carried `--brand-soft` (1 of 35) and then dropped it as noise | 🔴 inverted [B-1051](BUGS.md) — **light was correct, dark was the defect** |
+| **QE** counted 106 tint+line pairings on PANELS and applied it to BADGES | 🔴 badges are **166 borderless to 14 bordered** |
+| **Both** counted `--brand-tint → --brand-ink` — 55/55 and 66/74 | ⚠️ **both right**; one filtered to `font-size <= 12.5px` and neither said so |
+
+✅ **So two things are structural rather than conventional**: **document coverage is REPORTED and never used to filter** — *a role stated once is still a role* — **and every population-sensitive reading takes an explicit filter and prints it.**
+
+### ✅ The question for Lane C
+
+⚡ **Adopt it into `infra/` as shared tooling, or leave it where it is.** ⛔ **Lane A will not move it there unilaterally**, and 🔴 **a cross-lane instrument with two owners is how a shared file starts drifting** — which is the argument for Lane C owning it outright if it moves at all.
+
+⚠️ **QE has an independent extraction that now agrees with this one on every figure both have run.** ✅ **Convergence is the improvement; a dependency is not being created either way.**
+
+
+## C-1540 · Design System v2 specifies a `6px` inline-edit ring in prose and draws the standard `3px` focus pair in markup
+
+| | |
+|---|---|
+| **Raised** | **Lane A**, 2026-08-21, implementing [B-1058](BUGS.md) — *four focus treatments on one screen* |
+| **Owner of the answer** | ⛔ **Product Owner** — 📁 **the design document disagrees with itself**, and [§20c](../CLAUDE.md) is explicit that a lane records a conflict rather than resolving it in code |
+| **Severity** | 🟢 **P3** — ⚡ **one declaration, on one component**, and both candidate answers are visible focus indicators |
+| **Status** | 🟢 **`OPEN`** — ✅ **implemented as the DRAWN value**, which is stated below and is reversible in one line |
+
+### 🔴 The two statements, verbatim
+
+📁 **Design System v2, prose** — `Inline editing`: ***"Editable cells reveal a 6px ring on focus, commit on ⏎ optimistically, and surface undo in the toast for 10 seconds."***
+
+📁 **Design System v2, the drawn `Inline edit` element**:
+
+```
+border:1px solid var(--brand); box-shadow:0 0 0 3px var(--brand-tint)
+```
+
+### ⚡ What was measured, so the conflict is not an impression
+
+| | |
+|---|---|
+| `box-shadow:0 0 0 3px var(--brand-tint)` across the **35** screen documents | **21** |
+| …of those also carrying `border:1px solid var(--brand)` | ✅ **21 — all of them** |
+| `0 0 0 6px` **anywhere** in the 35 documents | 🔴 **0** |
+
+### ✅ What was implemented, and why it is the smaller claim
+
+⚡ **The drawn value**, which is also the one every other focused control in the product now uses. ⛔ **Choosing the prose would have given one component a treatment nothing else has** — **which is the defect [B-1058](BUGS.md) exists to remove**, arriving by the other door.
+
+⚠️ **Recorded rather than decided.** **If the prose is the intent, the change is one declaration in [`table.tsx`](../frontend/components/ui/table.tsx)** and the guard beside it asserts the RULE — *ordinary text at rest, an affordance on focus* — **rather than a ring size**, so it survives either answer.
+
+
+## C-1537 · The Opportunity Intelligence design draws a cockpit D38 removed, and four of its six header facts have no producer
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-20, on being directed to implement Opportunity Intelligence from 📁 `Design Documents/Fortune Signora Opportunity Intelligence.html` |
+| **Owner** | ⛔ **Product Owner.** 📁 **[D38](architecture/39-product-review-findings.md) is ratified information architecture and reversing it is never a lane's** |
+| **Status** | 🔴 **`OPEN`** |
+| **Blocks** | ⛔ **The cockpit as a screen.** ✅ **Nothing else** — its content already renders in two places |
+
+### ⚡ The screen was already delivered, deliberately without a route
+
+✅ **[TASK-441](BACKLOG.md) is `PROMOTED`** (QE, 2026-08-10), **as [C-229](#c-229)'s answer B** — **a stage-grouped *view*, `by=stage` beside `owner` in the URL, and no new route.** 📁 **Its own text says why:** ***"no `/opportunities`, `/deals` or `/pursuits` route exists — a route is how [D38](architecture/39-product-review-findings.md) gets reversed by accident."***
+
+✅ **And it still works.** ⚡ **`GROUPABLE` in [`lib/accounts/table.ts:603`](../frontend/lib/accounts/table.ts) carries `stage` as one of four groupings**, in the table and the board — **so *where does everything stand* is answerable today.** ⛔ **`ByStage` no longer exists as a component and that is not a regression**: the general grouping mechanism superseded it, which is one fewer bespoke component for the same answer.
+
+### 🔴 What the design document draws, and what publishes it
+
+📁 **The design is a deal cockpit** — tabs *Intelligence · Activity · Stakeholders · Files · History*, a six-fact header, and thirteen sections.
+
+| Design element | Producer |
+|---|---|
+| Header — **Stage**, **Owner** | ✅ `AccountOpportunity.stage` · `owner_id` + the roster |
+| Header — **Amount**, **Close date**, **Forecast** *(`Commit`, `rep 90%`)* | ⛔ **None.** **No field on any opportunity contract** |
+| Header — **Last touch** | ⚠️ Derivable from the timeline; not published |
+| `summaryPoints` · `reasoning` | ✅ **`useAccountDecisionPackage`** — ⚠️ **account-scoped, not deal-scoped** |
+| `winFactors` · `risks` | ✅ **attention contributions** — ⚠️ **account-scoped** |
+| `healthRows` *(Engagement · Multi-threading · Momentum · Commercial alignment · Product fit)* | ⛔ **None** |
+| `forecastRows` *(commit · AI-weighted value · overstatement · share of regional gap)* | ⛔ **None** — **every row needs an amount and a forecast category** |
+| `committee` | ⛔ **None.** ⚠️ **`useBuyingCommittee` is `/workspaces/{id}/buying-committee` — the workspace's DECLARATION of which roles form a committee, not who is on this deal.** **Rendering it here would be the `why_it_matters` category error one screen over** |
+| `callMoments` · `emails` · `tasks` · Files tab | ⛔ **None.** **No calls, meetings, email or attachment contract exists** |
+| Activity · History tabs | ✅ `useAccountTimeline` · `AccountOpportunity.history` |
+
+⛔ **And there is no `GET /opportunities/{id}`.** 📁 **An opportunity is reachable only through its account** — `GET /workspaces/{id}/accounts/{account_id}/opportunity`, **singular** — **so a deal cannot be opened by its own identifier at all.**
+
+### ⛔ Why this is a ruling and not an implementation choice
+
+**Building the cockpit at its own route would do three things a lane may not do on its own:**
+
+**①** **Reverse [D38](architecture/39-product-review-findings.md)** — *"it was six… four of the thirteen pipeline modules with a menu item each"*, reduced to three **on purpose**, ***"so adding one back is a claim that needs defending."***
+**②** **Duplicate content that already renders** — Account 360 carries `OpportunityMomentum`, `WorkflowStage`, the contributions, the competitors and the history; the list carries the stage grouping.
+**③** **Invent four of six header facts and two whole sections**, which [§20c](../CLAUDE.md) forbids by name.
+
+### ✅ What is NOT blocked, and needs no ruling
+
+⚡ **Every opportunity-related hook has a consumer — measured, not assumed**: `useOpenOpportunity`, `useCompetitors`, `useAccountOpportunity`, `useRecordDecision` all render somewhere. ⛔ **There is no orphaned backend capability here** — unlike the Decision Package and ICP Performance, which were found unsurfaced and are now consumed.
+
+### ⚡ Element-by-element reconciliation — every element, not only the route
+
+⛔ **This row first stopped at the route.** ⚠️ **That was too early**: *"stage
+grouping exists"* does not prove *"Opportunity Intelligence is implemented"*, and
+conflating an underlying capability with the experience is the same error that
+hid the Decision Package and ICP Performance. **The full audit follows.**
+
+| Design element | Current implementation | Producer | Surface | Match |
+|---|---|---|---|---|
+| Header — Stage | `WorkflowStage` · `HeldSince` | ✅ `stage`, `opened_at` | Account 360 | ✅ |
+| Header — Owner | `Ownership` | ✅ `owner_id` + roster | Account 360 | ✅ |
+| Header — **Amount** | — | ⛔ **none** | — | ⛔ |
+| Header — **Close date** | — | ⛔ **none** | — | ⛔ |
+| Header — **Forecast** (*Commit · rep 90%*) | — | ⛔ **none** | — | ⛔ |
+| Header — Last touch | `Freshness` · `LastChecked` | ⚠️ derivable, not published | Account 360 | ⚠️ |
+| `summaryPoints` | `NarrativeBlock` · `ReasoningCard` | ✅ Decision Package | Account 360 | ⚠️ **account-scoped, not deal-scoped** |
+| `winFactors` | `ContributionList` · `ScoreArithmetic` | ✅ attention contributions | Account 360 | ⚠️ same |
+| `reasoning` (step · detail · **weight**) | `ReasoningCard` chain | ✅ `stated_reasoning` | Account 360 | ⚠️ **`weight` has no field on `ReasonedStatement`** |
+| `evidence` — *"Basis for the actions"* | **a COUNT — *"3 cited facts"*** | ⚠️ tokens exist | Account 360 | 🔴 **see below** |
+| `healthRows` ×5 | section `health` marked `absent` | ⛔ none | Account 360 | ✅ **correctly absent** |
+| `forecastRows` ×5 | — | ⛔ none — every row needs an amount | — | ⛔ |
+| `committee` | sections `contacts` · `org-chart` `absent` | ⛔ **`useBuyingCommittee` is the WORKSPACE's role declaration** | Account 360 | ✅ correctly absent |
+| `competitorPoints` | `CompetitorContext` | ✅ `DeclaredCompetitors` | Account 360 | ✅ |
+| `timeline` | `AccountHistory` · signals section | ✅ `useAccountTimeline` | Account 360 | ✅ |
+| `timelineFilters` — All · Probability · **Commitments** | none | ⚠️ *Probability* ≈ `BUYING_SCORE_UPDATED`; ⛔ **Commitments has no producer** | — | ⛔ **a 2-filter strip with one always empty is a false affordance** |
+| `callMoments` · `otherCalls` · `emails` | section `meetings` `absent` | ⛔ none | Account 360 | ✅ correctly absent |
+| `tasks` · Files tab | — | ⛔ none | — | ⛔ |
+| `recommendations` (cta · effect) | `ValidationBlock` *(different contract)* | ⛔ no deal-level producer | Account 360 | ⛔ |
+| `risks` | `ContributionList` negatives | ✅ contributions | Account 360 | ⚠️ |
+| History tab | `DecisionHistory` | ✅ `history: WorkflowState[]` | Account 360 | ✅ |
+| Stakeholders tab | — | ⛔ [C-210](#c-210) People deferral | — | ⛔ |
+
+### ⚡ Micro-audit round 2 — the rail, measured against the design's own `pageNav`
+
+✅ **FIXED — a section the rail could not reach.** ⛔ **`opportunities` was
+missing from the page's `anchored` list while `#opportunities` renders
+UNCONDITIONALLY** (`AccountSectionShell` covers loading, empty, error and
+populated). **So *Open opportunities* was on the page and *On this page* could
+not reach it.**
+
+⚠️ **The exact INVERSE of [TASK-1483](BACKLOG.md)'s defect** — *"the anchor
+existed and the section did not"*. **Same class, pointed the other way**, and
+invisible for the same reason: **nothing fails; the entry is simply absent.**
+✅ **Guarded in BOTH directions and fire-tested** — reverting turns the new
+`@design` test red.
+
+### ⚠️ The design's `pageNav` is 18 entries; the registry is 15 — and they use two different vocabularies
+
+| | Design `pageNav` | Implementation |
+|---|---|---|
+| Entries | **18** | 15 |
+| `Score & health` | one entry | ⚠️ **split into two** — `Account score` + `Customer health` |
+| Missing entirely | — | ❌ `Emails` · `Files` · `Notes` · `Tasks` · `Custom fields` · `History` |
+
+⚡ **`Buying intent` and `Customer health` are NOT rail entries in the design** —
+📁 they are **cards**: `padding:18px;border-radius:14px;background:var(--surface);
+border:1px solid var(--line-soft);box-shadow:var(--e1)` with a label and a status
+badge. ⛔ **The registry treats them as sections.**
+
+🔴 **NOT changed here, deliberately.** ⚠️ **Account 360's section vocabulary is
+an already-recorded design conflict** — *In plain language · Before you act ·
+What contributed · What changed, and who says so · What you sell* — **and
+resolving it in code is exactly the silent choice this office is forbidden to
+make.** ⛔ **The rail's labels are part of that same conflict.**
+
+### ✅ Anchor ids diverge from the design's, and that is NOT a defect
+
+**Measured — 5 of 12:**
+
+| Ours | Design | | Ours | Design |
+|---|---|---|---|---|
+| `opportunities` | `#opps` | | `tech-stack` | `#tech` |
+| `org-chart` | `#org` | | `competitors` | `#compete` |
+| `relationships` | `#graph` | | *(7 others)* | ✅ match |
+
+⛔ **Left alone, with the reasoning stated so nobody "fixes" it later.** ⚡ **An
+anchor id is not a visual or interaction design element** — **a customer sees the
+LABEL and never the id**, and `#opps` versus `#opportunities` produces an
+identical experience. ✅ **This is [C-1414](#c-1414--the-design-system-specimens-are-drawn-in-sizes-its-own-type-system-does-not-define)'s
+principle applied to addresses**: the mock's internal identifiers are
+illustrative. ⛔ **Renaming five ids, every `id=` attribute, the rail and the
+tests for zero customer-visible change is the churn
+[D-220](DECISION_REGISTER.md) §10 forbids.**
+
+### ✅ `--ink-4` is not a design token — settled, and it settles a class
+
+📁 **Design System v2's published colour table has NINE tokens** — `--bg` ·
+`--surface` · `--sunken` · `--line-soft` · `--brand` · `--ai` · `--pos` ·
+`--warn` · `--risk` — **and ZERO ink entries.** ⚡ **The `--ink-1..4` values live
+only in each mock's own chrome CSS.** ✅ **The repo's three content levels map
+EXACTLY onto ink-1/2/3** — `33 31 29` · `92 85 78` · `133 125 117`. ⛔ **So
+matching `--ink-4` would mean inventing a token the design system does not
+publish**, and every future *"the mock says 9px, the scale says 10px"* question
+resolves the same way.
+
+### 🔴 The one implementable-looking gap, and why it is NOT implementable
+
+📁 **The design draws *"Basis for the actions"*** — four numbered items with
+title, meta and quote. ⛔ **`ReasoningCard` renders the citation COUNT instead**
+— *"3 cited facts"* — **while `EvidenceDrawer` sits on the same page, already
+instantiated, able to open evidence by id.** ⚡ **That reads exactly like the
+Signal Center's dead exit**, and it was the candidate for this slice's work.
+
+⛔ **It fails feasibility twice, measured against the database rather than
+reasoned about:**
+
+| | |
+|---|---|
+| Citation kinds actually produced | `buying_score:` · `opportunity:` · `signal_contribution:` · `business_event:` |
+| Kinds `EvidenceDrawer` can resolve | **`business_event` only** (`useBusinessEvent`) |
+| `business_event` citations repository-wide | **170** |
+| …that resolve to an existing row | 🔴 **0** |
+| Decision packages in the **live** Playground | 🔴 **0** |
+
+⚠️ **So making the citations clickable would create dead ends for three kinds of
+four, and 404s for the fourth.** ✅ **The count stays until a resolver exists for
+the other kinds** — ⛔ **this is a producer gap, not a UI omission.**
+
+### ✅ Producer surplus — produced, unrendered, and the design does not ask for it
+
+⚡ **`DecisionPackage` publishes 15 fields and `ReasoningCard` read 6.**
+
+🔴 **CORRECTED 2026-08-20 — `supporting_evidence` was misfiled here.** ⛔ **This
+row said no design document draws it.** 📁 **The Opportunity Intelligence design
+draws it as a HEADER BADGE** — *"6 sources"*, right-aligned on `margin-left:auto`
+at `--ai-tint` on `--ai-ink`. ⚠️ **The miss came from searching the document for
+a SECTION when the element is a count in a header** — ⛔ **an inventory that asks
+*"is there a section for this field"* cannot see a field rendered as a chip.**
+✅ **Implemented**, reusing `Badge tone="ai"`, which is that exact pairing.
+
+⛔ **The remaining eight are NOT an orphan finding**: `proposition`, `temporal`,
+`alternative_readings`, `catalog_version`, `vendor`, `account_id` — **no final
+design document draws them on this surface**, checked in both the Account 360 and
+Opportunity Intelligence documents. ✅ **Rendering them would be inventing UI**,
+which is the opposite failure.
+
+⚠️ **`limitations` and `suggested_validation` DO render** — via `ValidationBlock`,
+from `useAccountValidation`'s hypothesis, **a different contract**. ⛔ **Not the
+Decision Package's copies.**
+
+### ⚠️ One element rendered that no design draws — recorded, not removed
+
+⛔ **`ContestedMark` / `ContestedSince` render `contested_at_open`**, and
+**`contested` appears in NO final design document for Account 360 or Companies**
+— only as a `healthRows` *value* in this one, on a metric with no producer.
+✅ **It is genuinely producer-backed** (`AccountOpportunityResponse.contested_at_open`),
+so it is not invented data. ⚠️ **Whether a producer-backed fact the design does
+not draw should render is a design question**, and removing it on this evidence
+would be the mirror of inventing it.
+
+### 🔴 The question
+
+> **Does Opportunity Intelligence become its own screen, reversing [D38](architecture/39-product-review-findings.md) — and if so, what publishes a deal's amount, close date and forecast category?**
+
+⚠️ **The two halves are one question.** ⛔ **A route without the commercial facts is a cockpit that cannot draw its own header**, and **the facts have no provider today**: 📁 [ADR-0409](architecture/adr/0409-commercial-account-facts.md) releases `open_acv` and `renewal_date` **for the ACCOUNT**, and an account's open ACV is not one deal's amount.
+
+⚡ **[C-229](#c-229) closed on 2026-08-07 because *"the finalized design already contained the answer."*** 🔴 **The finalized Opportunity Intelligence document is now readable and draws the screen D38 removed** — **which is new information relative to that closure, and the reason this is raised again rather than left closed.**
 
 ## C-1536 · The People Intelligence screen is drawn entirely in named people, and the domain is anonymous by specification
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useRef, type KeyboardEvent, type ReactNode } from 'react';
+import { useRef, type KeyboardEvent, type ReactNode } from 'react';
 
 import { cn } from '@/lib/design/cn';
 
@@ -30,6 +30,25 @@ import { cn } from '@/lib/design/cn';
  * a screen-reader user who hears *"tab, 1 of 3"* and presses `→` gets nothing.
  * ✅ **Arrow keys, `Home` and `End` are here**, which is what makes the role
  * true rather than decorative ([§2](../../../CLAUDE.md)).
+ *
+ * ## 🔴 The other half of the role, added by [B-1055](../../../docs/BUGS.md)
+ *
+ * ⛔ **A `tab` that names nothing it controls is half a control.** ♿ **WAI-ARIA's
+ * tabs pattern is a two-way contract** — the tab points at its panel with
+ * `aria-controls`, the panel points back with `aria-labelledby` — ⚡ **and with
+ * neither, a screen-reader user is told *"tab, selected"* and given no way to
+ * reach what the tab just changed.** 🔴 **Measured on `/signals`: six
+ * `role="tab"`, zero `aria-controls`, and zero `role="tabpanel"` in the whole
+ * document.**
+ *
+ * ⚠️ **`aria-selected` alone is what made this look correct**, which is why the
+ * guard added with the fix asserts the *association* rather than the role.
+ *
+ * ⚡ **`idBase` is required rather than generated**, and that is the point:
+ * ⛔ **a caller cannot render tabs without deciding what panel they control.**
+ * ✅ **The same grammar serves the two tablists that do not use this component**
+ * — 📁 `shell/utility-panel.tsx` and 📁 `app/(app)/accounts/view-tabs.tsx` —
+ * so there is one answer to *how is a tab linked to its panel*, not three.
  */
 
 export interface TabItem<T extends string> {
@@ -39,9 +58,59 @@ export interface TabItem<T extends string> {
   badge?: ReactNode;
 }
 
+/**
+ * ♿ **The tab's id, which its panel names back.** ⛔ **Derived, never authored
+ * at the call site**: two spellings of the same link is how the link rots.
+ */
+export function tabId(idBase: string, value: string): string {
+  return `${idBase}-tab-${value.replace(/\s+/g, '-').toLowerCase()}`;
+}
+
+/** ♿ **The panel's id, which every tab in the strip points at.** */
+export function tabPanelId(idBase: string): string {
+  return `${idBase}-panel`;
+}
+
+/**
+ * ♿ **The panel half of the contract** — 📁 [B-1055](../../../docs/BUGS.md).
+ *
+ * ⛔ **No `tabIndex` here.** ⚡ The APG asks for one only when the panel holds
+ * nothing focusable; **ours all do**, and adding a stop to each would lengthen
+ * the keyboard path QE measured as clean for no gain.
+ */
+export function TabPanel({
+  idBase,
+  value,
+  className,
+  children,
+}: {
+  idBase: string;
+  /** ⚡ **The SELECTED tab** — the panel is labelled by what it is showing. */
+  value: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      role="tabpanel"
+      id={tabPanelId(idBase)}
+      aria-labelledby={tabId(idBase, value)}
+      className={className}
+    >
+      {children}
+    </div>
+  );
+}
+
 export interface TabsProps<T extends string> {
   /** ♿ Required — a `tablist` with no name is unusable by screen reader. */
   label: string;
+  /**
+   * ♿ **Required.** ⛔ **The caller must own the id the panel shares**, so that
+   * rendering a tab strip without a `TabPanel` is a thing you have to go out of
+   * your way to do rather than the default ([B-1055](../../../docs/BUGS.md)).
+   */
+  idBase: string;
   items: readonly TabItem<T>[];
   value: T;
   onChange: (value: T) => void;
@@ -50,12 +119,12 @@ export interface TabsProps<T extends string> {
 
 export function Tabs<T extends string>({
   label,
+  idBase,
   items,
   value,
   onChange,
   className,
 }: TabsProps<T>) {
-  const listId = useId();
   const refs = useRef(new Map<T, HTMLButtonElement>());
 
   /**
@@ -101,8 +170,12 @@ export function Tabs<T extends string>({
             }}
             role="tab"
             type="button"
-            id={`${listId}-${item.value}`}
+            id={tabId(idBase, item.value)}
             aria-selected={selected}
+            // ♿ **The half that was missing.** Every tab in the strip points at
+            // the one panel it swaps; the panel points back at whichever tab is
+            // selected ([B-1055](../../../docs/BUGS.md)).
+            aria-controls={tabPanelId(idBase)}
             // ⛔ **Roving tabindex.** Without it every tab is a tab stop, and
             // `Tab` walks the strip instead of leaving it — which is the
             // behaviour the arrow keys exist to replace.
@@ -110,8 +183,6 @@ export function Tabs<T extends string>({
             onClick={() => onChange(item.value)}
             className={cn(
               'rounded-md border px-3 py-1.5 text-sm transition-colors',
-              'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-              'focus-visible:outline-accent',
               selected
                 ? // 📁 §10: sunken fill, ink at 600, brand edge.
                   'border-accent bg-surface-sunken font-semibold text-content'

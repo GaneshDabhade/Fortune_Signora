@@ -319,6 +319,76 @@ class TestGraphQueries:
         assert [c.subject_external_id for c in claim_set.claims] == ["acme-corp"]
 
 
+class TestAnAccountTheWorkspaceDoesNotHave:
+    """🔴 **B-1053 — `identities()` answered for every id it was asked about.**
+
+    ⛔ **Its own docstring said the opposite** — *"an entity the workspace does
+    not own is simply absent rather than represented by an empty identity it
+    might render"* — **and the result was seeded from the REQUEST**, so any
+    UUID came back carrying ``name=None, agreement="unknown", source_count=0``.
+
+    ⚠️ **That zero-filled row is what ADR-0409 §5 forbids**, and it is the
+    reason Account 360 rendered a full record page for a company that does not
+    exist: **the screen was faithfully rendering what the platform told it.**
+
+    ⚡ **Found in a browser, not here.** The frontend fix was written first,
+    shipped, and did nothing — 📁 ``GET …?ids=00000000-…`` still answered with
+    one row. **A unit test asserting the documented contract would have caught
+    it years earlier**, which is why these exist now.
+    """
+
+    async def test_an_unknown_id_is_absent_rather_than_empty(self) -> None:
+        queries = GraphQueries(repository=FakeGraphRepository(), claims=FakeClaimReader())
+
+        resolved = await queries.identities(WORKSPACE, (uuid4(),))
+
+        # ⛔ **Absent, not an entry with nulls in it.** ⚡ A caller cannot tell
+        # *"nobody has named this"* from *"this is not yours"* if both are rows.
+        assert resolved == {}
+
+    async def test_a_known_id_is_still_returned_beside_an_unknown_one(self) -> None:
+        """⚡ **The regression the fix could cause, asserted in the same breath.**
+
+        ⛔ **Seeding from bindings instead of from the request takes every
+        account with it if the reasoning is wrong**, so a real entity is asked
+        for alongside the imaginary one rather than on its own.
+        """
+        repository = FakeGraphRepository()
+        entity = Entity.create(workspace_id=WORKSPACE, kind=EntityKind.COMPANY, now=NOW)
+        repository.entities[entity.id] = entity
+        repository.bindings.append(
+            bound_binding(entity, provider="apollo", external_id="a-1", domain="acme.example")
+        )
+        queries = GraphQueries(repository=repository, claims=FakeClaimReader())
+
+        stranger = uuid4()
+        resolved = await queries.identities(WORKSPACE, (entity.id, stranger))
+
+        assert set(resolved) == {entity.id}
+
+    async def test_an_account_nobody_has_named_is_still_present(self) -> None:
+        """⚠️ **The distinction this fix must not flatten.**
+
+        ⛔ **An account the workspace HAS, that no provider has named, is a real
+        account with an unanswered question** — 📁 the sentence Account 360
+        renders as *"no source has named this account yet"*, which is correct
+        about a record that exists. **Only the row for a record that is not
+        there was the defect.**
+        """
+        repository = FakeGraphRepository()
+        entity = Entity.create(workspace_id=WORKSPACE, kind=EntityKind.COMPANY, now=NOW)
+        repository.entities[entity.id] = entity
+        repository.bindings.append(
+            bound_binding(entity, provider="apollo", external_id="a-1", domain="acme.example")
+        )
+        queries = GraphQueries(repository=repository, claims=FakeClaimReader())
+
+        resolved = await queries.identities(WORKSPACE, (entity.id,))
+
+        assert entity.id in resolved
+        assert resolved[entity.id].name is None
+
+
 class TestHowCurrentTheEvidenceIs:
     """*"How old is what I am looking at?"* — A4.
 

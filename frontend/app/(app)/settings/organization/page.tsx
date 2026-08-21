@@ -20,6 +20,7 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 import { useCreateWorkspace } from '@/lib/query/hooks';
 import { ApiError } from '@/lib/api/client';
 import { ReadingColumn } from '../../reading-column';
+import { usePublishBreadcrumb } from '@/components/shell/breadcrumb-trail';
 
 /**
  * Organization setup — the admin landing page.
@@ -61,6 +62,25 @@ import { ReadingColumn } from '../../reading-column';
  * screens meet the same word.
  */
 export default function OrganizationSetupPage() {
+  /**
+   * 📁 **§05 Breadcrumbs — *"Mandatory below the first level, because most
+   * sessions start from a deep link in Slack or email."***
+   *
+   * ⛔ **Six routes below the first level published nothing**, so the top bar's
+   * slot rendered empty on every settings screen and a person arriving from a
+   * link had no route back up. ⚡ **The channel already existed and was
+   * correct** — [`usePublishBreadcrumb`](../../../../components/shell/breadcrumb-trail.tsx),
+   * which `accounts` has used since it shipped — **so this is a consumer
+   * adopting the canonical surface, not a new one.**
+   *
+   * 📁 *"They mirror the data hierarchy, not the click path"*, and the last
+   * crumb is the current record and is not a link.
+   */
+  usePublishBreadcrumb([
+    { label: 'Settings', kind: 'link', href: '/settings' },
+    { label: 'Organization', kind: 'current' },
+  ]);
+
   const { workspaces, activeWorkspace, setActiveWorkspace, isLoading, error } =
     useWorkspaceContext();
   const createWorkspace = useCreateWorkspace();
@@ -70,24 +90,29 @@ export default function OrganizationSetupPage() {
   const submit = () => {
     const trimmed = name.trim();
     if (!trimmed) return;
-    createWorkspace.mutate({ name: trimmed, slug: suggestSlug(trimmed) }, {
-      onSuccess: (created) => {
-        setActiveWorkspace(created.id);
-        setName('');
-        toast({ tone: 'success', message: `Created ${created.name}` });
+    createWorkspace.mutate(
+      { name: trimmed, slug: suggestSlug(trimmed) },
+      {
+        onSuccess: (created) => {
+          setActiveWorkspace(created.id);
+          setName('');
+          toast({ tone: 'success', message: `Created ${created.name}` });
+        },
+        onError: (failure) => {
+          toast({
+            tone: 'error',
+            message:
+              failure instanceof ApiError
+                ? failure.message
+                : 'Could not create the organization.',
+            detail:
+              failure instanceof ApiError
+                ? `Reference: ${failure.correlationId}`
+                : undefined,
+          });
+        },
       },
-      onError: (failure) => {
-        toast({
-          tone: 'error',
-          message:
-            failure instanceof ApiError
-              ? failure.message
-              : 'Could not create the organization.',
-          detail:
-            failure instanceof ApiError ? `Reference: ${failure.correlationId}` : undefined,
-        });
-      },
-    });
+    );
   };
 
   // §13 and P-A: a failed read must never render as an empty result. This is
@@ -111,7 +136,7 @@ export default function OrganizationSetupPage() {
   return (
     <ReadingColumn>
       <header>
-        <h1 className="text-xl font-semibold text-content">Organization setup</h1>
+        <h1 className="text-title text-content">Organization setup</h1>
         <p className="mt-1 text-sm text-content-muted">
           Identity and defaults for everyone in this organization.
         </p>
@@ -176,20 +201,20 @@ export default function OrganizationSetupPage() {
             reason="Not yet selectable, and permanent once it is. Moving data between regions later means exporting and recreating the organization, so this is deliberately not offered before it can be honoured."
           />
           {/**
-            * ⚡ **[TASK-1412](../../../../../docs/BACKLOG.md) — two more of the
-            * Settings design's identity fields, shown locked rather than
-            * absent.**
-            *
-            * 📁 **`Fortune Signora Settings.dc.html` lists six `workspaceFields`**
-            * and this block carried three of them. ⛔ **The two below have no
-            * platform behind them either**, so they arrive the same way the
-            * region does: **named, with the reason, and carrying no value.**
-            *
-            * ⚠️ **Fiscal year is deliberately NOT among them.** It is
-            * [C-1415](../../../../../docs/LANE_COORDINATION.md)'s and was
-            * removed from this row's scope; adding it here would be re-taking
-            * scope Lane C removed.
-            */}
+           * ⚡ **[TASK-1412](../../../../../docs/BACKLOG.md) — two more of the
+           * Settings design's identity fields, shown locked rather than
+           * absent.**
+           *
+           * 📁 **`Fortune Signora Settings.dc.html` lists six `workspaceFields`**
+           * and this block carried three of them. ⛔ **The two below have no
+           * platform behind them either**, so they arrive the same way the
+           * region does: **named, with the reason, and carrying no value.**
+           *
+           * ⚠️ **Fiscal year is deliberately NOT among them.** It is
+           * [C-1415](../../../../../docs/LANE_COORDINATION.md)'s and was
+           * removed from this row's scope; adding it here would be re-taking
+           * scope Lane C removed.
+           */}
           <LockedField
             label="Default currency"
             reason="Not yet selectable. Amounts are shown in the currency each source reports, and no conversion is applied — so nothing here is silently restated in another currency."
@@ -254,8 +279,10 @@ export default function OrganizationSetupPage() {
                   <button
                     type="button"
                     onClick={() => setActiveWorkspace(candidate.id)}
-                    aria-current={candidate.id === activeWorkspace?.id ? 'true' : undefined}
-                    className="w-full rounded border border-border px-3 py-2 text-left text-sm text-content transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                    aria-current={
+                      candidate.id === activeWorkspace?.id ? 'true' : undefined
+                    }
+                    className="w-full rounded border border-border px-3 py-2 text-left text-sm text-content transition-colors hover:border-border-strong "
                   >
                     {candidate.name}
                   </button>

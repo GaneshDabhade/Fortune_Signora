@@ -60,7 +60,7 @@ export default function NotFound() {
           primaryAction={
             <Link
               href="/"
-              className="rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className="rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent "
             >
               Back to Signora
             </Link>

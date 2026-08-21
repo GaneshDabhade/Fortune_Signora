@@ -222,7 +222,7 @@ cd backend && SIGNORA_DATABASE_URL="postgresql+asyncpg://signora_app:signora_app
 cd frontend && npm run dev -- --port ${SIGNORA_WEB_PORT}
 ```
 
-**<http://localhost:3000>** → sign in as `dana.reyes@northwind.example`.
+**`http://localhost:${SIGNORA_WEB_PORT}`** → sign in as `dana.reyes@northwind.example`. On slot 0 that is **<http://localhost:3000>**; on any other environment it is not.
 
 > **`make demo` alone currently fails on a clean workstation** — nothing loads `frontend/.env.local` for the two `tsx` setup scripts, so `npm run auth:migrate` refuses to start. That is **[B-105](BUGS.md)**, and it is why `make review` loads the file itself. Use `make review` until it is fixed.
 

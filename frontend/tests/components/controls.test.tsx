@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
-import { Avatar, TOOLTIP_DELAY_MS, Tabs, Tooltip, initialsFor } from '@/components/ui';
+import { Avatar, TOOLTIP_DELAY_MS, TabPanel, Tabs, Tooltip, initialsFor } from '@/components/ui';
 
 /**
  * **Tabs, Avatar and Tooltip** — [TASK-1448](../../../docs/BACKLOG.md).
@@ -14,16 +14,22 @@ import { Avatar, TOOLTIP_DELAY_MS, Tabs, Tooltip, initialsFor } from '@/componen
 
 function tabs(onChange = vi.fn(), value: 'open' | 'snoozed' | 'closed' = 'open') {
   render(
-    <Tabs
-      label="Queue state"
-      value={value}
-      onChange={onChange}
-      items={[
-        { value: 'open', label: 'Needs review', badge: 3 },
-        { value: 'snoozed', label: 'Snoozed' },
-        { value: 'closed', label: 'Closed' },
-      ]}
-    />,
+    <>
+      <Tabs
+        label="Queue state"
+        idBase="queue"
+        value={value}
+        onChange={onChange}
+        items={[
+          { value: 'open', label: 'Needs review', badge: 3 },
+          { value: 'snoozed', label: 'Snoozed' },
+          { value: 'closed', label: 'Closed' },
+        ]}
+      />
+      <TabPanel idBase="queue" value={value}>
+        The {value} queue
+      </TabPanel>
+    </>,
   );
   return onChange;
 }
@@ -54,6 +60,39 @@ describe('🔴 Tabs — the half the local implementation was missing', () => {
     const list = screen.getByRole('tablist', { name: 'Queue state' });
     list.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
     expect(onChange).toHaveBeenCalledWith('closed');
+  });
+
+  /**
+   * 🔴 **[B-1055](../../../docs/BUGS.md) — the half `aria-selected` hid.**
+   *
+   * ⛔ **QE measured six `role="tab"` on `/signals`, zero with `aria-controls`,
+   * and zero `role="tabpanel"` in the whole document.** ⚡ **The existing
+   * coverage above checks arrow keys and the roving index — the parts that were
+   * already right** — which is exactly why this survived: ⚠️ **a test that
+   * asserts the presence of `role="tab"` cannot see that the role names
+   * nothing.**
+   *
+   * ✅ **So this asserts the ASSOCIATION**, in both directions, by resolving the
+   * ids rather than by trusting them to be spelled the same twice.
+   */
+  it('♿ every tab names the panel it controls, and the panel names it back', () => {
+    tabs(vi.fn(), 'snoozed');
+
+    const panel = screen.getByRole('tabpanel');
+    const strip = screen.getAllByRole('tab');
+    expect(strip).toHaveLength(3);
+
+    // ⛔ **Every tab, not just the selected one** — an unselected tab that
+    // controls nothing is the same defect one keypress away.
+    for (const tab of strip) {
+      expect(tab.getAttribute('aria-controls')).toBe(panel.id);
+    }
+
+    // ⚡ **And back**: the panel is labelled by whichever tab is SELECTED, so a
+    // screen reader names the panel with the content it is showing.
+    const selected = screen.getByRole('tab', { selected: true });
+    expect(panel.getAttribute('aria-labelledby')).toBe(selected.id);
+    expect(selected).toHaveAccessibleName(/Snoozed/);
   });
 
   it('♿ a roving tabindex, so Tab leaves the strip rather than walking it', () => {

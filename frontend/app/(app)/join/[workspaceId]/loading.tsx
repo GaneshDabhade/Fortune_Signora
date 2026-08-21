@@ -14,5 +14,5 @@ import { SkeletonText } from '@/components/ui';
  * because **somebody arriving on an invitation link has no other route in.**
  */
 export default function Loading() {
-  return <SkeletonText lines={4} />;
+  return <SkeletonText lines={4} label="this invitation" />;
 }

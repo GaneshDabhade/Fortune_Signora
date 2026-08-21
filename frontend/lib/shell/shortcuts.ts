@@ -95,7 +95,7 @@ export interface Shortcut {
    * ⚠️ **Absent means the App Shell**, which is what every entry that predates
    * this field is — so nothing had to be restated to add the second source.
    */
-  readonly publishedIn?: 'app-shell' | 'home';
+  readonly publishedIn?: 'app-shell' | 'home' | 'signal-center';
   /** 📁 The design's own words for the command, or the product's where it has none. */
   readonly what: string;
   /** 📁 The design's own notation — ⛔ Apple glyphs, translated by {@link keysFor}. */
@@ -363,7 +363,65 @@ export const SHORTCUT_GROUPS: readonly ShortcutGroup[] = [
         // ⛔ **No editable cell exists**, and 📁 [C-285](../../../docs/LANE_COORDINATION.md)
         // is open on what this key even means: **App Shell binds `E` to it and
         // two other designs bind `⏎`.**
+        //
+        // ⚠️ **`E` is no longer a dead key everywhere** — the Signal Center
+        // binds it to *Assign*, below. ⛔ **This entry stays `unbound` and that
+        // is not a contradiction**: *Edit cell* is what the App Shell promises
+        // `E` does, and **nothing in the product edits a cell.** ⚡ **Two rows,
+        // one key, two commands — which is exactly the shape C-285 records.**
         state: 'unbound',
+      },
+      /**
+       * 🔴 **📁 The Signal Center's own keyboard grammar** —
+       * `Design Documents/Fortune Signora Signal Center.html`:
+       * ***"J / K moves · ⏎ opens · E assigns · S snoozes · D dismisses"***, and
+       * its `detailActions` carry the same keys beside the same labels.
+       *
+       * ⚡ **`published: true` with `publishedIn: 'signal-center'`** — the exact
+       * shape `customise-home` uses. 📁 **A design document names these to a
+       * customer**, so `published` is honestly true; ⛔ **and they are not among
+       * the App Shell's eighteen**, which {@link publishedByTheDesign} keeps
+       * countable.
+       *
+       * ⚠️ **`partial`, and the limit is the honest part.** 📁 The design's
+       * grammar assumes a *current row* — its rows carry `current`, and `J`/`K`
+       * move it — **and that cursor does not exist**, because `⏎ opens` needs
+       * the detail pane nothing builds. ✅ **Focus is the cursor instead**: the
+       * key acts on the row the keyboard is in.
+       *
+       * ⛔ **`J`/`K`, `⏎` and `B` are NOT registered**, because nothing binds
+       * them here — 📁 B-239's rule runs both ways, and listing a key this
+       * screen does not bind is the half that makes a reference untrustworthy.
+       */
+      {
+        id: 'signal-assign',
+        published: true,
+        publishedIn: 'signal-center',
+        what: 'Assign signal',
+        keys: 'E',
+        state: 'partial',
+        boundIn: 'app/(app)/signals/signal-queue.tsx',
+        limit: 'Works on Signals, on the queue row your keyboard is in, while it still needs review.',
+      },
+      {
+        id: 'signal-snooze',
+        published: true,
+        publishedIn: 'signal-center',
+        what: 'Snooze signal',
+        keys: 'S',
+        state: 'partial',
+        boundIn: 'app/(app)/signals/signal-queue.tsx',
+        limit: 'Works on Signals, on the queue row your keyboard is in, while it still needs review.',
+      },
+      {
+        id: 'signal-dismiss',
+        published: true,
+        publishedIn: 'signal-center',
+        what: 'Dismiss signal',
+        keys: 'D',
+        state: 'partial',
+        boundIn: 'app/(app)/signals/signal-queue.tsx',
+        limit: 'Works on Signals, on the queue row your keyboard is in, while it still needs review.',
       },
     ],
   },

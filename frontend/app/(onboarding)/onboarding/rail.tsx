@@ -60,7 +60,7 @@ export function OnboardingRail({
     <div className="flex flex-col border-border-soft bg-surface-raised px-[22px] py-7 laptop:border-r">
       {progress === undefined ? (
         <div className="flex items-center gap-2.5">
-          <span className="grid h-[26px] w-[26px] place-items-center rounded-md bg-accent text-[11px] font-bold text-accent-contrast">
+          <span className="grid h-[26px] w-[26px] place-items-center rounded-md bg-accent text-2xs font-bold text-accent-contrast">
             FS
           </span>
           {/* 📁 **The combined brand, and this is one of the surfaces that may
@@ -68,11 +68,11 @@ export function OnboardingRail({
               the combined brand, reserved for branding surfaces."* ⚡ Onboarding
               is the last screen before the application opens, and the design
               puts it here. */}
-          <span className="text-[13px] font-semibold text-content">Fortune Signora</span>
+          <span className="text-sm font-semibold text-content">Fortune Signora</span>
         </div>
       ) : (
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-content-subtle">
+          <p className="text-2xs font-semibold uppercase tracking-[0.06em] text-content-subtle">
             Step {progress.step} of {progress.of}
           </p>
           {/* ♿ **A meter, not a decoration.** The eyebrow above already says
@@ -102,7 +102,7 @@ export function OnboardingRail({
                 <div
                   aria-current={isCurrent ? 'step' : undefined}
                   className={cn(
-                    'flex items-center gap-2.5 rounded-md px-2 py-[7px] text-[12.5px]',
+                    'flex items-center gap-2.5 rounded-md px-2 py-[7px] text-label',
                     isCurrent && 'bg-accent-subtle font-semibold text-content',
                     !isCurrent && isDone && 'text-content',
                     !isCurrent && !isDone && 'text-content-subtle',
@@ -111,7 +111,7 @@ export function OnboardingRail({
                   <span
                     aria-hidden
                     className={cn(
-                      'grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full border-[1.5px] text-[9px] font-bold text-accent-contrast',
+                      'grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full border-[1.5px] text-2xs font-bold text-accent-contrast',
                       isDone && 'border-success bg-success',
                       isCurrent && 'border-accent bg-accent',
                       !isDone && !isCurrent && 'border-border',
@@ -141,7 +141,7 @@ export function OnboardingRail({
  */
 export function RailNote({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mt-[26px] border-t border-border-soft pt-[18px] text-[11.5px] leading-6 text-content-subtle">
+    <p className="mt-[26px] border-t border-border-soft pt-[18px] text-2xs leading-6 text-content-subtle">
       {children}
     </p>
   );

@@ -16,5 +16,5 @@ import { SkeletonText } from '@/components/ui';
  * [TASK-1447](../../../../docs/BACKLOG.md)'s own rule.
  */
 export default function Loading() {
-  return <SkeletonText lines={6} />;
+  return <SkeletonText lines={6} label="your companies" />;
 }

@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+import plugin from 'tailwindcss/plugin';
 
 /**
  * Tailwind is wired to the design tokens in `app/globals.css`, not to its
@@ -61,24 +62,35 @@ export default {
           DEFAULT: 'rgb(var(--color-border) / <alpha-value>)',
           strong: 'rgb(var(--color-border-strong) / <alpha-value>)',
         },
+        /* 🔴 **[B-1051](../../docs/BUGS.md) — the design draws a tinted surface
+         * as a TRIPLET**: a `-tint` fill, a `-line` edge and an `-ink`
+         * foreground. ⛔ **Only the fill had a token**, so every edge in the
+         * product was an invented alpha (`border-warning/30`) and every
+         * foreground was the full-strength hue. */
         accent: {
           DEFAULT: 'rgb(var(--color-accent) / <alpha-value>)',
           hover: 'rgb(var(--color-accent-hover) / <alpha-value>)',
           contrast: 'rgb(var(--color-accent-contrast) / <alpha-value>)',
+          /** 📁 `--brand-ink` — the foreground the design puts ON `--brand-tint`. */
+          ink: 'rgb(var(--color-accent-ink) / <alpha-value>)',
+          line: 'rgb(var(--color-accent-line) / <alpha-value>)',
           soft: 'rgb(var(--color-accent-soft) / <alpha-value>)',
           subtle: 'rgb(var(--color-accent-subtle) / <alpha-value>)',
         },
         success: {
           DEFAULT: 'rgb(var(--color-success) / <alpha-value>)',
+          line: 'rgb(var(--color-success-line) / <alpha-value>)',
           subtle: 'rgb(var(--color-success-subtle) / <alpha-value>)',
         },
         warning: {
           DEFAULT: 'rgb(var(--color-warning) / <alpha-value>)',
+          line: 'rgb(var(--color-warning-line) / <alpha-value>)',
           subtle: 'rgb(var(--color-warning-subtle) / <alpha-value>)',
         },
         danger: {
           DEFAULT: 'rgb(var(--color-danger) / <alpha-value>)',
           hover: 'rgb(var(--color-danger-hover) / <alpha-value>)',
+          line: 'rgb(var(--color-danger-line) / <alpha-value>)',
           subtle: 'rgb(var(--color-danger-subtle) / <alpha-value>)',
         },
         info: {
@@ -102,8 +114,16 @@ export default {
         c8: 'rgb(var(--color-c8) / <alpha-value>)',
         ai: {
           DEFAULT: 'rgb(var(--color-ai) / <alpha-value>)',
+          /** 📁 `--ai-ink` — **247 uses across 25 of 35 screens**, and no token. */
+          ink: 'rgb(var(--color-ai-ink) / <alpha-value>)',
+          line: 'rgb(var(--color-ai-line) / <alpha-value>)',
           subtle: 'rgb(var(--color-ai-subtle) / <alpha-value>)',
         },
+      },
+      height: {
+        /* 📁 Design System v2 — the two table row heights, as tokens. */
+        row: 'var(--row-h)',
+        'row-compact': 'var(--row-h-compact)',
       },
       borderRadius: {
         sm: 'var(--radius-sm)',
@@ -173,7 +193,10 @@ export default {
         card: 'var(--card-width)',
       },
       spacing: {
-        sidebar: 'var(--sidebar-width)',
+        /* ⛔ **`sidebar` is gone with `--sidebar-width`.** ⚠️ It aliased a token
+         * that held 240px against the design's 232px rail and had no caller;
+         * the rail's two widths live in `lib/shell/rail.ts`, which is the one
+         * place that knows the collapsed state exists. */
         topbar: 'var(--topbar-height)',
         /* **Control heights** (TASK-448). In `spacing` so they read as
          * `h-control-md`, which says what the number is for at the call
@@ -184,5 +207,19 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    /* 🔴 **The design's touch rule is a POINTER rule, not a width rule** — 📁
+     * §17 `2.5.8`: *"Every top-bar control is a 32px target with 8px
+     * separation; **44px on touch**."*
+     *
+     * ⛔ **A `phone:` breakpoint would be the wrong question.** A 1280px
+     * touchscreen is touch and a 600px desktop window is not, and sizing the
+     * targets by viewport width answers neither. ⚡ **`pointer: coarse` is the
+     * medium the design is describing**, so it is the medium the variant
+     * queries — which is also why this is a variant rather than a value baked
+     * into a control height every mouse user would inherit. */
+    plugin(({ addVariant }) => {
+      addVariant('coarse', '@media (pointer: coarse)');
+    }),
+  ],
 } satisfies Config;

@@ -100,6 +100,298 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-293 · 🟠 The Playground seeds 61 memberships and not one name, so every person surface reads "Somebody here"
+
+| | |
+|---|---|
+| **Module** | `workspace_tenancy` — the seeder, [`backend/tests/playground/seed.py:186`](../backend/tests/playground/seed.py) |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — **Lane A** (`platform_foundation`, whose `paths` include `backend/tests/playground/`) |
+| **Severity** | 🟠 — **wrong behaviour a reviewer hits on the first screen**, and it makes a shipped capability look unbuilt |
+| **Status** | ✅ **`FIXED` and demonstrated — Lane A, 2026-08-20.** ⛔ **`VERIFIED` is QE's** |
+| **Found** | **2026-08-20 by Lane A**, under the Signal Center resolution slice, when the new *Assign* picker correctly offered nobody |
+
+**Measured**, on the Lane A cluster (`signora-lane-a-postgres-1`):
+
+```
+select workspace_id, count(*) total, count(member_email) with_email from membership group by workspace_id;
+
+ 9f39d46d-…  |  61 |  0     ← the seeded Playground
+ 5642108b-…  |   2 |  1     ← created through the real invitation flow
+```
+
+⚡ **The contract is not the problem.** 📁 **TM-01 added `member_email`** and
+[`accept_invitation.py:200`](../backend/modules/workspace_tenancy/application/use_cases/accept_invitation.py)
+populates it, so **a membership created the way a customer creates one carries a
+name.** ⛔ **Migration `0034` added the column nullable with no backfill, and the
+seeder was never updated** — it reads `SELECT id, email FROM "user"` and then
+**inserts every membership without the `email` it is holding on the line above.**
+
+**What a reviewer sees.** 📁 [`people.ts`](../frontend/components/team/people.ts)
+is right to withhold a name it does not have — *"a map holding `''` would push
+that decision into every reader, and one of them would render it"* — so the
+absence propagates correctly and everywhere:
+
+| Surface | Renders |
+|---|---|
+| Settings → Team | **50 rows of *"Somebody here"*** |
+| Company 360 hand-over picker | **empty** |
+| Decision history | *"somebody here"* |
+| Signals → **Assign** | **its designed empty state**, on a workspace of 61 people |
+
+⚠️ **The last one is why this is 🟠 rather than 🟡.** **A producer-backed
+capability is indistinguishable from an unbuilt one**, and the first reviewer to
+open the dialog will report the feature missing rather than the data.
+
+**Expected** — the seeder passes the `email` it already selected, so the
+Playground roster is nameable. **Actual** — `member_email` is `NULL` on all 61.
+
+⛔ **No frontend change is wanted.** **Rendering an identifier as a fallback is
+exactly what [D23](DECISION_REGISTER.md) forbids** — *"a raw identifier is never
+a fourth option; it is the same absence dressed as information."*
+
+**The fix**, in [`seed.py`](../backend/tests/playground/seed.py): the `INSERT`
+now names `member_email` and binds the `email` it already selected, and a
+**scoped backfill** follows it — ⛔ **`ON CONFLICT DO NOTHING` leaves an existing
+membership exactly as it was**, so re-seeding could never have repaired the 61
+rows already written. ⚠️ **The backfill casts `m.user_id::text = u.id`**: Better
+Auth stores `user.id` as `text` and `membership.user_id` is a `uuid`, which is
+the [ADR-0026](architecture/adr/0026-jwt-boundary-architecture.md) boundary
+showing through rather than a shortcut.
+
+> 🔴 **I first routed this away as outside Lane A's Change Budget, and that was
+> wrong.** ⚡ **QE checked the registry and I confirmed it**:
+> [`modules.toml`](coordination/modules.toml) `[platform_foundation]` lists
+> `backend/tests/playground/` in `paths`, `current_owner = "Lane A"`.
+> **§20e joins the assignee from the registry rather than from a belief about
+> it** — which is [C-213](LANE_COORDINATION.md)'s rule working.
+
+### ✅ Demonstrated — 2026-08-20, after [B-294](#b-294--the-timeline-projection-guards-one-of-the-tables-two-unique-indexes-so-a-second-writer-of-one-event-aborts-the-run) was fixed
+
+⛔ **The first attempt to prove this aborted on B-294** and left the Playground
+half-built — 11 memberships where there were 61. ✅ **With that fixed,
+`make demo-prepare` completed on the same path that had failed, and the
+collision did not recur.**
+
+| | before | after |
+|---|---|---|
+| Memberships in the Playground | 61 | 61 |
+| …carrying a name | **0** | ✅ **60** |
+
+⚡ **The one remaining unnamed membership is correct** — a membership whose user
+row carries no address is exactly what `member_email IS NULL` is for.
+
+✅ **And the capability it was hiding is now demonstrable in a browser**, which
+is the whole reason this was 🟠 rather than 🟡:
+
+| | |
+|---|---|
+| The Signal Center's **Assign** picker | ✅ **50 options** — 49 named colleagues and the unselectable placeholder |
+| A recorded assignment | ✅ **`Assigned to e2e.newcomer.178699132923910@signora.test`** |
+| Before the fix | ⛔ the picker's designed empty state, on a workspace of 61 people |
+
+⚠️ **Corrected twice on the way here.** ⛔ This row claimed re-seeding *"fails
+regardless"*, then *"cannot run until B-294 is fixed"*. **QE disproved the first
+by re-seeding cleanly on a cluster with no consumers**; the second was right and
+is now satisfied.
+
+### B-294 · 🟠 The timeline projection guards one of the table's two unique indexes, so a second writer of one event aborts the run
+
+| | |
+|---|---|
+| **Module** | `timeline` — [`infrastructure/repository.py`](../backend/modules/timeline/infrastructure/repository.py) |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — **Lane A** |
+| **Severity** | 🟠 — **aborts `make demo-seed` mid-way**, after deleting the workspace it was replacing |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-20**, with a fire-tested regression. ⛔ **`VERIFIED` is QE's** |
+| **Found** | **2026-08-20 by Lane A**, re-seeding to demonstrate [B-293](#b-293--the-playground-seeds-61-memberships-and-not-one-name-so-every-person-surface-reads-somebody-here) |
+
+> 🔴 **CORRECTED TWICE, and each correction moved the fix.** ⛔ **This row first
+> blamed a missing `timeline_entry → workspace` foreign key, then `entity`'s.**
+> ⚠️ **Both were real observations and neither was this defect.** ✅ **The
+> stranding they describe is genuine and is now [B-295](#b-295--49015-entities-and-their-ten-table-subtree-are-stranded-by-every-workspace-deletion); this row is the
+> defect that actually aborted the run.** 📁 **QE's negative result is what
+> forced the split** — *"it did not fail here"*, on a cluster with no consumers.
+
+**`timeline_entry` carries two unique indexes, and `append` arbitrated on one.**
+
+```sql
+INSERT INTO timeline_entry (…) … ON CONFLICT (id) DO NOTHING
+--                                            ^^ the primary key
+-- timeline_entry_pkey          (id)        ← arbitrated
+-- timeline_entry_event_id_key  (event_id)  ← NOT arbitrated, and the one that fires
+```
+
+⚡ **`id` is `uuid5(TIMELINE_NAMESPACE, event_id)`** — derived from the event
+alone, so the two agree on every row this module writes and the narrower arbiter
+**looked** equivalent. ⛔ **It is not equivalent under concurrency.**
+**Speculative insertion arbitrates only on the index it is given**: a concurrent
+writer's row can be invisible to the `id` check and present when the `event_id`
+index is written, and **PostgreSQL raises for the index it was not told to
+arbitrate on.**
+
+⚠️ **The comment above the statement claimed the opposite** — *"two workers
+handling the same redelivered event would both find nothing and both insert…
+asking [the database] to say so is cheaper and **correct under concurrency**."*
+🔴 **It guarded one of the two ways the row can already exist**, which is
+[§2](../CLAUDE.md)'s false-claim class: an assertion of correctness that the
+code does not have.
+
+⛔ **And it violates a rule the constitution states outright** — 📁
+[§9](../CLAUDE.md): ***"Event consumers must be idempotent on `event_id`."***
+**Not on a key derived from it.**
+
+**Measured in the wild.** The Playground seeder's in-process pipeline and a live
+`timeline.project` worker wrote one event **1.07 s apart**:
+
+| | |
+|---|---|
+| Seeder's insert attempt | `07:25:17.062444` |
+| `processed_event` row, consumer `timeline.project` | `07:25:18.132207` |
+| Derived id, both | `99b824a9-b7a5-56bc-ac6b-71e343c64d8a` ✅ **identical** |
+
+⚡ **This is why QE could not reproduce it and I could.** 📁 **Their cluster runs
+no consumers — `processed_event` reads 0 — so there is only ever one writer.**
+**My lane stack runs the relay and four hand-started `arq` workers**, so the
+seeder races a real consumer of the same projection.
+
+**The fix** — bare `DO NOTHING`, no arbiter, so **any** unique violation is
+ignored. ⚡ **That is what *"append this unless it is already here"* means**, and
+it is what §9 requires.
+
+✅ **Fire-tested, because a guard nobody has seen fail is not a guard.**
+Reverting to `index_elements=["id"]` reproduces the **exact** production error —
+`duplicate key value violates unique constraint "timeline_entry_event_id_key"` —
+and the fix turns it green. **`tests/integration/test_timeline_persistence.py::
+test_a_second_writer_of_one_event_is_absorbed_not_refused`.** ⚠️ **The test
+forces the state concurrency produces rather than racing for it**, since the race
+is not reproducible on demand.
+
+**1,465 integration and Security Invariant tests pass · `mypy --strict` clean ·
+37 import contracts kept.**
+
+⚠️ **Almost certainly relevant to QE's B-1036** — specs that fail in a full
+browser run and pass alone. ⛔ **A projection that aborts when two writers touch
+one event is exactly the shape of a suite that passes in isolation.**
+
+---
+
+### B-295 · 🟠 49,015 entities and their ten-table subtree are stranded by every workspace deletion
+
+| | |
+|---|---|
+| **Module** | 🔴 **Schema-wide** — `WorkspaceScopedMixin`, [`signora_platform/db/base.py:64`](../backend/signora_platform/db/base.py) |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** |
+| **Severity** | 🟠 — **unbounded growth**, and it is invisible because nothing ever reads the stranded rows |
+| **Status** | **`OPEN`** — ⛔ **not fixed: the resolution is 🔴 and is not a lane's to take** |
+| **Found** | **2026-08-20 by Lane A**, split out of [B-294](#b-294--the-timeline-projection-guards-one-of-the-tables-two-unique-indexes-so-a-second-writer-of-one-event-aborts-the-run) once that defect's real cause was isolated |
+
+**Confirmed on two clusters, at two scales, at two levels — ⚡ which is what
+rules out a slow leak.**
+
+| | Lane A | QE |
+|---|---|---|
+| `workspace` rows | **9** | 1 |
+| `entity` rows | **49,030** | 30 |
+| …whose workspace is gone | **49,015** | **15 — half** |
+| `timeline_entry` rows | **184,287** | 272 |
+| …whose workspace is gone | **184,149** | **136 — half** |
+
+⚡ **QE measured the per-run delta: every re-seed strands exactly one
+Playground's worth — `entity` +15, `timeline_entry` +136 — linear, unbounded,
+and it does not error.**
+
+**A cascade tree whose root is anchored to nothing.**
+
+```
+workspace  ──╳──  entity  ──CASCADE──▶  10 tables
+             ↑
+             the edge that does not exist
+```
+
+**Ten tables cascade from `entity`, every one `ON DELETE CASCADE`** —
+`business_event` · `buying_score` · `identity_binding` · `observation` ·
+`opportunity` · `relationship` (×2) · `resolution_decision` · `signal` ·
+`timeline_entry`. ⛔ **`entity` itself has no foreign key at all.**
+
+⚠️ **And `entity` is not special — it is only the largest.** **14
+workspace-scoped tables are cascade roots with no foreign key to `workspace`**:
+`entity` (10 dependents) · `connected_account` (3) · `icp_segment` ·
+`raw_provider_record` · `account_tag` · `account_segment` (2 each) · and eight
+more with one apiece. 🔴 **So anchoring `entity` alone would fix the biggest
+subtree and leave thirteen — a partial fix that would read as complete.**
+
+**The root is one shared mixin**, 📁 `signora_platform/db/base.py:64`:
+`workspace_id` is declared `nullable=False, index=True` **with no
+`ForeignKey`**, and **its docstring is silent on why**. **69 columns named
+`workspace_id` exist; 60 tables carry one with no foreign key.**
+
+### 🔴 Why two design documents already reasoned from this — and why it looked sound
+
+⚡ **The schema splits cleanly, and the split is what hid it.**
+
+| | |
+|---|---|
+| Tables **with** `FK → workspace`, all `ON DELETE CASCADE` | **9** — `invitation` · `membership` · `membership_role_change` · `notification` · `notification_read` · `onboarding_run` · `person_preferences` · `recently_viewed` · `saved_view` |
+| Tables with `workspace_id` and **no** such key | **60**, including **all 14 cascade roots** |
+
+⛔ **The tables a reader checks first are the ones that are right.** ⚠️ **Same
+shape as [B-1046](#b-1046)**: correct in exactly the place that gets looked at.
+
+**So the architecture has twice dismissed work on the strength of it** — 📁
+`46-team-management.md`, *"Absorbed: … workspace deletion **(cascades)**"*,
+**listed as needing no design because it cascades**, and again in a second
+*Future pressure, checked* block. 📁 And `500-authenticated-entry-…:208` reasons
+the same way about a specific table: *"the `person_preferences.workspace_id`
+foreign key is `ON DELETE CASCADE`, so the rows go with the workspace whenever
+one is built — **structural rather than something a future use case has to
+remember**."*
+
+✅ **That sentence is TRUE of the table it names** — `person_preferences` is one
+of the nine. ⛔ **What fails is the generalisation**, and it fails precisely in
+the pipeline modules that hold the volume.
+
+⚠️ **The design-document evidence above is QE's finding** ([B-1036](#b-1036)
+thread, 2026-08-20); **the schema split is this lane's measurement.** ⛔ **Both
+verified against the source before recording** — the citations read back
+verbatim and the nine tables were counted from `pg_constraint`, not inferred.
+
+🔴 **What it changes is the urgency of the decision, not who takes it.** 📁
+[`438-platform-initiatives.md`](architecture/438-platform-initiatives.md) **S1 —
+*GDPR erasure · workspace deletion · retention · legal hold · tenant cleanup* —
+is 🔴 *"Nothing. Build first or build three times."*** ⛔ **Whoever builds it
+will build it believing the cascades do the work**, which is the same reasoning
+📁 `seed.py`'s docstring used and which
+[B-294](#b-294--the-timeline-projection-guards-one-of-the-tables-two-unique-indexes-so-a-second-writer-of-one-event-aborts-the-run)
+proved false one table over.
+
+### ⛔ What this row does NOT claim
+
+⚠️ **The 60 tables are reported, not indicted.** 📁 [11-tenancy.md:96](architecture/11-tenancy.md)
+shows the project omits such a key **deliberately and with an argument** where
+one is wanted — *"an event about somebody whose membership was later deleted must
+survive that deletion, or the stream loses precisely the rows an investigation
+wants."*
+
+⚡ **`entity` differs because it is not an argued omission, it is an
+inconsistency**: **a ten-table `ON DELETE CASCADE` tree is a deliberate statement
+that this data dies with its parent**, and the parent has no parent. **The two
+halves disagree, whichever way it is resolved.**
+
+✅ **No customer is affected today. The product has no workspace-delete path** —
+**no endpoint, no application code, and the only `DELETE FROM workspace` in the
+repository is the Playground seeder's.** ⛔ **So this is unbounded growth in
+development and a latent integrity gap the day a delete is built**, not a live
+data-loss defect.
+
+🔴 **The resolution is a schema decision** — whether workspace-scoped data
+should cascade from `workspace` at all — **and it touches a FROZEN
+[§20a](../CLAUDE.md) file.** ⛔ **Neither the fix nor the choice belongs to a
+lane.** ⚠️ **Whatever it is, the 49,015 entities and 184,149 timeline rows
+already written need the same scoped-backfill reasoning
+[B-293](#b-293--the-playground-seeds-61-memberships-and-not-one-name-so-every-person-surface-reads-somebody-here)
+needed** — **a forward-only fix repairs nothing already on disk.**
+
+---
+
 ### B-292 · 🟡 Entry resolution overrules a person who has already chosen somewhere else
 
 | | |

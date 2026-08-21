@@ -452,7 +452,13 @@ export function SessionsPanel({
           */}
         <button
           type="button"
-          className="mt-2 text-sm text-content-muted underline underline-offset-2 hover:text-content"
+          /* ♿ 📁 `2.5.8` — *"targets ≥ 24px with 8px separation"*, and this
+             measured `163 × 21`. ⛔ **`min-h-6` rather than a height**: the
+             design's treatment here is a link, not a button, so the control
+             keeps its underline and gains only the floor it was under —
+             ⚡ **and the touch floor, because this is the one control on the
+             page that ends the session reading it.** */
+          className="mt-2 inline-flex min-h-6 items-center self-start rounded text-sm text-content-muted underline underline-offset-2 hover:text-content coarse:min-h-11"
           onClick={() => setConfirming(true)}
         >
           Sign out of this one too

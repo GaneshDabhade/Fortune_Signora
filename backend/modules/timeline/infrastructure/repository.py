@@ -25,6 +25,27 @@ class SqlEntryStore:
         # insert, and the race is only visible under the load that makes it
         # matter. The database already refuses the duplicate — asking it to say
         # so is cheaper and correct under concurrency.
+        #
+        # **No arbiter index, and that is the fix rather than an omission.**
+        # This named `index_elements=["id"]`, which arbitrates on the primary
+        # key alone — and `timeline_entry` carries TWO unique indexes, the
+        # second on `event_id`. `id` is `uuid5(NAMESPACE, event_id)`, so the
+        # two agree on every row and the narrower arbiter looked equivalent.
+        #
+        # It is not equivalent under the concurrency this comment was written
+        # for. Speculative insertion arbitrates only on the index it was given:
+        # a concurrent writer's row can be invisible to the `id` check and then
+        # present when the `event_id` index is written, and PostgreSQL raises
+        # for the index it was not told to arbitrate on. The comment above
+        # claimed correctness under concurrency while guarding one of the two
+        # ways this row can already exist.
+        #
+        # Bare `DO NOTHING` ignores *any* unique violation, which is what
+        # "append this unless it is already here" actually means — and it is
+        # what CLAUDE.md §9 requires: consumers are idempotent on `event_id`,
+        # not on a key derived from it. Measured 2026-08-20 (B-294): the
+        # Playground seeder's in-process pipeline and a live `timeline.project`
+        # worker wrote the same event 1.07s apart, and the seed aborted.
         statement = (
             insert(TimelineEntryModel)
             .values(
@@ -38,7 +59,7 @@ class SqlEntryStore:
                 source_ref=entry.source_ref,
                 detail=dict(entry.detail),
             )
-            .on_conflict_do_nothing(index_elements=["id"])
+            .on_conflict_do_nothing()
             .returning(TimelineEntryModel.id)
         )
         result = await self._session.execute(statement)

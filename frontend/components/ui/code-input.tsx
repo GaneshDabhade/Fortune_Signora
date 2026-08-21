@@ -175,7 +175,6 @@ export function CodeInput({
           className={cn(
             'h-12 w-10 rounded-md border text-center text-lg font-medium',
             'bg-surface text-content transition-colors',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
             'disabled:opacity-60',
             invalid ? 'border-danger' : 'border-border-strong',
           )}

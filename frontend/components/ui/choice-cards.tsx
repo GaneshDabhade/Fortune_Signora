@@ -70,7 +70,9 @@ export function ChoiceCards({
 
   return (
     <fieldset className={cn('flex flex-col gap-2.5', className)}>
-      <legend className={cn('text-sm font-medium text-content', legendHidden && 'sr-only')}>
+      <legend
+        className={cn('text-sm font-medium text-content', legendHidden && 'sr-only')}
+      >
         {legend}
       </legend>
       {/* 📁 *"grid-template-columns:1fr 1fr; gap:10px"*. ⚡ One column below the
@@ -87,9 +89,12 @@ export function ChoiceCards({
               className={cn(
                 // 📁 *"padding:14px 15px; border-radius:12px"*.
                 'cursor-pointer rounded-lg border px-[15px] py-[14px] transition-colors',
-                // The focus ring is on the label because the input is the
-                // thing focused and the card is the thing seen — 2px at 2px
-                // offset, the design's own figure, on cards and fields alike.
+                // ♿ **`focus-proxy`** — 📁 [B-1058](../../../docs/BUGS.md).
+                // ⛔ **The radio is `sr-only`, so the global rule fires on a 1px
+                // element nobody can see.** ⚡ **The class moves WHERE the
+                // indicator is drawn and not WHAT it is**: one declaration, in
+                // `globals.css`, shared with the two other composite controls.
+                'focus-proxy',
                 //
                 // ⚠️ **`has-[:focus-visible]`, not `focus-within`** — 📁 the
                 // design draws the selected card with a brand border and tint
@@ -97,7 +102,6 @@ export function ChoiceCards({
                 // so every card kept a 2px ring after being picked. ⛔ **Found
                 // in the screenshot, not by a gate**: the keyboard ring was
                 // correct throughout and only the pointer path was wrong.
-                'has-[:focus-visible]:outline-none has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent has-[:focus-visible]:ring-offset-2',
                 selected
                   ? // ⚡ **The selected card loses its shadow.** 📁 The design
                     // gives `--e1` to the unselected cards and `none` to the
@@ -171,7 +175,10 @@ export function ChoiceCards({
   );
 }
 
-export interface MultiChoiceCardsProps extends Omit<ChoiceCardsProps, 'value' | 'onChange'> {
+export interface MultiChoiceCardsProps extends Omit<
+  ChoiceCardsProps,
+  'value' | 'onChange'
+> {
   readonly value: readonly string[];
   readonly onChange: (value: readonly string[]) => void;
   /** The design's limit. Reaching it disables the rest rather than hiding it. */
@@ -229,7 +236,9 @@ export function MultiChoiceCards({
 
   return (
     <fieldset className={cn('flex flex-col gap-2.5', className)}>
-      <legend className={cn('text-sm font-medium text-content', legendHidden && 'sr-only')}>
+      <legend
+        className={cn('text-sm font-medium text-content', legendHidden && 'sr-only')}
+      >
         {legend}
       </legend>
       {/* 📁 *"flex-direction:column; gap:9px"*. */}
@@ -246,7 +255,6 @@ export function MultiChoiceCards({
               className={cn(
                 // 📁 *"padding:13px 15px; border-radius:12px; gap:12px"*.
                 'flex items-start gap-3 rounded-lg border px-[15px] py-[13px] transition-colors',
-                'has-[:focus-visible]:outline-none has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent has-[:focus-visible]:ring-offset-2',
                 selected
                   ? 'border-accent bg-accent-subtle'
                   : 'border-border-soft bg-surface hover:border-border',
@@ -300,7 +308,9 @@ export function MultiChoiceCards({
                 ) : null}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold text-content">{choice.label}</span>
+                <span className="block text-sm font-semibold text-content">
+                  {choice.label}
+                </span>
                 {choice.description ? (
                   <span className="mt-[3px] block text-xs leading-[1.5] text-content-muted">
                     {choice.description}

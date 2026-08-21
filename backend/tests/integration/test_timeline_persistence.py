@@ -169,6 +169,76 @@ class TestTheProjectionActuallyLands:
 
         assert page.items == []
 
+    async def test_a_second_writer_of_one_event_is_absorbed_not_refused(
+        self, session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        """**`timeline_entry` has TWO unique indexes and `append` arbitrated on
+        one** — [B-294](../../../docs/BUGS.md).
+
+        The primary key is `uuid5(NAMESPACE, event_id)`, so `id` and `event_id`
+        agree on every row this module writes and `ON CONFLICT (id)` looked
+        equivalent to guarding both. It is not: speculative insertion
+        arbitrates only on the index it is given, so a row that is invisible to
+        the `id` check and present when the `event_id` index is written raises
+        `timeline_entry_event_id_key` instead of doing nothing.
+
+        **The test forces the state that concurrency produces**, because the
+        race itself is not reproducible on demand: a row already holding this
+        `event_id` under a different `id`. With an `id` arbiter this raises;
+        with none it is absorbed and reported as `False`, which is what
+        `CLAUDE.md` §9 means by *idempotent on `event_id`*.
+
+        Measured in the wild: the Playground seeder's in-process pipeline and a
+        live `timeline.project` worker wrote one event 1.07s apart, and the
+        seed aborted mid-way.
+        """
+        workspace = uuid4()
+        entity_id = await _entity(session_factory, workspace)
+        entry = _entry(workspace, entity_id)
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace, user_id=ACTOR
+        ) as session:
+            # The other writer, landing first under an id this module would
+            # not derive — standing in for a row the arbiter cannot see yet.
+            await session.execute(
+                text(
+                    "INSERT INTO timeline_entry (id, workspace_id, entity_id, kind,"
+                    " occurred_at, event_id, source_module, source_ref, detail)"
+                    " VALUES (:id, :w, :e, :k, :at, :ev, :m, :ref, '{}'::jsonb)"
+                ),
+                {
+                    "id": uuid4(),
+                    "w": workspace,
+                    "e": entity_id,
+                    "k": entry.kind.value,
+                    "at": entry.occurred_at,
+                    "ev": entry.event_id,
+                    "m": entry.source_module,
+                    "ref": entry.source_ref,
+                },
+            )
+            await session.commit()
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace, user_id=ACTOR
+        ) as session:
+            wrote = await build_entry_store(session).append(entry)
+            await session.commit()
+
+        # Absorbed, and honest about not having written.
+        assert wrote is False
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace, user_id=ACTOR
+        ) as session:
+            page = await build_timeline_queries(session).feed(
+                workspace_id=workspace, entity_id=entity_id, after=None, limit=10
+            )
+
+        # One event, one entry — never two.
+        assert len(page.items) == 1
+
     async def test_redelivery_writes_once_and_the_second_says_so(
         self, session_factory: async_sessionmaker[AsyncSession]
     ) -> None:

@@ -128,7 +128,7 @@ test.describe('from the list to the account', () => {
     // The brief must be about the account the seller clicked. A ranking bug
     // that opened the wrong brief is invisible on the row and catastrophic in
     // a pipeline review.
-    await expect(brief.backToList).toBeVisible();
+    await expect(brief.title).toBeVisible();
     expect(brief.accountId()).toBe(opened);
   });
 
@@ -226,7 +226,7 @@ test.describe('from the list to the account', () => {
 
     // R10-01: the page's only exit used to be at the top, where nobody is when
     // they have finished reading.
-    await expect(brief.backToList).toBeVisible();
+    await expect(brief.title).toBeVisible();
     await page.keyboard.press('End');
     // ⚠️ **`count()` does not auto-wait**, and the sequence renders on a query
     // that is still in flight when the score lands — 📁 *"it costs no request"*
@@ -251,7 +251,7 @@ test.describe('from the list to the account', () => {
     // Playground's is one no provider has scored, which is a designed state
     // and not a failure. 📁 The claim under test is *back returns to the list
     // with the list intact*, so what this must wait for is a brief on screen.
-    await expect(brief.backToList).toBeVisible({ timeout: 20_000 });
+    await expect(brief.title).toBeVisible({ timeout: 20_000 });
 
     await page.goBack();
     await expect(accounts.heading).toBeVisible();

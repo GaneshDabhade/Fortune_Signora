@@ -132,7 +132,7 @@ export class RegionBoundary extends Component<Props, State> {
           <button
             type="button"
             onClick={this.retry}
-            className="mt-2 rounded border border-border-strong bg-surface px-3 py-1 text-sm font-medium text-content transition-colors hover:bg-surface-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            className="mt-2 rounded border border-border-strong bg-surface px-3 py-1 text-sm font-medium text-content transition-colors hover:bg-surface-sunken "
           >
             Retry — attempt {attempt + 1} of {MAX_ATTEMPTS}
           </button>

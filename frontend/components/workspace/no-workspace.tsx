@@ -46,7 +46,7 @@ export function NoWorkspace() {
       action={
         <Link
           href="/settings"
-          className="rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          className="rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent "
         >
           Create an organization
         </Link>

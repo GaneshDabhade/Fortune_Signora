@@ -94,7 +94,7 @@ export function NoConnection({ onRestored }: { onRestored?: () => void }) {
               type="button"
               onClick={() => void check()}
               disabled={checking}
-              className="rounded border border-border-strong bg-surface px-3 py-1 text-sm font-medium text-content transition-colors hover:bg-surface-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-60"
+              className="rounded border border-border-strong bg-surface px-3 py-1 text-sm font-medium text-content transition-colors hover:bg-surface-sunken disabled:opacity-60"
             >
               {checking ? 'Checking…' : 'Check again'}
             </button>
@@ -102,7 +102,7 @@ export function NoConnection({ onRestored }: { onRestored?: () => void }) {
           secondaryAction={
             <a
               href="https://status.signora.app"
-              className="rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className="rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent "
             >
               Status page
             </a>
@@ -118,7 +118,9 @@ export function NoConnection({ onRestored }: { onRestored?: () => void }) {
             this screen to be *"honest about having nothing"* — inventing a
             time here would be the one thing it is told not to do. */}
         <p className="mt-4 text-center text-xs text-content-subtle">
-          {since === null ? `Retrying in ${seconds}s` : `${since} · retrying in ${seconds}s`}
+          {since === null
+            ? `Retrying in ${seconds}s`
+            : `${since} · retrying in ${seconds}s`}
         </p>
       </div>
     </main>

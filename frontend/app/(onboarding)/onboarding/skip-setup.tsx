@@ -126,7 +126,7 @@ export function SkipSetup({ completedIds, industry }: SkipSetupProps) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded text-left text-sm text-content-subtle underline underline-offset-4 transition-colors hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        className="rounded text-left text-sm text-content-subtle underline underline-offset-4 transition-colors hover:text-content "
       >
         Skip setup
       </button>

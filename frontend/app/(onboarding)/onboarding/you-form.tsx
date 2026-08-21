@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { ChoiceCards, Inferred } from '@/components/ui';
+import { Button, ChoiceCards, Inferred } from '@/components/ui';
 import { cn } from '@/lib/design/cn';
 import { describePerson } from '@/lib/api/onboarding';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
@@ -93,7 +93,8 @@ export function YouForm() {
       body.role = { value: chosenRole, provenance: untouched ? 'confirmed' : 'entered' };
     }
     const size = shownTeamSize.toString().trim();
-    if (size !== '') body.team_size = { value: Number(size), provenance: 'entered' } as never;
+    if (size !== '')
+      body.team_size = { value: Number(size), provenance: 'entered' } as never;
 
     await save((id) => describePerson(id, body));
     await advance('goals');
@@ -101,9 +102,9 @@ export function YouForm() {
   };
 
   /** 📁 *"What do you do at Northwind?"* — ⚡ **the customer's own Organization
-   *  name** ([ADR-0034](../../../../docs/architecture/adr/0034-ubiquitous-language.md)),
-   *  ⛔ **never the word *workspace***. Falls back to the unpersonalised
-   *  question rather than rendering a name-shaped hole. */
+   * name** ([ADR-0034](../../../../docs/architecture/adr/0034-ubiquitous-language.md)),
+   * ⛔ **never the word *workspace***. Falls back to the unpersonalised
+   * question rather than rendering a name-shaped hole. */
   const workspaceName = activeWorkspace?.name ?? null;
 
   return (
@@ -122,22 +123,24 @@ export function YouForm() {
           }
         />
       }
-      title={workspaceName === null ? 'What do you do here?' : `What do you do at ${workspaceName}?`}
+      title={
+        workspaceName === null
+          ? 'What do you do here?'
+          : `What do you do at ${workspaceName}?`
+      }
       description="Your role decides your home page and which alerts reach you."
       actions={
         <>
-          <button
-            type="button"
+          <Button
             onClick={submit}
             // 📁 **Disabled while the field is known to be wrong** — the design
             // draws Continue at 42% beside the error. ⛔ Not disabled *before*
             // blur: nothing is known to be wrong yet, and a primary action that
             // starts dead reads as a screen that has not loaded.
             disabled={isSaving || teamSizeError !== null}
-            className="inline-flex h-control-md items-center rounded-md bg-accent px-[18px] text-[13.5px] font-semibold text-accent-contrast shadow-sm transition-colors hover:bg-accent-hover disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             {isSaving ? 'Saving…' : 'Continue'}
-          </button>
+          </Button>
           <button
             type="button"
             onClick={async () => {
@@ -147,7 +150,7 @@ export function YouForm() {
               await advance('goals');
               router.push('/onboarding/goals');
             }}
-            className="text-[13px] font-semibold text-content-subtle hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="text-sm font-semibold text-content-subtle hover:text-content "
           >
             Skip for now
           </button>
@@ -172,7 +175,7 @@ export function YouForm() {
           // this one — so this renders on no current run. ✅ It exists because
           // §9 requires every inferred value to be marked wherever it appears,
           // and a marking added later is a marking somebody forgets.
-          <p className="mt-2.5 flex items-center gap-2 text-[11.5px] text-content-muted">
+          <p className="mt-2.5 flex items-center gap-2 text-2xs text-content-muted">
             <Inferred />
             <span>Change it if that is not right.</span>
           </p>
@@ -181,7 +184,7 @@ export function YouForm() {
         {/* 📁 *"font-size:12.5px; font-weight:600; margin:22px 0 7px"*. */}
         <label
           htmlFor="team-size"
-          className="mb-[7px] mt-[22px] block text-[12.5px] font-semibold text-content"
+          className="mb-[7px] mt-[22px] block text-label font-semibold text-content"
         >
           How many people are on your revenue team?
         </label>
@@ -201,9 +204,9 @@ export function YouForm() {
           aria-invalid={teamSizeError !== null}
           aria-describedby={teamSizeError === null ? undefined : 'team-size-error'}
           className={cn(
-            'h-control-md w-full rounded-md border bg-surface px-[13px] text-[13.5px] text-content outline-none transition-shadow',
+            'h-control-md w-full rounded-md border bg-surface px-[13px] text-sm text-content outline-none transition-shadow',
             teamSizeError === null
-              ? 'border-border focus-visible:border-accent focus-visible:ring-[3px] focus-visible:ring-accent-subtle'
+              ? 'border-border '
               : // 📁 *"border:1px solid var(--risk); box-shadow:0 0 0 3px var(--risk-tint)"*.
                 'border-danger ring-[3px] ring-danger-subtle',
           )}

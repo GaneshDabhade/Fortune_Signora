@@ -68,7 +68,11 @@ export default function BusinessPage() {
   const targets = useTargetAccounts(workspaceId);
 
   const loading =
-    catalog.isLoading || icp.isLoading || committee.isLoading || focus.isLoading || targets.isLoading;
+    catalog.isLoading ||
+    icp.isLoading ||
+    committee.isLoading ||
+    focus.isLoading ||
+    targets.isLoading;
   // **One failure is the whole page's failure here, unlike the authoring
   // screen.** There, five editors each report their own outage because a
   // customer may still declare the other four. There is nothing to do here but
@@ -76,7 +80,11 @@ export default function BusinessPage() {
   // *we have not described that* — B-006's defect, on a screen where the reader
   // has no way to discover otherwise.
   const failed =
-    catalog.isError || icp.isError || committee.isError || focus.isError || targets.isError;
+    catalog.isError ||
+    icp.isError ||
+    committee.isError ||
+    focus.isError ||
+    targets.isError;
 
   // **One derivation, two readers** — the header's edit link and the empty
   // state's. Computing it twice is how they eventually disagree about who may
@@ -115,7 +123,7 @@ export default function BusinessPage() {
             // the control's appearance is a migration row's.**
             <Link
               href={authoring}
-              className="shrink-0 rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className="shrink-0 rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent "
             >
               Change this
             </Link>

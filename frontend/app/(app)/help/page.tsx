@@ -4,7 +4,14 @@ import { useMemo, useState } from 'react';
 
 import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
-import { Card, CardBody, ErrorState, Input, PageHeader, SkeletonText } from '@/components/ui';
+import {
+  Card,
+  CardBody,
+  ErrorState,
+  Input,
+  PageHeader,
+  SkeletonText,
+} from '@/components/ui';
 import { ApiError } from '@/lib/api/client';
 import { useIntegrations } from '@/lib/query/hooks/integrations';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
@@ -61,9 +68,13 @@ import { ReadingColumn } from '../reading-column';
  */
 export default function HelpPage() {
   const { activeWorkspace, isLoading: workspaceLoading } = useWorkspaceContext();
-  const { data: systems, isLoading, isError, error, refetch } = useIntegrations(
-    activeWorkspace?.id ?? null,
-  );
+  const {
+    data: systems,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useIntegrations(activeWorkspace?.id ?? null);
   const [question, setQuestion] = useState('');
 
   const connections: Connection[] = useMemo(
@@ -114,7 +125,9 @@ export default function HelpPage() {
               <ErrorState
                 title="Signora could not check this organization's systems"
                 description="Nothing is wrong with your connections as far as we know — we could not read them. Your data is unchanged."
-                correlationId={error instanceof ApiError ? error.correlationId : undefined}
+                correlationId={
+                  error instanceof ApiError ? error.correlationId : undefined
+                }
                 onRetry={() => void refetch()}
               />
             </div>
@@ -127,7 +140,9 @@ export default function HelpPage() {
                 Answer for your organization
               </p>
               <p className="mt-1.5 font-medium text-content">{answer.headline}</p>
-              <p className="mt-1.5 text-sm leading-6 text-content-muted">{answer.detail}</p>
+              <p className="mt-1.5 text-sm leading-6 text-content-muted">
+                {answer.detail}
+              </p>
 
               {/* 🔴 **Sources, always.** 📁 The design shows *"3 sources"* beside
                   the answer, and an answer without one is prose. ⚡ Each is a
@@ -137,7 +152,7 @@ export default function HelpPage() {
                   <li key={source.href}>
                     <a
                       href={source.href}
-                      className="rounded text-sm text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                      className="rounded text-sm text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent "
                     >
                       {source.label}
                     </a>

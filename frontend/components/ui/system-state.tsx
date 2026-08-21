@@ -62,10 +62,10 @@ import {
 /** 📁 The grammar's severity → token map. ⛔ Tokens only, never a literal (§20c). */
 const TINT: Record<Severity, { tile: string; glyph: string }> = {
   neutral: { tile: 'bg-surface-sunken border-border', glyph: 'text-content-subtle' },
-  warn: { tile: 'bg-warning-subtle border-warning/30', glyph: 'text-warning' },
-  risk: { tile: 'bg-danger-subtle border-danger/30', glyph: 'text-danger' },
-  brand: { tile: 'bg-accent-subtle border-accent/30', glyph: 'text-accent' },
-  positive: { tile: 'bg-success-subtle border-success/30', glyph: 'text-success' },
+  warn: { tile: 'bg-warning-subtle border-warning-line', glyph: 'text-warning' },
+  risk: { tile: 'bg-danger-subtle border-danger-line', glyph: 'text-danger' },
+  brand: { tile: 'bg-accent-subtle border-accent-line', glyph: 'text-accent-ink' },
+  positive: { tile: 'bg-success-subtle border-success-line', glyph: 'text-success' },
 };
 
 export interface SystemStateProps {

@@ -138,7 +138,13 @@ export function AccountSearch() {
         aria-expanded={open && asked}
         aria-controls={listId}
         aria-autocomplete="list"
-        className="h-8 w-full rounded border border-border bg-canvas pl-8 pr-3 text-sm text-content placeholder:text-content-subtle focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+        // ⛔ **No focus treatment of its own** — 📁
+        // [B-1058](../../../docs/BUGS.md). ⚠️ **My sweep matched
+        // `focus-visible:` and this used bare `focus:`**, so it survived as the
+        // third of the three treatments a browser still measured after the
+        // fix. ⚡ **Found by pressing Tab 28 times, not by grepping** — which is
+        // the row's own point about class-name assertions.
+        className="h-8 w-full rounded border border-border bg-canvas pl-8 pr-3 text-sm text-content placeholder:text-content-subtle"
       />
 
       {open && asked ? (

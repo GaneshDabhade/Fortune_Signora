@@ -21,8 +21,12 @@ import { RouteAnnouncer } from '@/components/shell/route-announcer';
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/' }));
 vi.mock('@/components/shell/shell-palette', () => ({ ShellPalette: () => null }));
-vi.mock('@/components/shell/workspace-switcher', () => ({ WorkspaceSwitcher: () => null }));
-vi.mock('@/components/intelligence/account-search', () => ({ AccountSearch: () => null }));
+vi.mock('@/components/shell/workspace-switcher', () => ({
+  WorkspaceSwitcher: () => null,
+}));
+vi.mock('@/components/intelligence/account-search', () => ({
+  AccountSearch: () => null,
+}));
 vi.mock('@/components/shell/account-menu', () => ({ AccountMenu: () => null }));
 // ⚡ The rail reads the active workspace since TASK-1438 (Home's segment).
 vi.mock('@/lib/state/workspace-provider', () => ({
@@ -162,48 +166,79 @@ describe('📁 4.1.3 — route changes announce once, politely', () => {
   });
 });
 
-describe('📁 2.4.7 — the focus ring is never suppressed', () => {
-  it('⛔ no shell or library component drops focus visibility', () => {
-    /**
-     * 📁 *"2px brand ring at 2px offset plus a border change; **never
-     * suppressed anywhere in the shell**."*
-     *
-     * ⚠️ **The first version of this check was too blunt and flagged three
-     * files, none of which was a defect.** Two used `focus-within:outline-none`
-     * with a `focus-within:ring` beside it — **a replacement my regex simply
-     * did not match** — and the third, `drawer.tsx`, suppresses the ring on a
-     * `tabIndex={-1}` panel it focuses PROGRAMMATICALLY.
-     *
-     * 🔴 **That third case is legitimate and the distinction matters**: an
-     * element a keyboard can TAB to must show a ring; **a container focused by
-     * code so a screen reader lands in it must not**, or every skip-link target
-     * would flash an outline nobody asked for. ✅ **The rule now says that.**
-     */
+describe('📁 2.4.7 — one focus indicator, and it is the design\'s', () => {
+  /**
+   * 🔴 **[B-1058](../../../docs/BUGS.md) — this check used to permit the
+   * defect it was written to catch.**
+   *
+   * ⛔ **The old rule was *"if you suppress the ring, put one back"***, and every
+   * component that put one back passed. ⚡ **So nine components suppressed the
+   * global rule and substituted their own**, and QE measured **four distinct
+   * `(outline, box-shadow)` pairs within 28 tab stops** on each of three routes.
+   * **Each one satisfied this file individually.**
+   *
+   * ✅ **The rule now is that a component declares NO focus indicator at all.**
+   * 📁 `globals.css` declares it once, and 📁 `.focus-proxy` is the single
+   * exception — **the same declaration, moved to the visible wrapper of a
+   * control whose focusable element is `sr-only`.**
+   *
+   * ## ⚠️ The design's indicator is a PAIR, and half of it carries the contrast
+   *
+   * 📁 **Measured across the 35 screen documents: all 21 occurrences of
+   * `box-shadow:0 0 0 3px var(--brand-tint)` also carry `border:1px solid
+   * var(--brand)`** — 21 of 21. ⛔ **`--brand-tint` on the page ground is about
+   * `1.06:1`**, so a tint ring on its own is not an indicator; **`--brand` is
+   * what makes it visible** and the tint widens it to a 4px target.
+   */
+  it('⛔ no component declares a focus treatment of its own', () => {
     const offenders: string[] = [];
     for (const dir of ['components/ui', 'components/shell']) {
       for (const file of readdirSync(join(process.cwd(), dir))) {
         if (!file.endsWith('.tsx')) continue;
         const source = readFileSync(join(process.cwd(), dir, file), 'utf8');
-        const suppresses = /\boutline-none\b/.test(source);
+        // ⚡ **Any focus-state outline or ring utility, by any variant** —
+        // `focus-visible:`, `focus-within:` and `has-[:focus-visible]:` alike.
+        // ⛔ **`outline-none` included**: opting out is the half that made four
+        // treatments possible.
+        const declares =
+          /(has-\[:)?focus(-visible|-within)?\]?:-?(outline|ring)/.test(source) ||
+          /\boutline-none\b/.test(source);
         /**
-         * ⚠️ **Widened 2026-08-17, and it is the SECOND instance of the lesson
-         * three paragraphs up.** ⛔ `choice-cards.tsx` moved from
-         * `focus-within:ring` to **`has-[:focus-visible]:ring`** — 📁 because
-         * `focus-within` fires on a mouse click and left a ring the design does
-         * not draw — **and this regex read the newer selector as no
-         * replacement at all.**
+         * ⚡ **A programmatically-focused container is not a tab stop**, and this
+         * exemption is the old guard's, kept because it was right: 📁
+         * `drawer.tsx` and `app-shell.tsx` focus a `tabIndex={-1}` region so a
+         * screen reader lands in it, and **every skip-link target would flash an
+         * outline nobody asked for** if it drew one.
          *
-         * ✅ **A widening, never a weakening** ([§11](../../../CLAUDE.md)):
-         * the ring is genuinely restored and the check simply could not see it.
-         * **A guard that flags a correct fix teaches people to route around
-         * the guard**, which is the failure mode it exists to prevent.
+         * ⛔ **Kept narrow on purpose.** ⚠️ **This is the clause that let four
+         * treatments coexist when it read *"or replaces the ring"***; it says
+         * only *not a tab stop* now, which no styled control can claim.
          */
-        const replaces = /(has-\[:)?focus(-visible|-within)?\]?:(outline|ring)/.test(source);
-        // ⚡ A programmatically-focused container is not a tab stop.
         const programmatic = /tabIndex=\{-1\}/.test(source);
-        if (suppresses && !replaces && !programmatic) offenders.push(`${dir}/${file}`);
+        if (declares && !programmatic) offenders.push(`${dir}/${file}`);
       }
     }
-    expect(offenders, 'these suppress the focus ring and put nothing back').toEqual([]);
+    expect(offenders, 'these declare a focus treatment instead of inheriting one').toEqual([]);
+  });
+
+  /**
+   * ⚡ **And the one declaration is the design's pair, asserted against the
+   * design's own values** rather than against a copy of them.
+   */
+  it("📁 globals.css declares the design's brand line and tint halo, once", () => {
+    const css = readFileSync(join(process.cwd(), 'app', 'globals.css'), 'utf8');
+    const rules = css.match(/:focus-visible\s*\{[^}]*\}/g) ?? [];
+    // ⛔ **Two rules and no more**: the global one and `.focus-proxy`'s.
+    expect(rules).toHaveLength(1);
+
+    const rule = rules[0] ?? '';
+    expect(rule).toMatch(/outline:\s*1px solid rgb\(var\(--color-accent\)\)/);
+    // ⚡ **Through the ring slot**, so an element's own `shadow-*` survives —
+    // 🔴 the halo was silently deleted on every one of them before.
+    expect(rule).toMatch(/--tw-ring-shadow:\s*0 0 0 4px rgb\(var\(--color-accent-subtle\)\)/);
+    expect(rule).toMatch(/var\(--tw-shadow, 0 0 #0000\)/);
+    // ♿ **A real outline, not a transparent one** — forced-colors discards
+    // `box-shadow` and honours `outline`.
+    expect(rule).not.toMatch(/outline:[^;]*transparent/);
   });
 });

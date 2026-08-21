@@ -136,3 +136,64 @@ describe('📁 "skeleton row count matches the expected result"', () => {
     expect(screen.queryByText('the body')).not.toBeInTheDocument();
   });
 });
+
+/**
+ * 🔴 **[B-1054](../../../docs/BUGS.md) — a failed read rendered its count as `0`.**
+ *
+ * ⛔ **QE induced it rather than waiting for it**: with
+ * `…/accounts/{id}/observations` forced to **500**, the heading read ***"What
+ * changed 0"*** above a body that correctly said *"Signora could not load what
+ * changed at this account. Nothing has changed about the account — reload to
+ * try again."* **Healthy, the same heading reads `21`.**
+ *
+ * ⚡ **The prose was exemplary and is not what the row is about.** 🔴 **`0` is a
+ * measurement, and no measurement was obtained** — and a reader scanning
+ * headings meets the number first.
+ *
+ * ⚠️ 📁 **The row's own note on method**: *"a test that only checks the healthy
+ * path cannot see this."*
+ */
+describe('🔴 a count is a measurement, so a failed read publishes none', () => {
+  it('⛔ renders no count at all when the read failed — not `0`', () => {
+    shell({ isError: true, severities: [] });
+
+    const region = screen.getByRole('region', { name: 'What contributed' });
+    // ⛔ **No zero, and no number of any kind** in the header's count slot.
+    expect(region.textContent).not.toMatch(/\b0\b/);
+  });
+
+  it("⚡ and no STALE count either — the figure is this render's", () => {
+    // 📁 The row: *"not `0`, and not a stale count from a previous render."*
+    const { rerender } = shell({ severities: ['none', 'none', 'watch'] });
+    expect(screen.getByRole('region', { name: 'What contributed' })).toHaveTextContent('3');
+
+    rerender(
+      <AccountSectionShell
+        id="score"
+        heading="What contributed"
+        severities={['none', 'none', 'watch']}
+        viewerId="u1"
+        kind={null}
+        isError
+      >
+        <p>the body</p>
+      </AccountSectionShell>,
+    );
+    const region = screen.getByRole('region', { name: 'What contributed' });
+    expect(region.textContent).not.toMatch(/\b3\b/);
+  });
+
+  /**
+   * ✅ **The rule the count exists for is untouched, and this is the assertion
+   * that proves the fix did not soften it.**
+   *
+   * 📁 *"A positive empty is good news, not a gap"* — **a read that SUCCEEDS
+   * and finds nothing still says `0`**, because *nothing here* and *could not
+   * find out* are different sentences and must never render the same
+   * ([P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md)).
+   */
+  it('✅ a SUCCESSFUL read that found nothing still says `0`', () => {
+    shell({ severities: [] });
+    expect(screen.getByRole('region', { name: 'What contributed' })).toHaveTextContent('0');
+  });
+});

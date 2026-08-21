@@ -118,7 +118,11 @@ export default function WorkspaceChooserPage() {
         <EmptyState
           title="You are not in an organization yet"
           description="Your organization is your company on Signora — where its accounts, evidence and decisions live. Create one, or ask a colleague to add you to theirs."
-          action={<Button onClick={() => router.push('/settings')}>Create an organization</Button>}
+          action={
+            <Button onClick={() => router.push('/settings')}>
+              Create an organization
+            </Button>
+          }
         />
       ) : (
         <>
@@ -154,7 +158,7 @@ export default function WorkspaceChooserPage() {
                   <button
                     type="button"
                     onClick={() => choose(workspace.id)}
-                    className="flex w-full items-center gap-3 rounded-lg border border-border px-3 py-3 text-left transition-colors hover:bg-surface-sunken focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
+                    className="flex w-full items-center gap-3 rounded-lg border border-border px-3 py-3 text-left transition-colors hover:bg-surface-sunken "
                   >
                     <span
                       aria-hidden
@@ -191,8 +195,8 @@ export default function WorkspaceChooserPage() {
 }
 
 /** 📁 *"Search appears above six workspaces."* ⛔ **Six, not five** — the same
- *  threshold the shell switcher uses, because it is the same judgement about
- *  when a list stops being scannable. */
+ * threshold the shell switcher uses, because it is the same judgement about
+ * when a list stops being scannable. */
 const SEARCH_APPEARS_ABOVE = 6;
 
 /**
@@ -203,7 +207,18 @@ const SEARCH_APPEARS_ABOVE = 6;
  * something somebody is telling you.
  */
 function countWord(n: number): string {
-  const words = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+  const words = [
+    'no',
+    'one',
+    'two',
+    'three',
+    'four',
+    'five',
+    'six',
+    'seven',
+    'eight',
+    'nine',
+  ];
   const said = words[n] ?? String(n);
   return n === 1 ? `${said} organization` : `${said} organizations`;
 }

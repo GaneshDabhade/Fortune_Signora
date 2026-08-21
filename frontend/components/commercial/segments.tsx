@@ -42,10 +42,6 @@ const STATE_TONE: Record<IcpSegmentSummary['state'], BadgeTone> = {
   archived: 'neutral',
 };
 
-export function segmentStateLabel(state: IcpSegmentSummary['state']): string {
-  return STATE_LABEL[state];
-}
-
 /**
  * Product names for one segment, and an honest count of what is missing.
  *

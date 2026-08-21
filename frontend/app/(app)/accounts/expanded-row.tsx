@@ -4,7 +4,10 @@ import Link from 'next/link';
 
 import { NothingSaid, StageBadge } from '@/components/accounts/account-commercial';
 import { formatDay } from '@/components/intelligence/dates';
-import { OpportunityMomentum, WorkflowStage } from '@/components/intelligence/opportunity';
+import {
+  OpportunityMomentum,
+  WorkflowStage,
+} from '@/components/intelligence/opportunity';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { SkeletonText, TD, TR } from '@/components/ui';
 import { formatMoney } from '@/lib/accounts/table';
@@ -80,11 +83,11 @@ export function ExpandedRow({
 }: {
   row: ListedAccount;
   /** ⚡ **How many columns the row must reach across.** Passed rather than
-   *  counted here: the page owns which columns are shown. */
+   * counted here: the page owns which columns are shown. */
   span: number;
   workspaceId: string | null;
   /** So the workflow line can say *you* rather than a name the reader would
-   *  have to recognise as their own. */
+   * have to recognise as their own. */
   viewerId: string | null;
   members: AccountOwnerProps['members'];
 }) {
@@ -107,7 +110,7 @@ export function ExpandedRow({
                 account brief is a built screen. */}
             <Link
               href={`/accounts/${row.account.account_id}`}
-              className="ml-auto text-xs font-semibold text-accent hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="ml-auto text-xs font-semibold text-accent hover:underline "
             >
               Open full record
             </Link>
@@ -140,7 +143,7 @@ function Panel({
 }: {
   label: React.ReactNode;
   /** 📁 §14's reserved hue, and the only thing that may wear it: content a
-   *  model authored. */
+   * model authored. */
   ai?: boolean;
   children: React.ReactNode;
 }) {
@@ -152,7 +155,8 @@ function Panel({
     >
       <p
         className={
-          'text-xs ' + (ai ? 'flex items-center gap-1.5 font-semibold text-ai' : 'text-content-muted')
+          'text-xs ' +
+          (ai ? 'flex items-center gap-1.5 font-semibold text-ai' : 'text-content-muted')
         }
       >
         {label}
@@ -182,7 +186,8 @@ function OpportunityPanel({
   members: AccountOwnerProps['members'];
 }) {
   const opportunity = useAccountOpportunity(workspaceId, accountId);
-  const missing = opportunity.error instanceof ApiError && opportunity.error.status === 404;
+  const missing =
+    opportunity.error instanceof ApiError && opportunity.error.status === 404;
 
   return (
     <Panel label="Open opportunity">
@@ -244,8 +249,8 @@ function CommercialPanel({ row }: { row: ListedAccount }) {
       {/* 🔴 **The sentence that replaces the input.** ⚡ It names where the fix
           is, which a disabled field would not. */}
       <p className="mt-3 text-xs leading-relaxed text-content-subtle">
-        Signora reads these from the system that reported them and does not
-        author them. Correct them where they are kept.
+        Signora reads these from the system that reported them and does not author them.
+        Correct them where they are kept.
       </p>
     </Panel>
   );
@@ -259,7 +264,13 @@ function CommercialPanel({ row }: { row: ListedAccount }) {
  * entitled to know what generated it **while they are reading it**"* — which is
  * why the model is beside the sentence rather than behind a hover.
  */
-function AiPanel({ accountId, workspaceId }: { accountId: string; workspaceId: string | null }) {
+function AiPanel({
+  accountId,
+  workspaceId,
+}: {
+  accountId: string;
+  workspaceId: string | null;
+}) {
   const conclusion = useAccountDecisionPackage(workspaceId, accountId);
   const missing = conclusion.error instanceof ApiError && conclusion.error.status === 404;
 
@@ -291,8 +302,8 @@ function AiPanel({ accountId, workspaceId }: { accountId: string; workspaceId: s
                 package is stored, so the count is always a real number. */}
             {conclusion.data.summary.evidence.length === 1
               ? '1 cited fact'
-              : `${conclusion.data.summary.evidence.length} cited facts`}{' '}
-            · {conclusion.data.model}
+              : `${conclusion.data.summary.evidence.length} cited facts`}
+            {' '}· {conclusion.data.model}
           </p>
         </div>
       )}
@@ -323,7 +334,9 @@ function Line({ label, children }: { label: string; children: React.ReactNode })
   return (
     <div className="flex items-baseline gap-3">
       <dt className="text-xs text-content-subtle">{label}</dt>
-      <dd className="ml-auto text-sm font-semibold tabular-nums text-content">{children}</dd>
+      <dd className="ml-auto text-sm font-semibold tabular-nums text-content">
+        {children}
+      </dd>
     </div>
   );
 }

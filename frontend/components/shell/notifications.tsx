@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useCallback, useId, useMemo, useRef, useState } from 'react';
 
 import { StatedAbsence } from '@/components/feedback/stated-absence';
-import { Tabs } from '@/components/ui/tabs';
+import { TabPanel, Tabs } from '@/components/ui/tabs';
 import { cn } from '@/lib/design/cn';
 import type { AppNotification } from '@/lib/api/types';
 import { useAccountIdentities } from '@/lib/query/hooks';
@@ -56,6 +56,12 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 type Tab = 'needs_you' | 'mention' | 'all';
 
 /**
+ * ♿ **The id base the tab strip and its panel share** — 📁
+ * [B-1055](../../../docs/BUGS.md).
+ */
+const FEED_TABS = 'notification-feed';
+
+/**
  * 📁 **The design's order, and its first tab carries a count** — the reference
  * panel's tabs read *"Needs you · 3"*, *"Mentions"*, *"All"*.
  *
@@ -64,14 +70,19 @@ type Tab = 'needs_you' | 'mention' | 'all';
  * the thing somebody is deciding whether to act on. **A count on *All* would be
  * the length of a list they can already see.**
  */
-function tabsFor(items: readonly AppNotification[]): readonly { value: Tab; label: string }[] {
+function tabsFor(
+  items: readonly AppNotification[],
+): readonly { value: Tab; label: string }[] {
   // ⚡ **Unread only.** ⛔ A count of everything ever sent would never fall, and
   // a number that only rises is one people stop reading.
   const blocking = items.filter(
     (item) => item.category === 'needs_you' && item.read_at === null,
   ).length;
   return [
-    { value: 'needs_you', label: blocking === 0 ? 'Needs you' : `Needs you · ${blocking}` },
+    {
+      value: 'needs_you',
+      label: blocking === 0 ? 'Needs you' : `Needs you · ${blocking}`,
+    },
     { value: 'mention', label: 'Mentions' },
     { value: 'all', label: 'All' },
   ];
@@ -165,14 +176,14 @@ export function Notifications() {
   );
   const groups = useMemo(() => groupByDay(shown, new Date()), [shown]);
   /** ⚡ **Every unread item, not the visible tab's** — 📁 the control sits in the
-   *  panel's head, above the tabs, and reads *"Mark all read"*. */
+   * panel's head, above the tabs, and reads *"Mark all read"*. */
   const unreadIds = useMemo(
     () => items.filter((one) => one.read_at === null).map((one) => one.id),
     [items],
   );
 
   /** 📁 *"Count badge caps at 99+"* — ⛔ **counted from the feed's own read
-   *  state**, which is what slice ⓐ put there. */
+   * state**, which is what slice ⓐ put there. */
   const label = badgeLabel(unreadCount(feed.data));
 
   return (
@@ -187,15 +198,14 @@ export function Notifications() {
         /* ♿ **The count is in the name, not only in the dot.** ⛔ A control
            labelled *Notifications* tells a screen-reader user nothing about
            whether opening it is worth their time. */
-        aria-label={
-          label === null ? 'Notifications' : `Notifications, ${label} unread`
-        }
-        style={{ width: SLOT_SPEC.notifications.width, height: SLOT_SPEC.notifications.height }}
+        aria-label={label === null ? 'Notifications' : `Notifications, ${label} unread`}
+        style={{
+          width: SLOT_SPEC.notifications.width,
+          height: SLOT_SPEC.notifications.height,
+        }}
         className={cn(
           'relative flex items-center justify-center rounded-md text-content-muted',
           'transition-colors hover:text-content',
-          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-          'focus-visible:outline-accent',
         )}
       >
         <Bell className="h-[18px] w-[18px]" aria-hidden />
@@ -232,16 +242,16 @@ export function Notifications() {
           className="absolute right-0 top-[calc(100%+12px)] z-20 w-[400px] rounded-lg border border-border-soft bg-surface shadow-lg"
         >
           {/**
-            * 📁 **The panel's own head — *"Notifications"*, the count, and
-            * *"Mark all read"*.** ⛔ **It had none**, so the only thing naming
-            * the panel was its accessible label.
-            *
-            * ⚠️ 📁 **The design's *"Notification settings"* footer is
-            * deliberately NOT built.** ⛔ It opens the *Notification Center*,
-            * which is **Workflow 17's screen and does not exist** — and a link
-            * to an unbuilt screen is the false-affordance class this slice has
-            * already refused twice.
-            */}
+           * 📁 **The panel's own head — *"Notifications"*, the count, and
+           * *"Mark all read"*.** ⛔ **It had none**, so the only thing naming
+           * the panel was its accessible label.
+           *
+           * ⚠️ 📁 **The design's *"Notification settings"* footer is
+           * deliberately NOT built.** ⛔ It opens the *Notification Center*,
+           * which is **Workflow 17's screen and does not exist** — and a link
+           * to an unbuilt screen is the false-affordance class this slice has
+           * already refused twice.
+           */}
           <div className="flex items-center gap-2.5 border-b border-border-soft px-4 py-3">
             <span className="text-sm font-semibold text-content">Notifications</span>
             {label === null ? null : (
@@ -261,8 +271,6 @@ export function Notifications() {
                 'ml-auto rounded text-xs font-semibold text-accent transition-colors',
                 'hover:underline disabled:cursor-not-allowed disabled:text-content-subtle',
                 'disabled:no-underline',
-                'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-                'focus-visible:outline-accent',
               )}
             >
               Mark all read
@@ -270,12 +278,26 @@ export function Notifications() {
           </div>
 
           <div className="border-b border-border-soft p-2">
-            <Tabs label="Notifications" items={tabsFor(items)} value={tab} onChange={setTab} />
+            <Tabs
+              label="Notifications"
+              idBase={FEED_TABS}
+              items={tabsFor(items)}
+              value={tab}
+              onChange={setTab}
+            />
           </div>
 
           {/* 📁 *"4 items visible before scroll."* ⚡ A row is ~76px, so the
-              height is stated in rows rather than guessed in pixels. */}
-          <div className="max-h-[304px] overflow-y-auto overscroll-contain">
+              height is stated in rows rather than guessed in pixels.
+              ♿ **And it is the panel the tabs above control** — 📁
+              [B-1055](../../../docs/BUGS.md). ⛔ **The scroll container IS the
+              panel**, rather than a wrapper around it, so the two cannot drift
+              apart the next time the height rule changes. */}
+          <TabPanel
+            idBase={FEED_TABS}
+            value={tab}
+            className="max-h-[304px] overflow-y-auto overscroll-contain"
+          >
             {feed.isPending ? (
               <p className="px-4 py-6 text-center text-xs text-content-subtle">
                 Loading your notifications…
@@ -350,7 +372,7 @@ export function Notifications() {
                 </section>
               ))
             )}
-          </div>
+          </TabPanel>
         </div>
       ) : null}
     </div>
@@ -382,89 +404,89 @@ function NotificationRow({
   const shape =
     'flex w-full items-start gap-3 px-4 py-3 text-left transition-colors ' +
     'hover:bg-surface-sunken ' +
-    'focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 ' +
-    'focus-visible:outline-accent';
+    '' +
+    '';
   const body = (
     <>
+      {/**
+       * 🔴 📁 ***"Agent and AI notifications are marked with the
+       * intelligence hue so a generated nudge never reads as a colleague's
+       * request."*** ⛔ **This row had no mark at all**, so an agent's nudge
+       * and a colleague's were the same object.
+       *
+       * ⚡ **A 7px tile, not a circle** — 📁 the design draws
+       * `avatarRadius: '7px'` here, and `components/ui/avatar.tsx` records
+       * why that matters: *"the avatar is the only circle in the shell…
+       * a second circle anywhere in the frame costs that."* ⛔ **So `Avatar`
+       * is deliberately not reused**: reusing it would spend the shell's one
+       * findable shape on a list row.
+       *
+       * ⚠️ **Nothing is drawn for a person**, and the absence is 📁
+       * [C-203](../../../docs/LANE_COORDINATION.md): this tier has no name to
+       * take initials from, and a grey circle with a question mark is copy
+       * the design never wrote.
+       */}
+      {item.actor_kind === 'agent' ? (
+        <span
+          aria-hidden
+          data-testid="agent-mark"
+          /* ⚠️ **`rounded-md` is 8px and the design draws 7px.** 📁 The radius
+             scale has 6 and 8 and no 7 — ⛔ and an arbitrary radius survives a
+             scale change unaltered, which `design-tokens` refuses for exactly
+             that reason. **The 1px is recorded rather than smuggled in.**
+             ⚠️ And the literal is spelled out nowhere above: the gate reads
+             the file, not the JSX, so naming it in prose fails it too. */
+          className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-md bg-ai text-2xs text-accent-contrast"
+        >
+          ✦
+        </span>
+      ) : null}
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm text-content">
+          {/* ⛔ **An agent's name, or nothing** — 📁 `C-203`: a person's name
+              is not resolvable in this tier, and inventing *"Someone"* would
+              be copy the design never wrote. */}
+          {item.actor_agent_name === null ? null : (
+            <span className="font-semibold">{item.actor_agent_name} </span>
+          )}
+          {item.summary}
+        </span>
         {/**
-          * 🔴 📁 ***"Agent and AI notifications are marked with the
-          * intelligence hue so a generated nudge never reads as a colleague's
-          * request."*** ⛔ **This row had no mark at all**, so an agent's nudge
-          * and a colleague's were the same object.
-          *
-          * ⚡ **A 7px tile, not a circle** — 📁 the design draws
-          * `avatarRadius: '7px'` here, and `components/ui/avatar.tsx` records
-          * why that matters: *"the avatar is the only circle in the shell…
-          * a second circle anywhere in the frame costs that."* ⛔ **So `Avatar`
-          * is deliberately not reused**: reusing it would spend the shell's one
-          * findable shape on a list row.
-          *
-          * ⚠️ **Nothing is drawn for a person**, and the absence is 📁
-          * [C-203](../../../docs/LANE_COORDINATION.md): this tier has no name to
-          * take initials from, and a grey circle with a question mark is copy
-          * the design never wrote.
-          */}
-        {item.actor_kind === 'agent' ? (
-          <span
-            aria-hidden
-            data-testid="agent-mark"
-            /* ⚠️ **`rounded-md` is 8px and the design draws 7px.** 📁 The radius
-               scale has 6 and 8 and no 7 — ⛔ and an arbitrary radius survives a
-               scale change unaltered, which `design-tokens` refuses for exactly
-               that reason. **The 1px is recorded rather than smuggled in.**
-               ⚠️ And the literal is spelled out nowhere above: the gate reads
-               the file, not the JSX, so naming it in prose fails it too. */
-            className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-md bg-ai text-2xs text-accent-contrast"
-          >
-            ✦
-          </span>
-        ) : null}
-        <span className="min-w-0 flex-1">
-          <span className="block text-sm text-content">
-            {/* ⛔ **An agent's name, or nothing** — 📁 `C-203`: a person's name
-                is not resolvable in this tier, and inventing *"Someone"* would
-                be copy the design never wrote. */}
-            {item.actor_agent_name === null ? null : (
-              <span className="font-semibold">{item.actor_agent_name} </span>
-            )}
-            {item.summary}
-          </span>
-          {/**
-            * 📁 **The design's `meta` line** — *"Agent · EMEA enterprise"*,
-            * *"Score change · −24 in three weeks"* — ⚡ **kind · context, joined
-            * by a middot**, and here it carries the two facts the criterion
-            * names that the sentence above does not: **which record**, and
-            * **what is expected.**
-            *
-            * ⚠️ **The record is dropped rather than guessed when it has no
-            * name.** ⛔ *"Unnamed account"* beside *"Review what it found"*
-            * tells a reader less than the expectation alone.
-            */}
-          <span className="mt-0.5 block text-2xs text-content-subtle">
-            {record === null ? null : (
-              <>
-                <span data-testid="notification-record">{record}</span>
-                {' · '}
-              </>
-            )}
-            {item.expectation}
-          </span>
+         * 📁 **The design's `meta` line** — *"Agent · EMEA enterprise"*,
+         * *"Score change · −24 in three weeks"* — ⚡ **kind · context, joined
+         * by a middot**, and here it carries the two facts the criterion
+         * names that the sentence above does not: **which record**, and
+         * **what is expected.**
+         *
+         * ⚠️ **The record is dropped rather than guessed when it has no
+         * name.** ⛔ *"Unnamed account"* beside *"Review what it found"*
+         * tells a reader less than the expectation alone.
+         */}
+        <span className="mt-0.5 block text-2xs text-content-subtle">
+          {record === null ? null : (
+            <>
+              <span data-testid="notification-record">{record}</span>
+              {' · '}
+            </>
+          )}
+          {item.expectation}
         </span>
-        {/* 📁 *"the time, right-aligned, tabular"* — ⚡ the day is the group
-            head's, so the row says only the hour. */}
-        <span className="shrink-0 text-2xs tabular-nums text-content-subtle">
-          {timeOf(item.occurred_at)}
-        </span>
-        {/* 📁 *"Unread is a 6px dot on the right, never a coloured row."* */}
-        {unread ? (
-          <span
-            aria-hidden
-            data-testid="unread-dot"
-            className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
-          />
-        ) : null}
-        {/* ♿ The dot is decorative; the state is said. */}
-        <span className="sr-only">{unread ? 'Unread' : 'Read'}</span>
+      </span>
+      {/* 📁 *"the time, right-aligned, tabular"* — ⚡ the day is the group
+          head's, so the row says only the hour. */}
+      <span className="shrink-0 text-2xs tabular-nums text-content-subtle">
+        {timeOf(item.occurred_at)}
+      </span>
+      {/* 📁 *"Unread is a 6px dot on the right, never a coloured row."* */}
+      {unread ? (
+        <span
+          aria-hidden
+          data-testid="unread-dot"
+          className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
+        />
+      ) : null}
+      {/* ♿ The dot is decorative; the state is said. */}
+      <span className="sr-only">{unread ? 'Unread' : 'Read'}</span>
     </>
   );
 

@@ -84,7 +84,7 @@ export function Table({ className, summary, onDismissSummary, ...props }: TableP
               onClick={onDismissSummary}
               // ♿ Names what it removes, not the glyph.
               aria-label="Dismiss summary"
-              className="shrink-0 rounded px-1 text-sm text-ai transition-opacity hover:opacity-70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="shrink-0 rounded px-1 text-sm text-ai transition-opacity hover:opacity-70 "
             >
               ✕
             </button>
@@ -214,7 +214,8 @@ export function TD({
         // start where the eye lands — and it is 2px, which is what makes
         // selection legible without colour.
         'group-data-[selected]:before:absolute group-data-[selected]:before:inset-y-0',
-        pin && 'bg-surface group-hover:bg-surface-sunken group-data-[selected]:bg-accent-subtle',
+        pin &&
+          'bg-surface group-hover:bg-surface-sunken group-data-[selected]:bg-accent-subtle',
         pin &&
           'group-data-[selected]:before:left-0 group-data-[selected]:before:w-0.5 group-data-[selected]:before:bg-accent',
         pinned(pin),
@@ -296,9 +297,18 @@ export function EditableCell({
         onBlur={commit}
         className={cn(
           'w-full bg-transparent px-4 py-3 text-content',
-          // 📁 *"reveal a 6px ring on focus"* — ⛔ the ring is the affordance,
-          // so the cell must look like ordinary text until it is focused.
-          'focus:outline-none focus:ring-[6px] focus:ring-accent-subtle',
+          // ⛔ **The ring is the affordance** — the cell must look like ordinary
+          // text until it is focused — ⚡ **but it is the product's ONE focus
+          // treatment**, drawn by `globals.css` ([B-1058](../../../docs/BUGS.md)).
+          //
+          // ⚠️ **The design disagrees with itself here and this follows the
+          // markup.** 📁 Design System v2's prose says *"Editable cells reveal a
+          // **6px** ring on focus"*; 📁 **its own inline-edit element is drawn as
+          // `border:1px solid var(--brand); box-shadow:0 0 0 3px
+          // var(--brand-tint)`** — the same pair as every other focused control,
+          // and `0 0 0 6px` appears nowhere in any of the 35 documents.
+          // **Recorded as [C-1540](../../../docs/LANE_COORDINATION.md); not
+          // resolved in code beyond following the thing that is drawn.**
           'focus:relative focus:z-10 focus:rounded',
         )}
       />

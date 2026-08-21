@@ -32,8 +32,20 @@
  */
 
 import { Activity, NotebookPen, Sparkles } from 'lucide-react';
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import type { ComponentType, ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import type {
+  ComponentType,
+  KeyboardEvent as ReactKeyboardEvent,
+  ReactNode,
+} from 'react';
 
 import { cn } from '@/lib/design/cn';
 import {
@@ -46,7 +58,15 @@ import {
   type PanelTab,
 } from '@/lib/shell/utility-panel';
 import { bandFor } from '@/lib/shell/rail';
+import { tabId, tabPanelId } from '@/components/ui/tabs';
 import { UTILITY_PANEL_TARGET } from './skip-links';
+
+/**
+ * ♿ **The id base this panel's tabs and panel share** — 📁
+ * [B-1055](../../../docs/BUGS.md), and the same grammar
+ * `components/ui/tabs.tsx` gives every other tab strip.
+ */
+const PANEL_TAB_IDS = 'utility-panel';
 
 /**
  * 📁 **§13 — *"a 28px rail with the tab icons"*.** ⛔ **One icon per tab, and
@@ -98,7 +118,10 @@ const PublishedContext = createContext<Partial<Record<PanelTab, ReactNode>>>({})
  * it do — **and a throw would make the panel a hard dependency of every screen
  * that might one day dock something.**
  */
-export function useUtilityPanel(tab: PanelTab, content: ReactNode): { carrying: boolean } {
+export function useUtilityPanel(
+  tab: PanelTab,
+  content: ReactNode,
+): { carrying: boolean } {
   const panel = useContext(PanelContext);
   const carrying = panel !== null && panel.state !== 'absent';
 
@@ -215,7 +238,8 @@ export function UtilityPanelProvider({
       if (event.key !== '.' || !(event.metaKey || event.ctrlKey)) return;
       const target = event.target as HTMLElement | null;
       const tag = target?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || target?.isContentEditable === true) return;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || target?.isContentEditable === true)
+        return;
       event.preventDefault();
       toggle();
     };
@@ -242,10 +266,19 @@ export function UtilityPanelProvider({
    * way. 📁 **`w-panel-wide` does not exist and adding one would be a change to
    * the design system** ([§20c](../../../CLAUDE.md)) **to serve one caller.**
    */
-  const panelWidth = state === 'open' ? PANEL_WIDTH[bandFor(width)] : PANEL_WIDTH.smallLaptop;
+  const panelWidth =
+    state === 'open' ? PANEL_WIDTH[bandFor(width)] : PANEL_WIDTH.smallLaptop;
 
   const contract = useMemo<PanelContract>(
-    () => ({ state, width: panelWidth, activeTab, setActiveTab, toggle, publish, withdraw }),
+    () => ({
+      state,
+      width: panelWidth,
+      activeTab,
+      setActiveTab,
+      toggle,
+      publish,
+      withdraw,
+    }),
     [state, panelWidth, activeTab, toggle, publish, withdraw],
   );
 
@@ -281,6 +314,7 @@ export function UtilityPanelDock() {
       width={panel.width}
       activeTab={panel.activeTab}
       onTab={panel.setActiveTab}
+      onOpen={panel.toggle}
       published={published}
     />
   );
@@ -297,6 +331,7 @@ export function UtilityPanel({
   width,
   activeTab,
   onTab,
+  onOpen,
   published,
 }: {
   state: PanelState;
@@ -304,8 +339,21 @@ export function UtilityPanel({
   width: number | null;
   activeTab: PanelTab;
   onTab: (tab: PanelTab) => void;
+  /**
+   * 🔴 **What the COLLAPSED rail's controls do** — 📁
+   * [B-1055](../../../docs/BUGS.md). ⛔ **They used to change `activeTab` and
+   * nothing else**, which, with no panel rendered, changed an invisible
+   * selection: **a control that does nothing a person can see.**
+   */
+  onOpen: () => void;
   published: Partial<Record<PanelTab, ReactNode>>;
 }) {
+  /**
+   * ⛔ **Declared BEFORE the early return**, because a hook after one is a hook
+   * that runs on some renders and not others.
+   */
+  const tabRefs = useRef(new Map<PanelTab, HTMLButtonElement>());
+
   // ⛔ **Absent means ABSENT** — no element, no landmark. 📁 A zero-width
   // `aside` would still offer a screen-reader user a *complementary* region
   // containing nothing.
@@ -313,6 +361,36 @@ export function UtilityPanel({
 
   const open = state === 'open';
   const content = published[activeTab];
+
+  /**
+   * ♿ **The keyboard contract a roving tabindex REQUIRES** — 📁
+   * [B-1055](../../../docs/BUGS.md).
+   *
+   * 🔴 **Adding `tabIndex={-1}` without this would be a regression, not a
+   * fix**: the two unselected tabs would leave the tab order and nothing would
+   * bring the keyboard to them. ⚡ **This is the same `→ ← Home End` grammar
+   * `components/ui/tabs.tsx` implements**, deliberately spelled the same way,
+   * because two answers to *how does a tab strip move* is what that component's
+   * own docstring was written to stop.
+   */
+  const onTabKey = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    const index = PANEL_TABS.indexOf(activeTab);
+    if (index === -1) return;
+
+    let next: number | null = null;
+    if (event.key === 'ArrowRight') next = (index + 1) % PANEL_TABS.length;
+    if (event.key === 'ArrowLeft')
+      next = (index - 1 + PANEL_TABS.length) % PANEL_TABS.length;
+    if (event.key === 'Home') next = 0;
+    if (event.key === 'End') next = PANEL_TABS.length - 1;
+    if (next === null) return;
+
+    event.preventDefault();
+    const target = PANEL_TABS[next];
+    if (target === undefined) return;
+    onTab(target);
+    tabRefs.current.get(target)?.focus();
+  };
 
   return (
     <aside
@@ -332,22 +410,38 @@ export function UtilityPanel({
       )}
     >
       {/**
-        * 🔴 **The collapsed rail is ICONS at 24 × 24, and it was LETTERS at
-        * 19 × 26** — 📁 §13: *"Collapsing leaves a **28px rail with the tab
-        * icons**."*
-        *
-        * ⚠️ **Measured on `/accounts` at 1440 × 900**: the three controls were
-        * `19 × 26` with a 4px gap, rendering `I`, `A`, `N`. ⛔ **That fails
-        * `2.5.8` twice over** — 📁 Design System v2 §17: *"Targets ≥ 24px with
-        * 8px separation"* — **and a bare initial is not the *icon* the design
-        * names**: `I` and `A` say nothing a person can learn from.
-        *
-        * ⚡ **The accessible name is unchanged and still carries the word**, so
-        * nothing is lost to a screen reader by the letters going.
-        */}
+       * 🔴 **The collapsed rail is ICONS at 24 × 24, and it was LETTERS at
+       * 19 × 26** — 📁 §13: *"Collapsing leaves a **28px rail with the tab
+       * icons**."*
+       *
+       * ⚠️ **Measured on `/accounts` at 1440 × 900**: the three controls were
+       * `19 × 26` with a 4px gap, rendering `I`, `A`, `N`. ⛔ **That fails
+       * `2.5.8` twice over** — 📁 Design System v2 §17: *"Targets ≥ 24px with
+       * 8px separation"* — **and a bare initial is not the *icon* the design
+       * names**: `I` and `A` say nothing a person can learn from.
+       *
+       * ⚡ **The accessible name is unchanged and still carries the word**, so
+       * nothing is lost to a screen reader by the letters going.
+       */}
+      {/**
+       * 🔴 **[B-1055](../../../docs/BUGS.md) — the role is claimed only when it
+       * is true.**
+       *
+       * ⛔ **Collapsed, this strip published three `role="tab"` for a panel it
+       * was not rendering**, and clicking one changed `activeTab` without
+       * opening anything. ⚡ **So collapsed they are not tabs at all**: they are
+       * three buttons that open the panel at a section, which is what a person
+       * clicking a 24px icon on a 28px rail is asking for — and 📁 §13's
+       * *"collapsing leaves a 28px rail with the tab icons"* describes the way
+       * back in, not a tab strip with no panel.
+       *
+       * ♿ **`aria-expanded` is the honest role there**, and `aria-controls`
+       * still names the panel each button would open.
+       */}
       <div
-        role="tablist"
-        aria-label="Utility panel sections"
+        role={open ? 'tablist' : undefined}
+        aria-label={open ? 'Utility panel sections' : undefined}
+        onKeyDown={open ? onTabKey : undefined}
         className={cn(
           'flex border-b border-border-soft',
           // 📁 **8px separation, both ways** — `2.5.8`, and the same gap
@@ -362,17 +456,38 @@ export function UtilityPanel({
             <button
               key={tab}
               type="button"
-              role="tab"
-              aria-selected={tab === activeTab}
+              ref={(node) => {
+                if (node) tabRefs.current.set(tab, node);
+                else tabRefs.current.delete(tab);
+              }}
+              id={tabId(PANEL_TAB_IDS, tab)}
+              {...(open
+                ? {
+                    role: 'tab' as const,
+                    'aria-selected': tab === activeTab,
+                    // ⛔ **Roving tabindex, matching the queue tablist that
+                    // already had one.** ⚠️ **All three read `null` before**, so
+                    // `Tab` walked the strip instead of leaving it.
+                    tabIndex: tab === activeTab ? 0 : -1,
+                  }
+                : {
+                    // ♿ **Not a tab when there is no panel** — a disclosure.
+                    'aria-expanded': false,
+                  })}
+              aria-controls={tabPanelId(PANEL_TAB_IDS)}
               // ⚡ **The tab rail is 28px wide, so the label cannot show** —
               // ♿ but it must still be the accessible name, or the control is a
               // button called nothing.
               aria-label={tab}
               title={tab}
-              onClick={() => onTab(tab)}
+              // ⛔ **Collapsed, selecting a section must also OPEN the panel**,
+              // or the click has no visible effect at all.
+              onClick={() => {
+                onTab(tab);
+                if (!open) onOpen();
+              }}
               className={cn(
                 'rounded transition-colors',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
                 // ⛔ **24 × 24 when collapsed, and that is the floor rather
                 // than a preference**: the panel is 28px, so a larger target
                 // would not fit and a smaller one is the defect this replaced.
@@ -391,7 +506,16 @@ export function UtilityPanel({
       </div>
 
       {open ? (
-        <div role="tabpanel" aria-label={activeTab} className="min-h-0 flex-1 overflow-y-auto p-3">
+        <div
+          role="tabpanel"
+          id={tabPanelId(PANEL_TAB_IDS)}
+          // ♿ **Named by its tab, not by a duplicate string** — 📁
+          // [B-1055](../../../docs/BUGS.md). ⛔ **`aria-label={activeTab}` was a
+          // second spelling of the tab's own name**, which reads correctly right
+          // up until the two disagree.
+          aria-labelledby={tabId(PANEL_TAB_IDS, activeTab)}
+          className="min-h-0 flex-1 overflow-y-auto p-3"
+        >
           {content ?? <NothingDocked tab={activeTab} />}
         </div>
       ) : null}

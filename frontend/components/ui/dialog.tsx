@@ -138,7 +138,9 @@ export function Dialog({
           <h2 id={titleId} className="text-base font-semibold">
             {title}
           </h2>
-          {description ? <p className="text-sm text-content-muted">{description}</p> : null}
+          {description ? (
+            <p className="text-sm text-content-muted">{description}</p>
+          ) : null}
         </div>
         {/* 🔴 **[B-312] — the reason this is in the HEADER and not left to the
             caller.** A dialog whose footer happens to carry a Cancel button was
@@ -155,8 +157,6 @@ export function Dialog({
           className={cn(
             'shrink-0 rounded p-1 text-content-subtle transition-colors',
             'hover:text-content',
-            'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-            'focus-visible:outline-accent',
           )}
         >
           <span aria-hidden>✕</span>

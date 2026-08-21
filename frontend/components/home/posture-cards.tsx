@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Card } from '@/components/ui';
 
 import { AccountName } from '@/components/intelligence/account-name';
 import { CardFailure } from '@/components/home/card-failure';
@@ -112,7 +113,9 @@ function PostureCard({
   const mine =
     resolved === null
       ? []
-      : (queue.data?.items ?? []).filter((entry) => resolved.get(entry.signal_type) === posture);
+      : (queue.data?.items ?? []).filter(
+          (entry) => resolved.get(entry.signal_type) === posture,
+        );
   const shown = mine.slice(0, MAX);
 
   /**
@@ -130,7 +133,7 @@ function PostureCard({
    * unaffected."*
    */
   /** 📁 §09's timed rules — no skeleton under 300ms, an error state over 8s.
-   *  ⚡ **Both reads**, because the card waits on the slower of the two. */
+   * ⚡ **Both reads**, because the card waits on the slower of the two. */
   const phase = useCardPhase(queue.isPending || postures.isPending);
 
   /* ⚡ **A timeout lands here too** — 📁 *"the card converts to its error state
@@ -161,7 +164,7 @@ function PostureCard({
      * ⛔ **And nothing at all for the first 300ms**, which 📁 §09 calls a flicker. */
     return (
       <Frame title={title} testId={testId}>
-        <div aria-hidden className="space-y-3 px-[18px] py-[15px]">
+        <div aria-hidden className="space-y-3 px-5 py-[15px]">
           {phase === 'skeleton' ? (
             <>
               <div className="h-4 w-2/3 animate-pulse rounded bg-surface-sunken" />
@@ -180,7 +183,7 @@ function PostureCard({
          * mistaken for a failure."* ⛔ Distinct copy per card, because a shared
          * empty component is contract item 4's named violation. */
         <p
-          className="px-[18px] py-[15px] text-[12.5px] leading-[1.55] text-content-muted"
+          className="px-5 py-[15px] text-label leading-[1.55] text-content-muted"
           data-testid={`${testId}-quiet`}
         >
           {quiet}
@@ -207,7 +210,7 @@ function PostureCard({
           {mine.length > MAX ? (
             <Link
               href="/signals"
-              className="block px-[18px] py-3 text-[12.5px] font-semibold text-accent hover:text-accent-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="block px-5 py-3 text-label font-semibold text-accent hover:text-accent-hover "
             >
               See all {mine.length} in Signals
             </Link>
@@ -247,8 +250,12 @@ function Row({
   return (
     <div
       className={cn(
-        'flex flex-wrap items-start gap-x-3 gap-y-2.5 border-b border-l-2 border-border-soft px-[18px] py-[15px]',
-        tone === 'risk' ? 'border-l-danger' : tone === 'warn' ? 'border-l-warning' : 'border-l-success',
+        'flex flex-wrap items-start gap-x-3 gap-y-2.5 border-b border-l-2 border-border-soft px-5 py-[15px]',
+        tone === 'risk'
+          ? 'border-l-danger'
+          : tone === 'warn'
+            ? 'border-l-warning'
+            : 'border-l-success',
       )}
     >
       <div className="min-w-[13rem] flex-1">
@@ -276,17 +283,19 @@ function Row({
           {/* ⛔ **Omitted rather than zero-filled** — ADR-0409 §5. A `$0` beside
               an account name is a figure an executive would act on. */}
           {value === null ? null : (
-            <span className="text-[11.5px] font-semibold tabular-nums text-content-subtle">
+            <span className="text-2xs font-semibold tabular-nums text-content-subtle">
               {formatMoney(value)}
             </span>
           )}
         </div>
-        <p className="mt-1.5 text-[12.5px] leading-[1.55] text-content-muted">{entry.rationale}</p>
+        <p className="mt-1.5 text-label leading-[1.55] text-content-muted">
+          {entry.rationale}
+        </p>
       </div>
       <Link
         href={`/accounts/${entry.entity_id}`}
         className={cn(
-          'inline-flex h-[31px] flex-none items-center rounded-md px-3 text-[12.5px] font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+          'inline-flex h-[31px] flex-none items-center rounded-md px-3 text-label font-semibold transition-colors ',
           lead
             ? 'border border-accent bg-accent text-accent-contrast hover:bg-accent-hover'
             : 'border border-border text-content hover:border-accent hover:text-accent',
@@ -309,23 +318,36 @@ function Frame({
   count?: number;
   children: React.ReactNode;
 }) {
+  /* 🔴 **The shared [`Card`](../ui/card.tsx), and the class string it
+     replaces was not merely inconsistent — it carried `shadow-e1`, **a
+     utility that does not exist**. `boxShadow` in `tailwind.config.ts`
+     defines `sm`, `DEFAULT`, `lg` and `xl` and no `e1`, so Tailwind emitted
+     nothing and **five Home cards rendered with no elevation** while every
+     other card in the product carried `--e1`. ⚠️ **Invisible in review,
+     because no two of them appear on one screen beside a correct card.**
+
+     ⛔ **`rounded-xl` was also the wrong step.** 📁 §05 `radii` gives **12px
+     to *"Card, menu, popover, toast, chart container"*** and reserves 16px
+     for *"table plane, dialog, drawer, assistant panel"*. */
   return (
-    <div
+    <Card
       aria-labelledby={`${testId}-heading`}
       data-testid={testId}
-      className="overflow-hidden rounded-xl border border-border-soft bg-surface shadow-e1"
+      className="overflow-hidden"
     >
-      <div className="flex items-center gap-2 border-b border-border-soft px-[18px] py-3">
+      <div className="flex items-center gap-2 border-b border-border-soft px-5 py-3">
         <h2 id={`${testId}-heading`} className="text-label font-semibold text-content">
           {title}
         </h2>
         {/* 📁 *"with the population each was derived from"* — ⚡ the size of the
             set this card ranked, not the number of rows it drew. */}
         {count === undefined ? null : (
-          <span className="text-2xs font-semibold tabular-nums text-content-subtle">{count}</span>
+          <span className="text-2xs font-semibold tabular-nums text-content-subtle">
+            {count}
+          </span>
         )}
       </div>
       {children}
-    </div>
+    </Card>
   );
 }
