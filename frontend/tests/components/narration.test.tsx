@@ -350,3 +350,39 @@ describe('a narration whose evidence has moved says so where it can be read', ()
     ).toBeVisible();
   });
 });
+
+/**
+ * 🔴 **📁 §14's reserved hue, on the one surface it was written for.**
+ *
+ * 📁 `Design Documents/Fortune Signora Account 360.html` draws the summary
+ * strip as **`background:var(--ai-tint); border:1px solid var(--ai-line)`**.
+ * ⛔ **This strip rendered `bg-surface-raised` with a neutral border** — 🔴 **so
+ * the one element on the page that is machine-authored was the one NOT wearing
+ * the grammar**, while the reasoning card and the evidence chips beside it both
+ * did.
+ *
+ * ⚡ **`--ai-line` only existed from [B-1051](../../../docs/BUGS.md)**; before
+ * that there was no border token for the pairing at all.
+ *
+ * ⚠️ **This asserts the CLASS, and that is the honest half of the claim.** ✅ The
+ * VALUES behind the classes are asserted against the design in both themes by
+ * 📁 `design-foundation.test.tsx` — measured: `--ai-tint` `#f0f1fc` / `#1a1f38`
+ * and `--ai-line` `#dcdefa` / `#2b3159`, our tokens exactly. ⛔ **What neither
+ * test covers is the browser painting it**, and this change was NOT verified in
+ * a running page: the environment's sign-in harness was failing at the
+ * organization chooser while QE certifies that harness on the frozen candidate.
+ */
+describe('§14 — the AI summary strip wears the reserved hue', () => {
+  it('carries the AI tint and its matching line, not a neutral surface', () => {
+    const { container } = render(<NarrativeBlock narration={narration()} />);
+
+    const strip = container.querySelector('section > div');
+    expect(strip).not.toBeNull();
+    expect(strip?.className).toContain('bg-ai-subtle');
+    expect(strip?.className).toContain('border-ai-line');
+
+    // ⛔ **And not the neutral treatment it replaced**, so a revert fails here
+    // rather than passing quietly on a superset of classes.
+    expect(strip?.className).not.toContain('bg-surface-raised');
+  });
+});

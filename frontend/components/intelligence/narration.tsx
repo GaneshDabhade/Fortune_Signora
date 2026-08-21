@@ -122,8 +122,11 @@ export function NarrativeBlock({
     return (
       <section id={id} className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold text-content">In plain language</h2>
+        {/* ⚡ **The same shell as the settled strip** — 📁 the design's loading
+            rule is *"same shape"*, and a placeholder that changes colour when
+            it resolves is a shape change. */}
         <div
-          className="flex flex-col gap-2 rounded-md border border-border bg-surface-raised px-4 py-3.5"
+          className="flex flex-col gap-2 rounded-md border border-ai-line bg-ai-subtle px-4 py-3.5"
           aria-hidden
         >
           {Array.from({ length: skeletonRows(null) }, (_, row) => (
@@ -146,7 +149,26 @@ export function NarrativeBlock({
     <section id={id} className="flex flex-col gap-3">
       <h2 className="text-sm font-semibold text-content">In plain language</h2>
 
-      <div className="flex flex-col gap-3 rounded-md border border-border bg-surface-raised px-4 py-3.5">
+      {/* 🔴 **📁 The design marks this strip with the RESERVED AI HUE, and it
+          was rendering neutral.**
+
+          📁 `Design Documents/Fortune Signora Account 360.html`, the summary
+          strip: **`background:var(--ai-tint); border:1px solid var(--ai-line)`**
+          with a 20px `--ai` glyph tile. ⛔ **This carried `bg-surface-raised`
+          and `border-border`** — 🔴 **so the ONE element on the page that is
+          machine-authored was the one not wearing §14's grammar**, while the
+          reasoning card and the evidence chips beside it both did.
+
+          ⚡ **`--ai-line` only became available with
+          [B-1051](../../../docs/BUGS.md)** — before that there was no border
+          token for the pairing and the neutral edge was the closest thing that
+          existed. **The token arriving is what makes this implementable.**
+
+          📁 §14: *"Intelligence gets its own reserved hue… and a consistent
+          grammar. Nothing else in the product may use that combination."* ⚠️ **A
+          reserved hue that the flagship AI surface does not use is a rule with a
+          hole in exactly the place it was written for.** */}
+      <div className="flex flex-col gap-3 rounded-md border border-ai-line bg-ai-subtle px-4 py-3.5">
         <ol className="flex flex-col gap-2.5">
           {narration.statements.map((statement, index) => (
             <li
