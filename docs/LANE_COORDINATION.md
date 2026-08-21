@@ -353,6 +353,9 @@ databaseUrl: required(
 
 | Id | What | Requester | Owner | Status | Blocks |
 |---|---|---|---|---|---|
+| [C-1544](#c-1544--adr-0028-makes-the-deterministic-mock-the-development-default-and-the-mock-satisfies-no-schema-the-platform-defines) | 🟠 **ADR-0028 makes the deterministic mock the development default, and the mock satisfies NO schema the platform defines** | **Lane A**, 2026-08-21, taking the Playground seeder | ⛔ **Product Owner** — 📁 the alternatives all decide what *development mode* means | 🟠 **`OPEN`** | ⛔ **Every AI-authored surface, in development.** ✅ **Production and evaluation are unaffected** |
+| [C-1543](#c-1543--the-validation-sections-heading-is-in-no-final-design-document-and-the-designs-nearest-heading-is-a-different-capability) | 🟢 **The validation section's heading is in no final design document, and the design's nearest heading is a different capability** | **Lane A**, 2026-08-21, the Company 360 vocabulary pass | ⛔ **Product Owner** | 🟢 **`OPEN`** | ⛔ **One heading.** ✅ **Left unchanged — renaming it was tried and reverted** |
+| [C-1542](#c-1542--the-designs-single-score-card-is-split-across-two-blocks-one-of-them-unanchored) | 🟢 **The design's single `#score` card is split across two blocks, one of them unanchored** | **Lane A**, 2026-08-21, the Company 360 micro-audit | ⛔ **Product Owner** | 🟢 **`OPEN`** | ⛔ **Consolidation would delete two producer-backed blocks the design has no place for** |
 | [C-1541](#c-1541--a-design-snapshot-measuring-instrument-exists-and-infra-is-lane-cs) | 🟢 **A design-snapshot measuring instrument exists, and `infra/` is Lane C's** — offered for adoption, not filed there | **Lane A**, 2026-08-21, after QE flagged [D-022](DECISION_REGISTER.md) | ⛔ **Lane C** — 📁 **[D-022](DECISION_REGISTER.md) reserves `infra/`** | 🟢 **`OPEN`** | ✅ **Nothing blocked.** ⚡ **It works today under `frontend/tests/support/`** |
 | [C-1540](#c-1540--design-system-v2-specifies-a-6px-inline-edit-ring-in-prose-and-draws-the-standard-3px-focus-pair-in-markup) | 🟢 **Design System v2 specifies a `6px` inline-edit ring in PROSE and draws the standard focus pair in MARKUP** | **Lane A**, 2026-08-21, fixing [B-1058](BUGS.md) | ⛔ **Product Owner** — 📁 the design disagrees with itself; a lane must not pick | 🟢 **`OPEN`** | ⛔ **One declaration in `table.tsx`.** ✅ **Implemented as the drawn value, which is also the product-wide one** |
 | [C-1533](#c-1533--home-state-14s-entry-condition-and-its-copy-describe-different-cards) | 🟠 **Home state 14's entry condition and its copy describe different cards** — the sentence is false exactly when the state fires | **Lane A**, 2026-08-19, implementing the fourteen states | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **State 14 only.** ✅ **Thirteen of fourteen states are implemented and browser-verified** |
@@ -676,6 +679,105 @@ is what currently makes states 02, 03 and 04 unreachable.**
 for state 11 — 📁 the string is ready the day a producer or a ruling exists, and a
 copy table holding a sentence nothing renders is honest in a way a fabricated
 substitute would not be.
+
+---
+
+## C-1544 · ADR-0028 makes the deterministic mock the development default, and the mock satisfies no schema the platform defines
+
+| | |
+|---|---|
+| **Raised** | **Lane A**, 2026-08-21, on taking the Playground seeder to unblock browser verification |
+| **Owner of the answer** | ⛔ **Product Owner** — ⚡ **every alternative below decides what *development mode* means**, and 📁 [§10](../CLAUDE.md) / [ADR-0028](architecture/adr/0028-model-runtime-by-environment.md) is a ratified position this lane must not reinterpret |
+| **Severity** | 🟠 **P2** — ⛔ **no AI-authored surface can render in development.** ✅ **Production and evaluation are unaffected**; both use real providers |
+| **Status** | 🟠 **`OPEN`** |
+
+### 🔴 The two statements, and they cannot both hold
+
+📁 **[§10](../CLAUDE.md), ratified**: ***"Development — the default: the deterministic mock provider… Development must never require a locally running LLM… A fresh clone is productive with no local model."***
+
+📁 **[`adapters/mock.py`](../backend/modules/ai_platform/infrastructure/adapters/mock.py)**, its own comment: ***"A valid, empty JSON object: every prompt in this platform demands a schema-constrained object, so the default has to PARSE even though it asserts nothing."*** — `DEFAULT_CONTENT = "{}"`.
+
+⛔ **Parsing is not satisfying.** ⚡ **`Narration` requires `points: tuple[GroundedStatement, ...]`**, so `{}` fails validation every time.
+
+### ⚡ Measured, not inferred
+
+```
+cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -m tests.playground.narrate
+  → 0 of 7 accounts narrated
+  → SchemaViolationError: model output does not match Narration:
+    points — Field required [type=missing, input_value={}]
+```
+
+⚠️ **7 of 7, with the same error.** 📁 **`tests/playground/narrate.py` already exists** and is the seeder's narration pass — ⛔ **its docstring assumes Ollama**, which predates ADR-0028's amendment. **It resolves the mock correctly** (the mock registers under `settings.ollama_model`, so `for_model` finds it); **the mock simply cannot answer.**
+
+### 🔴 What it costs, and it is why this was found
+
+⛔ **Five elements of the Account 360 design-conformance audit cannot be verified in a browser**, because the Playground cannot produce what the design assumes:
+
+| | |
+|---|---|
+| **AI summary strip** | ⛔ no narration → renders its absence branch |
+| **Reasoning card** | ⛔ no decision packages |
+| **Evidence citations** | ⛔ 0 of 170 resolve |
+| **Segment chips** | ⛔ 0 segments, 0 memberships |
+| **Competitors** | ⛔ 0 declared |
+
+⚡ **The last two are ordinary seeding and this lane can do them through the real declaration endpoints.** 🔴 **The first three all require a model to answer**, and in development the only provider is one that cannot.
+
+### ⚠️ The alternatives, and each decides something different
+
+| | | |
+|---|---|---|
+| **① Leave it** | Development renders no AI surface | ⛔ **Every AI-authored screen is unverifiable by anyone without a hosted key**, and 📁 §19 requires the implementing lane to review its journey headed |
+| **② Script the mock per prompt** | It returns schema-valid grounded output | ⚠️ **The sentences a customer reads would be composed by this repository.** ⛔ **Whether that is *deterministic development behaviour* or *fabricated business data* is exactly the line the product owner has drawn, and a lane must not draw it** |
+| **③ Make narration Evaluation-mode only** | The Playground narrates with a real provider, on request | ⚡ **Honest, and it is close to today's behaviour** — ⛔ **but it makes *"a fresh clone is productive with no local model"* false for every AI screen** |
+| **④ Amend §10** | Say plainly that development renders no AI-authored content | ✅ **Costs nothing and makes the repository truthful** — ⛔ **and it is a governance change, which is the product owner's alone** |
+
+### ✅ This lane's recommendation, offered as input and not acted on
+
+⚡ **② is the only option that makes the audit completable, and it is the one this lane must not take unilaterally.** 📁 **Grounding is deterministic** — the platform already validates that every citation token refers to evidence actually supplied — **so a mock echoing its own evidence back would produce a claim that is TRUE, composed rather than invented.** ⚠️ **That is an argument, not a ruling**, and the distinction between *composed from real evidence* and *fabricated* is the product owner's to draw.
+
+⛔ **Nothing has been changed in `ai_platform` pending the answer.** ✅ **Segments and competitors are seedable through the real product paths and are proceeding separately.**
+
+---
+
+## C-1543 · The validation section's heading is in no final design document, and the design's nearest heading is a different capability
+
+| | |
+|---|---|
+| **Raised** | **Lane A**, 2026-08-21, the Company 360 heading pass |
+| **Owner of the answer** | ⛔ **Product Owner** |
+| **Severity** | 🟢 **P3** — ⚡ **one heading**, and the section is producer-backed and correct |
+| **Status** | 🟢 **`OPEN`** — ✅ **left unchanged** |
+
+⚡ **Six Account 360 headings were measured against the 35-document snapshot and five were renamed to the design's own words.** ⛔ ***"Before you act"* appears ZERO times**, so it looked like the sixth.
+
+🔴 **It is not.** 📁 **The design's nearest heading is `#recs` *"Recommendations"***, whose rows carry `title` · `body` · **`effect`** (*"+18 score"*, *"−41% slip risk"*) · a confidence pip row · **`cta`** (*"Draft intro"*, *"Find warm path"*) · **`Dismiss`** — **AI-generated next actions with predicted effects, and nothing produces any of it.**
+
+✅ **This section is `useAccountValidation`'s hypotheses — what can be CHECKED, not what to do.** ⛔ **The rename was made and reverted**; 📁 `brief.test.tsx`'s *"invents neither of the two cards that have no producer"* caught it, which is what a guard asserting an ABSENCE is for.
+
+⚠️ **So the heading has no design counterpart and the section has no design home.** **Recorded rather than guessed at a second time.**
+
+---
+
+## C-1542 · The design's single `#score` card is split across two blocks, one of them unanchored
+
+| | |
+|---|---|
+| **Raised** | **Lane A**, 2026-08-21, the Company 360 micro-audit |
+| **Owner of the answer** | ⛔ **Product Owner** |
+| **Severity** | 🟢 **P3** — ⚡ **everything renders; what differs is where** |
+| **Status** | 🟢 **`OPEN`** |
+
+📁 **The design draws ONE `#score` card**: `Account score` · an `AI` badge · the figure at 36px/700 · `/ 100` · the change chip · the trend · the contributions.
+
+⛔ **Here the figure and its validity sit in a card ABOVE the summary with no `id` at all, and the contributions sit in `#score`** — **so the rail's *Account score* entry lands on half of the thing it names, and the half a reader looks for first is the half it skips.**
+
+⚠️ **CORRECTED — an earlier note said the figure *"rendered nowhere"*.** ⛔ **It renders; the probe that said otherwise was scoped to `#score`.** ✅ **The finding is the split, not an absence.**
+
+🔴 **Consolidating is not free, which is why this is a row rather than a change.** ⛔ **The design's card has no place for `PostureSplit` or `WhyNow`**, and both are producer-backed: `attention_by_posture` and `ScoreTrigger`. **Merging to match the design would delete them.**
+
+⛔ **And the design's sparkline stays absent**: `scoreTrend` is seven readings over time and `AccountScore` publishes one score with one `score_change`.
 
 ---
 

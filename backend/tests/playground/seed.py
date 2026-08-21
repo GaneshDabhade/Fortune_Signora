@@ -53,8 +53,15 @@ import json
 import os
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from uuid import UUID
+from uuid import UUID, uuid5
 
+from modules.commercial_profile.application.declare_competitors import (
+    DeclareCompetitorsInput,
+)
+from modules.commercial_profile.domain.competitors import Competitor
+from modules.commercial_profile.infrastructure.composition import (
+    build_declare_competitors,
+)
 from cryptography.fernet import Fernet
 from pydantic import ValidationError
 from sqlalchemy import text
@@ -399,6 +406,62 @@ async def _retire_previous(admin_factory: async_sessionmaker[AsyncSession]) -> i
     return len(stale)
 
 
+
+#: 📁 **The design's own competitor names** — `Design Documents/Fortune Signora
+#: Account 360.html` declares `Cadenza` and `Orbital` in its `competitors`
+#: block. ⛔ **Not invented here**: the Playground's job is to make the approved
+#: design demonstrable, and a name this seeder made up would be a third source
+#: of demo content beside the dataset and the design.
+#:
+#: ⚠️ **Deterministic ids, for the reason `_connect_the_crm` states about
+#: `external_account_id`**: a `uuid4()` would make two runs on one day differ in
+#: a column somebody may key on. `uuid5` over a fixed namespace and the name is
+#: the same value every time.
+PLAYGROUND_COMPETITORS = ("Cadenza", "Orbital")
+COMPETITOR_NAMESPACE = UUID("6f1d0c2a-3b47-4e58-9a6b-0c1d2e3f4a5b")
+
+
+async def _declare_the_competitors(
+    factory: async_sessionmaker[AsyncSession],
+    workspace_id: UUID,
+    user_id: UUID,
+) -> int:
+    """Declare the competitor list **through the use case**, as a customer does.
+
+    🔴 **Why this exists.** 📁 Account 360 draws a `Competitors` section and the
+    Playground declared none, so the section rendered `null` on every account —
+    ⛔ **a producer-backed surface that could not be reviewed in a browser**, and
+    one of five such elements found during the design-conformance audit.
+
+    ⚡ **`DeclareCompetitors`, never an insert.** The same rule the rest of this
+    module follows: 📁 `CLAUDE.md` §20e, *test data enters the way a customer's
+    data enters*. **The use case owns the version check**, so a re-run replaces
+    the list rather than duplicating it.
+
+    ⚠️ **`expected_version=0` is deliberate and is the only value a first
+    declaration may send.** ⛔ **A re-seed onto a workspace that already has a
+    list would 409** — correct behaviour, and the reason this returns a count
+    rather than raising: the Playground is retired and rebuilt by
+    `_retire_previous`, so the list is always the first for its workspace.
+    """
+    competitors = tuple(
+        Competitor(id=uuid5(COMPETITOR_NAMESPACE, name), name=name)
+        for name in PLAYGROUND_COMPETITORS
+    )
+    async with tenant_scoped_session(
+        factory, workspace_id=workspace_id, user_id=user_id
+    ) as session:
+        await build_declare_competitors(session).execute(
+            DeclareCompetitorsInput(
+                workspace_id=workspace_id,
+                competitors=competitors,
+                expected_version=0,
+                actor_id=user_id,
+            )
+        )
+    return len(competitors)
+
+
 async def main() -> int:
     if os.environ.get("SIGNORA_ALLOW_DESTRUCTIVE_TESTS") != "1":
         print(
@@ -460,6 +523,11 @@ async def main() -> int:
         # story's beginning so the record reads the way it would have happened.
         await _connect_the_crm(factory, workspace_id, user_id, at=today - HORIZON)
 
+        # ⚡ **A customer declaration, like the connection above** — and for the
+        # same reason: 📁 Account 360's `Competitors` section is producer-backed
+        # and rendered nothing, because nothing had ever been declared here.
+        declared = await _declare_the_competitors(factory, workspace_id, user_id)
+
         examined, rescored = await sweep_stale(
             factory, workspace_id, user_id, moment=today - LAST_SWEEP
         )
@@ -481,6 +549,7 @@ async def main() -> int:
         print(f"\nworkspace   {workspace_id}")
         print(f"accounts    {opportunities} qualified opportunities")
         print(f"source      {CRM} connected {HORIZON.days} days ago")
+        print(f"competitors {declared} declared — {', '.join(PLAYGROUND_COMPETITORS)}")
         print(f"re-scored   {rescored} of {examined} readings had aged since they were opened")
         app_url = _app_url()
         if enrolled:

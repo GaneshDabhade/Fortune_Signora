@@ -445,30 +445,51 @@ test.describe('On this page reaches what the page renders', () => {
       timeout: 20_000,
     });
 
-    const rail = page.getByRole('navigation', { name: /on this page/i });
-    const hrefs = await rail
-      .locator('a[href^="#"]')
-      .evaluateAll((nodes) =>
-        nodes.map((n) => (n as HTMLAnchorElement).getAttribute('href')!.slice(1)),
-      );
+    /**
+     * 🔴 **Both halves are read in ONE evaluation, and that is a fix rather
+     * than a tidy-up.**
+     *
+     * ⛔ **This used to read the rail, then make one round trip PER ENTRY to
+     * check each anchor, then read the sections** — so the two lists were
+     * sampled seconds apart. ⚡ **A workspace-scoped query resolving in between
+     * adds a section AND its rail entry**, but only the second list had been
+     * taken after it, so the guard reported the section as unreachable.
+     *
+     * ⚠️ **It surfaced the moment the Playground declared competitors** — the
+     * data arriving is what gave a late query something to render. **The guard
+     * was racy from the day it was written; nothing had ever resolved slowly
+     * enough to show it.**
+     *
+     * ✅ **One `evaluate` is atomic against React's commit**, so the rail and
+     * the sections are always the same render.
+     */
+    const { hrefs, sections, dead } = await page.evaluate(() => {
+      const nav = document.querySelector('nav[aria-label="On this page"]');
+      const links = [...(nav?.querySelectorAll('a[href^="#"]') ?? [])] as HTMLAnchorElement[];
+      const anchored = [
+        ...document.querySelectorAll(
+          'main section[id], main [id][aria-labelledby], main section[aria-label]',
+        ),
+      ];
+      const ids = links.map((a) => a.getAttribute('href')!.slice(1));
+      return {
+        hrefs: ids,
+        sections: anchored.map((n) => n.id).filter(Boolean),
+        // ⚡ **ANY element with that id, not only a section** — a rail entry
+        // scrolls to whatever carries the anchor, and narrowing this to
+        // `section` would fail an entry that works.
+        dead: ids.filter((id) => document.getElementById(id) === null),
+      };
+    });
     expect(hrefs.length).toBeGreaterThan(0);
 
     // ⛔ **Direction 1 — a rail entry that scrolls nowhere.**
-    const dead: string[] = [];
-    for (const id of hrefs) {
-      if ((await page.locator(`#${id}`).count()) === 0) dead.push(id);
-    }
     expect(dead, 'rail entries with no section on the page').toEqual([]);
 
     // 🔴 **Direction 2 — a section the rail cannot reach.** ⚡ **This is the
     // direction that shipped**, and it is the one a list-against-itself check
     // cannot see.
-    const anchoredSections = await page
-      .locator('main section[id], main [id][aria-labelledby], main section[aria-label]')
-      .evaluateAll((nodes) =>
-        nodes.map((n) => n.getAttribute('id')).filter((id): id is string => Boolean(id)),
-      );
-    const unreachable = anchoredSections.filter((id) => !hrefs.includes(id));
+    const unreachable = sections.filter((id) => !hrefs.includes(id));
     expect(unreachable, 'sections on the page with no rail entry').toEqual([]);
   });
 });
