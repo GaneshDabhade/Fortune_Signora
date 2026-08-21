@@ -17999,6 +17999,63 @@ const g = document.querySelector('.grid.grid-cols-12');
 
 ---
 
+### B-1063 · 🟠 A certification gate contains a test that silently passes when an uncommitted, machine-local directory is absent — so the same commit certifies differently on different machines
+
+| | |
+|---|---|
+| **Module** | `product_surface` — **Lane A** · [`frontend/tests/components/page-heading-role.test.tsx`](../frontend/tests/components/page-heading-role.test.tsx):145–178 |
+| **Severity** | 🟠 **P1 for certification integrity** — ⛔ **not for the product.** **The gate is green on the machine that certifies and can never fail there** |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-21 by QE, certifying `9c15c868`, **by asking why my run reported ONE failure where Lane A's reported two** |
+| **Class** | **Governance / test integrity.** ⛔ Not visual, not accessibility, not a product defect |
+
+**What it does.**
+
+```js
+const SETTINGS = join(process.cwd(), '..', 'Design Documents', 'Fortune Signora Settings.html');
+
+it("carries the design's subtitle, read out of the design document", () => {
+  if (!existsSync(SETTINGS)) return;      // ← silent pass, not a skip
+  …
+  expect(page, 'the screen states it too').toContain(subtitle);
+});
+```
+
+📁 **`Design Documents/` is the product owner's local corpus and is deliberately NOT committed** — Lane A raised that themselves and were right not to add it ([D-138](DECISION_REGISTER.md): `docs/design-snapshot/` is the implementation authority, and a second corpus from a third owner is the drift that decision prevents).
+
+🔴 **The consequence is that the assertion's existence depends on an untracked directory.**
+
+| | Lane A's machine | **QE's machine, and any clean checkout** |
+|---|---|---|
+| `Design Documents/` present | ✅ yes | ⛔ **no** |
+| The test | **asserts, and FAILED on `9c15c868`** | 🔴 **returns before asserting, and reports PASSED** |
+
+**Measured on `9c15c868`, both sides:**
+
+```
+Lane A   2 failures — competitors.tsx AND the settings subtitle
+QE       1 failure  — competitors.tsx only
+         vitest: Test Files 1 failed | 207 passed (208), 0 skipped
+```
+
+⚡ **The second defect was real and invisible to the run that decides.** ⛔ **QE certifies on a machine without that corpus, so this test cannot fail during certification — it is decorative exactly where it matters most.**
+
+📁 **[§2](../CLAUDE.md), twice over.** *"Hidden inputs are architecture defects… it makes the same declared inputs produce different results, which defeats replay, regression testing, and every guarantee proven by removal."* **And *"a guard that cannot fail is not protection — it is documentation pretending to be code."***
+
+⚠️ **The intent is sound and is not what is wrong.** The comment says *"skipped rather than failed when the corpus is absent… a clean checkout must not fail on its absence"* — **correct.** ⛔ **But a bare `return` is not a skip.** ⚡ **A skip is REPORTED; this reported `0 skipped` and counted toward `4009 passed`.** **The reader cannot tell an assertion that held from one that never ran.**
+
+**Reproduction.** On a checkout without `Design Documents/`: `npx vitest run tests/components/page-heading-role.test.tsx` → the subtitle test passes. Delete the subtitle from `app/(app)/settings/page.tsx` → **it still passes.**
+
+**Acceptance criteria.**
+- The test **skips visibly** rather than returning — `test.skip()` / `it.skip()`, or `this.skip()` — so a run reports it as skipped and a reader can see that it asserted nothing.
+- ⛔ **Better: assert against [`docs/design-snapshot/`](design-snapshot/MANIFEST.md), which is committed and is the implementation authority** ([D-138](DECISION_REGISTER.md)). ⚡ **Then the test runs everywhere and the hidden input disappears rather than being made visible.**
+- ⚠️ **Whichever is chosen, apply it to every test reading `Design Documents/`** — this row names one; the pattern is what matters.
+- ✅ **Fire-test it**: remove the subtitle from the page and confirm the test fails on a machine WITHOUT the corpus.
+
+> ⚡ **How it was found is the part worth keeping.** **Lane A reported two failures and I reported one.** ⛔ **Neither of us was wrong.** **I asked why the counts differed instead of assuming mine was complete** — and the answer was that my run could not see the second one. 📁 **A disagreement about a count, taken seriously, is what exposed a gate that cannot fail.**
+
+---
+
 ## Verified
 
 ### B-001 · `signal_profile` reads the wrong row as "current"
