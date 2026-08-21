@@ -1897,3 +1897,59 @@ Commissioned on the product owner's clarification that **Workspace has always be
 
 ⛔ **[R13-10](#r13-10--the-failure-mode-has-a-name-in-this-register-and-i-cited-it-while-committing-it) said a row *"routed a reader to the right file"* and offered it as an argument for file-level specificity.** ⚠️ **Lane A qualified their own credit and they are right: [B-1055](../BUGS.md#b-1055) named `tabs.tsx` and `utility-panel.tsx:394` for CITATION, and the routing was a side effect.** ✅ **Still an argument for naming files; a weaker one than *"it works"*.**
 
+
+## R13-12 · The collapsed and focus-mode states, and a finding that dissolved on the population check
+
+**2026-08-21.** ⚡ **Continued from [R13-11](#r13-11--a-defect-no-screenshot-could-ever-have-shown--the-limit-of-this-reviews-own-instrument), on the two states this review had listed as never audited.**
+
+### Collapsed and focus mode — not implemented, and already tracked
+
+📁 **The design states both requirements verbatim:**
+> *"A collapsed section still states its **count** and its **worst status**, so collapsing never hides a risk. State persists per user per account type."*
+> *"Expansion widens to the full content region, adds filters and grouping, and **keeps the URL so the expanded view is shareable**. Esc returns to the record at the same scroll."*
+
+**Measured on Account 360 at 1440:**
+
+| | |
+|---|---|
+| `<details>` elements | **0** |
+| `⤢` focus-mode glyphs · the string *"focus mode"* | **0 · absent** |
+| Content sections with a collapse affordance | 🔴 **0 of 18** |
+| `aria-expanded` on the page | 8 — **all shell chrome** (nav, workspace, notifications, account menu, search) plus one *"2 more things"* disclosure |
+
+⛔ **Neither state exists.** ✅ **And neither is filed**: 📁 **[TASK-1476](../BACKLOG.md) — `PROMOTED` — names *"the six-state matrix"* as *"the largest unblocked piece"* and quotes the same two design sentences.** ⚡ **Tracked as remaining work inside a promoted row, which is a state this register does not improve by duplicating.**
+
+⚠️ **Worth separating, because it changes who owns it: this is UI-only.** ⛔ **Collapsing a section needs no producer**, so it is not the capability gap that excuses the 21 absent Account 360 elements in [R13-07](#r13-07--account-360-and-the-first-fault-injection-pass). **It is unbuilt UI with a row already naming it.**
+
+### 🔴 A finding that dissolved, and it is the same trap as B-1052 one pass later
+
+**I measured two Account 360 section labels in the design and found them identical:**
+
+```
+Customer health   font-size:12.5px; color:var(--ink-3)
+Buying intent     font-size:12.5px; color:var(--ink-3)
+```
+
+**The implementation renders every section heading at `14px / 600 / --color-content`** — larger, and in the strong ink rather than the muted one. ⚡ **Both correct tokens exist and neither is used: `--text-label` is `0.78125rem` = 12.5px, and `--color-content-subtle` is `133 125 117` = `--ink-3` exactly.**
+
+⛔ **That was a filable-looking row, and it is wrong.** ✅ **The population check killed it:**
+
+| Design's section labels | size | colour |
+|---|---|---|
+| **9 of 14** — Signals timeline · Research summary · Open opportunities · Technology stack · Organisation chart · Relationship graph · Market signals · Competitors · Recent activity | **14.5px** | **inherited** |
+| 2 of 14 — Risk indicators · Recommendations | 13.5px | inherited |
+| 1 of 14 — Meetings | 14px | inherited |
+| 🔴 **2 of 14** — **Customer health · Buying intent** | **12.5px** | **`--ink-3`** |
+
+🔴 **My two samples are the MINORITY.** ⛔ **Filing from them would have told Lane A to render every section heading at 12.5px in muted ink — wrong for 12 of the 14**, and it would have made the page's structure harder to scan, not easier.
+
+✅ **Against the dominant pattern the implementation is close and correct in kind**: **14px against 14.5px, in the inherited strong ink**, uniformly across all ten shipped sections.
+
+⚠️ **And the design is internally inconsistent for this role — four sizes spanning 12.5–14.5px for the same structural element**, with **no §04 type role at 14.5px or 13.5px.** 📁 **That is exactly [D13-A](#design-decisions-required--not-bugs)'s open question — whether a screen document's raw pixel value overrides a §04 role — already recorded and not re-raised here.**
+
+> ⚡ **Second time in this audit that the number was right and the SET was wrong** ([B-1052](../BUGS.md#b-1052) was the first). ✅ **The difference is that this one was caught BEFORE filing, by asking the population question the earlier failure taught.** ⛔ **The lesson is not "check twice" — it is that two identical samples are the most persuasive possible evidence for a wrong generalisation.**
+
+### Nothing filed from this pass
+
+⛔ **No bug is recorded for the collapsed or focus-mode states** (unbuilt, tracked), **nor for the section-label typography** (measured, and the implementation is right). 📁 **Reported as the result rather than converted into something reportable.**
+
