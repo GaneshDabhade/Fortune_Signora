@@ -17630,6 +17630,20 @@ Nothing has changed about the account — reload to try again.
 
 ⚠️ **`utility-panel.tsx`:394 DOES render `<div role="tabpanel" aria-label={activeTab}>`** — ⛔ **but it was absent from the rendered document at 1440**, because the panel was collapsed to its icon rail while its **tabs stayed in the tree.** ⚡ **So the collapsed state publishes tabs for a panel that is not there**, which is the same defect arriving by a different route.
 
+> ### ✅ ADDED 2026-08-21 — the third tablist, measured, so the list is complete
+>
+> **The notifications popover carries the same defect**, which makes three tablists across two screens:
+>
+> | Tablist | Tabs | roving `tabindex` | `aria-controls` | `role="tabpanel"` |
+> |---|---|---|---|---|
+> | `/signals` queue | 3 — *Needs review · Snoozed · Closed* | ✅ `0 / -1 / -1` | ⛔ **none** | ⛔ **0** |
+> | Notifications popover | 3 — *Needs you · Mentions · All* | ✅ `0 / -1 / -1` | ⛔ **none** | ⛔ **0** |
+> | Utility panel rail | 3 — *Insights · Activity · Notes* | ⛔ **`null` on all three** | ⛔ **none** | ⛔ **0 when collapsed** |
+>
+> ⚡ **Two of the three already get the hard half right** — `aria-selected` and a correct roving `tabindex` — **and none of the three names a panel.** 📁 **Same shape as [B-1061](#b-1061): the attribute that is visible in source is present, and the relationship that makes it work is not.**
+>
+> ✅ **The notifications TRIGGER is correct and is not part of this row**: `aria-haspopup="dialog"`, `aria-expanded` tracking state, and `aria-controls` matching the dialog's own `id`. ⚡ **Which is the proof the pattern is understood in this codebase** — the same file wires a trigger correctly and leaves its tabs unwired.
+
 **Reproduction.** Sign in · open `/signals` · in the console run
 `[...document.querySelectorAll('[role=tab]')].map(t=>t.getAttribute('aria-controls'))` → `[null,null,null,null,null,null]`, and
 `document.querySelectorAll('[role=tabpanel]').length` → `0`.
