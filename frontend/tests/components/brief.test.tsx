@@ -580,7 +580,7 @@ describe('the account says what has actually happened to it — C-024', () => {
   it('renders the history section on the brief', () => {
     render(withQuery(<AccountBriefPage />));
 
-    expect(screen.getByRole('heading', { name: 'What has happened' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Recent activity' })).toBeVisible();
   });
 
   it('shows what the pipeline recorded, in the seller’s words', () => {
@@ -645,7 +645,7 @@ describe('the account says what has actually happened to it — C-024', () => {
 
     render(withQuery(<AccountBriefPage />));
 
-    expect(screen.getByRole('heading', { name: 'What has happened' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Recent activity' })).toBeVisible();
     expect(screen.getByText(/could not be loaded/i)).toBeVisible();
   });
 
@@ -653,7 +653,7 @@ describe('the account says what has actually happened to it — C-024', () => {
     const { container } = render(withQuery(<AccountBriefPage />));
     const text = container.textContent ?? '';
 
-    expect(text.indexOf('Account score')).toBeLessThan(text.indexOf('What has happened'));
+    expect(text.indexOf('Account score')).toBeLessThan(text.indexOf('Recent activity'));
   });
 });
 
@@ -723,7 +723,7 @@ describe('an account with no data still says what it has no data about — TASK-
   it('keeps every derived section on the page', () => {
     render(withQuery(<AccountBriefPage />));
 
-    for (const heading of ['Account score', 'Signals timeline', 'What has happened']) {
+    for (const heading of ['Account score', 'Signals timeline', 'Recent activity']) {
       expect(screen.getByRole('heading', { name: heading })).toBeVisible();
     }
   });

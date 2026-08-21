@@ -200,6 +200,12 @@ describe('⛔ retired heading vocabulary never returns', () => {
   const RETIRED: Record<string, string> = {
     'What contributed': 'Account score',
     'Who you compete against': 'Competitors',
+    // ⚡ **The seventh, and the guard is why it is here rather than in a third
+    // round of failures**: `pages/brief.ts` carried it too, and a page object
+    // is the third time this lane has missed one. ⛔ **A page object is the
+    // worst place to miss a rename** — it takes every spec that uses it down,
+    // in files the rename never touched.
+    'What has happened': 'Recent activity',
   };
 
   /**

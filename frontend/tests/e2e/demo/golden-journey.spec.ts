@@ -146,14 +146,45 @@ test('a working morning at Signora', async ({ page, accounts, brief }) => {
    * failure says *the record of events was not on this screen* rather than
    * `locator.scrollIntoViewIfNeeded: Test timeout exceeded`.
    */
-  const history = page.getByRole('heading', { name: 'What has happened' });
+  /**
+   * 🔴 **[B-247](../../../../docs/BUGS.md) — the history MOVED and this journey
+   * kept looking for it on the page.**
+   *
+   * 📁 **[TASK-1433](../../../../docs/BACKLOG.md) gave it to the utility
+   * panel's Activity tab** — *"the panel takes it only where the panel exists;
+   * below 1024 the section above renders"* — **and this demonstration runs
+   * above that band.** ⛔ **`daily-usage` was corrected for exactly this and
+   * this file was not**, which is why it has been failing on `main`.
+   *
+   * ⚠️ **The failure was NOT the heading rename**, and that is worth stating:
+   * this looked for *"What has happened"*, the rename made it look for
+   * *"Recent activity"*, and it failed identically both times. **Same defect,
+   * new name** — the rename neither caused it nor hid it.
+   *
+   * ✅ **The claim is unchanged — the account carries a record of what has
+   * happened.** ⚡ **Only where a viewer looks for it changed**, so the
+   * demonstration opens the tab rather than asserting a heading the design
+   * moved.
+   */
+  const panel = page.getByRole('complementary');
+  // ⚠️ **Idempotent, because the panel's open state is a STORED preference** —
+  // ⛔ an unconditional `⌘.` would CLOSE it whenever an earlier step left it
+  // open, which makes the result depend on what ran before.
+  if ((await panel.getAttribute('data-state')) !== 'open') {
+    await page.keyboard.press('Meta+.');
+  }
   await expect(
-    history,
-    'the account never showed "What has happened" — the record of events is the ' +
-      'point of this step, and the panel that carries it may not be docked at ' +
-      'this viewport (see utility-panel.spec.ts, which asserts it BOTH ways)',
-  ).toBeVisible({ timeout: 20_000 });
-  await history.scrollIntoViewIfNeeded();
+    panel,
+    'the utility panel never docked — the record of events lives in its ' +
+      'Activity tab above 1024 (see utility-panel.spec.ts, which asserts it BOTH ways)',
+  ).toHaveAttribute('data-state', 'open', { timeout: 20_000 });
+
+  await panel.getByRole('tab', { name: 'Activity' }).click();
+  await expect(panel).toHaveAttribute('aria-label', 'Activity panel');
+  // 📁 **[B-302](../../../../docs/BUGS.md)** — the Playground composed nine
+  // pipeline stages and never the Timeline projection, so this history was
+  // empty on every account in the one environment used for product review.
+  await expect(panel.getByText(/Nothing has been recorded/i)).toHaveCount(0);
   await beat(page, 2000);
 
   // ── 7 ─────────────────────────────────────────────────────────────────────

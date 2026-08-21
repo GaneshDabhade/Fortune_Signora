@@ -50,7 +50,7 @@ export class BriefPage {
   }
 
   get whatHasHappened(): Locator {
-    return this.section('What has happened');
+    return this.section('Recent activity');
   }
 
   /** Every citation on the page — the underlined reasons that open the

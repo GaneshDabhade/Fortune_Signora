@@ -1328,7 +1328,16 @@ export default function AccountBriefPage() {
           {history.carrying ? null : (
             <AccountSectionShell
               id="activity"
-              heading="What has happened"
+              // 🔴 **📁 *"Recent activity"* — the design's name, and the comment
+              // three lines above ALREADY SAID SO while this rendered something
+              // else.** ⛔ ***"What has happened"* appears ZERO times across the
+              // 35-document snapshot**, and `sections.ts` labels this section
+              // *"Recent activity"* in the rail — **so the rail and the heading
+              // it points at named one section two different things.**
+              // ⚡ **The seventh invented heading on this surface**, found while
+              // diagnosing an unrelated `golden-journey` failure rather than by
+              // the sweep that found the other six.
+              heading="Recent activity"
               // ⚠️ **No severity is claimed for a recorded event.** ⛔ Whether
               // something that happened is bad is a judgement, and the
               // timeline records rather than judges — so the header states a

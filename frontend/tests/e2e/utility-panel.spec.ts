@@ -87,7 +87,7 @@ test('@journey the panel docks on an account, and its Activity tab is the real h
    * source, one placement** — the section that used to render it stands down
    * when the panel is carrying it.
    */
-  await expect(page.getByRole('heading', { name: 'What has happened' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Recent activity' })).toHaveCount(0);
 });
 
 test('@journey the panel PUSHES the content rather than covering it', async ({ page }) => {
@@ -144,5 +144,5 @@ test('@journey the panel is ABSENT on a phone, and the history is still on the p
   await openAnAccount(page);
 
   await expect(page.getByRole('complementary')).toHaveCount(0);
-  await expect(page.getByRole('heading', { name: 'What has happened' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Recent activity' })).toBeVisible();
 });
