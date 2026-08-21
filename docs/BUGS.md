@@ -981,6 +981,47 @@ grep -rn 'DELETE FROM workspace' backend/ --include=*.py
 
 ---
 
+### B-1049 · 🟠 `git add -A` during a cycle sweeps the certification record off `main` — **twice, with the write-up in between**
+
+| | |
+|---|---|
+| **Module** | **QE's own procedure** |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — ⛔ **it puts a promoted commit on `main` with its evidence somewhere else, and `--audit-main` correctly refuses** |
+| **Status** | **`OPEN`** — ⚠️ **the discipline below is stated; nothing enforces it** |
+| **Found** | **2026-08-20 (cycle 256) and again 2026-08-21 (cycle 257), both by QE** |
+
+**Steps.** Run `make certify`. It writes `certification/manifest.json` and `certification/reports/<sha>.md` **into the working tree, uncommitted** — which is correct; they belong to Closeout. **Then commit anything else during the cycle with `git add -A`.**
+
+**Actual:** the record is swept into that commit, which lives on `lane-qe` **after** the certified SHA. **The Closeout commit then carries documents and no record**, and `--audit-main` refuses the promoted commit's ancestors as *"neither a certified commit, nor an ancestor of one, nor a Closeout."*
+
+### 🔴 Twice, and the second time one commit after writing up the first
+
+| | |
+|---|---|
+| **Cycle 256** | Swept into `c415ac27` by the C-111 commit. **Detected AFTER the push, because the audit ran through `| tail` and the `&&` saw tail's exit code** ([B-142](#b-142)) |
+| **Cycle 257** | Swept into `07cc903b` by the [B-1048](#b-1048) commit. ✅ **Detected BEFORE the push** — the audit's exit code was read directly |
+
+⚡ **The detection improved and the cause did not.** ⛔ **Cycle 256's Closeout commit describes this failure in twenty lines, and cycle 257 reproduced it three commits later.** 📁 **A lesson written into a commit message is not a control.**
+
+### ⛔ Why the obvious fix is not obviously right
+
+**`git add <specific paths>` instead of `-A`** would prevent it — ⚠️ **and QE files findings mid-cycle constantly**, across `docs/BUGS.md`, `docs/LANE_COORDINATION.md`, `docs/QUALITY_ENGINEERING.md` and occasionally `infra/`. **A path list is a thing to forget to extend**, which is how the register-drift class starts.
+
+✅ **The discipline that actually matches the failure:** ⛔ **before ANY `git add -A` during a cycle, check whether `certification/` is dirty.**
+
+```bash
+git status --porcelain certification/     # empty, or stage the rest explicitly
+```
+
+⚠️ **A guard would be better than a habit**, and 📁 [`QUALITY_ENGINEERING.md` §0f](QUALITY_ENGINEERING.md) says why QE is not adding one unilaterally: **a pre-commit hook changes what `git commit` means for every lane, which is class ⑤.** **Raised rather than built.**
+
+### ✅ What went right, and it is the reason this is 🟠 and not 🔴
+
+**Nothing was ever lost.** ⚡ **Both times the record was intact in the commit that swallowed it and was restored byte for byte** — ⛔ **never regenerated, because a regenerated record carries a new timestamp and describes a run that never happened.** 📁 [`REPOSITORY_RELEASE_CHECKLIST.md`](REPOSITORY_RELEASE_CHECKLIST.md) already forbids the tempting shortcut here.
+
+---
+
 ### B-1048 · 🟠 A launched-and-forgotten background job reports success when the thing it launched does not exist
 
 | | |
