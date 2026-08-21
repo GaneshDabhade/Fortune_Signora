@@ -1505,6 +1505,22 @@ const response = await fetch(url, { method: 'POST' });   //  POST /api/token
 
 ### B-1036 · 🟡 Specs that fail in the full run and pass in isolation, with no change to the tree
 
+> ### ⚡ 2026-08-20, cycle 257 — **the SIXTH spec, and the changing membership is the signature**
+>
+> **`business-setup.spec.ts:62` — *"a customer can add a product and see it listed"* — failed in the full run and passed in isolation: `14 passed (20.1s)`.**
+>
+> **The class now has six members across four cycles, and NO two runs share the same set:**
+>
+> | Cycle | Failed in the full run, passed alone |
+> |---|---|
+> | 253 | `connections:32` · `search-journey:18` · `top-bar-search:26` |
+> | 256 | `confidence:158` · `shell-values:48` |
+> | 257 | `business-setup:62` |
+>
+> ⛔ **A defect in any one spec would recur in that spec.** ⚡ **A membership that reshuffles every run is a property of the RUN, not of the specs** — which is what the row has said from the start and now has four cycles of evidence for.
+>
+> ⚠️ **One observation, offered as an observation.** **This run took 14.1m against 17.1m for the previous one, on a machine that had just rebooted and was otherwise idle.** ⛔ **QE is not calling that a controlled measurement** — nothing about the machine was held constant, and 📁 the load experiment this row already abandoned is why. ✅ **Recorded because it points the same way as [B-295](#b-295)'s stranded subtree: whatever this is, it tracks what else the machine is doing.**
+
 > ### ⚡ 2026-08-20 — **a leading hypothesis, and it is testable by MEASUREMENT**
 >
 > 📁 **[B-294](#b-294), found by Lane A, and it is broader than one table.** ⛔ **`entity` has NO foreign key at all**, while **ten tables cascade FROM it on delete.** ⚡ **So `DELETE FROM workspace` strands the ENTIRE entity subtree** — `business_event` · `buying_score` · `identity_binding` · `observation` · `opportunity` · `relationship` ×2 · `resolution_decision` · `signal` · `timeline_entry`.
