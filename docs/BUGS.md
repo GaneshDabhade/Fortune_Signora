@@ -17936,6 +17936,69 @@ document.querySelectorAll('[role=group]').length   // -> 0
 
 ---
 
+### B-1062 · 🟠 Five settings screens reserve a third of the content region for a column that holds nothing, at every width
+
+| | |
+|---|---|
+| **Module** | `product_surface` — **Lane A** · the five settings route layouts |
+| **Severity** | 🟠 **P1 at handset, P2 above it** — **the content region is 56% of the viewport at 375px** and the members table is squeezed into a 167px scroll window |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-21 by QE, certification pass, baseline `89318586` — ⚠️ **pre-existing, NOT a regression from Lane A's pending work** |
+| **Route** | `/settings` · `/settings/team` · `/settings/organization` · `/settings/products` · `/settings/connections` |
+| **Surface** | The page layout — `grid grid-cols-12` with a single `col-span-8` child |
+| **Class** | **Visual + responsive.** ⛔ Not accessibility, not navigation, not producer |
+
+**Design requirement.** 📁 **Design System v2, the `inherited` block** — ***"12-column grid, 24px gutters, 1600px content maximum"***. **And App Shell for `<1024`: *"Tables become row cards; pinned columns become the card head."***
+
+**Implementation found.** `<div class="grid grid-cols-12 gap-6">` containing **exactly one child**, `<div class="col-span-8 …">`, **with no responsive prefix on the span**.
+
+**Measured** — the same single child at every width, on all five routes:
+
+| Viewport | Grid | Child (`col-span-8`) | Empty | Content as % of viewport |
+|---|---|---|---|---|
+| **375** | 328 | 🔴 **211px** | **117px** | 🔴 **56%** |
+| 640 | 577 | 377px | 200px | 59% |
+| 900 | 837 | 550px | 287px | 61% |
+| 1024 | 877 | 577px | 300px | 56% |
+| **1440** | 1117 | **737px** | 🔴 **380px** | 51% |
+
+⛔ **The remaining four columns are empty at EVERY width — `children.length === 1` at 1440 and at 375 alike.** ⚡ **This is not a responsive bug that appears at small widths; it is a layout reserving a third of the content region for a sibling that does not exist, and the small widths are only where it hurts most.**
+
+**Why it differs.** 📁 **The backlog states the standard in its own words**: ***"a `grid-cols-12` whose only child spans twelve is decorative"*** ([§2](../CLAUDE.md)). ⚡ **A single child spanning EIGHT is the same defect plus a third of the width.**
+
+🔴 **The downstream symptom, measured at 375:** the members table is 598px inside a `w-full overflow-x-auto` container that is **167px wide** — **a 6-row table read through a window narrower than a phone's own margin.** ⛔ **And the design says a table at this width should not be a table at all: *"Tables become row cards."***
+
+**Evidence — the layout chain at 375, `/settings/team`:**
+
+```
+main                                360
+mx-auto w-full max-w-[1600px] p-4   360
+grid grid-cols-12 gap-6             328
+col-span-8                          211   ← 8 of 12, no responsive prefix
+card / p-5                          209
+overflow-x-auto                     167   ← the table's window
+table                               598
+```
+
+✅ **The page does NOT scroll sideways** — `documentElement.scrollWidth` 360 < `clientWidth` 375 — **so [CLAUDE.md](../CLAUDE.md)'s rule that *"the page body must never scroll horizontally"* is satisfied.** ⚠️ **`layout-invariants.spec.ts` fails here asserting zero elements past the viewport, which a correctly-implemented `overflow-x-auto` table necessarily violates** — 📁 **that assertion is stricter than the repository's own rule and is noted, not filed, pending its owner's view.**
+
+**Reproduction.** Sign in · open `/settings/team` at 375×812 · in the console:
+```js
+const g = document.querySelector('.grid.grid-cols-12');
+[g.children.length, Math.round(g.getBoundingClientRect().width),
+ Math.round(g.firstElementChild.getBoundingClientRect().width)]   // -> [1, 328, 211]
+```
+
+**Expected.** The content occupies the full content region when there is no second column, and **collapses to one column below the App Shell's `<1024` band** — where the design also asks the table to become row cards.
+
+**Acceptance criteria.**
+- With a single child, the layout does not reserve empty columns — at **any** width.
+- Below 1024 the settings content is **one column**, full width.
+- ⛔ **Do not fix by widening `col-span-8` to `col-span-12`** — that leaves a `grid-cols-12` with one full-span child, which the backlog already names as **decorative**.
+- ⚠️ **Related and deliberately not merged**: 📁 [TASK-206](BACKLOG.md) ships `Columns`/`Column` **with no caller** and is `PREPARING`. **Its own measurement — *"`grid-cols-12` appears NOWHERE in `frontend/`"* — is now stale**, and these five routes are the counter-example. **This row is the shipped symptom; that row is the primitive. They should be fixed together and are recorded separately so neither hides the other.**
+
+---
+
 ## Verified
 
 ### B-001 · `signal_profile` reads the wrong row as "current"
