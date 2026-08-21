@@ -17775,6 +17775,90 @@ Compare the workspace menu (click *Playground*) → `"12px"`.
 
 ---
 
+### B-1060 · 🟡 The command palette shows a customer the literal Next.js route template `/w/[workspace]/home`
+
+| | |
+|---|---|
+| **Module** | `product_surface` — **Lane A** · the palette's navigation entries |
+| **Severity** | 🟡 **P2** — **one entry of ten**, on a surface reachable from every screen by `⌘K` |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-21 by QE, UI conformance audit, on `98793262`, **by opening the palette and reading every option's subtitle** |
+| **Route** | Any — the palette is shell-wide |
+| **Surface** | `⌘K` → **NAVIGATE** group → the *Home* entry's subtitle |
+
+**Current implementation.** Every navigation entry shows its destination as a subtitle. **Nine of ten show a real path. One shows the route template with the bracket placeholder intact:**
+
+```
+Home              /w/[workspace]/home     ← the Next.js route file's name
+Your business     /business
+Signals           /signals
+Accounts          /accounts
+Reports           /reports
+Change what you sell        /settings/products
+Organization setup          /settings/organization
+Your team                   /settings/team
+Connections                 /settings/connections
+Audit log                   /settings/audit
+```
+
+⚡ **`[workspace]` is a directory name on disk** — `app/(app)/w/[workspace]/home/page.tsx` — **and it is being shown to a salesperson as though it were an address.** ⛔ **It is not a value that failed to resolve; it is the template that was never resolved.**
+
+📁 **[ADR-0034](architecture/adr/0034-ubiquitous-language.md)** — *"the translation lives at the frontend edge and never travels inward"*, and the customer's language is *Organization*, never `workspace`. 🔴 **This entry leaks BOTH the internal word and the framework's file-routing syntax on one line.**
+
+⚠️ **The other nine prove the fix is local, not architectural** — the palette already renders resolved paths everywhere else.
+
+**Reproduction.** Sign in · press `⌘K` (or `Ctrl+K`) · read the **NAVIGATE** group. The *Home* row's subtitle is `/w/[workspace]/home`.
+
+**Acceptance criteria.**
+- The *Home* entry shows a resolved destination — the workspace id substituted, or **no path at all**, which is what the design does for entries whose address carries no meaning for a customer.
+- ⛔ **No palette entry renders a string containing `[` … `]`.** ⚠️ **Assert that as a rule over every entry rather than fixing the one row** — the next dynamic route added to the palette will do exactly this again.
+
+---
+
+### B-1061 · 🟠 The command palette is not a combobox to assistive technology, and its five groups are decorative
+
+| | |
+|---|---|
+| **Module** | `product_surface` — **Lane A** · [`frontend/components/ui/command-palette.tsx`](../frontend/components/ui/command-palette.tsx) · [`frontend/components/shell/shell-palette.tsx`](../frontend/components/shell/shell-palette.tsx) |
+| **Severity** | 🟠 **P1 for assistive technology** — **the highlighted result is never announced**, so the palette cannot be used without sight |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-21 by QE, UI conformance audit, on `98793262`, **read from the rendered accessibility tree with a query typed** |
+| **Route** | Any — shell-wide, `⌘K` |
+| **Surface** | The palette's input and its result list |
+
+**Current implementation — measured with the palette open and *Porter* typed, returning 14 options in 5 visual groups:**
+
+| ARIA the combobox pattern requires on the input | Present? |
+|---|---|
+| `aria-controls` → the listbox | ✅ `_R_amitmlb_` |
+| `aria-activedescendant` → the highlighted option | ✅ `_R_amitmlb_-0` |
+| 🔴 **`role="combobox"`** | ⛔ **absent** |
+| 🔴 **`aria-expanded`** | ⛔ **absent** |
+| `aria-autocomplete="list"` | ⛔ absent |
+
+🔴 **`aria-activedescendant` is only meaningful on an element with a widget role.** ⛔ **On a plain `<input>` with no `role`, assistive technology has nothing to apply it to — so as the user arrows through 14 results, the highlighted one is never announced.** ⚡ **The two hardest attributes are already correct and the two that make them work are missing**, which is why this reads as complete from the source and fails in the tree.
+
+**And the five groups carry no semantics.** ✅ *Ask Signora · Recents · Records · Navigate · Settings* **all render** — ⛔ **as plain `<p>` elements with no `role`, no `id`, and nothing referencing them by `aria-labelledby`. `document.querySelectorAll('[role=group]').length === 0`.** ⚡ **A sighted user sees 14 results in five labelled sections; a screen-reader user hears 14 flat options.**
+
+📁 **Same family as [B-1055](#b-1055)** — *an ARIA pattern implemented to the attribute that is visible in source and not to the relationship that makes it work.* ⚠️ **Two different components, so two rows; the shared lesson belongs in whichever is fixed second.**
+
+**Reproduction.** Press `⌘K`, type `Porter`, then in the console:
+```js
+const i = document.querySelector('[role=dialog] input');
+[i.getAttribute('role'), i.getAttribute('aria-expanded'), i.getAttribute('aria-activedescendant')]
+// -> [null, null, "_R_amitmlb_-0"]
+document.querySelectorAll('[role=group]').length   // -> 0
+```
+
+**Acceptance criteria.**
+- The input carries `role="combobox"`, `aria-expanded` reflecting the list's state, and `aria-autocomplete="list"`, alongside the `aria-controls` and `aria-activedescendant` it already has.
+- Each visual group is a `role="group"` with an accessible name — `aria-labelledby` pointing at the label already rendered, or `aria-label`.
+- ⚠️ **Asserted from the accessibility tree with a query typed**, not from class names: ⛔ **the two attributes that are present are exactly what made this look correct.**
+
+> ✅ **Measured in the same pass and CORRECT, so not filed:** **the palette container is 640×401.5 at 16px radius** with `role="dialog"` and `aria-modal="true"`, matching §05's dialog plane · **`role="listbox"` is present and each result is a `role="option"`** · **`Escape` closes it and returns the document to zero overlays** · **the design's own label *"Search or ask…"* is the placeholder, verbatim.**
+
+---
+
 ## Verified
 
 ### B-001 · `signal_profile` reads the wrong row as "current"
