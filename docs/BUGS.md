@@ -17023,12 +17023,12 @@ cd frontend && npx tsc --noEmit
 
 ---
 
-### B-1050 · 🟠 In dark theme the sunken surface IS the canvas, so every sunken element renders invisible
+### B-1050 · 🟠 In dark theme the surface ramp is shifted by one — sunken resolves to the canvas colour, and `--bg-rail` has no value at all
 
 | | |
 |---|---|
 | **Module** | `product_surface` — **Lane A** · [`frontend/app/globals.css`](../frontend/app/globals.css):264–313 |
-| **Severity** | 🟠 **P1** — wrong behaviour a customer hits on every screen, in one of two shipped themes |
+| **Severity** | 🟠 **P2** — ⚠️ **was P1; lowered 2026-08-21 when this row's own visual evidence was re-measured and found overstated.** **The token divergence is unambiguous; the verified rendered consequence is the loading skeleton ([B-1057](#b-1057)), not every sunken element** |
 | **Status** | **`OPEN`** |
 | **Found** | 2026-08-21 by QE, full UI conformance audit, on `6442122e` |
 | **Route** | **Every authenticated route.** Measured on `/w/{ws}/home` and `/accounts` |
@@ -17062,13 +17062,29 @@ LIGHT  body rgb(250,248,246)   sunken token 244 241 237   → 20 sunken elements
 DARK   body rgb(13,20,24)      sunken token  13  20  24   → 20 sunken elements render rgb(13,20,24)      IDENTICAL
 ```
 
-**Three named elements on `/accounts`, each with `border-width: 0px`** — so nothing else delineates them once the fill matches the page:
+### 🔴 CORRECTED 2026-08-21 — this row's first evidence overstated the visual consequence, and the correction is QE's own
 
-| Element | Light | Dark | Body (dark) |
-|---|---|---|---|
-| Avatar disc (`DR`) | `rgb(244,241,237)` | `rgb(13,20,24)` | `rgb(13,20,24)` |
-| Progress track (`h-[2px] bg-surface-sunken`) | `rgb(244,241,237)` | `rgb(13,20,24)` | `rgb(13,20,24)` |
-| Segmented control tray (`table`/`cards`/`board`) | `rgb(244,241,237)` | `rgb(13,20,24)` | `rgb(13,20,24)` |
+⛔ **The original evidence named the avatar disc, a progress track and the segmented-control tray on `/accounts` and said all three "vanish".** ⚠️ **It compared each element's fill to `document.body`'s background — the PAGE colour — rather than to the element's own painted backdrop.** ⚡ **Measured against the real backdrop, most sunken elements sit on a card (`--color-surface`, `rgb(21,32,39)`) or carry a border, and remain perfectly visible.**
+
+📁 **Re-measured on `/accounts`, dark, every element whose COMPUTED background is the sunken token:**
+
+| | |
+|---|---|
+| Elements actually painted sunken | **10** sampled |
+| …indistinguishable from their own backdrop, with no border | 🔴 **1** |
+| The avatar disc (`DR`, 32×32) | ✅ **visible** — it sits on `rgb(21,32,39)`, a card, not the canvas |
+
+✅ **The token defect above is unaffected and stands on its own**: the values disagree with a design all 35 screens state identically, the ramp is shifted by one, and `--bg-rail`'s dark value exists nowhere. ⛔ **That is provable without any claim about what a customer sees.**
+
+🔴 **The one consequence that IS verified against its true backdrop is the loading skeleton**, and it is unambiguous — **three of them, `1117×64`, no border, no shadow:**
+
+```
+self rgb(13,20,24)  ==  backdrop rgb(13,20,24)   ->  INDISTINGUISHABLE
+```
+
+📁 **See [B-1057](#b-1057)**, where it compounds with a loading state that announces nothing.
+
+⚠️ **The lesson, kept rather than tidied away: comparing a fill to `body` answers a different question from comparing it to what is actually behind the element**, and the first one flatters the finding.
 
 **Reproduction.** Sign in · open `/accounts` · set `document.documentElement.setAttribute('data-theme','dark')` · observe the avatar disc, the segmented-control tray and any progress track. Each loses its fill entirely; the initials and labels float on the canvas.
 
