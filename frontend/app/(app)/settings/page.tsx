@@ -121,11 +121,18 @@ export default function SettingsPage() {
         <div>
           <h1 className="text-title text-content">Settings</h1>
           {/* 🔴 **📁 The design's subtitle, verbatim** — `Design Documents/
-              Fortune Signora Settings.html`. ⛔ **This read *"The organizations
-              you belong to"***, which describes the last card on the page
-              rather than the page. ✅ **And it is a claim this product can
-              support**: `/settings/audit` renders the log, and every mutation
-              here goes through the audited write path. */}
+              Fortune Signora Settings.html`: ***"Every change is attributed,
+              reversible and visible in the audit log"***.
+
+              ⛔ **This read *"The organizations you belong to."*** — ⚡ **which
+              describes the LAST card on the page and not the page.** 📁 The
+              design's sentence states the property that makes a settings screen
+              safe to use, and it is the same promise `#audit` is built on.
+
+              ⚠️ **It is a claim this product can support**: 📁 `/settings/audit`
+              renders the log, and every mutation here goes through the audited
+              write path. **A subtitle promising attribution on a product with no
+              audit log would be the false claim; this one is backed.** */}
           <p className="mt-1 text-sm text-content-muted">
             Every change is attributed, reversible and visible in the audit log.
           </p>
