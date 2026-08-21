@@ -66,8 +66,16 @@ export function DecisionHistory({
   if (decisions.length === 0) return null;
 
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-sm font-semibold text-content">What has been decided</h2>
+    /* 🔴 **No heading, and no `<section>`.** ⛔ **This carried `<h2>What has
+       been decided</h2>` — invented, and ZERO of the 35 design documents use
+       that sentence.** 📁 **The design's Account 360 draws no decision-history
+       section at all**, so there is no name to correct it TO.
+
+       ✅ **It renders as detail inside the design's *Open opportunities* card**,
+       where the opportunity it describes already is — so it needs no name of
+       its own, exactly as the rows above it do not. ⚠️ **An `aria-label` would
+       be the same invention with a narrower audience.** */
+    <div className="flex flex-col gap-3">
       <ol className="flex flex-col gap-3">
         {opportunity.history.map((state, index) => (
           <li key={`${index}:${state.occurred_at}`}>
@@ -83,7 +91,7 @@ export function DecisionHistory({
           </li>
         ))}
       </ol>
-    </section>
+    </div>
   );
 }
 

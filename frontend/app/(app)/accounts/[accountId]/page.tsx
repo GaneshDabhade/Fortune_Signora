@@ -1100,21 +1100,41 @@ export default function AccountBriefPage() {
                 description="An opportunity opens when somebody qualifies this account. Until then there is nothing here to track."
               />
             )}
-          </AccountSectionShell>
 
-          {/* **After the reasoning, before the evidence.** Somebody asking
-              what happened here before them is asking a different question
-              from *why does this score say what it says* — and usually asking
-              it because they are about to decide something themselves. It
-              sits where the page turns from Signora's argument to the record
-              of what people did with it. */}
-          {opportunity ? (
-            <DecisionHistory
-              opportunity={opportunity}
-              viewerId={viewerId}
-              people={people}
-            />
-          ) : null}
+            {/* 🔴 **The tenth invented section on this surface, and the last.**
+                ⛔ **This rendered as a PEER of the design's sections, under its
+                own `<h2>What has been decided</h2>` — a heading that appears
+                ZERO times across the 35-document snapshot**, and a section the
+                design does not draw at all.
+
+                ⚠️ **The comment that stood here argued for the placement** —
+                *"where the page turns from Signora's argument to the record of
+                what people did with it"* — **which is a product decision this
+                lane made and the design did not.** 📁 **The design's Account
+                360 draws twenty-two sections and none of them is a decision
+                history.**
+
+                ✅ **Not deleted, because it is not obsolete, duplicated or
+                superseded** ([CLAUDE.md](../../../../CLAUDE.md)). **`Recent
+                activity` is fed by `useAccountTimeline` and this by
+                `opportunity.history` — two producers, two datasets — so
+                removing it would drop producer-backed information a customer
+                can read today and nothing else carries.**
+
+                ⚡ **So it moves to where it is already true: detail OF the
+                opportunity, inside the design's `Open opportunities` card,
+                rather than a page-level section competing with them.** ⛔ **And
+                it carries no heading of its own — the design gives this content
+                no name, so inventing a quieter one would be the same defect in
+                a smaller font.** */}
+            {opportunity ? (
+              <DecisionHistory
+                opportunity={opportunity}
+                viewerId={viewerId}
+                people={people}
+              />
+            ) : null}
+          </AccountSectionShell>
 
           {/* ⚡ **`id="score"`** — the design calls this section *Account
               score*, and the rail links to it by that id. */}

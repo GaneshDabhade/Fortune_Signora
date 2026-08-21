@@ -206,6 +206,15 @@ describe('⛔ retired heading vocabulary never returns', () => {
     // worst place to miss a rename** — it takes every spec that uses it down,
     // in files the rename never touched.
     'What has happened': 'Recent activity',
+    // 🔴 **The tenth, and the only one with NO replacement.** ⛔ **The design's
+    // Account 360 draws twenty-two sections and none of them is a decision
+    // history**, so there is no design word to correct this one TO — which is
+    // why it stopped being a section rather than being renamed. ✅ **The data
+    // survives**: it is producer-backed (`opportunity.history`), it is not
+    // carried by `Recent activity` (a different producer, `useAccountTimeline`),
+    // and it now renders as detail inside the design's *Open opportunities*
+    // card with no heading at all.
+    'What has been decided': 'no heading — it is detail inside Open opportunities',
   };
 
   /**
@@ -217,10 +226,18 @@ describe('⛔ retired heading vocabulary never returns', () => {
    * `CompetitorsEditor` on `/settings/products`, where a customer *declares*
    * competitors, against the Account 360 card that *reads* them.
    *
-   * ⛔ **Renaming it now would be premature.** 📁 `/settings/products` appears in
-   * **no** final design document's Settings nav, and whether that page should
-   * exist at all is an open question recorded in the Settings audit. **A heading
-   * on a page whose existence is unresolved is not a heading to settle first.**
+   * ⚡ **RULED 2026-08-21, product owner: `/settings/products` STAYS.** ⛔ **Its
+   * absence from every final Settings design is NOT evidence of deprecation** —
+   * *"do not remove or redesign it merely because the Settings design doesn't
+   * explicitly name it… preserve it unless the authoritative documents establish
+   * that it is deprecated."* ✅ **It is producer-backed and feeds Account 360's
+   * *What you sell*.** 📁 **The conflict stays recorded as C-1546 rather than
+   * resolved in code.**
+   *
+   * ⛔ **So the exclusion is no longer *pending a decision on the page*; it is
+   * that the vocabulary retired on the RECORD surface was never this page's.**
+   * ⚡ **A customer DECLARING competitors and a card READING them are two
+   * screens, and one rename does not govern both.**
    */
   const SETTINGS_SURFACE = /^(components\/commercial|app\/\(app\)\/settings)\//;
 

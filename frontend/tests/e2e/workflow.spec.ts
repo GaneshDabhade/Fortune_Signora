@@ -81,8 +81,10 @@ test.describe('committing to an account', () => {
     await confirm.click();
 
     // Not optimistic: the stage the page shows is the one the server accepted.
-    await expect(page.getByText(/What has been decided/)).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByText(reason)).toBeVisible();
+    // ⚡ **The reason IS the proof the server accepted it** — scoped to the
+    // card that carries the record, so a reason echoed anywhere else on the
+    // page cannot satisfy this.
+    await expect(decisionRecord(page).getByText(reason)).toBeVisible({ timeout: 20_000 });
   });
 
   test('@journey the decision survives a reload, because it is a record', async ({
@@ -102,25 +104,45 @@ test.describe('committing to an account', () => {
       await expect(page.getByText(/Account score \d+ out of 100/)).toBeVisible({
         timeout: 20_000,
       });
-      const history = page.getByText('What has been decided');
-      if ((await history.count()) === 0) continue;
+      // ⚡ **A decided account is one whose record carries rows.** ⛔ **Not
+      // *the card exists*** — the card renders on every account, including one
+      // nobody has decided, so its presence proves nothing.
+      const rows = decisionRecord(page).locator('ol li');
+      if ((await rows.count()) === 0) continue;
 
-      const before = await page
-        .locator('section')
-        .filter({ has: page.getByRole('heading', { name: 'What has been decided' }) })
-        .innerText();
+      const before = await decisionRecord(page).innerText();
       await page.reload();
-      await expect(page.getByText('What has been decided')).toBeVisible({ timeout: 20_000 });
-      const after = await page
-        .locator('section')
-        .filter({ has: page.getByRole('heading', { name: 'What has been decided' }) })
-        .innerText();
+      await expect(decisionRecord(page).locator('ol li').first()).toBeVisible({
+        timeout: 20_000,
+      });
+      const after = await decisionRecord(page).innerText();
       expect(after).toBe(before);
       return;
     }
     test.skip(true, 'no account carries a decision yet');
   });
 });
+
+/**
+ * 🔴 **The decision record is located by the DESIGN's card, not by a heading of
+ * its own.**
+ *
+ * ⛔ **These specs located it as `section` filtered by `heading: "What has been
+ * decided"` — an invented heading, ZERO of the 35 design documents, and the
+ * tenth on this surface.** ⚡ **It is now detail INSIDE the design's *Open
+ * opportunities* card**, so there is no heading to filter by and there should
+ * not be one.
+ *
+ * ⚠️ **Caught by the retired-vocabulary guard rather than by QE**, which is the
+ * fourth time a Playwright file has been the miss and the first time it was
+ * found before a candidate went out. **Vitest never loads these specs, so only
+ * a guard that reads them AS TEXT can see them.**
+ */
+function decisionRecord(page: import('@playwright/test').Page) {
+  return page
+    .locator('section')
+    .filter({ has: page.getByRole('heading', { name: 'Open opportunities' }) });
+}
 
 test.describe('walking away from an account', () => {
   test('@regression a terminal decision cannot be recorded without a reason', async ({
@@ -147,9 +169,7 @@ test.describe('walking away from an account', () => {
     const href = await findAccountOffering(page, /^Not a real opportunity$/);
     if (href === null) test.skip(true, 'no account offers this move');
 
-    const history = page
-      .locator('section')
-      .filter({ has: page.getByRole('heading', { name: 'What has been decided' }) });
+    const history = decisionRecord(page);
     const read = async (): Promise<string> =>
       (await history.count()) > 0 ? history.innerText() : '';
 

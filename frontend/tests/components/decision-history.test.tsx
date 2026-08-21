@@ -332,8 +332,18 @@ describe('it is silent when it has nothing to say', () => {
   it('appears as soon as one real decision exists', () => {
     render(<DecisionHistory opportunity={opportunity([OPENED, TOOK_ON])} viewerId={ME} />);
 
-    expect(
-      screen.getByRole('heading', { name: 'What has been decided' }),
-    ).toBeVisible();
+    // 🔴 **This asserted `getByRole('heading', { name: 'What has been decided'
+    // })` — the invented heading itself.** ⛔ **ZERO of the 35 design documents
+    // carry that sentence, and the design draws no decision-history section**,
+    // so it now renders as detail inside *Open opportunities* with no name of
+    // its own.
+    //
+    // ⚠️ **Re-aimed, not weakened.** ✅ **The property this test exists for is
+    // *something appears* — the two tests above it assert an EMPTY DOM for the
+    // silent cases, so a rendered row is the exact opposite of what they
+    // check.** ⛔ **Asserting a heading was never the property; it was the
+    // most convenient handle on it, which is how a guard ends up pinned to a
+    // string nobody chose deliberately.**
+    expect(screen.getAllByRole('listitem').length).toBeGreaterThan(0);
   });
 });
