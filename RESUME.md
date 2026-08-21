@@ -45,6 +45,24 @@ done
 
 ⚠️ **If the dev server has been up a long time and sign-in starts failing with `GET /signin?` and no `AUTH_TOKEN_ISSUED` in the log, the client bundle has gone stale.** ✅ **Restart `next dev`; it is not an auth defect.** This cost real time on 2026-08-20.
 
+🔴 **⛔ DO NOT SOURCE `frontend/.env.local` FOR THE API. It breaks authentication.**
+
+⚠️ **`RESUME.md` used to tell you to**, and this cost a full slice on 2026-08-21.
+📁 **`frontend/.env.local` carries `SIGNORA_JWT_PUBLIC_KEY` with LITERAL `\n`
+escapes**; exporting it overrides the real PEM that `pydantic-settings` reads
+from 📁 `backend/.env`, and **every authenticated call answers 500** with
+`jwt.exceptions.InvalidKeyError: Could not parse the provided public key`.
+
+⛔ **The symptom does not look like auth.** ⚡ **Sign-in SUCCEEDS** — Better Auth
+is the frontend's — **and the failure appears as Playwright timing out at the
+organization chooser**, which reads as a slow route or polluted seed data. ✅ **The
+two-second check is `curl -s localhost:8300/ready`**: it answers
+`"authentication":"ok"` or names the fault directly.
+
+✅ **Start it plainly**: `cd backend && nohup uv run uvicorn
+apps.api.main:create_app --factory --reload --port 8300 &` — **pydantic reads
+`backend/.env` itself and needs nothing exported.**
+
 🔴 **AND CHECK THE BROWSER AFTER ADDING A HOOK TO `components/ui/`.** ⛔ **`skeleton.tsx` gained `useState`/`useEffect` with no `'use client'`, and every route returned 500** — ⚠️ **while all 4,000 unit tests passed**, because **Vitest renders everything as a client component and cannot see a missing directive.** ✅ **Sixteen route-level `loading.tsx` files are Server Components importing that module**, which turned one missing line into the whole product. ⚡ **`curl -s -o /dev/null -w "%{http_code}" localhost:3300/` is the two-second check.**
 
 **Playwright needs both of these exported:**
