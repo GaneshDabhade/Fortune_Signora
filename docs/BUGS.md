@@ -17753,7 +17753,25 @@ DARK   skeleton rgb(13,20,24)     page rgb(13,20,24)      identical — nobody p
 >
 > **The finding that survives is unchanged and is the row's real subject: FOUR different treatments on one screen where the design has one.** ⛔ **Only the specification of that one was wrong.**
 
-**Design reference.** The screen documents draw focus **one way**, and it is a **pair** — 📁 **`border:1px solid var(--brand)` + `box-shadow: 0 0 0 3px var(--brand-tint)`, 21 occurrences, 21 of 21 carrying both.** Three variants exist for context (`--surface` ×6, `--ai-tint` ×6, `--risk-tint` ×3) and every one is **`0 0 0 3px`** — ⚡ **a 3px tint ring, never an outline.**
+> ### ⚠️ CORRECTED AGAIN 2026-08-21 — the row's "three variants" are two different patterns, and only one of them is focus
+>
+> ⛔ **The row listed `--surface` ×6, `--ai-tint` ×6 and `--risk-tint` ×3 as *"variants [that] exist for context"* of the focus indicator.** ✅ **Raised by Lane A and re-measured here: the population is two patterns that happen to share the `0 0 0 3px` shape.**
+>
+> | `0 0 0 3px` ring | count | paired with a `border:1px solid`? | what it is drawn on |
+> |---|---|---|---|
+> | `--brand-tint` | **21** | ✅ **21 of 21** — `--brand` | controls: 38–40px tall, 8px radius |
+> | `--risk-tint` | **3** | ✅ **3 of 3** — `--risk` | controls |
+> | `--pos-tint` | **1** | ✅ **1 of 1** — `--pos` | controls |
+> | `--ai-tint` | **6** | ⚠️ **1 of 6** — `--ai` | 1 control · **5 dots** |
+> | 🔴 **`--surface`** | **6** | ⛔ **0 of 6** | 🔴 **8–9px circles, `border-radius:999px`, `position:absolute; left:-20px`** |
+>
+> ⚡ **So the design has ONE focus indicator — a PAIRED border-plus-ring — in four status colourways, 26 instances.** ⛔ **The 11 unpaired rings are a different pattern entirely: a knockout halo that separates a small status dot from whatever line or surface passes behind it, which is why its colour is the SURFACE rather than a status tint.**
+>
+> ⚠️ **Lane A identified these as avatar-stack overlap rings; the drawn elements are status dots on a timeline rail.** ✅ **The conclusion is theirs and unchanged — they are not focus** — and the mechanism is the same: a ring in the backdrop's own colour, cutting a shape out of what is behind it.
+>
+> ⚡ **The 3px figure was never in doubt on either side. What was wrong was the population** — 📁 **the same error as this audit's B-1052, one row apart, and Lane A caught it in their own reading of my row before the instrument separated it.**
+
+**Design reference.** The screen documents draw focus **one way, and it is a PAIR**: 📁 **`border:1px solid var(--X)` + `box-shadow: 0 0 0 3px var(--X-tint)`** — **26 instances across four status colourways**, `--brand` 21/21 · `--risk` 3/3 · `--pos` 1/1 · `--ai` 1/1 of its controls. ⛔ **Eleven same-shaped rings in the documents are NOT focus** (see the correction above). Three variants exist for context (`--surface` ×6, `--ai-tint` ×6, `--risk-tint` ×3) and every one is **`0 0 0 3px`** — ⚡ **a 3px tint ring, never an outline.**
 
 **Current implementation — measured over 28 tab stops per route:**
 
