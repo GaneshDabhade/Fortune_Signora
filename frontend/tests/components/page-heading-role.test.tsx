@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -131,5 +131,126 @@ describe('📁 §04 — every route-level heading is the `Title` role', () => {
     // literal `<h1` — which is the stronger of the two outcomes.
     expect(byFile.has('app/(app)/signals/page.tsx')).toBe(false);
     expect(byFile.get('app/(app)/profile/security/page.tsx')).toContain('text-title');
+  });
+});
+
+/**
+ * 🔴 **Settings — the design's own sentences, asserted against the document.**
+ *
+ * ⛔ **Not against a copy of them.** 📁 The subtitle read *"The organizations you
+ * belong to"*, which describes the LAST CARD on the page rather than the page,
+ * and nothing could have caught it because nothing compared the screen to the
+ * design.
+ */
+describe('📁 Settings says what the design says', () => {
+  const SETTINGS = join(process.cwd(), '..', 'Design Documents', 'Fortune Signora Settings.html');
+
+  it("carries the design's subtitle, read out of the design document", () => {
+    // ⚠️ **Skipped rather than failed when the corpus is absent.** 📁 `Design
+    // Documents/` is the product owner's local authority and is deliberately
+    // NOT committed — `docs/design-snapshot/` is the repository's copy — so a
+    // clean checkout must not fail on its absence.
+    if (!existsSync(SETTINGS)) return;
+
+    const bundled = readFileSync(SETTINGS, 'utf8');
+    let longest = '';
+    for (const match of bundled.matchAll(/"(?:[^"\\]|\\.)*"/g)) {
+      if (match[0].length > longest.length) longest = match[0];
+    }
+    const markup = JSON.parse(longest) as string;
+
+    const subtitle = 'Every change is attributed, reversible and visible in the audit log';
+    expect(markup, 'the design states this subtitle').toContain(subtitle);
+
+    const page = readFileSync(join(process.cwd(), 'app', '(app)', 'settings', 'page.tsx'), 'utf8');
+    expect(page, 'the screen states it too').toContain(subtitle);
+
+    // ⚠️ **Comments stripped before the negative assertion.** 🔴 **This failed on
+    // its first run against the comment that RECORDS the old sentence** — the
+    // same false positive the design-token guard produced, and the same fix.
+    // ⛔ **A guard that reads documentation as code teaches people not to
+    // document.**
+    const bare = page.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    expect(bare, 'and not the sentence it replaced').not.toContain(
+      'The organizations you belong to',
+    );
+  });
+});
+
+/**
+ * 🔴 **A production string was renamed and the tests asserting it were not —
+ * twice, in one day, by the same lane.**
+ *
+ * ⛔ **First: QE found three journey tests failing on a certified candidate.**
+ * ⛔ **Then, having "fixed" it, three MORE failed** — because the fix updated
+ * the file QE named and nothing grepped for the rest. **`accessibility.spec.ts`,
+ * `golden-journey.spec.ts` and the `brief` page object all carried it too.**
+ *
+ * ⚡ **A unit test cannot catch this** — the strings live in Playwright specs,
+ * which vitest never loads — **so the guard has to read them as text.**
+ *
+ * ⚠️ **This asserts the ABSENCE of retired vocabulary**, which is the shape that
+ * caught the false `Recommendations` affordance earlier today. **A guard that
+ * says *this must not appear* is the one that survives a rename.**
+ */
+describe('⛔ retired heading vocabulary never returns', () => {
+  /**
+   * 📁 **Each of these appears ZERO times in the 35-document design snapshot**,
+   * verified independently by QE. ⚡ **The replacement is the design's own word.**
+   */
+  const RETIRED: Record<string, string> = {
+    'What contributed': 'Account score',
+    'Who you compete against': 'Competitors',
+  };
+
+  /**
+   * ⚠️ **Scoped to the Account 360 record surface, where the vocabulary was
+   * retired — and the exclusion is a finding rather than a convenience.**
+   *
+   * 🔴 **This guard immediately caught `components/commercial/competitors.tsx`**,
+   * which the rename had missed. ⛔ **It is a DIFFERENT thing**: the
+   * `CompetitorsEditor` on `/settings/products`, where a customer *declares*
+   * competitors, against the Account 360 card that *reads* them.
+   *
+   * ⛔ **Renaming it now would be premature.** 📁 `/settings/products` appears in
+   * **no** final design document's Settings nav, and whether that page should
+   * exist at all is an open question recorded in the Settings audit. **A heading
+   * on a page whose existence is unresolved is not a heading to settle first.**
+   */
+  const SETTINGS_SURFACE = /^(components\/commercial|app\/\(app\)\/settings)\//;
+
+  function sources(dir: string): string[] {
+    const out: string[] = [];
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const path = join(dir, entry.name);
+      if (entry.isDirectory()) out.push(...sources(path));
+      else if (/\.tsx?$/.test(entry.name)) out.push(path);
+    }
+    return out;
+  }
+
+  it('appears in no assertion, in any suite', () => {
+    const offenders: string[] = [];
+    for (const file of [
+      ...sources(join(process.cwd(), 'app')),
+      ...sources(join(process.cwd(), 'components')),
+      ...sources(join(process.cwd(), 'tests', 'e2e')),
+    ]) {
+      // ⚠️ **Comments blanked first.** ⛔ **The record of WHY a string was
+      // retired must not be read as the string returning** — the same false
+      // positive this file already produced once, and the design-token guard
+      // before it.
+      const bare = readFileSync(file, 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/^\s*\/\/.*$/gm, '');
+      const where = relative(process.cwd(), file);
+      if (SETTINGS_SURFACE.test(where)) continue;
+      for (const [retired, instead] of Object.entries(RETIRED)) {
+        if (bare.includes(retired)) {
+          offenders.push(`${where} — "${retired}", use "${instead}"`);
+        }
+      }
+    }
+    expect(offenders, 'retired vocabulary is still asserted here').toEqual([]);
   });
 });

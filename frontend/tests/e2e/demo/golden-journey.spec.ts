@@ -93,7 +93,7 @@ test('a working morning at Signora', async ({ page, accounts, brief }) => {
   );
   const arithmetic = await page.getByText(/\d+ of \d+ points/).first().innerText();
   say(`   ${arithmetic}`);
-  await page.getByRole('heading', { name: 'What contributed' }).scrollIntoViewIfNeeded();
+  await page.getByRole('heading', { name: 'Account score' }).scrollIntoViewIfNeeded();
   await beat(page, 2000);
 
   // ── 5 ─────────────────────────────────────────────────────────────────────

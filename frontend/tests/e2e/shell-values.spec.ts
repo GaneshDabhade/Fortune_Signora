@@ -242,8 +242,25 @@ test.describe('§13 · the collapsed utility panel', () => {
       timeout: 30_000,
     });
 
-    const tabs = page.locator('#shell-utility-panel [role="tab"]');
+    // 🔴 **`[role="tab"]` until [B-1055](../../../docs/BUGS.md), and the change
+    // is the point rather than an inconvenience.**
+    //
+    // ⛔ **Collapsed, this rail published three `role="tab"` for a panel it was
+    // not rendering** — a screen-reader user was told *"tab, selected"* and
+    // given nothing to reach. ✅ **Collapsed they are DISCLOSURES**:
+    // `aria-expanded="false"`, and clicking one now opens the panel, which it
+    // previously did not do at all.
+    //
+    // ⚡ **Everything this test asserts is unchanged** — 📁 §17 `2.5.8`, 24×24
+    // targets with 8px separation, and the word as the accessible name.
+    // ⛔ **Only the role the controls carry has changed**, so this re-aims the
+    // selector rather than relaxing the assertion.
+    const tabs = page.locator('#shell-utility-panel button[aria-expanded]');
     await expect(tabs).toHaveCount(3);
+
+    // ⛔ **And no tab role at all while collapsed**, which is the half the old
+    // selector could not have caught: it counted three and was satisfied.
+    await expect(page.locator('#shell-utility-panel [role="tab"]')).toHaveCount(0);
 
     const boxes = [];
     for (let i = 0; i < 3; i += 1) boxes.push((await tabs.nth(i).boundingBox())!);

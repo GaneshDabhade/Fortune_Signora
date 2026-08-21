@@ -46,7 +46,7 @@ export class BriefPage {
   }
 
   get whatContributed(): Locator {
-    return this.section('What contributed');
+    return this.section('Account score');
   }
 
   get whatHasHappened(): Locator {

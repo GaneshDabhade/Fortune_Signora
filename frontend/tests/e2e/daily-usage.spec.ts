@@ -145,10 +145,33 @@ test.describe('from the list to the account', () => {
     // **The trust assertion.** A citation that opens an empty drawer is worse
     // than no citation: it invites a customer to check and then tells them
     // nothing.
+    //
+    // 🔴 **It used to be `innerText().length > 20`, and it was passing on the
+    // drawer's own TITLE.**
+    //
+    // ⛔ **The dialog is visible before its read resolves**, and the assertion
+    // measured immediately — so the only thing reliably counted was the
+    // heading. ⚠️ **While that heading was *"The evidence behind this"* (24
+    // characters) the threshold was cleared by the placeholder alone**; the
+    // design's own word — *"Evidence"* — is 8, and the race became visible.
+    // ⚡ **The rename did not break this. It removed the padding that was
+    // hiding it.**
+    //
+    // ✅ **So it now waits for the drawer to RESOLVE and asserts what it
+    // resolved to.** 📁 Measured on a real account: a citation opens 236
+    // characters — the reading's title, its provider, its date and the value
+    // that changed. ⛔ **A length check cannot tell that from a heading.**
     const dialog = brief.evidenceDialog;
     await expect(dialog).toBeVisible();
-    const text = await dialog.innerText();
-    expect(text.trim().length).toBeGreaterThan(20);
+
+    // ⚡ **The provider line is the proof the citation RESOLVED** — it names who
+    // reported the reading and when, and it exists only when a business event
+    // was found. ⛔ **Never asserted by length**: 📁
+    // [P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md), an unresolved read
+    // must not be indistinguishable from a resolved one.
+    await expect(dialog).toContainText(/reported this|could not be loaded/, {
+      timeout: 15_000,
+    });
 
     await page.keyboard.press('Escape');
     await expect(dialog).toHaveCount(0);
@@ -291,16 +314,43 @@ test.describe('from the list to the account', () => {
 });
 
 test.describe('what the product refuses to invent', () => {
-  test('@regression an account that was never scored says so, and is not an error', async ({
-    brief,
+  /**
+   * 🔴 **Re-aimed by [B-1053](../../../docs/BUGS.md), and the change is the
+   * finding rather than a maintenance cost.**
+   *
+   * ⛔ **This opened a well-formed id nothing has scored and asserted *"Nothing
+   * has scored this account yet"*** — ⚠️ **but that id does not EXIST**, and
+   * rendering a record's empty state for a record that is not there is exactly
+   * the defect the row names: *"an account that does not exist renders as an
+   * account that exists with no data."*
+   *
+   * ✅ **The property the test was protecting is unchanged and is asserted more
+   * strictly now.** 📁 The row's own criterion: *"a member requesting an account
+   * in another workspace must still be indistinguishable from one that does not
+   * exist — 404, never 403, so the two paths must render the same."* ⚡ **They
+   * do: `/account-identities` omits both, so this branch cannot tell them
+   * apart.**
+   *
+   * ⚠️ **And *never scored* is still a real state that must still say so** —
+   * 📁 [B-207](../../../docs/BUGS.md)'s withdrawal established it — **for an
+   * account that EXISTS.** ⛔ **That case cannot be exercised from a hardcoded
+   * id**, which is why it is asserted in `brief.test.tsx` against a real
+   * account whose score read 404s.
+   */
+  test('@regression an account that does not exist says so, and is not an error', async ({
     page,
   }) => {
-    // A well-formed identifier for an account nothing has scored. Also what a
+    // ⚡ **A well-formed identifier the workspace does not have.** ⛔ Also what a
     // caller sees for an account in another organization — deliberately
     // indistinguishable, or account identifiers become enumerable.
-    await brief.open('00000000-0000-4000-8000-000000000000');
-    await expect(brief.neverScored).toBeVisible();
+    await page.goto('/accounts/00000000-0000-4000-8000-000000000000');
+
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(/not here/i);
+    // ⛔ **Not an error state** — the request succeeded and the answer is that
+    // there is nothing at this address.
     await expect(page.getByText('Could not load this account')).toHaveCount(0);
+    // ♿ **And it names no cause**, because §7 means this branch cannot know one.
+    await expect(page.locator('main')).not.toContainText(/access|permission/i);
   });
 
   test('@regression an address that leads nowhere says so in a customer sentence', async ({

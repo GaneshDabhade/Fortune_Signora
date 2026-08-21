@@ -441,7 +441,7 @@ test.describe('On this page reaches what the page renders', () => {
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await page.locator('a[href^="/accounts/"]').first().click();
     await page.waitForURL(/\/accounts\/[0-9a-f-]{36}/);
-    await expect(page.getByRole('heading', { name: 'What contributed' })).toBeVisible({
+    await expect(page.getByRole('heading', { name: 'Account score' })).toBeVisible({
       timeout: 20_000,
     });
 
@@ -499,7 +499,7 @@ test.describe('the record follows the Opportunity Intelligence design', () => {
     // reports zero on a section that simply had not rendered — **and the skip
     // that follows hides a feature that works.** ⚠️ **This lane shipped exactly
     // that once already**, on the Signal Center queue.
-    const section = page.getByRole('heading', { name: 'What contributed' });
+    const section = page.getByRole('heading', { name: 'Account score' });
     await expect(section).toBeVisible({ timeout: 20_000 });
 
     const heading = page.getByRole('heading', { name: 'What moved it' });
