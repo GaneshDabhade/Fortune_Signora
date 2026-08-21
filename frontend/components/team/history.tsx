@@ -88,7 +88,19 @@ export function OrganizationHistory({
                 key={`${entry.occurred_at}:${index}`}
                 className="flex items-baseline justify-between gap-4 border-l-2 border-border pl-3"
               >
-                <p className="text-md leading-6 text-content">{sentence(entry)}</p>
+                {/* 🔴 **`min-w-0 break-words`, and both halves are load-bearing.**
+                    ⛔ **An audit sentence names a person by EMAIL, and an email
+                    is one unbreakable word** — so this paragraph's min-content
+                    was the whole address, the row could not shrink to its
+                    container, and the DOCUMENT scrolled sideways at 390px.
+                    ⚡ **Measured on `/settings`: the column reached 494px
+                    against a 375px viewport.** ⚠️ **`min-w-0` alone only lets
+                    the box shrink; without `break-words` the text still
+                    overflows it.** 📁 **A flex child defaults to
+                    `min-width:auto`, which is why this needs saying at all.** */}
+                <p className="min-w-0 break-words text-md leading-6 text-content">
+                  {sentence(entry)}
+                </p>
                 <time
                   className="shrink-0 text-xs text-content-subtle"
                   dateTime={entry.occurred_at}

@@ -308,7 +308,22 @@ export default function SettingsPage() {
           a navigation over the same eleven destinations is two answers to
           *what can I configure*, and 📁 [§2](../../../../CLAUDE.md) says the
           second copy eventually contradicts the first. */}
-      <div className="grid gap-6 smalllaptop:grid-cols-[208px_minmax(0,1fr)] smalllaptop:items-start">
+      {/* ⚡ **`grid-cols-[minmax(0,1fr)]` at the base band.** ⛔ **A one-column
+          grid defaults to an `auto` track, which sizes to its widest item's
+          min-content and may exceed its container** — so the column grew to fit
+          an unbreakable string and the document scrolled sideways at 390px.
+          📁 **The same floor the laptop band already declares for its content
+          track, one band down.**
+
+          ⚠️ **This is ONE of two mechanisms that would each have fixed it, and
+          the second was removed rather than kept.** 🔴 **Fire-tested at 390px:
+          reverting this alone PASSED · reverting `min-w-0` on the content
+          column alone PASSED · reverting BOTH failed.** ⛔ **So a `min-w-0`
+          here would have been protection that could not fail, with a confident
+          comment on it** — 📁 [§2](../../../../CLAUDE.md), *behaviour exists
+          exactly once*. ⚡ **The track floor is kept because it bounds the
+          column whatever a section later puts inside it.** */}
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 smalllaptop:grid-cols-[208px_minmax(0,1fr)] smalllaptop:items-start">
         {/* 📁 **Sticky, like the design's own navigation and Account 360's
             rail.** ⛔ **Below the laptop band it becomes an ordinary block
             above the sections**, which is the same regime change

@@ -427,6 +427,13 @@ export const ROUTES: { path: string; name: string }[] = [
   // twice against one route and reported it as wider coverage.
   { path: '/signals', name: 'Signals' },
   { path: '/reports', name: 'Reports' },
+  // ⚡ **`/settings` itself, which this list did not carry.** ⛔ **Only its two
+  // CHILDREN were here**, so the screen that was rebuilt as the design's page —
+  // eleven sections under a fourteen-item navigation — **was the one route in
+  // Settings that no responsive invariant ran against.** ⚠️ **A matrix covering
+  // a page's children and not the page is the coverage version of asserting on
+  // a heading because it was the convenient handle.**
+  { path: '/settings', name: 'Settings' },
   { path: '/settings/team', name: 'Team' },
   { path: '/settings/products', name: 'Products' },
   { path: '/business', name: 'Business' },
