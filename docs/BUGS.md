@@ -981,6 +981,45 @@ grep -rn 'DELETE FROM workspace' backend/ --include=*.py
 
 ---
 
+### B-1048 · 🟠 A launched-and-forgotten background job reports success when the thing it launched does not exist
+
+| | |
+|---|---|
+| **Module** | **QE's own procedure** — not repository code |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — ⛔ **it cost a cycle stage, and the failure mode is indistinguishable from a slow run** |
+| **Status** | ✅ **`FIXED`** by QE, 2026-08-20 — **the procedure, not a file** |
+| **Found** | **2026-08-20 by QE**, cycle 257, when the browser gate produced no output for twelve minutes |
+
+**Steps.** `nohup /tmp/…/browser-gate.sh > log 2>&1 &`, then report *"browser gate started"*.
+
+**Actual:** the script did not exist. ⛔ **A host reboot had cleared `/tmp`** — `uptime` **1:15** — **and the gate procedure lived only in the session scratchpad.** The launch printed its own success message, the log stayed **0 bytes**, and **zero prod containers existed** because nothing had run.
+
+### 🔴 Why it went unnoticed for twelve minutes
+
+⚡ **`&` returns success for launching, never for running.** ⛔ **QE reported *"browser gate started"* on the strength of the shell forking**, and then polled a log that was empty — **which reads exactly like a suite still building its images.**
+
+📁 **This is [B-142](#b-142)'s family** — *capturing an exit code is not reading it* — **one level up: capturing a launch is not observing a run.** ⚠️ **And QE has now hit that family three times this week: `| tail` swallowing a guard's refusal, a mutation harness reporting on a broken environment, and this.**
+
+### ✅ The fix, and it is one line of discipline rather than tooling
+
+**After launching anything in the background, read its first output before reporting that it started.**
+
+```bash
+nohup "$S/browser-gate.sh" > "$S/browser-257.log" 2>&1 &
+sleep 20; head -4 "$S/browser-257.log"     # ← the launch is not the evidence
+```
+
+⚡ **Applied immediately: the re-launch printed `### 1 · clean prod-local stack` and `Image signora-prod-api Building` within 20 seconds**, which is what *started* actually looks like.
+
+### ⚠️ The second half — the procedure had no home outside `/tmp`
+
+⛔ **`browser-gate.sh` was written into the session scratchpad in cycle 253 and never anywhere else.** ✅ **It was reconstructible — 📁 [`RUNNING.md`](RUNNING.md) documents every step and QE's own notes carry the ordering — and it was reconstructed in a minute.** ⚠️ **But nothing said it was missing; the loss was silent and the reconstruction was luck rather than design.**
+
+📁 **Related to [C-112](LANE_COORDINATION.md), which is the same reboot** — **that item is about containers, this is about the procedure that drives them.**
+
+---
+
 ### B-1046 · 🟠 The documented way to start the frontend takes slot 0, beside a backend line that derives its port
 
 | | |
