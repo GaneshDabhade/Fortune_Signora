@@ -1068,7 +1068,7 @@ sleep 20; head -4 "$S/browser-257.log"     # ← the launch is not the evidence
 | **Module** | [`docs/RUNNING.md`](RUNNING.md) — **QE's** · `Makefile:236` — **`platform_foundation`, Lane A** |
 | **Current assignee** | **Split, one site each. Both fixed** |
 | **Severity** | 🟠 — **a lane following the documented path squats human review's port** |
-| **Status** | ✅ **`FIXED`** — QE's site and Lane A's, both 2026-08-20. ⛔ **NOT `VERIFIED`**: QE wrote one half |
+| **Status** | 🔴 **`OPEN` — reopened 2026-08-21 by QE.** ✅ [`RUNNING.md`](RUNNING.md):217 **fixed** 2026-08-20, verified from source. ⛔ **`Makefile`:236 is NOT fixed** — see the reopening note below. ⛔ **NOT `VERIFIED`**: QE wrote one half |
 | **Found** | **2026-08-20 by Lane A**, who caught it and moved to `-p 3300` |
 
 **`npm run dev` invoked with no port takes Next's default, `3000`, which [`RUNNING.md`](RUNNING.md#running-a-lane) allocates to `review`/slot 0.**
@@ -1098,6 +1098,25 @@ sleep 20; head -4 "$S/browser-257.log"     # ← the launch is not the evidence
 ### ⚠️ Why nobody noticed
 
 **On slot 0 the derived value and the default are the same number**, so the documented path is correct for exactly the one environment where correctness does not matter. 📁 **The same shape as [B-1003](#b-1003), [B-1028](#b-1028) and [B-270](#b-270): slot 0 reached by a route that looks right because 5432, 6379 and 3000 are what a bare tool picks.**
+
+
+### 🔴 REOPENED 2026-08-21 — the `Makefile` half is still present, and the status cell above says it is fixed
+
+**Found by QE during the full UI conformance audit, on `6442122e`** — while following `make demo` to raise a lane stack, not while looking for it.
+
+📁 **[`Makefile`](../Makefile):236 still prints the port-less command, and the line immediately below it sends the reader to a different port:**
+
+```make
+@echo "  backend   cd backend && uv run uvicorn … --port $(SIGNORA_API)"
+@echo "  frontend  cd frontend && npm run dev"                      ← 236, binds 3000
+@echo "  then      http://localhost:$(SIGNORA_WEB) — sign in as …"  ← 237, says 3200
+```
+
+⚡ **So the printed instruction starts the server on one port and then tells you to open another.** ⛔ **On a lane, following it exactly leaves a dev server squatting human review's slot 0 and a browser pointed at an address where nothing is listening.**
+
+✅ **`SIGNORA_WEB` is already resolved** at [`Makefile`](../Makefile):157 **and is used on line 237** — the value is in scope on the adjacent line, so the fix is one interpolation.
+
+⚠️ **The status cell above reads `FIXED` for both sites.** 📁 **[`docs/RUNNING.md`](RUNNING.md):217 is genuinely fixed** — QE verified it from source. **The `Makefile` site is not**, and a row asserting a fix that is not there is [§2](../CLAUDE.md)'s defect: *the repository itself should always tell the truth.* **Status corrected to `OPEN` for the `Makefile` half.**
 
 ---
 
@@ -17001,6 +17020,181 @@ cd frontend && npx tsc --noEmit
 **Nothing about the defect changed. What changed is who sees it**, and severity is a statement about that. **Raised to 🟠 by the reporting lane rather than the owning one**, with the reason stated so the owner can disagree.
 
 ---
+
+---
+
+### B-1050 · 🟠 In dark theme the sunken surface IS the canvas, so every sunken element renders invisible
+
+| | |
+|---|---|
+| **Module** | `product_surface` — **Lane A** · [`frontend/app/globals.css`](../frontend/app/globals.css):264–313 |
+| **Severity** | 🟠 **P1** — wrong behaviour a customer hits on every screen, in one of two shipped themes |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-21 by QE, full UI conformance audit, on `6442122e` |
+| **Route** | **Every authenticated route.** Measured on `/w/{ws}/home` and `/accounts` |
+| **Surface** | The token layer → every `bg-surface-sunken` consumer (**112 occurrences** across `frontend/components` and `frontend/app`) |
+
+**Design reference.** The token block is carried **identically by all 35 screen documents** in [`docs/design-snapshot/screens/`](design-snapshot/screens/) — measured, not sampled: **37 tokens × 2 themes, zero disagreements across the 35 files.** Dark theme specifies:
+
+| Design role | Design value | Drawn by |
+|---|---|---|
+| `--bg` | `#0d1418` | the page canvas |
+| `--bg-rail` | `#101a1f` | the navigation rail — **79 uses across 28 of 35 screens** |
+| `--surface` | `#152027` | cards, panels |
+| `--sunken` | `#1b272f` | wells, trays, tracks, avatar discs |
+
+**Current implementation.** The four-step ramp is **shifted by one and loses a step**:
+
+| Implementation token | Dark value | Which design role that actually is |
+|---|---|---|
+| `--color-canvas` | `13 20 24` = `#0d1418` | ✅ `--bg` |
+| `--color-surface` | `21 32 39` = `#152027` | ✅ `--surface` |
+| `--color-surface-raised` | `27 39 47` = `#1b272f` | ❌ the design's **`--sunken`** |
+| `--color-surface-sunken` | `13 20 24` = `#0d1418` | ❌ the design's **`--bg`** — *identical to the canvas* |
+| — | — | ❌ `#101a1f` (`--bg-rail`) **appears nowhere in the file** |
+
+⚡ **The role mapping is not assumed — it is established by the light theme, where all four match exactly** (`--color-surface-raised` = `#fdfcfb` = `--bg-rail`, `--color-surface-sunken` = `#f4f1ed` = `--sunken`). **The same tokens are correct in light and wrong in dark**, which is what makes this a value defect rather than a naming difference.
+
+**Evidence — rendered, not read from source.** `data-theme` toggled on a live page, computed styles read from the browser:
+
+```
+LIGHT  body rgb(250,248,246)   sunken token 244 241 237   → 20 sunken elements render rgb(244,241,237)   distinct
+DARK   body rgb(13,20,24)      sunken token  13  20  24   → 20 sunken elements render rgb(13,20,24)      IDENTICAL
+```
+
+**Three named elements on `/accounts`, each with `border-width: 0px`** — so nothing else delineates them once the fill matches the page:
+
+| Element | Light | Dark | Body (dark) |
+|---|---|---|---|
+| Avatar disc (`DR`) | `rgb(244,241,237)` | `rgb(13,20,24)` | `rgb(13,20,24)` |
+| Progress track (`h-[2px] bg-surface-sunken`) | `rgb(244,241,237)` | `rgb(13,20,24)` | `rgb(13,20,24)` |
+| Segmented control tray (`table`/`cards`/`board`) | `rgb(244,241,237)` | `rgb(13,20,24)` | `rgb(13,20,24)` |
+
+**Reproduction.** Sign in · open `/accounts` · set `document.documentElement.setAttribute('data-theme','dark')` · observe the avatar disc, the segmented-control tray and any progress track. Each loses its fill entirely; the initials and labels float on the canvas.
+
+**Acceptance criteria.**
+- `--color-surface-sunken` in `:root[data-theme='dark']` resolves to `#1b272f` (`27 39 47`).
+- `--color-surface-raised` in dark resolves to `#101a1f` (`16 26 31`) — the design's `--bg-rail`.
+- No two of canvas / surface / raised / sunken resolve to the same value in either theme.
+- A test asserts the four-step ramp against the design's values in **both** themes. ⚠️ **`design-tokens.test.tsx` did not catch this**, so a test that only forbids literal colours is not sufficient — the assertion must be value-against-design.
+
+---
+
+### B-1051 · 🟡 Five design token roles have no implementation token, and one carries the wrong light value
+
+| | |
+|---|---|
+| **Module** | `product_surface` — **Lane A** · [`frontend/app/globals.css`](../frontend/app/globals.css) |
+| **Severity** | 🟡 **P2** — wrong but survivable; the surfaces render, without the design's delineation |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-21 by QE, full UI conformance audit, on `6442122e` |
+| **Route** | Product-wide |
+| **Surface** | The token layer |
+
+**Design reference.** The unanimous 37-token block described in [B-1050](#b-1050). The design draws **tinted status surfaces as a triplet** — a `-tint` fill, a `-line` border and an `-ink` foreground. **106 elements across the 35 designs pair a `-tint` background with a matching `-line` border**, e.g. `background:var(--ai-tint);border:1px solid var(--ai-line)`.
+
+**Current implementation.** Every `-tint` has a token (`--color-*-subtle`). **No `-line` token exists at all, and `--ai-ink` is absent in both themes.**
+
+| Design role | Light | Dark | In implementation? | Design usage |
+|---|---|---|---|---|
+| `--ai-ink` | `#3b49a0` | `#b3bbf2` | ❌ **absent both themes** | **247 uses · 25 of 35 screens** |
+| `--ai-line` | `#dcdefa` | `#2b3159` | ❌ **absent both themes** | **91 uses · 21 screens** |
+| `--warn-line` | `#efdcc0` | `#453520` | ❌ **absent both themes** | **69 uses · 17 screens** |
+| `--risk-line` | `#f2d5d1` | `#4a2a25` | ❌ **absent both themes** | **54 uses · 16 screens** |
+| `--pos-line` | `#c9e6da` | `#1d4433` | ❌ **absent both themes** | **33 uses · 14 screens** |
+| `--brand-line` | `#c8ddee` | `#1e4658` | ⚠️ **dark correct, light wrong** | **86 uses · 29 screens** |
+
+🔴 **`--brand-line` is the sharp one.** `--color-accent-soft` holds `30 70 88` = `#1e4658` in dark, which **is** the design's `--brand-line`; in light it holds `160 196 222` = `#a0c4de` where the design says `#c8ddee`. **One token, correct in one theme and wrong in the other** — the same shape as [B-1050](#b-1050) and found by the same method.
+
+**Evidence.** Design side: token blocks extracted from all 35 `.dc.html` files and cross-checked (0 disagreements); usage counted with `grep -oh "var(--<role>)" *.dc.html | wc -l` and file counts with `grep -l`. Implementation side: `globals.css` parsed **with CSS comments stripped** — ⚠️ **without stripping, a doc comment containing `` `--line-soft: #eae5df` `` swallows the real `--color-border-soft` declaration and the parser reports a false absence.** That false positive was caught and removed before this row was written.
+
+**Reproduction.** `grep -c 'ai-ink\|ai-line\|pos-line\|warn-line\|risk-line' frontend/app/globals.css` → `0`.
+
+**Acceptance criteria.**
+- A token exists for each of `--ai-ink`, `--ai-line`, `--pos-line`, `--warn-line`, `--risk-line`, in both themes, at the design's values.
+- `--color-accent-soft` resolves to `#c8ddee` in light (dark is already correct).
+- ⛔ **Naming need not match** — [D-220](DECISION_REGISTER.md) §10 and [499](architecture/499-implementation-design-reconciliation.md) §2 both allow a different internal name for a faithful role. **The value and the role must match; the spelling need not.**
+
+---
+
+### B-1052 · 🟡 `Badge` draws no border, and its most common tone is invisible in dark theme
+
+| | |
+|---|---|
+| **Module** | `product_surface` — **Lane A** · [`frontend/components/ui/badge.tsx`](../frontend/components/ui/badge.tsx) |
+| **Severity** | 🟡 **P2** — 🟠 for the `neutral` tone in dark theme, where the badge has neither fill nor border |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-21 by QE, full UI conformance audit, on `6442122e` |
+| **Route** | Product-wide |
+| **Surface** | `components/ui/badge.tsx` → every badge, chip and status pill |
+
+**Design reference.** Design System v2 §09, and **106 tint-plus-line pairings across the 35 screen documents** ([B-1051](#b-1051)). A tinted status surface in the design is `background:var(--x-tint);border:1px solid var(--x-line)`.
+
+**Current implementation.** All seven tones are **fill and text only — no border property at any tone**:
+
+```
+neutral: 'bg-surface-sunken text-content-muted'     accent:  'bg-accent-subtle text-accent'
+success: 'bg-success-subtle text-success'           warning: 'bg-warning-subtle text-warning'
+danger:  'bg-danger-subtle text-danger'             info:    'bg-info-subtle text-info'
+ai:      'bg-ai-subtle text-ai'
+```
+
+**Measured on a live page: `border-top-width: 0px` on every badge inspected, in both themes.**
+
+🔴 **`neutral` compounds with [B-1050](#b-1050).** It is the only tone whose fill is `bg-surface-sunken`, which in dark theme **is the canvas colour**. With no border and no fill contrast, **a neutral badge in dark theme is invisible** — its text sits directly on the page with nothing marking it as a badge. Fixing [B-1050](#b-1050) restores the fill; **this row is still owed the border.**
+
+**Reproduction.** Open any screen with status badges · set `data-theme='dark'` · inspect a `neutral` badge: `background-color` equals `getComputedStyle(document.body).backgroundColor`, `border-width` is `0px`.
+
+**Acceptance criteria.**
+- Each tone renders a 1px border at the design's `-line` colour for that role (depends on [B-1051](#b-1051) supplying the tokens).
+- A `neutral` badge is distinguishable from the page background in **both** themes.
+- ⛔ **Do not solve this by giving `neutral` a different fill** — that hides [B-1050](#b-1050) rather than fixing it, and leaves the other six tones without the border the design specifies.
+
+---
+
+### B-1053 · 🟠 An account that does not exist renders as an account that exists with no data
+
+| | |
+|---|---|
+| **Module** | `product_surface` — **Lane A** · [`frontend/app/(app)/accounts/[accountId]/page.tsx`](../frontend/app/(app)/accounts/[accountId]/page.tsx) |
+| **Severity** | 🟠 **P1** — a stale or mistyped link renders a plausible record instead of saying it is not there |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-21 by QE, full UI conformance audit, on `6442122e` |
+| **Route** | `/accounts/:accountId` |
+| **Surface** | Account 360 → page header, and every section's empty state |
+
+**Current implementation.** `GET /accounts/00000000-0000-0000-0000-000000000000` returns **HTTP 200** and renders the full Account 360 shell:
+
+- `h1` = **`00000000 — no source has named this account yet`** — the raw UUID's first group, presented as the record's name
+- Breadcrumb reads **`Accounts / This account`**
+- Every section renders its *designed empty state*: *"No evidence collected yet"* · *"Nothing has scored this account yet"* · *"No longer on your list"*
+
+🔴 **The screen never asks whether the account exists.** Measured: **20 calls to `/api/proxy/**` on that page, and not one of them fetches the account record itself.** Only sub-resources are requested:
+
+| Sub-resource | Status |
+|---|---|
+| `…/accounts/{id}/score` · `/opportunity` · `/narration` · `/research` | **404** ×4 |
+| `…/accounts/{id}/validation` · `/timeline` · `/observations` | **200, empty** ×3 |
+| `…/workspaces/{ws}/accounts` *(the list — this id is not in it)* | **200** |
+
+⚡ **So the evidence needed is already on the page**: four sub-resources 404, and the account list that was fetched does not contain the id. **The screen has what it needs to say "this account does not exist" and instead renders a name derived from the URL.**
+
+🔴 **This is deliberately NOT a re-report of [B-207](#b-207), which was WITHDRAWN — and that row is the reason this one is written narrowly.** 📁 **B-207 claimed an expired score rendered as *no score*; the withdrawal recorded that a 404 from the score read correctly renders *"Nothing has scored this account yet"*, because *never scored* and *could not find out* are different sentences.** ✅ **That reasoning stands and is not reopened here.**
+
+⚡ **This defect is one level up, and B-207's own distinction is what exposes it: the register names two states — *never scored* and *could not find out* — and there is a third, *does not exist*, which the screen cannot express because it never establishes existence.** ⛔ **Fixing this must not disturb the score-404 behaviour B-207 vindicated.**
+
+📁 **[P-A](DOMAIN_DISCOVERY_REGISTER.md)** — *a failed read must never render as an empty result.* **This is its strongest form: the record itself is absent and the screen renders a name for it.**
+
+✅ **The product already has the right pattern.** `/no-such-route-xyz` returns **404** and renders *"That address does not lead anywhere — Nothing in Signora sits at this link. It may have moved, or it may never have existed."* **That is the voice this screen owes.**
+
+**Reproduction.** Sign in · navigate to `/accounts/00000000-0000-0000-0000-000000000000` · observe a rendered account page titled `00000000 — no source has named this account yet`.
+
+**Acceptance criteria.**
+- A request for an account the workspace does not have renders a *not-found* state, in the customer's vocabulary, distinct from an account that exists and has no data.
+- The screen establishes existence before rendering a record header — ⛔ **never derives a display name from the URL for a record it has not confirmed.**
+- ⚠️ **A member requesting an account in another workspace must still be indistinguishable from one that does not exist** (`CLAUDE.md` §7 — `404`, never `403`, so the two paths must render the same).
+- A Playwright journey covers the not-found path.
+- ⚠️ **The backend half is worth a look and is deliberately not split into a second row** ([C-1500](LANE_COORDINATION.md) is where to raise it if it is real): `…/validation`, `…/timeline` and `…/observations` return **200 with empty collections** for a parent that does not exist. **Reported here as evidence, not diagnosed.**
 
 ---
 

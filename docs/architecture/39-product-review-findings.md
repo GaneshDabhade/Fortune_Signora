@@ -1502,3 +1502,99 @@ Commissioned on the product owner's clarification that **Workspace has always be
 **The RevOps one is the most commercially serious.** PRODUCT_ROADMAP calls that surface *"the first surface that serves the economic buyer rather than only the end user — which is what makes renewal and expansion conversations possible."* **The buyer who signs the cheque has no screen in the product surface design.**
 
 **Priority:** High. **Raised, not fixed** — both are category-3.
+
+---
+
+# Review 13 — the full UI conformance audit *(QE, 2026-08-21, on `6442122e`)*
+
+> ⚡ **This review exists to close the limitation this document opens with.** 📁 **The preamble above says *"I could not open the browser UI… which gives nothing about pixels: spacing, contrast, weight, rhythm."*** ✅ **This review measured pixels — in a real browser, at thirteen widths, in both themes** — and every figure below is a computed style read from a rendered page, never a class name read from a file.
+
+## What was measured
+
+| | |
+|---|---|
+| **Routes rendered and measured** | **39** — 15 authenticated · 13 authentication · 8 onboarding · 2 workspace · 1 not-found · 1 record detail |
+| **Page renders** | **91** · **0 render errors** |
+| **Responsive widths** | **13** — 320 · 360 · 390 · 430 · 600 · 768 · 900 · 1024 · 1100 · 1280 · 1440 · 1600 · 1920 |
+| **Screenshots** | **89** |
+| **Design documents parsed** | **35 of 35** in [`docs/design-snapshot/screens/`](../design-snapshot/screens/) |
+| **Design tokens compared** | **37 roles × 2 themes**, design against implementation, by value |
+| **Themes** | **light and dark**, both measured |
+
+## Findings
+
+| | Confirmed | Where |
+|---|---|---|
+| **P1** | **2** | [B-1050](../BUGS.md#b-1050) dark surface ramp · [B-1053](../BUGS.md#b-1053) non-existent account renders as empty account |
+| **P2** | **2** | [B-1051](../BUGS.md#b-1051) five absent token roles · [B-1052](../BUGS.md#b-1052) `Badge` has no border |
+| **P3** | **0 confirmed** | ⚠️ **see *what this review did not cover*** — the micro sweep of cards, tables and dialogs is not done |
+| **Reopened** | **1** | [B-1046](../BUGS.md#b-1046) — the `Makefile` half was recorded `FIXED` and is not |
+| **Design decisions required** | **2** | below |
+
+⛔ **Full detail lives in [`BUGS.md`](../BUGS.md) and is deliberately not restated here** ([§2](../../CLAUDE.md) — *truth has exactly one authoritative representation*).
+
+## R13-01 · The token layer is where the conformance defects are, and both themes had to be measured to see it
+
+**The design's palette is unambiguous, and that had to be established first.** All **35** screen documents carry the same token block: **37 tokens, two themes, zero disagreements between files.** ⚡ **So any divergence is a defect and not an ambiguity** — which is what made the rest of this review answerable.
+
+🔴 **Two defects share one shape: a token that is correct in light and wrong in dark, or the reverse.**
+
+- [B-1050](../BUGS.md#b-1050) — `--color-surface-sunken` resolves to the **canvas colour** in dark. **112 `bg-surface-sunken` consumers**; on `/accounts` the avatar disc, the progress track and the segmented-control tray all render `rgb(13,20,24)` on a `rgb(13,20,24)` page, with `border-width: 0px`.
+- [B-1051](../BUGS.md#b-1051) — `--color-accent-soft` **is** the design's `--brand-line` in dark and is `#a0c4de` against a specified `#c8ddee` in light.
+
+⚡ **Neither is visible from the light theme alone, and neither is visible from a class name.** 📁 **[489](489-legacy-ui-standards-audit.md), [498](498-common-platform-audit.md) and [499](499-implementation-design-reconciliation.md) all read source files; [D-217](../DECISION_REGISTER.md) measured nine colour roles and pronounced the colour layer exact.** ⛔ **It is exact for those nine, in light.**
+
+## R13-02 · A screen that never asks whether its record exists
+
+[B-1053](../BUGS.md#b-1053). **20 API calls on the Account 360 page and not one fetches the account.** ⚡ **The evidence is already on the page** — four sub-resources `404`, and the account list that *was* fetched does not contain the id — **and the header renders a name derived from the URL instead.**
+
+✅ **The product already has the right voice**: `/no-such-route-xyz` renders *"That address does not lead anywhere — Nothing in Signora sits at this link. It may have moved, or it may never have existed."*
+
+## R13-03 · What the audit checked and found correct — recorded, because four candidate findings died here
+
+⛔ **A conformance audit that reports only divergences overstates itself.** **These were measured and are right:**
+
+| Checked | Result |
+|---|---|
+| **Horizontal overflow, 39 routes × 13 widths** | ✅ **zero**, at every width including 320 |
+| **Navigation rail width** | ✅ **232px expanded, 56px collapsed** — the App Shell's values exactly |
+| **Content width cap** | ✅ **exactly 1600px at a 1920 viewport** |
+| **Responsive regimes** | ✅ off-canvas below 1024 · collapsed 1024–1279 · expanded from 1280 |
+| **Top bar height** | ✅ **56px**, matching 13 designs that draw it |
+| **`text-title`** | ✅ **26px / 700 / 1.15 / −0.026em** — §04's `Title` role exactly |
+| **The `/` greeting at 27px** | ✅ **the Home design specifies 27px / 700 / −0.028em.** ⛔ **Not a defect** |
+
+🔴 **Four candidate findings were discarded after measurement, and the reasons are the useful part:**
+
+1. **"`--bg-rail` is absent"** — an artifact of using **one** screen's token block as the authority when that screen defines 27 of the 37 tokens. ⚡ **Fixed by taking the union of all 35, having first proven they agree.**
+2. **"`--line-soft` is absent"** — the `globals.css` parser was **comment-blind**, and a doc comment containing `` `--line-soft: #eae5df` `` swallowed the real declaration. ⛔ **A false absence produced by the instrument, not by the code.**
+3. **"The rail is 231px, one short of 232"** — **the measured element was the inner `<nav>`; the rail container is 232px with a 1px border.**
+4. **"Content is uncapped past 1600"** — **`main` is 1645px at a 1920 viewport; the capped container inside it is exactly 1600.**
+
+⚡ **All four share one shape: the INSTRUMENT produced the finding, not the code.** **Three measured a narrower thing than the question asked** — one screen instead of thirty-five, the inner `<nav>` instead of the rail, `main` instead of the capped container — **and one was simply a wrong parser.** ⛔ **All four would have shipped as P2/P3 conformance bugs from an audit that did not re-check its own instrument**, and each was disproved by measuring again rather than by doubting the result.
+
+📁 **Neighbouring, not identical, to [B-1000](../BUGS.md#b-1000)** — *a correct diagnostic is produced and the reading discards it.* ⚡ **There the instrument was right and the reading was wrong; here the reading was faithful and the instrument was wrong.** **Same lesson from the opposite side: verify the instrument before believing what it says about the code.**
+
+## Design decisions required — ⛔ not bugs
+
+**D13-A · Does a screen document's raw pixel value override a §04 type role?**
+📁 **[C-1414](../LANE_COORDINATION.md) ruled that *§04 is the type authority; §08's raw values are illustrative and are not a second specification*.** ⚡ **That ruling was about §08.** **The Home design specifies its greeting at 27px, the implementation renders 27px, and §04's `Title` role is 26px** — so the same question now arises for **screen** documents, which C-1414 did not reach. ⛔ **Recorded rather than filed: the implementation is faithful to a design document either way, and extending C-1414 is a ruling, not a fix.** ⚠️ **It governs every remaining screen migration, so it is worth answering before them rather than after.**
+
+**D13-B · The expanded rail is 232px in App Shell and 238px in Settings.**
+**Two design documents, two values.** ✅ **The implementation renders 232 — App Shell's — which is the defensible reading**, and [499](499-implementation-design-reconciliation.md) already treated 232/56 as the authority. ⛔ **Recorded so the Settings design is not later read as a conformance failure against a screen that is correct.**
+
+## ⚠️ What this review did NOT cover, stated plainly
+
+**The brief asked for a micro sweep of every card field, every table cell, every dialog, drawer, popover, menu and tooltip, plus a full accessibility pass. This review did not reach them.** ⛔ **They are recorded as not-done rather than implied by silence** ([§2](../../CLAUDE.md)).
+
+| Not covered | Why it matters |
+|---|---|
+| **Card field-level and table cell-level conformance** | The brief's largest single ask. **Requires per-screen design extraction**, which the token work established the method for but did not consume |
+| **Dialogs · drawers · popovers · menus · tooltips · command palette · notifications** | **None was opened.** All 39 routes were measured in their default state only |
+| **Accessibility** | Only **structural counts** were taken (skip links, landmarks, heading order, `img` without `alt`). ⛔ **No keyboard traversal, no focus-order check, no contrast measurement** — and contrast is where [B-1050](../BUGS.md#b-1050) predicts failures |
+| **Screenshot-to-design comparison** | **89 screenshots captured and not yet compared to the design renders** |
+| **Data honesty** | ⛔ **Not attempted.** `no-mock-data.test.tsx` covers the static case; the *"producer-backed capability not surfaced"* direction is unexamined |
+| **The other 31 design documents, screen by screen** | Token conformance is product-wide and done. **Per-screen structural conformance is done for 0 of 35** |
+
+⚡ **The instrument is built and reusable** — sign-in, storage state, measurement, screenshots — so the remaining sweeps are execution rather than setup.
+
