@@ -520,6 +520,42 @@ databaseUrl: required(
 > **`C-026` is worth reading twice.** Lane B raised *"the Connection Center is reachable only by typing its URL"* and Lane A shipped that exact fix as **CX-01** the same day, from an independent audit, **without either lane seeing the other's finding.** Two lanes reaching one defect by different routes is the model working; **two lanes reaching one identifier is the model failing**, and it is the same day's evidence for both.
 
 ---
+## C-113 · `/settings/connections` is the one shipped screen with no row to implement its finalized design
+
+| | |
+|---|---|
+| **Raised by** | **QE**, 2026-08-21, during the full UI conformance audit on `1db9f5e7` |
+| **Owner** | **Lane C · Product Office** — backlog coverage, not a defect |
+| **Status** | `READY FOR LANE C` |
+| **Blocks** | **Nothing today.** ⛔ **Raised so a gap in coverage is visible before somebody plans around it**, not because a lane is stopped |
+
+**The measurement.** Seven shipped screens were compared against their own design documents by extracting each design's visible strings and testing them against the rendered page. **Every screen has a row that owns implementing its finalized design — except one.**
+
+| Screen | Route | Design strings present | Row that owns the design |
+|---|---|---|---|
+| Security Center | `/profile/security` | 13/60 | [TASK-1414](BACKLOG.md) · [TASK-492](BACKLOG.md) |
+| User Profile | `/profile` | 10/55 | [TASK-470](BACKLOG.md) |
+| Reports | `/reports` | 4/40 | [TASK-1417](BACKLOG.md) |
+| Settings | `/settings` | 4/54 | [TASK-1412](BACKLOG.md) |
+| Team Management | `/settings/team` | 2/60 | [TASK-471](BACKLOG.md) |
+| Help Center | `/help` | 1/60 | [TASK-1420](BACKLOG.md) |
+| 🔴 **CRM Integrations** | **`/settings/connections`** | **3/57** | 🔴 **none** |
+
+⚠️ **The percentages are NOT the point and must not be read as a defect count.** 📁 **[478](architecture/478-design-conformance-audit.md) §4 already established that no UI in this repository is derived from the finalized design**, and many of the absent strings are the design documents' own annotation chrome (*"Platform foundation · Module 9"*, *"Design system v2.0 · help & support"*). ⚡ **They are a coverage measurement, and every one of them is already somebody's row — except the last.**
+
+**What `/settings/connections` does have.** 📁 **[TASK-407](BACKLOG.md) — *"a connection says whether it actually works"* — is `PROMOTED`, and its row names *CRM Integrations* as its approved screen.** ✅ **It delivered a genuine slice of that design: the health check.**
+
+⛔ **What no row owns** is the rest of the screen the design draws: **Objects & sync status · field mappings · the write contract · held writes · run diagnostics · sync now · per-object direction and record counts.**
+
+### The question for Product Office
+
+> **Is `/settings/connections` deliberately scoped to the connection-health slice, or is its design-implementation row simply missing?**
+
+⚡ **Both answers are fine and they lead to different places.** **If deliberate**, ⛔ nothing needs building and this item closes with the reason recorded — **so the next audit does not re-raise it**. **If missing**, it is a row Lane A can take, and it is the only screen of the seven that has nowhere to start.
+
+⚠️ **QE is not proposing scope and does not own priority** ([§20e](../CLAUDE.md)). **The measurement is the contribution; the ruling is the product owner's.**
+
+---
 
 ## C-1526 · Two documents in one snapshot disagree about how many columns may pin, and the design's own example does not exist
 

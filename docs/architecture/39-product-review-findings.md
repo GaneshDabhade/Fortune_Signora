@@ -1721,3 +1721,45 @@ Commissioned on the product owner's clarification that **Workspace has always be
 ✅ **Now covered:** Account 360 at section level · the first fault-injection pass across seven reads · per-section error states.
 ⛔ **Still not covered:** **33 of 35 designs** · popovers, menus, tooltips · keyboard traversal and focus order · the loading and collapsed/focus-mode states the design also specifies · screenshots against the design renders.
 
+
+## R13-08 · The micro pass — five more findings, and the row this audit had to correct against itself
+
+**2026-08-21, continued.** ⚡ **Four surfaces the audit had named as uncovered were taken: Signal Center, the Loading state, keyboard focus, and per-screen coverage across seven shipped screens.**
+
+| | Finding | |
+|---|---|---|
+| **[B-1055](../BUGS.md#b-1055)** 🟠 | **The tab pattern is incomplete product-wide.** On `/signals`: **6 `role="tab"` across 2 tablists, 0 with `aria-controls`, and ZERO `role="tabpanel"` in the document.** [`tabs.tsx`](../../frontend/components/ui/tabs.tsx) is the source and has three importers | a11y |
+| **[B-1056](../BUGS.md#b-1056)** 🟡 | **`/signals` and `/profile/security` render 20px/600 headings with no verdict** in [TASK-1446](../BACKLOG.md)'s adoption sweep — whose deliverable was *"a verdict each"* for eleven screens and which published nine | conformance |
+| **[B-1057](../BUGS.md#b-1057)** 🟡 | **A loading state is visual only.** Skeletons are correctly `aria-hidden` and **nothing replaces them**: `aria-busy` nowhere, both live regions empty, no *loading* word. **WCAG 2.2 SC 4.1.3** | a11y |
+| **[B-1058](../BUGS.md#b-1058)** 🟡 | **Four focus indicators on one screen, one of them the design's.** The design draws focus **21 times** as `0 0 0 3px var(--brand-tint)`; the product renders that ring, a 2px solid accent outline, a ring with white offset, and a link outline | conformance |
+| **[C-113](../LANE_COORDINATION.md)** | **`/settings/connections` is the one shipped screen of seven with no row owning its finalized design.** Raised for Product Office; ⛔ **not a defect and not QE's scope to propose** | coverage |
+
+### The correction this audit made against its own filed row
+
+🔴 **[B-1050](../BUGS.md#b-1050) was filed with overstated visual evidence, and QE found it rather than Lane A.**
+
+⛔ **The original claim named the avatar disc, a progress track and the segmented-control tray and said all three vanish in dark theme.** ⚠️ **It compared each element's fill to `document.body`'s background — the PAGE colour — instead of to the element's own painted backdrop.** ⚡ **Measured properly, the avatar disc sits on `rgb(21,32,39)`, a card, and is perfectly visible.**
+
+**Found by generalising rather than by doubting**: a sweep of nine routes in dark for surfaces with no fill contrast, no border and no shadow returned **one class on two routes** — far less than the row implied — **so the row was re-measured instead of the sweep.**
+
+✅ **What survives, and it is the half that matters**: the token values disagree with a design **all 35 screens state identically**, the ramp is shifted by one, and `--bg-rail`'s dark value exists nowhere. ⛔ **That is provable without any claim about what a customer sees.** ✅ **And one rendered consequence survives measurement against its true backdrop — the loading skeleton, `1117×64`, self `rgb(13,20,24)` == backdrop `rgb(13,20,24)`, no border, no shadow.**
+
+**The row's title, severity and evidence were corrected in place and the mistake recorded in it** — 📁 **[§2](../../CLAUDE.md): correct a claim about the present, and do not quietly replace the wrong evidence.**
+
+### The instrument count, which is now the more useful number
+
+> **Sixteen candidates examined across this audit. Nine confirmed. Eight died on re-measurement — and the eighth was a row already filed.**
+
+**The four new ones this pass:** `/settings/products` reported as having **no `h1`** (a render race — it has one, three runs out of three) · `/accounts` reported as having **no loading skeleton** (its list is server-rendered, so none is owed — `held=0` proved the delay never applied) · the utility panel's icon tabs reported as **nameless** (they carry `aria-label`; `textContent` does not see it) · and **B-1050's own evidence**.
+
+⚡ **Every one was an instrument fault, not a product fault.** ⛔ **Filed as written, three of the four would have been P1s against behaviour that is correct.**
+
+### What was verified correct and is deliberately NOT filed
+
+✅ **Signal Center's error handling** — a `500` on `/triage` or `/signal-catalog` renders *"The queue could not be loaded — Signora could not reach the signal service"* and the tabs **withdraw entirely rather than showing zeros**, which is strictly better than [B-1054](../BUGS.md#b-1054)'s section. ✅ **Its counts reconcile** — the tab reads 13 and the seven type groups sum to 13. ✅ **Keyboard traversal** — 28 stops on each of three routes, **every one reachable and visibly focused, no trap, no skipped control**, skip links first. ✅ **Skeleton shape** — `/signals` and `/home` render skeletons of the loaded shape, which is the design's *"Same shape"* rule.
+
+### Amendment to coverage
+
+✅ **Now covered:** Signal Center · the Loading state · keyboard focus and traversal · per-screen string coverage for seven shipped screens · a dark-theme invisible-surface sweep across nine routes.
+⛔ **Still not covered:** **popovers, menus and tooltips** · the **collapsed and focus-mode** states · screenshots against the design renders · the *producer-backed-but-unsurfaced* direction of data honesty · **28 of 35 designs at element level**.
+
