@@ -1643,3 +1643,43 @@ Commissioned on the product owner's clarification that **Workspace has always be
 
 ⛔ **Still not covered, unchanged:** **per-screen conformance for 34 of 35 designs** · popovers, menus and tooltips · **keyboard traversal and focus order** · **contrast measurement** — ⚠️ **which [B-1050](../BUGS.md#b-1050) predicts will fail in dark theme and which nothing here has measured** · the 89 screenshots against the design renders · the *producer-backed-but-unsurfaced* direction of data honesty.
 
+
+## R13-06 · Contrast measured — and it refutes this review's own prediction
+
+⚠️ **[R13-04](#amendment-to-what-this-review-did-not-cover)'s amendment said contrast was unmeasured and that [B-1050](../BUGS.md#b-1050) *"predicts it will fail in dark theme."* ⛔ **Measured, that prediction is wrong, and it is corrected here rather than left standing.**
+
+**203 text nodes across `/home`, `/accounts` and `/settings/team`, both themes, computed foreground against the nearest painted ancestor background:**
+
+| Theme | Below WCAG AA | Distinct failing pairs |
+|---|---|---|
+| **Light** | **29 of 203** | **5** |
+| **Dark** | 🔴 **0 of 203** | **0** |
+
+⚡ **Dark theme passes text contrast completely.** ⛔ **So [B-1050](../BUGS.md#b-1050) must not be argued on text contrast, and this review will not do so.**
+
+📁 **B-1050 is a NON-TEXT contrast failure — WCAG 2.2 SC 1.4.11, which governs UI components and requires 3:1** — and it is not marginal: a sunken surface against the canvas in dark theme is `rgb(13,20,24)` on `rgb(13,20,24)`, **a ratio of exactly 1.00 against a required 3.0**. ⚠️ **A text-contrast instrument cannot see it**, which is precisely why the two measurements are reported separately rather than merged.
+
+## D13-C · The light theme's failing pairs are the DESIGN's pairs — a decision, not a bug
+
+🔴 **Every failing colour is a design token, in a pairing the design itself specifies.** ⛔ **The implementation is faithful. Filing this against Lane A would be the misleading-implementation-bug the brief forbids.**
+
+| Foreground | Background | Ratio | Needs | Where |
+|---|---|---|---|---|
+| **`--ink-3`** `#857d75` | `--ai-tint` `#f0f1fc` | **3.60** | 4.5 | `⌘⇧A` · 11px/400 |
+| **`--ink-3`** `#857d75` | `--sunken` `#f4f1ed` | **3.60** | 4.5 | *Not now* · 14px/400 |
+| **`--ink-3`** `#857d75` | `--bg` `#faf8f6` | **3.82** | 4.5 | *"Cannot change your organization's…"* · 14px/400 |
+| **`--ink-3`** `#857d75` | `--surface` `#ffffff` | **4.05** | 4.5 | *August 21, 2026* · 12px/500 |
+| **`--warn`** `#a5691f` | `--warn-tint` `#fbf2e4` | **4.08** | 4.5 | *New decision maker* · 11px/600 |
+
+⚡ **`--ink-3` is the muted-text role and it fails AA on every surface the design puts it on, including plain white at 4.05.** ⚠️ **It is the third rung of the design's own four-step ink ramp, so this is not a misuse — it is the role working as specified.**
+
+**The decision is the product owner's**, and it is a real one because **accessibility sits in the *Enterprise Ready* milestone** ([§20e](../../CLAUDE.md)'s five milestones) — *"what a buyer asks about"*:
+
+- **Darken `--ink-3`** to reach 4.5:1 on `--bg` and `--surface`, which changes the design; **or**
+- **Rule that `--ink-3` is a large-text-and-decoration role only**, and migrate the ~29 small-text sites off it; **or**
+- **Accept AA failure for muted text and record it**, which is a defensible commercial position and an indefensible silent one.
+
+⛔ **Not filed as a bug against any lane.** ✅ **Recorded so that the next audit does not file it either, and so the buyer's question has an answer that was decided rather than discovered.**
+
+⚠️ **Scope of this measurement, stated:** three routes, 203 text nodes, **text only.** ⛔ **No focus-visible states, no hover states, no disabled text, no placeholder text, no non-text UI components beyond B-1050**, and no keyboard traversal.
+
