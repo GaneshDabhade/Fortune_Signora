@@ -120,8 +120,14 @@ export default function SettingsPage() {
       <header className="flex flex-col gap-3 phone:flex-row phone:items-start phone:justify-between phone:gap-4">
         <div>
           <h1 className="text-title text-content">Settings</h1>
+          {/* 🔴 **📁 The design's subtitle, verbatim** — `Design Documents/
+              Fortune Signora Settings.html`. ⛔ **This read *"The organizations
+              you belong to"***, which describes the last card on the page
+              rather than the page. ✅ **And it is a claim this product can
+              support**: `/settings/audit` renders the log, and every mutation
+              here goes through the audited write path. */}
           <p className="mt-1 text-sm text-content-muted">
-            The organizations you belong to.
+            Every change is attributed, reversible and visible in the audit log.
           </p>
         </div>
         <Button onClick={() => setDialogOpen(true)}>New organization</Button>

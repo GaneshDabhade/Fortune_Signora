@@ -100,7 +100,29 @@ export function CompetitorContext({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Who you compete against</CardTitle>
+        {/* 🔴 **📁 The design's word, and the rail already used it.**
+
+            📁 `Design Documents/Fortune Signora Account 360.html` titles
+            `#compete` ***"Competitors"***, and so does
+            [`sections.ts`](../../lib/accounts/sections.ts). ⛔ **This heading
+            read *"Who you compete against"*** — **zero occurrences in the final
+            design corpus** — **so a reader met one word in the rail and a
+            different one on the section it points at.**
+
+            ⚠️ **The honesty argument that produced the old heading is real and
+            is NOT being discarded — it moved to where it belongs.** 📁 The
+            design's META line is the false claim (*"Mentioned on this account
+            in the last 90 days"*): `GET /competitors` is a WORKSPACE
+            declaration, identical on every account, and nothing counts
+            mentions. ✅ **The sentence below states exactly that, and it is
+            what stops the title being read as an account fact.**
+
+            ⛔ **Aligning the TITLE is safe; aligning the META would not be** —
+            📁 and that distinction is the one this lane got wrong once already,
+            renaming *"Before you act"* to the design's *"Recommendations"* when
+            the design's section was a different capability. **Here both
+            sections are competitors; only the claim about them differs.** */}
+        <CardTitle>Competitors</CardTitle>
       </CardHeader>
       <CardBody>
         <p className="text-xs text-content-subtle">
