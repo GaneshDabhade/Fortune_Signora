@@ -1914,7 +1914,27 @@ Commissioned on the product owner's clarification that **Workspace has always be
 |---|---|
 | `<details>` elements | **0** |
 | `⤢` focus-mode glyphs · the string *"focus mode"* | **0 · absent** |
-| Content sections with a collapse affordance | 🔴 **0 of 18** |
+| ~~Content sections with a collapse affordance~~ | 🔴 ~~**0 of 18**~~ — **WRONG, corrected below** |
+
+> ### 🔴 CORRECTED 2026-08-21 — the collapse half of this section is wrong, and it is my truncation again
+>
+> ⛔ **"0 of 18 content sections has a collapse affordance" is FALSE. Collapse is implemented, and it was implemented on `main` when I measured it.**
+>
+> ⚠️ **Cause: my probe sliced the `aria-expanded` list to 14 entries and the output was cut off mid-row. I read a truncated list as a complete one** — 📁 **the *"truncation that looks like a result"* class, and the third time this audit has produced it.**
+>
+> ✅ **Re-measured without a slice, on a real scored account:**
+>
+> | | |
+> |---|---|
+> | `[aria-expanded]` in the document | **15** |
+> | …inside the content region | **5** |
+> | Section toggles, each carrying `aria-controls` | 🔴 **4** — *Research summary · Open opportunities · Account score · Signals timeline* |
+>
+> 📁 **And the component predates the measurement**: [`components/accounts/section.tsx`](../../frontend/components/accounts/section.tsx) carries `aria-expanded` **on `main`**, where the record page composes it **9 times**.
+>
+> ⚡ **What survives unchanged**: **focus mode is genuinely absent** — 0 `⤢` glyphs, the string *"focus mode"* nowhere — and the six-state matrix remains [TASK-1476](../BACKLOG.md)'s named remaining work. ⛔ **But the collapsed state is NOT unbuilt, and this review said it was.**
+>
+> ⚠️ **Lane A declined to let me correct this on their evidence** — *"if your sweep hit accounts rendering absence branches, `0 of 18` could be true of what you measured"* — **and were right to make me re-measure rather than accept a correction that happened to favour them.** ✅ **It did not survive. The error is mine and so is the correction.**
 | `aria-expanded` on the page | 8 — **all shell chrome** (nav, workspace, notifications, account menu, search) plus one *"2 more things"* disclosure |
 
 ⛔ **Neither state exists.** ✅ **And neither is filed**: 📁 **[TASK-1476](../BACKLOG.md) — `PROMOTED` — names *"the six-state matrix"* as *"the largest unblocked piece"* and quotes the same two design sentences.** ⚡ **Tracked as remaining work inside a promoted row, which is a state this register does not improve by duplicating.**
