@@ -17389,6 +17389,45 @@ DARK   skeleton rgb(13,20,24)     page rgb(13,20,24)      identical — nobody p
 
 ---
 
+### B-1058 · 🟡 Four different focus indicators on one screen, and only one of them is the design's
+
+| | |
+|---|---|
+| **Module** | `product_surface` — **Lane A** · [`frontend/app/globals.css`](../frontend/app/globals.css):363 · `components/ui/**` |
+| **Severity** | 🟡 **P2** — every control is focusable and visibly focused; **what differs is which indicator appears**, which is a conformance and consistency defect rather than a blocker |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-21 by QE, UI conformance audit, on `39fa8a93`, **by pressing Tab 28 times per route and reading the computed style of `document.activeElement`** |
+| **Route** | `/accounts` · `/signals` · `/settings/team` — **the same four treatments on each** |
+| **Surface** | Focus indication, product-wide |
+
+**Design reference.** The screen documents draw focus **one way**, and it is the most common visual declaration in the whole snapshot: **`box-shadow: 0 0 0 3px var(--brand-tint)` — 21 occurrences.** Three variants exist for context (`--surface` ×6, `--ai-tint` ×6, `--risk-tint` ×3) and every one is **`0 0 0 3px`** — ⚡ **a 3px tint ring, never an outline.**
+
+**Current implementation — measured over 28 tab stops per route:**
+
+| # | Rendered | Matches design? | Example |
+|---|---|---|---|
+| **1** | `outline: 2px solid transparent` + **`box-shadow: rgb(230,241,248) 0 0 0 3px`** | ✅ **YES** — `rgb(230,241,248)` **is** `--brand-tint` `#e6f1f8`, at exactly 3px | workspace switcher |
+| **2** | **`outline: 2px solid rgb(19,78,118)`**, `box-shadow: none` | ⛔ **no** — a 2px solid **accent** outline | *Notifications* |
+| **3** | `outline: 2px solid transparent` + ring with a **white offset** | ⛔ **no** | *Collapse navigation* |
+| **4** | **`outline: 2px solid rgb(19,78,118)`** on `<a>` | ⛔ **no** | skip links |
+
+🔴 **Treatment 2 is the global default and it is what most controls get.** 📁 [`globals.css`](../frontend/app/globals.css):363 declares `:focus-visible { outline: 2px solid rgb(var(--color-focus)) }`, and **nine components opt out of it with `focus-visible:outline-none` and substitute a ring** — ⚡ **which is why one screen shows both.** 📁 **Counted in `components/ui/**`: `focus-visible:ring-2` ×9 · `focus-visible:outline-2` ×6 · `focus-visible:outline-none` ×9.** ⛔ **Two mechanisms, chosen per component.**
+
+⚠️ **The design's colour is a TINT and the global default is the SOLID accent** — `#e6f1f8` against `#134e76`. **These are not near-misses of each other; they are different indicators**, and a keyboard user crossing one screen meets both.
+
+**Reproduction.** Open `/signals` · press `Tab` repeatedly · after each press read
+`(({outlineWidth,outlineStyle,outlineColor,boxShadow}) => ({outlineWidth,outlineStyle,outlineColor,boxShadow}))(getComputedStyle(document.activeElement))`.
+**Four distinct `(outline, box-shadow)` pairs appear within 28 stops**, on all three routes tested.
+
+**Acceptance criteria.**
+- One focus treatment product-wide, and it is the design's: **a 3px ring in the appropriate tint** (`--brand-tint`, with the `--ai-tint` / `--risk-tint` variants where the design uses them).
+- ⛔ **Components stop opting out of the global rule** — either the global rule *is* the ring, or no component overrides it. **Both mechanisms coexisting is the defect, not either one of them.**
+- A test asserts the focus treatment of a representative control per component family, ⚠️ **read from `document.activeElement` after a real `Tab`** — a class-name assertion cannot see that two mechanisms disagree.
+
+> ✅ **What is already right and is NOT being reported:** **every one of the 28 stops on each route was reachable and visibly focused** — ⛔ **no focus trap, no invisible focus, no control skipped**, and the skip links are the first three stops. ⚡ **The keyboard path works; this row is about which indicator it draws.**
+
+---
+
 ## Verified
 
 ### B-001 · `signal_profile` reads the wrong row as "current"
