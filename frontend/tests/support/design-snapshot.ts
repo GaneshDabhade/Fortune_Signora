@@ -59,10 +59,34 @@
  * the implementation authority for every lane.
  */
 
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const SCREENS = join(__dirname, '..', '..', '..', 'docs', 'design-snapshot', 'screens');
+
+/**
+ * 📁 **One screen document from the committed snapshot, by file name.**
+ *
+ * 🔴 **[B-1063](../../../docs/BUGS.md) — it THROWS when the document is missing,
+ * and that is the whole of the row.** ⛔ **What it replaces was `if
+ * (!existsSync(path)) return` against the product owner's uncommitted `Design
+ * Documents/`** — **a silent pass, not a skip**, on the one machine where it
+ * decides anything: **QE certifies without that corpus, so the assertion could
+ * never fail there and reported as one of `4009 passed`.**
+ *
+ * ⚡ **The hidden input disappears rather than becoming visible.** `docs/design-
+ * snapshot/` is committed and is the implementation authority (D-138), so its
+ * absence is a broken checkout — never an ordinary condition to tolerate.
+ */
+export function screenDocument(name: string): string {
+  const path = join(SCREENS, name);
+  if (!existsSync(path)) {
+    throw new Error(
+      `design document ${name} is missing from ${SCREENS}; the snapshot is committed and must be present`,
+    );
+  }
+  return readFileSync(path, 'utf8');
+}
 
 export type Theme = 'light' | 'dark';
 export const THEMES: readonly Theme[] = ['light', 'dark'];

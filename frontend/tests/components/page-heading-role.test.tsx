@@ -1,7 +1,9 @@
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+
+import { screenDocument } from '../support/design-snapshot';
 
 /**
  * 🔴 **[B-1056](../../../docs/BUGS.md) — two screens fell out of a sweep that was
@@ -143,21 +145,18 @@ describe('📁 §04 — every route-level heading is the `Title` role', () => {
  * design.
  */
 describe('📁 Settings says what the design says', () => {
-  const SETTINGS = join(process.cwd(), '..', 'Design Documents', 'Fortune Signora Settings.html');
-
   it("carries the design's subtitle, read out of the design document", () => {
-    // ⚠️ **Skipped rather than failed when the corpus is absent.** 📁 `Design
-    // Documents/` is the product owner's local authority and is deliberately
-    // NOT committed — `docs/design-snapshot/` is the repository's copy — so a
-    // clean checkout must not fail on its absence.
-    if (!existsSync(SETTINGS)) return;
-
-    const bundled = readFileSync(SETTINGS, 'utf8');
-    let longest = '';
-    for (const match of bundled.matchAll(/"(?:[^"\\]|\\.)*"/g)) {
-      if (match[0].length > longest.length) longest = match[0];
-    }
-    const markup = JSON.parse(longest) as string;
+    // 🔴 **[B-1063](../../../docs/BUGS.md), found by QE — this read the product
+    // owner's uncommitted `Design Documents/` behind `if (!existsSync(path))
+    // return`.** ⛔ **A bare `return` is not a skip: it is REPORTED AS A PASS,
+    // and QE certifies on a machine WITHOUT that corpus** — so the one
+    // assertion comparing this screen to its design could never fail where it
+    // mattered, and the same commit certified differently on two machines.
+    // ⚡ **`docs/design-snapshot/` is committed and is the implementation
+    // authority (D-138), so reading it removes the hidden input rather than
+    // making it visible.** 📁 **Verified byte-for-byte: the snapshot carries
+    // this sentence exactly once.**
+    const markup = screenDocument('Fortune Signora Settings.dc.html');
 
     const subtitle = 'Every change is attributed, reversible and visible in the audit log';
     expect(markup, 'the design states this subtitle').toContain(subtitle);
