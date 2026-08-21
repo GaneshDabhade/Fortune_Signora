@@ -1820,3 +1820,44 @@ Commissioned on the product owner's clarification that **Workspace has always be
 ✅ **Now covered:** menus · popovers · tooltips · the four responsive regimes at their stated widths · the utility panel's docked widths and overlap.
 ⛔ **Still not covered:** **the collapsed and focus-mode section states** on Account 360 · screenshots against the design renders · the *producer-backed-but-unsurfaced* direction of data honesty · **28 of 35 designs at element level**.
 
+
+## R13-10 · The failure mode has a name in this register, and I cited it while committing it
+
+**2026-08-21.** ⚡ **Lane A's sharpening of [R13-09](#r13-09--account-360-and-the-first-fault-injection-pass)'s false negative is worth more than the row it corrects.**
+
+> ⛔ **The problem was not that I failed to measure. My log holds the complete record of the defect:**
+>
+> ```
+> viewport 1920: panel before=28px  tabFound=1  after={"w":28, "tabpanels":0}
+> ```
+>
+> ⚡ **The instrument was right and the reading was wrong.**
+
+🔴 **That is [B-1000](../BUGS.md#b-1000) — *"a correct diagnostic is produced and the reading discards it"* — the register's own named class.** ⛔ **And this review cited B-1000 four times while doing it**, each time to describe the *opposite* direction: *"there the instrument was right and the reading was wrong; here the reading was faithful and the instrument was wrong."* ⚠️ **Both directions were in play and only one was being counted.**
+
+⚡ **Lane A also declined the flattering version of their own catch, and it is the more accurate account**: they did not find it by being more careful. **[B-1055](../BUGS.md#b-1055) sent them to read `onTab` to add a roving `tabindex`, and the call site was two lines away.** ⛔ **The wrong inference was simply unavailable to them.** 📁 **A row routed a reader to the right file; that is the mechanism, not diligence.**
+
+### The practice this produces, and it was run rather than proposed
+
+⛔ **A tally cannot see a miss, so noting the caveat changes nothing on its own.** ✅ **What can be done is re-reading the captured evidence with the conclusions removed** — the raw measurements, asked fresh questions, without the narrative that dismissed them.
+
+**Run across all 14 shell routes at 1440, asking only structural questions this audit had captured and never analysed:**
+
+| Checked | Result |
+|---|---|
+| Exactly one `<h1>` | ✅ **14/14** |
+| First heading in the document is `h1` | ✅ **14/14** |
+| Duplicate headings at the same level | ✅ **0** |
+| Skipped heading levels (`h2 → h4`) | ✅ **0** |
+| `<img>` without `alt` | ✅ **0** |
+| Buttons with no accessible name | ✅ **0** |
+| Links with no accessible name | ✅ **0** |
+
+⚡ **The re-read produced NO new finding, and that is reported as the result rather than hunted past.** 📁 **It also resolved one thing this audit had noticed and passed over**: `/settings/products` appeared to render two `<h2>Ideal customer</h2>`. ✅ **Filtering to *visible* headings shows one — the second is a hidden responsive variant.** ⛔ **Not a defect, and the earlier observation was an artifact of counting the DOM rather than the page.**
+
+### What still is not measured
+
+⚠️ **Known false negatives: one, found by Lane A rather than by QE.** ⛔ **That is not the true count and cannot be**, because **an audit cannot measure its own misses.** ⚡ **The second reader is the only instrument that found one all day**, which is the argument for the exchange rather than for either party's method.
+
+📁 **Lane A adopted the same caveat for their own work, unprompted**: *"'compared, clean' from me means 'I looked and did not see', not 'there is nothing there'"* — ⚠️ **and noted that two of their ten findings sat inside areas they had already reported as compared.**
+
