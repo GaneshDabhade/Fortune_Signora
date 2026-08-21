@@ -17444,6 +17444,45 @@ DARK   skeleton rgb(13,20,24)     page rgb(13,20,24)      identical — nobody p
 
 ---
 
+### B-1059 · 🟢 The account menu is the one overlay in the product drawn at 8px where the design says menus are 12px
+
+| | |
+|---|---|
+| **Module** | `product_surface` — **Lane A** · [`frontend/components/shell/account-menu.tsx`](../frontend/components/shell/account-menu.tsx):164 |
+| **Severity** | 🟢 **P3** — cosmetic, **one line**, and it is the only instance of its class left in the product |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-21 by QE, UI conformance audit, on `4f748232`, **by opening every overlay and measuring the rendered radius** |
+| **Route** | Any — the account menu lives in the shell |
+| **Surface** | Top bar → avatar → account menu, the container |
+
+**Design reference.** **Design System v2 §05** assigns a radius per surface by name: **`Card, menu, popover, toast — 12px --r-lg`**. 📁 **Already the authority used by [499 §1](architecture/499-implementation-design-reconciliation.md)**, which measured this table row by row and is where [TASK-1453](BACKLOG.md) came from.
+
+**Current implementation — every overlay container in the product, measured:**
+
+| Overlay | Source | Rendered | |
+|---|---|---|---|
+| Workspace menu | [`workspace-switcher.tsx`](../frontend/components/shell/workspace-switcher.tsx):238 `rounded-lg` | **340×131, radius 12px** | ✅ |
+| Notifications | [`notifications.tsx`](../frontend/components/shell/notifications.tsx):232 `rounded-lg` | **400×166, radius 12px** | ✅ |
+| System status | [`system-status.tsx`](../frontend/components/ui/system-status.tsx):129 `rounded-lg` | 12px | ✅ |
+| Offline status | [`offline-status.tsx`](../frontend/components/ui/offline-status.tsx):114 `rounded-lg` | 12px | ✅ |
+| 🔴 **Account menu** | [`account-menu.tsx`](../frontend/components/shell/account-menu.tsx):164 **`rounded-md`** | **280×352, radius 8px** | ⛔ |
+
+⚡ **Four of five are right, which is what makes this worth one line rather than a programme.** ⛔ **`rounded-md` is `--radius-md`, the control radius — the value §05 assigns to *button, input, select, nav item*, not to a menu.**
+
+📁 **Same class as [499 §1](architecture/499-implementation-design-reconciliation.md)'s `Dialog` finding** — *"`dialog.tsx` `rounded-lg` = 12px"* against a 16px design — **which [TASK-1453](BACKLOG.md) fixed.** ⚠️ **The class was known and this instance was not in that row's scope**; the palette now measures 16px and the two correct menus measure 12px, so **this is the last one.**
+
+**Reproduction.** Sign in · click the avatar in the top bar · in the console:
+`getComputedStyle(document.querySelector('[role=menu]')).borderRadius` → `"8px"`.
+Compare the workspace menu (click *Playground*) → `"12px"`.
+
+**Acceptance criteria.**
+- `account-menu.tsx`:164 uses `rounded-lg`, and the rendered container measures **12px**.
+- ⛔ **Nothing else changes** — the border (`1px --color-border-soft`) and `shadow-lg` already match the design's *Floating* elevation (`--e3`, *"Menu, popover, tooltip, toast"*).
+
+> ✅ **Measured in the same pass and CORRECT, so they are not filed:** **every overlay closes on `Escape`** — workspace menu, notifications and account menu all return to zero overlays · **the collapsed rail's tooltips conform to the App Shell rule** *"Collapsed items expose their label as an accessible name and a 300ms tooltip"* — at 1100 the 55px rail shows a `role="tooltip"` reading *Home* after ≈375ms against a 300ms specification (⚠️ **my sampling granularity is 100ms, so that difference is not measurable by this instrument and is not being reported**), and at 1440 the expanded rail correctly shows none · **the notifications popover is `role="dialog"`, 12px**, which is a defensible choice for a panel with its own actions.
+
+---
+
 ## Verified
 
 ### B-001 · `signal_profile` reads the wrong row as "current"
