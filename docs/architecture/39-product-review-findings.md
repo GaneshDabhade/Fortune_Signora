@@ -1598,3 +1598,48 @@ Commissioned on the product owner's clarification that **Workspace has always be
 
 ⚡ **The instrument is built and reusable** — sign-in, storage state, measurement, screenshots — so the remaining sweeps are execution rather than setup.
 
+
+## R13-04 · The second pass — overlays opened, and Companies taken to the column
+
+⚠️ **Added the same day, after the sections above were written.** ⛔ **The limitations table below is amended rather than rewritten** ([§2](../../CLAUDE.md)).
+
+**Overlays — the surfaces no prior audit had opened.** ✅ **All three conform:**
+
+| Surface | Measured | Design | |
+|---|---|---|---|
+| **Command palette** (`⌘K`) | `role=dialog` · `aria-modal=true` · **640 × 401.5** · **radius 16px** · labelled *"Search or ask…"* | dialog plane at `--r-xl` **16px** · the design's own label is *"Search or ask…"* | ✅ |
+| **Ask Signora** | `<aside>` · **420px** · **radius 16px** · ⛔ **no `role=dialog`** — non-modal | drawer **420px, 16px, non-modal** | ✅ |
+| **Shortcuts** | panel opens, **21 shortcuts listed** | keyboard map | ✅ |
+
+🔴 **[499](499-implementation-design-reconciliation.md) recorded `Dialog` at 12px against a 16px design, `Drawer` *"correct, unmounted — 0 importers"*, and the command palette *"built, 0 importers"*.** ✅ **All three are now correct AND mounted.** ⚡ **That matrix is 12 days and 235 frontend commits stale, and this is the measurement that says so.**
+
+⚡ **The Shortcuts panel discloses its own gaps in the product's voice** — ***"12 of these 21 shortcuts work today. The other 9 are part of Signora's published design and nothing binds them, so pressing one does nothing."*** ⛔ **Not a defect. A stated absence**, and the pattern [P-A](../DOMAIN_DISCOVERY_REGISTER.md) exists to reward.
+
+**Companies — the design's own vocabulary tested against the rendered screen.** 67 distinct strings extracted from [`Fortune Signora Companies.dc.html`](../design-snapshot/screens/), the product-facing ones checked against `/accounts`, a row expanded, and all 33 controls enumerated without truncation.
+
+| | |
+|---|---|
+| **Columns rendered** | `Preview · Company · Segment · Open ACV · Renewal · Owner · Tags` + selection |
+| **Columns in the design** | `Company · Segment · Open ACV · Signora score ↑ · Renewal · Owner · Tags` |
+| **Difference** | **`Signora score` absent · `Preview` added** |
+
+⛔ **Neither is filed, and the reason is the finding.** ✅ **The screen SAYS SO, unprompted:** ***"A Signora score is not on this list yet. Value, renewal and stage arrive from a connected system — until one is connected they read as not reported, never as zero."*** 📁 **And [TASK-1475](../BACKLOG.md) narrowed its own scope in writing before it was claimed** — `New company`, `Import`, numbered pages and a denominator all **cut, with reasons**, and [C-1431](../LANE_COORDINATION.md) settled the pager as *"a page number and no denominator"*, which is exactly what renders.
+
+⚡ **A naive design-diff would have filed ten bugs here. The correct count is zero**, because every absence is either scoped-out with a recorded reason or disclosed on the screen in the customer's own words.
+
+⚠️ **One thing this pass could NOT verify, stated rather than assumed:** the Playground holds **15 accounts and therefore one page**, so *"Rows 1–15 of 15"* is trivially accurate and **the denominator's behaviour beyond one page is untested.** ⛔ **Not filed — a suspicion is not a finding.**
+
+## R13-05 · Five candidate findings died on inspection, not four
+
+⚠️ **[R13-03](#r13-03--what-the-audit-checked-and-found-correct--recorded-because-four-candidate-findings-died-here) names four. The second pass produced a fifth**, and it is the one most likely to be filed by a future audit:
+
+**5. *"Companies renders raw hex identifiers — `459128fe`, `9061f113` — as company names."*** ⛔ **It is the settled design and it is defended in the code.** 📁 [`entity-name.tsx`](../../frontend/components/intelligence/entity-name.tsx):62 shows **the real identifier** and argues ***"a fabricated name is indistinguishable from a real one"***; 📁 [B-290](../BUGS.md#b-290)'s rule is ***"a name that has not arrived is not a name that does not exist"***; and the row carries `<span class="sr-only"> — no source has named this account yet</span>`. ⚡ **The inconsistency that IS real — four surfaces hand-rolling `'Unnamed account'` against `EntityName`'s identifier — is already recorded as *"a product decision, and not this lane's to take by picking one"*.**
+
+> ⚡ **Five of nine candidates did not survive.** 📁 **The audit's own hit rate is worth recording**: **four confirmed, five discarded**, and every discard was killed by measuring again or by reading the register, never by doubting the instrument in the abstract.
+
+## Amendment to *what this review did NOT cover*
+
+✅ **Now covered:** command palette · the Ask Signora drawer · the Shortcuts panel · Companies at column and control level · one row expansion.
+
+⛔ **Still not covered, unchanged:** **per-screen conformance for 34 of 35 designs** · popovers, menus and tooltips · **keyboard traversal and focus order** · **contrast measurement** — ⚠️ **which [B-1050](../BUGS.md#b-1050) predicts will fail in dark theme and which nothing here has measured** · the 89 screenshots against the design renders · the *producer-backed-but-unsurfaced* direction of data honesty.
+
