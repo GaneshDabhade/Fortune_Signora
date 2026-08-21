@@ -1,5 +1,19 @@
 # Session Handoff
 
+> ## Cycle 258 — promoted `438447ba`, 2026-08-21 · **the cycle the planner said was not needed**
+>
+> **`main` = `438447ba` = the certified commit.** `pytest` **5448** · coverage **95.03%** · **679 Security Invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · `frontend-suite` **3525/204** · `eslint` · `smoke` 24/203s · **DR passed** · **reversible head→base→head in 5s** · head **`0066`**. **14 commits, QE. ONE attempt.**
+>
+> 🔴 **`make certified ARGS="--next-cycle"` reported *"No cycle needed"* and the cycle ran anyway, on the product owner's explicit instruction.** ⛔ **All 14 commits are documentation — proven by path, not by commit message: `git diff --name-only main..integration` returned three files, all under `docs/`.** ⚡ **It ran because `main` did not carry the ten defect rows Review 13 produced, and [§20e](../CLAUDE.md) requires `main` to represent the authoritative state.** ⚠️ **Recorded here rather than glossed: the planner and the instruction disagreed, and the instruction is the product owner's to give.**
+>
+> ⚡ **What reached `main`: Review 13, the full UI conformance audit** — **39 routes · 91 page renders · 13 widths · both themes · 35 design documents parsed · 37 tokens × 2 themes compared by value.** **[B-1050](BUGS.md)–[B-1059](BUGS.md) for Lane A, [B-1046](BUGS.md) reopened, [C-113](LANE_COORDINATION.md) for Lane C, D13-A/B/C for the product owner.**
+>
+> ⚠️ **The browser gate was NOT re-run and that is deliberate.** **The Validation Planner classified the diff `documentation` and the tree is byte-identical to the previous `main` outside `docs/`** — ⛔ **a Playwright suite cannot observe a change to a markdown file.** ✅ **All eight `REQUIRED_GATES` ran in full; the two the planner named as planned-and-not-recorded are `doc-drift` and `state-check`, both reported by the record itself (B-131).**
+>
+> 🔴 **The number worth carrying: the audit examined TWENTY candidates, confirmed TEN, and TEN died on re-measurement** — **every one an instrument fault, and one of them was [B-1050](BUGS.md), a row QE had filed and then corrected against itself.**
+>
+> ⛔ **The board was not reconciled because there was nothing to reconcile** — `--audit-claims` confirms `integration` carried no unpromoted claim commit, so no lane's claim closed in this cycle.
+
 > ## Cycle 257 — promoted `07f22c04`, 2026-08-21 · **a week of instrument work reaches `main`**
 >
 > **`main` = `07f22c04` = the certified commit.** `pytest` **5448** · coverage **95.03%** · **679 Security Invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · `frontend-suite` **3525/204** · `eslint` · `smoke` 24/165s · **DR passed** · **reversible in 5s beside the browser gate** · head **`0066`**. **15 commits, QE. ONE attempt.**

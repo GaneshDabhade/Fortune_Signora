@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `07f22c04`, 2026-08-21.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `438447ba`, 2026-08-21.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,7 +12,13 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `07f22c04`, 2026-08-21.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `438447ba`, 2026-08-21.** Every figure is read from the repository, never carried forward.
+
+> 🔴 **Cycle 258 is the one cycle the planner said was not needed, and it ran on the product owner's instruction.** ⛔ **`make certified ARGS="--next-cycle"` reported *"No cycle needed"* — all 14 commits are documentation, and [§20e](CLAUDE.md) warrants a cycle by executable change rather than by movement.** ⚡ **It ran because `main` did not carry the ten defect rows the UI conformance audit produced, and [§20e](CLAUDE.md) also requires `main` to represent the authoritative state.** ✅ **Certified `438447ba27e5` on the FIRST attempt — 5448 pytest, 95.03% coverage, 679 Security Invariants, 3525 frontend across 204 files, smoke 24 stages in 203s, DR passed, reversibility head→base→head in 5s.**
+>
+> ⚡ **What it promotes is Review 13 — the full UI conformance audit**, the first in this repository to measure **rendered pixels in a browser** rather than read source files: **39 routes · 91 page renders · 13 widths · both themes · 35 design documents parsed · 37 tokens × 2 themes compared by value.** 📁 **Ten rows for Lane A ([B-1050](docs/BUGS.md)–[B-1059](docs/BUGS.md)), one reopened ([B-1046](docs/BUGS.md)), one coordination item ([C-113](docs/LANE_COORDINATION.md)) and three product decisions (D13-A/B/C in [39](docs/architecture/39-product-review-findings.md)).**
+>
+> 🔴 **And the number worth carrying forward is the audit's own hit rate: TWENTY candidates, TEN confirmed, TEN died on re-measurement** — ⛔ **every one an instrument fault rather than a product fault, and one of the deaths was [B-1050](docs/BUGS.md), a row QE had already filed and then corrected against itself.**
 
 > ⚡ **Cycle 257 is a week of instrument work reaching `main` — 15 commits, all QE's, certified on the FIRST attempt.** ⛔ **And the cycle's own worst moment was QE reporting a background job as started when the script it launched did not exist** ([B-1048](docs/BUGS.md)): a host reboot had cleared `/tmp`, the log stayed 0 bytes, and *twelve minutes of progress* was nothing at all.
 
