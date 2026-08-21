@@ -17072,6 +17072,19 @@ DARK   body rgb(13,20,24)      sunken token  13  20  24   → 20 sunken elements
 
 **Reproduction.** Sign in · open `/accounts` · set `document.documentElement.setAttribute('data-theme','dark')` · observe the avatar disc, the segmented-control tray and any progress track. Each loses its fill entirely; the initials and labels float on the canvas.
 
+### 🔴 ADDED 2026-08-21 — the loading skeleton is the worst-hit consumer, and it is invisible to everyone at once
+
+**`Skeleton` renders `animate-pulse rounded bg-surface-sunken`**, so in dark theme it is the page colour exactly. **Measured on `/signals` with the `triage` read held open for 12s:**
+
+```
+LIGHT  skeleton rgb(244,241,237)  page rgb(250,248,246)   n=3   distinct
+DARK   skeleton rgb(13,20,24)     page rgb(13,20,24)      n=3   IDENTICAL
+```
+
+⚡ **And the skeletons are correctly `aria-hidden="true"`** — which is right for a decorative placeholder, **and means nothing else is announcing either**: `aria-busy` appears **nowhere**, both `aria-live="polite"` regions are **empty**, and the word *loading* is absent from the document ([B-1057](#b-1057)).
+
+> 🔴 **So in dark theme a loading screen conveys nothing to anybody.** **A sighted user sees an unchanged empty page; a screen-reader user hears silence.** ⛔ **The two defects are independent — restoring the sunken colour fixes the first and leaves the second — which is why they are two rows.**
+
 **Acceptance criteria.**
 - `--color-surface-sunken` in `:root[data-theme='dark']` resolves to `#1b272f` (`27 39 47`).
 - `--color-surface-raised` in dark resolves to `#101a1f` (`16 26 31`) — the design's `--bg-rail`.
@@ -17323,6 +17336,56 @@ Nothing has changed about the account — reload to try again.
 - `/workspaces` receives a verdict too, even if it is `KEEP`.
 - ⛔ **Do not fix this by adding `text-title` to the two screens and leaving the sweep incomplete** — the next audit will re-find the same class. **The list is the deliverable.**
 - ⚠️ **A guard would be cheaper than a sweep**: a test asserting that every route-level `h1` uses the `Title` role (with named exemptions) makes the eleventh screen unrepresentable rather than merely unlisted.
+
+---
+
+### B-1057 · 🟡 A loading state is conveyed visually only — nothing announces it, and the skeleton is hidden from assistive technology
+
+| | |
+|---|---|
+| **Module** | `product_surface` — **Lane A** · [`frontend/components/ui/skeleton.tsx`](../frontend/components/ui/skeleton.tsx) and its callers |
+| **Severity** | 🟡 **P2** — 🟠 **in dark theme, where [B-1050](#b-1050) also removes the visual half and the state becomes undetectable by any means** |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-21 by QE, UI conformance audit, on `3dda7292`, **by holding a read open for 12s and sampling mid-flight** |
+| **Route** | `/signals` measured · `/w/{ws}/home` shows the same shape |
+| **Surface** | Every route that renders `Skeleton` while a read is in flight |
+
+**Design reference.** The screen documents specify **Loading** as a named section state — *"Same shape"* — alongside Normal, Error, Empty, Collapsed and Focus.
+
+**Current implementation.** With `GET …/triage` held open for 12 seconds and the page sampled at ~4.5s:
+
+| Measured | Value |
+|---|---|
+| Skeletons rendered | **3** — `animate-pulse rounded bg-surface-sunken h-16` |
+| `aria-hidden` on each | ✅ **`"true"`** — correct for a decorative placeholder |
+| `aria-busy` anywhere in the document | 🔴 **0** |
+| `aria-live` regions | **2, and both EMPTY** |
+| The word *loading* / *fetching* / *please wait* | 🔴 **absent from the document** |
+
+⚡ **The skeleton being `aria-hidden` is right, and it is exactly why this is a defect.** **A decorative placeholder correctly excludes itself from the accessibility tree — and then nothing takes its place.** ⛔ **A screen-reader user is given no signal that a read is in flight: the page is quiet, then content appears.**
+
+📁 **WCAG 2.2 SC 4.1.3 *Status Messages* (Level AA)** — a status change that does not take focus must be programmatically determinable. ⚠️ ***"Content is loading"* is the textbook example.**
+
+🔴 **In dark theme this compounds with [B-1050](#b-1050) into total silence.** **`bg-surface-sunken` resolves to the canvas colour, so the skeleton is invisible**, and the announcement was never there:
+
+```
+LIGHT  skeleton rgb(244,241,237)  page rgb(250,248,246)   distinct — a sighted user sees it
+DARK   skeleton rgb(13,20,24)     page rgb(13,20,24)      identical — nobody perceives anything
+```
+
+⛔ **These are two independent defects and both are owed.** **Fixing [B-1050](#b-1050) restores the visual half only.**
+
+**Reproduction.** Intercept `**/api/proxy/**`, delay any request whose path ends `/triage` by 12s, navigate to `/signals`, and sample at ~4.5s:
+`document.querySelectorAll('[aria-busy]').length` → `0`;
+`[...document.querySelectorAll('[aria-live]')].map(e=>e.textContent.trim())` → `["",""]`.
+
+**Acceptance criteria.**
+- While a route or section read is in flight, a live region announces it — once on entry and once on settle, ⛔ **not on every re-render**.
+- `aria-busy="true"` on the region being replaced, cleared when the read settles.
+- The skeletons stay `aria-hidden` — ⛔ **do not fix this by exposing them**; three pulsing rectangles are not a status message.
+- ⚠️ **Assert it by holding the read open.** A test against a settled page cannot see this state at all, which is why it survived to now.
+
+> ✅ **Two neighbouring behaviours were tested and are CORRECT, and are not being reported.** **`/accounts` renders no skeleton because its list is server-rendered** — there is no client read to wait on, so none is owed. **`/signals` and `/w/{ws}/home` both render skeletons of the right shape**, which is the design's *"Same shape"* rule working.
 
 ---
 
