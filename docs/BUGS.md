@@ -17247,6 +17247,85 @@ Nothing has changed about the account — reload to try again.
 
 ---
 
+### B-1055 · 🟠 The tab pattern is incomplete product-wide — no `aria-controls`, and no panel a tab controls
+
+| | |
+|---|---|
+| **Module** | `product_surface` — **Lane A** · [`frontend/components/ui/tabs.tsx`](../frontend/components/ui/tabs.tsx) · [`frontend/components/shell/utility-panel.tsx`](../frontend/components/shell/utility-panel.tsx) |
+| **Severity** | 🟠 **P1 for assistive technology** — a control announces itself as a tab and names nothing it controls |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-21 by QE, UI conformance audit, on `b9d09a4e`, **measured from the rendered accessibility tree** |
+| **Route** | `/signals` measured; **the shared component has three importers, so this is product-wide** |
+| **Surface** | `components/ui/tabs.tsx` → Signal Center queue tabs · Companies view switcher · notifications · the utility panel's Insights/Activity/Notes rail |
+
+**Current implementation.** On `/signals` at 1440×900, the rendered document contains **6 elements with `role="tab"` across 2 tablists, and `document.querySelectorAll('[role=tabpanel]').length === 0`.**
+
+| Measured | Value |
+|---|---|
+| `role="tab"` elements | **6** |
+| …carrying `aria-controls` | 🔴 **0** |
+| `role="tabpanel"` in the document | 🔴 **0** |
+| Roving `tabindex` — queue tablist | ✅ `0 / -1 / -1`, correct |
+| Roving `tabindex` — utility-panel tablist | ⛔ **`null` on all three**, so all three sit in the sequential tab order |
+
+📁 **The shared component is the source and the fix is one place.** [`tabs.tsx`](../frontend/components/ui/tabs.tsx) renders `role="tablist"`, `aria-label`, `role="tab"`, `aria-selected` and a correct roving `tabIndex` — ⛔ **and no `aria-controls`, and no panel.**
+
+⚡ **Why this is not pedantry.** **WAI-ARIA's tabs pattern is a two-part contract**: a `tab` names the `tabpanel` it controls via `aria-controls`, and the panel points back with `aria-labelledby`. **With neither, a screen-reader user is told *"tab, 1 of 3, selected"* and given no way to reach — or identify — the content that tab just changed.** ⛔ **The visual user sees the panel swap; the assistive-technology user is told a tab is selected and nothing else happens.**
+
+⚠️ **`utility-panel.tsx`:394 DOES render `<div role="tabpanel" aria-label={activeTab}>`** — ⛔ **but it was absent from the rendered document at 1440**, because the panel was collapsed to its icon rail while its **tabs stayed in the tree.** ⚡ **So the collapsed state publishes tabs for a panel that is not there**, which is the same defect arriving by a different route.
+
+**Reproduction.** Sign in · open `/signals` · in the console run
+`[...document.querySelectorAll('[role=tab]')].map(t=>t.getAttribute('aria-controls'))` → `[null,null,null,null,null,null]`, and
+`document.querySelectorAll('[role=tabpanel]').length` → `0`.
+
+**Acceptance criteria.**
+- Every `role="tab"` carries `aria-controls` naming an element with `role="tabpanel"` that exists **while that tab is rendered**.
+- Every `role="tabpanel"` carries `aria-labelledby` naming its tab.
+- The utility-panel tablist uses a roving `tabindex` (`0` on the selected tab, `-1` on the rest), matching the queue tablist that already does.
+- ⛔ **A collapsed region must not publish `role="tab"` for a panel it is not rendering** — either render the panel, or do not claim the role.
+- A test asserts the tab↔panel association rather than the presence of `role="tab"`. ⚠️ **`aria-selected` alone is what made this look correct**; the existing coverage checks the half that was already right.
+
+---
+
+### B-1056 · 🟡 Two screens still render a 20px page heading and have no verdict in the adoption sweep that was supposed to cover every one
+
+| | |
+|---|---|
+| **Module** | `product_surface` — **Lane A** · [`frontend/app/(app)/signals/page.tsx`](../frontend/app/(app)/signals/) · [`frontend/app/(app)/profile/security/page.tsx`](../frontend/app/(app)/profile/security/) |
+| **Severity** | 🟡 **P2** — the wrong type role on two shipped screens, and **invisible to the row that owns the migration** |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-21 by QE, UI conformance audit, on `b9d09a4e`, **by rendering all 15 shell routes and reading the computed style of each `h1`** |
+| **Route** | `/signals` · `/profile/security` |
+| **Surface** | Page heading |
+
+**Design reference.** Design System v2 §04 — the **`Title`** role is **26 / 1.15 / 700 / −0.026em**, and [`--text-title`](../frontend/app/globals.css) implements it exactly. ✅ **Five screens already consume it** and measure `26px/700` with `line-height 29.9px` and `letter-spacing −0.676px` — the design's values to the decimal.
+
+**Current implementation — measured, all 15 shell routes at 1440:**
+
+| Route | Rendered | Class | Verdict in [TASK-1446](BACKLOG.md)'s sweep |
+|---|---|---|---|
+| `/accounts` · `/business` · `/reports` · `/help` · `/settings/audit` | ✅ **26px / 700** | `text-title` | — already correct |
+| `/w/{ws}/home` | 27px / 700 | `text-[27px]` | ⚠️ **design-faithful** — see **D13-A** in [39](architecture/39-product-review-findings.md) |
+| `/settings` · `/settings/organization` · `/settings/team` · `/settings/products` · `/profile` | 20px / 600 | `text-xl font-semibold` | ✅ **MIGRATE** |
+| `/settings/connections` | 18px / 500 | `text-lg font-medium` | ✅ **MIGRATE** |
+| 🔴 **`/signals`** | **20px / 600** | `text-xl font-semibold tracking-tight` | 🔴 **NONE** |
+| 🔴 **`/profile/security`** | **20px / 600** | `text-xl font-semibold tracking-tight` | 🔴 **NONE** |
+| `/workspaces` | 20px / 600 | `text-xl font-semibold` | ⚠️ **none — but plausibly `KEEP`**, on the same reasoning the sweep applied to `/join/[workspaceId]`: an interstitial outside the shell |
+
+⚡ **The sweep's own words are what makes this a gap rather than a preference:** ***"a list of every screen with its own heading, with a migrate/keep verdict each."*** 📁 **It measured *"Eleven screens author an `h1`"* and published verdicts for nine** — six MIGRATE, one RecordHeader, two KEEP. ⛔ **`/signals` and `/profile/security` are the two that fell out**, and both carry exactly the `text-xl font-semibold` treatment the row calls out as *"20px where the design's `Title` is 26"*.
+
+⚠️ **`/workspaces` is named as a question, not a defect** — it may well be `KEEP`, and this row does not presume the answer.
+
+**Reproduction.** Open `/signals` · `getComputedStyle(document.querySelector('h1'))` → `fontSize: "20px"`, `fontWeight: "600"`. Compare `/accounts` → `26px`, `700`.
+
+**Acceptance criteria.**
+- `/signals` and `/profile/security` receive a **migrate or keep verdict**, and if migrate, consume `PageHeader`/`--text-title` like the five that already do.
+- `/workspaces` receives a verdict too, even if it is `KEEP`.
+- ⛔ **Do not fix this by adding `text-title` to the two screens and leaving the sweep incomplete** — the next audit will re-find the same class. **The list is the deliverable.**
+- ⚠️ **A guard would be cheaper than a sweep**: a test asserting that every route-level `h1` uses the `Title` role (with named exemptions) makes the eleventh screen unrepresentable rather than merely unlisted.
+
+---
+
 ## Verified
 
 ### B-001 · `signal_profile` reads the wrong row as "current"
