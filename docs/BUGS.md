@@ -17425,7 +17425,24 @@ DARK   skeleton rgb(13,20,24)     page rgb(13,20,24)      n=3   IDENTICAL
 | `--pos-line` | `#c9e6da` | `#1d4433` | ❌ **absent both themes** | **33 uses · 14 screens** |
 | `--brand-line` | `#c8ddee` | `#1e4658` | ⚠️ **dark correct, light wrong** | **86 uses · 29 screens** |
 
-🔴 **`--brand-line` is the sharp one.** `--color-accent-soft` holds `30 70 88` = `#1e4658` in dark, which **is** the design's `--brand-line`; in light it holds `160 196 222` = `#a0c4de` where the design says `#c8ddee`. **One token, correct in one theme and wrong in the other** — the same shape as [B-1050](#b-1050) and found by the same method.
+> ### 🔴 CORRECTED 2026-08-21 — the mapping was backwards, and correcting it found a SECOND token of the same shape
+>
+> ⛔ **This row said `--color-accent-soft` is the design's `--brand-line`, correct in dark and wrong in light.** ⚡ **Backwards.** ✅ **Raised by Lane A and re-measured here:**
+>
+> | Design role | light | dark |
+> |---|---|---|
+> | **`--brand-soft`** | **`#a0c4de`** | **`#2c6a8c`** |
+> | `--brand-line` | `#c8ddee` | `#1e4658` |
+> | **`--brand-strong`** | **`#0f3d5c`** | **`#7cc0e5`** |
+> | `--brand-ink` | `#134e76` | `#9ccfe8` |
+>
+> ✅ **`--color-accent-soft` implements `--brand-soft`, and its LIGHT value `#a0c4de` is exactly right.** 🔴 **Its DARK value is `#1e4658`, which is `--brand-line` — so the defect is in dark, not light.** ⚠️ **I mapped the token by the theme whose values happened to match and read the correspondence off backwards.**
+>
+> 🔴 **And the same shape again, found by generalising the corrected method:** **`--color-accent-hover` holds `#0f3d5c` in light — correct for `--brand-strong` — and `#9ccfe8` in dark, which is `--brand-ink`, where `--brand-strong` dark is `#7cc0e5`.**
+>
+> ⚠️ **Why both were invisible: `--brand-soft` and `--brand-strong` are defined by 1 and 2 of the 35 documents respectively**, so this audit's own union-of-all-screens extraction carried them and its *reasoning* dropped them as noise. ⛔ **A role stated once is still a role.**
+
+🔴 **Two tokens are correct in LIGHT and wrong in DARK** — `--color-accent-soft` against `--brand-soft`, and `--color-accent-hover` against `--brand-strong`. **The same shape as [B-1050](#b-1050) and found by the same method, corrected above.**
 
 **Evidence.** Design side: token blocks extracted from all 35 `.dc.html` files and cross-checked (0 disagreements); usage counted with `grep -oh "var(--<role>)" *.dc.html | wc -l` and file counts with `grep -l`. Implementation side: `globals.css` parsed **with CSS comments stripped** — ⚠️ **without stripping, a doc comment containing `` `--line-soft: #eae5df` `` swallows the real `--color-border-soft` declaration and the parser reports a false absence.** That false positive was caught and removed before this row was written.
 
@@ -17449,7 +17466,25 @@ DARK   skeleton rgb(13,20,24)     page rgb(13,20,24)      n=3   IDENTICAL
 | **Route** | Product-wide |
 | **Surface** | `components/ui/badge.tsx` → every badge, chip and status pill |
 
-**Design reference.** Design System v2 §09, and **106 tint-plus-line pairings across the 35 screen documents** ([B-1051](#b-1051)). A tinted status surface in the design is `background:var(--x-tint);border:1px solid var(--x-line)`.
+> ### 🔴 CORRECTED 2026-08-21 — this row asked for the OPPOSITE of the design, and the real finding is the foreground
+>
+> ⛔ **The row asked for a 1px border on every badge tone. The design does not draw one.** ✅ **Raised by Lane A and re-measured here across all 35 documents: of 180 badge-like tinted elements (tinted fill, a radius, ≤12.5px), 166 carry NO border and 14 do.**
+>
+> ⚠️ **The row's *"106 tint-plus-line pairings"* is a real count of the wrong population** — 📁 **it measures PANELS, not badges.** ⛔ **Generalising a panel's border rule to a badge is the instrument error this audit kept catching, and this time it reached a filed row.**
+>
+> ✅ **What the same measurement DOES find is unambiguous, and it is the foreground:**
+>
+> | Tint | Foreground the design uses | |
+> |---|---|---|
+> | `--brand-tint` | **`--brand-ink`** | **66 of 74** |
+> | `--ai-tint` | **`--ai-ink`** | **50 of 51** |
+> | `--pos-tint` · `--warn-tint` · `--risk-tint` | the base role (`--pos` · `--warn` · `--risk`) | 30/31 · 42/42 · 43/43 |
+>
+> ⚡ **The implementation uses `--brand` and `--ai` where the design uses `--brand-ink` and `--ai-ink`.** **In light those are the same colour, so this is wrong only in DARK** — which is why nothing caught it. 📁 **It is also what [B-1051](#b-1051)'s missing `--ai-ink` token exists to make possible.** ✅ **pos/warn/risk were already correct.**
+>
+> ⛔ **This row's remaining valid half is unchanged: *do not fix `neutral` by changing its fill*** — that would hide [B-1050](#b-1050).
+
+**Design reference.** Design System v2 §09, measured across the 35 screen documents: **a tinted badge carries a tinted fill and an `-ink` foreground, and — 166 times out of 180 — no border at all.**
 
 **Current implementation.** All seven tones are **fill and text only — no border property at any tone**:
 
@@ -17708,7 +17743,17 @@ DARK   skeleton rgb(13,20,24)     page rgb(13,20,24)      identical — nobody p
 | **Route** | `/accounts` · `/signals` · `/settings/team` — **the same four treatments on each** |
 | **Surface** | Focus indication, product-wide |
 
-**Design reference.** The screen documents draw focus **one way**, and it is the most common visual declaration in the whole snapshot: **`box-shadow: 0 0 0 3px var(--brand-tint)` — 21 occurrences.** Three variants exist for context (`--surface` ×6, `--ai-tint` ×6, `--risk-tint` ×3) and every one is **`0 0 0 3px`** — ⚡ **a 3px tint ring, never an outline.**
+> ### 🔴 CORRECTED 2026-08-21 — this row asked for HALF the design's indicator, and implementing it literally would have made focus worse
+>
+> ⛔ **The row said *"a 3px tint ring, never an outline."* That is wrong.** ✅ **Raised by Lane A and re-measured here: all 21 occurrences of `box-shadow:0 0 0 3px var(--brand-tint)` ALSO carry `border:1px solid var(--brand)`. 21 of 21, no exceptions.** ⚡ **The design's focus indicator is a PAIR: a 1px brand border plus a 3px tint halo.**
+>
+> 🔴 **Why it matters more than a wording fix.** **`--brand-tint` `#e6f1f8` against the page `#faf8f6` measures 1.08:1** — ⛔ **invisible, and a failure of SC 1.4.11 on its own.** ⚡ **The brand border carries the contrast (8.33:1); the tint only widens the target to 4px.** **A lane implementing this row's acceptance criterion as written would have removed the only part that can be seen.**
+>
+> ⚠️ **And the row's own PASS was half-right too**: treatment #1, marked ✅, is the tint ring **without** the brand line. ✅ **Corroboration neither side planted: [`navigation.tsx`](../frontend/components/shell/navigation.tsx) has carried the design's sentence in a comment since before this row existed** — *"Focus: 1px brand border plus a 3px tint halo — never the browser ring."*
+>
+> **The finding that survives is unchanged and is the row's real subject: FOUR different treatments on one screen where the design has one.** ⛔ **Only the specification of that one was wrong.**
+
+**Design reference.** The screen documents draw focus **one way**, and it is a **pair** — 📁 **`border:1px solid var(--brand)` + `box-shadow: 0 0 0 3px var(--brand-tint)`, 21 occurrences, 21 of 21 carrying both.** Three variants exist for context (`--surface` ×6, `--ai-tint` ×6, `--risk-tint` ×3) and every one is **`0 0 0 3px`** — ⚡ **a 3px tint ring, never an outline.**
 
 **Current implementation — measured over 28 tab stops per route:**
 
