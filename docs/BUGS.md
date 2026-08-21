@@ -392,6 +392,51 @@ needed** — **a forward-only fix repairs nothing already on disk.**
 
 ---
 
+
+### B-296 · 🟠 The Companies grid lists technology entities as companies nobody has named
+
+| | |
+|---|---|
+| **Module** | **Knowledge Graph** — the accounts list read. **Surface:** `/accounts` |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** |
+| **Severity** | 🟠 — **wrong behaviour a customer would hit.** A seller sees companies that are not companies, and cannot tell why they have no name |
+| **Status** | **`OPEN`** — ⛔ **reported, not fixed.** The read belongs to a module Lane A is not assigned, and finding a defect is not permission to fix it |
+| **Found** | **2026-08-21 by Lane A**, incidentally, while verifying that a seeded segment reached the Companies column |
+
+**Steps** — on a Playground workspace, open `/accounts`.
+
+**Expected** — the grid lists companies.
+
+**Actual** — it lists every entity in the workspace. `entity` holds `COMPANY`
+**and** `TECHNOLOGY`, and the list applies no `kind` filter, so a technology
+renders as a company row reading ***"— no source has named this company."***
+
+**Measured on Lane A's Playground**, and the arithmetic is the whole report:
+
+| | |
+|---|---|
+| `entity` rows, kind `company` | **12** |
+| `entity` rows, kind `technology` | **3** |
+| Rows the grid renders | **15** |
+| Rows reading *"no source has named this company"* | **3** |
+
+⚡ **The three unnamed rows are the three technologies, by id** — `5462f315`,
+`bb11092b`, `fbbc65b7`. ⛔ **Not a naming gap and not a claim that failed to
+arrive**: the question *"what is this company called"* does not apply to them.
+
+📁 **The module already knows this.** `queries.py:795` documents exactly this
+distinction for the SEARCH endpoint — *"`TECHNOLOGY` · `NOT_APPLICABLE` · it is
+in the graph and has no legal name. **Not a gap and not a miss** — the question
+does not apply"* — **and the same reasoning has never been applied to the list.**
+⚠️ **So the fix is likely a `kind` filter the module has already argued for in
+prose**, which is why this is reported rather than guessed at.
+
+🔴 **Why it survived**: the empty-name state is CORRECT for an unnamed company
+and is deliberately designed, so three rows in that state look like honest
+absence rather than three rows that should not be there at all. **A wrong row
+wearing a right state.**
+
+
 ### B-292 · 🟡 Entry resolution overrules a person who has already chosen somewhere else
 
 | | |

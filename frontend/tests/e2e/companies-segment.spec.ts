@@ -89,4 +89,49 @@ test.describe('a seller sees which groupings each company is in', () => {
 
     await expect(page.getByText('No segment').first()).toBeVisible();
   });
+
+  test('✅ a company that IS in one shows which', async ({ page }) => {
+    /**
+     * 🔴 **The state nothing could review until the Playground curated one.**
+     * ⛔ **The test above asserts the empty cell, and its own comment calls that
+     * *"the state every workspace starts in"*** — so between them the column
+     * had one half of its behaviour covered and the populated half unseen.
+     *
+     * ⚡ **The grouping is seeded through `CreateSegment` and `AddToSegment`**,
+     * the same use cases the router builds — 📁 `CLAUDE.md` §20e, *test data
+     * enters the way a customer's data enters*. ⛔ **Nothing here asserts WHICH
+     * companies are in it**: membership of *Board reporting set* is curation,
+     * and a journey that pinned it to a company name would be asserting a
+     * business fact the product never claimed.
+     *
+     * ⚠️ **`test.skip()` and never a bare `return`** — 📁
+     * [B-1063](../../../docs/BUGS.md). **A workspace with no segment is a
+     * legitimate state and this journey has nothing to say about it; a silent
+     * return would report that as a pass.**
+     */
+    await page.goto('/accounts');
+    await ready(page);
+
+    await page.getByText(/Columns · \d+ of \d+/).click();
+    await page.getByRole('checkbox', { name: 'Segment' }).check();
+
+    // 🔴 **Wait for the column to RESOLVE before counting anything.** ⛔ **The
+    // first version of this test counted immediately after checking the box and
+    // skipped every time** — the segment read had not returned, so *"no company
+    // is in a grouping"* and *"the answer has not arrived"* were indistinguish-
+    // able to it. ⚡ **That is the same distinction the test above exists to
+    // protect, missed by the test asserting it.** 📁 `No segment` appearing
+    // proves the read resolved, because an unresolved cell renders neither.
+    await expect(page.getByText('No segment').first()).toBeVisible();
+
+    const grouped = page.getByText('Board reporting set');
+    if ((await grouped.count()) === 0) {
+      test.skip(true, 'this workspace has curated no segment — nothing to assert');
+    }
+
+    // ⚡ **Both states on one screen at once**, which is the distinction the
+    // column exists to keep: some companies are in the grouping and the rest
+    // say so rather than showing a blank.
+    await expect(grouped.first()).toBeVisible();
+  });
 });

@@ -58,7 +58,17 @@ from uuid import UUID, uuid5
 from modules.commercial_profile.application.declare_competitors import (
     DeclareCompetitorsInput,
 )
+from modules.commercial_profile.application.segment_use_cases import (
+    AddToSegmentInput,
+    AddToSegmentUseCase,
+    CreateSegmentInput,
+    CreateSegmentUseCase,
+)
 from modules.commercial_profile.domain.competitors import Competitor
+from modules.commercial_profile.infrastructure.account_segment_repository import (
+    SqlAccountSegmentRepository,
+)
+from modules.knowledge_graph.domain.identity import EntityKind
 from modules.commercial_profile.infrastructure.composition import (
     build_declare_competitors,
 )
@@ -462,6 +472,89 @@ async def _declare_the_competitors(
     return len(competitors)
 
 
+#: 📁 **The use case's own example**, and deliberately so: *"Board reporting
+#: set"* is a grouping a person curated, and **membership of it asserts nothing
+#: about the company**. ⛔ **A name like *Expansion candidates* would put a
+#: commercial judgement about real-looking companies into seed data**, which is
+#: the line [§20e](../../../CLAUDE.md) draws — data may enter the customer's
+#: way, and it may not invent a claim the product never made.
+PLAYGROUND_SEGMENT = "Board reporting set"
+
+#: ⚠️ **Three, not all of them.** ⚡ **The state worth being able to review is a
+#: column with SOME companies in the grouping and some not** — a segment holding
+#: every account would render identically to one holding none.
+PLAYGROUND_SEGMENT_SIZE = 3
+
+
+async def _curate_a_segment(
+    factory: async_sessionmaker[AsyncSession],
+    admin_factory: async_sessionmaker[AsyncSession],
+    workspace_id: UUID,
+    user_id: UUID,
+) -> tuple[str, int]:
+    """Name one grouping and put a few companies in it, **through the use cases**.
+
+    🔴 **Why this exists.** 📁 The Companies grid offers a `Segment` column and
+    the Playground had no segments, so the only state anybody could review was
+    the empty one — which `companies-segment.spec.ts` already covers and calls
+    ***"the state every workspace starts in."*** ⛔ **The POPULATED state had
+    never been seen in a browser.**
+
+    ⚡ **`CreateSegment` then `AddToSegment`, never an insert** — 📁 `CLAUDE.md`
+    §20e, *test data enters the way a customer's data enters*. **Both are the
+    same use cases the router builds**, so the rows carry the `added_by` and
+    `added_at` a real curation would.
+
+    ⚠️ **The account ids are READ with SQL and written through the use case.**
+    ⛔ **The rule is about how data ENTERS**, and this seeder already reads on
+    the admin connection for its own counts. **A read cannot fabricate a fact;
+    a write can.**
+    """
+    # 🔴 **`kind` is not optional here, and leaving it out was a real defect.**
+    # ⛔ **`entity` holds `COMPANY` *and* `PERSON`** — 📁 `EntityKind` — **so an
+    # unfiltered `ORDER BY id LIMIT 3` curated whichever three rows sorted first
+    # and quietly put people into a grouping of companies.** ⚡ **Caught because
+    # the journey asserting the populated column SKIPPED rather than passing**,
+    # which is the whole argument for a reported skip over a silent return.
+    async with admin_factory() as session:
+        rows = (
+            await session.execute(
+                text(
+                    "SELECT id FROM entity WHERE workspace_id = :w AND kind = :k "
+                    "ORDER BY id LIMIT :n"
+                ),
+                {
+                    "w": workspace_id,
+                    "k": EntityKind.COMPANY.value,
+                    "n": PLAYGROUND_SEGMENT_SIZE,
+                },
+            )
+        ).scalars()
+        accounts = tuple(UUID(str(row)) for row in rows)
+
+    if not accounts:
+        return PLAYGROUND_SEGMENT, 0
+
+    async with tenant_scoped_session(
+        factory, workspace_id=workspace_id, user_id=user_id
+    ) as session:
+        segments = SqlAccountSegmentRepository(session)
+        segment = await CreateSegmentUseCase(segments=segments).execute(
+            CreateSegmentInput(
+                workspace_id=workspace_id, actor_id=user_id, name=PLAYGROUND_SEGMENT
+            )
+        )
+        addition = await AddToSegmentUseCase(segments=segments).execute(
+            AddToSegmentInput(
+                workspace_id=workspace_id,
+                actor_id=user_id,
+                segment_id=segment.id,
+                accounts=accounts,
+            )
+        )
+    return PLAYGROUND_SEGMENT, len(addition.added)
+
+
 async def main() -> int:
     if os.environ.get("SIGNORA_ALLOW_DESTRUCTIVE_TESTS") != "1":
         print(
@@ -528,6 +621,12 @@ async def main() -> int:
         # and rendered nothing, because nothing had ever been declared here.
         declared = await _declare_the_competitors(factory, workspace_id, user_id)
 
+        # ⚡ **The same shape, one screen over**: a producer-backed surface whose
+        # populated state nothing in the Playground could produce.
+        segment_name, curated = await _curate_a_segment(
+            factory, admin_factory, workspace_id, user_id
+        )
+
         examined, rescored = await sweep_stale(
             factory, workspace_id, user_id, moment=today - LAST_SWEEP
         )
@@ -550,6 +649,7 @@ async def main() -> int:
         print(f"accounts    {opportunities} qualified opportunities")
         print(f"source      {CRM} connected {HORIZON.days} days ago")
         print(f"competitors {declared} declared — {', '.join(PLAYGROUND_COMPETITORS)}")
+        print(f"segment     {curated} account(s) curated into '{segment_name}'")
         print(f"re-scored   {rescored} of {examined} readings had aged since they were opened")
         app_url = _app_url()
         if enrolled:
