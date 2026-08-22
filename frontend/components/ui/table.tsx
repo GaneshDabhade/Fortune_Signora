@@ -126,6 +126,23 @@ export interface TRProps extends HTMLAttributes<HTMLTableRowElement> {
   selected?: boolean;
 }
 
+/**
+ * ⚠️ **`h-row` and `h-row-compact` exist and NOTHING USES THEM** — measured,
+ * zero occurrences in `components/` and `app/`. 📁 They carry the design's
+ * `--row-h: 44px` and `--row-h-compact: 34px` from §18.
+ *
+ * ⛔ **Rows here are PADDING-DERIVED, not fixed.** ⚡ **Measured in a browser**:
+ * a cell is `12px` top and bottom around a `14px/21px` line, so a single-line
+ * row computes to **45px** against §11's `44px` — **a one-pixel consequence of
+ * leading, not a decision** — and a row whose content wraps reaches `122px` on
+ * `/settings/team`.
+ *
+ * ⛔ **Not changed to `h-row`, deliberately**: a fixed height on a cell whose
+ * content wraps either clips it or overflows the plane, and 📁 §11's own table
+ * draws single-line cells. **Whether these tables may wrap at all is a product
+ * question about the data, not a token swap.** ✅ **Recorded so the next reader
+ * does not assume `h-row` is what a table uses.**
+ */
 export function TR({ className, selected = false, ...props }: TRProps) {
   return (
     <tr
@@ -135,7 +152,17 @@ export function TR({ className, selected = false, ...props }: TRProps) {
       data-selected={selected || undefined}
       className={cn(
         'group transition-colors',
-        // 📁 *"Hover is the sunken tint."*
+        // 📁 *"Hover is the sunken tint."* — ✅ **corroborated in three
+        // documents**, including the Design System itself.
+        //
+        // ⚠️ **§11's prose adds *"with a 2px brand edge"* and NOTHING DRAWS
+        // ONE.** ⛔ **Measured across all 35 documents: zero `2px`/`inset` brand
+        // edges, on hover or otherwise.** ⚡ **So the tint alone is the drawn
+        // treatment**, and this is the fourth place §-prose names something its
+        // own markup does not — 📁 §17's *"2px ring at 2px offset"* against 21
+        // unanimous 3px rings, §13's *"three-cycle"* against `infinite`
+        // ([B-297](../../../docs/BUGS.md)), §17's AA claim against an unmeasured
+        // ramp ([C-1548](../../../docs/LANE_COORDINATION.md)).
         'hover:bg-surface-sunken',
         selected && 'bg-accent-subtle',
         className,

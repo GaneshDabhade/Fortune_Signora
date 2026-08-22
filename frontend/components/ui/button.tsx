@@ -25,6 +25,30 @@ const VARIANTS: Record<ButtonVariant, string> = {
  * control on a touch screen and leaves the design's 34px everywhere a mouse is
  * pointing, so one component satisfies both sentences instead of choosing.
  */
+/**
+ * ⚠️ **`sm` IS NOT THE DESIGN'S *Compact*, and a reader would reasonably assume
+ * it is.** 📁 **§10 names three buttons — `Compact 26px` · default `34px` ·
+ * `Large 40px`.** ✅ **`md` and `lg` are those two exactly** (`--control-md`
+ * 34px, `--control-lg` 40px, both verified in §10's markup and not only its
+ * prose). ⛔ **`sm` is `--control-sm`, `32px`, which comes from a DIFFERENT
+ * document** — 📁 the App Shell's *"a 32px target with 8px separation"* — and
+ * it is what `FilterChip`, `SystemStatus` and `OfflineStatus` are sized by.
+ *
+ * ⛔ **So §10's `Compact 26px` has no token and is not built.** ⚡ **Measured
+ * before deciding: `26px` controls appear 8 times across the 35 documents**,
+ * against 129 at `30px`, 109 at `32px` and 94 at `34px` — **the corpus does not
+ * hold a clean three-step scale**, and building a size nothing asks for is the
+ * speculation [§6](../../../CLAUDE.md) forbids. ✅ **Recorded here so the next
+ * reader does not infer it from the name.**
+ *
+ * 🔴 **The radius is 8px at every size, and the design's own two documents
+ * disagree about that.** 📁 **§05 `radii` assigns `8px --r-md` to *"Button,
+ * input, select, nav item, segmented option"*** — no size variation. 📁 **§10's
+ * markup draws `6px` compact, `8px` default, `10px` large.** ⛔ **`10px` is not
+ * a step on §05's scale at all** (`4 · 6 · 8 · 12 · 16 · 20`), **so the scale
+ * is the rule and §10's demo radii are the drawing.** ⚡ Same reading as
+ * [C-1547](../../../docs/LANE_COORDINATION.md).
+ */
 const SIZES: Record<ButtonSize, string> = {
   sm: 'h-control-sm px-3 text-sm coarse:min-h-11',
   md: 'h-control-md px-4 text-sm coarse:min-h-11',
