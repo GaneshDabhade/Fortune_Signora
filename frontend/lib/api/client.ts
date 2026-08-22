@@ -74,7 +74,48 @@ async function fetchAccessToken(workspaceId?: string): Promise<string> {
   // [§2](../../../CLAUDE.md) calls Decorative Logic**, and the comment beside
   // it was already asserting a failure it did not prevent.
   const pending = inFlightMints.get(key);
-  if (pending !== undefined) return pending;
+  if (pending !== undefined) {
+    try {
+      return await pending;
+    } catch {
+      /**
+       * 🔴 **[B-1067](../../../docs/BUGS.md) — sharing a SUCCESS is the point;
+       * sharing a REJECTION removed the retries this deduplication never meant
+       * to remove.**
+       *
+       * ⛔ **A mint's verdict is formed when its request ARRIVES at
+       * `/api/token`**, and the server answers from the session cookie it can
+       * see at that moment. ⚠️ **A caller that joins later inherited a verdict
+       * formed before it existed** — including a caller that fires *after* the
+       * cookie has become readable and would have succeeded on its own.
+       *
+       * ⚡ **And nothing downstream recovers it**: 📁 `apiRequest` throws at
+       * `await fetchAccessToken(...)` **before** its `fetch`, so **the single
+       * 401 retry below never runs for a failed MINT** — it only ever covered a
+       * 401 *response*.
+       *
+       * **Measured, identical timings, the sharing as the only variable:**
+       *
+       * ```
+       * shared    mints=1   0:rej  2:rej  4:rej  6:rej  40:rej        45:rej
+       * control   mints=6   0:rej  2:rej  4:rej  6:rej  40:FULFILLED  45:FULFILLED
+       * ```
+       *
+       * 🔴 **One mint, six failures. Six mints, four failures and two
+       * successes.** ⛔ **The deduplication turned N independent chances into
+       * one shared outcome**, and on the seconds after a sign-in — when the
+       * cookie is not yet readable — that is the difference between a partial,
+       * self-healing failure and a total one.
+       *
+       * ✅ **So this caller mints its own rather than inheriting.** ⛔ **Not
+       * through `fetchAccessToken`**: re-entering would let a crowd of
+       * simultaneously-failing joiners share a *second* verdict, which is the
+       * same defect one round later. **Each gets its own chance, which is
+       * exactly what it had before B-1035.**
+       */
+      return mintAccessToken(workspaceId);
+    }
+  }
 
   const mint = mintAccessToken(workspaceId).finally(() => {
     inFlightMints.delete(key);
