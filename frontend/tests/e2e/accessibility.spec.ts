@@ -12,6 +12,7 @@
  */
 
 import { expect, test } from './fixtures/signora';
+import { openScoredAccount } from './fixtures/accounts';
 
 test.describe('reaching the product without a mouse', () => {
   test('@a11y the first tab stop is reachable and visible', async ({ page }) => {
@@ -437,10 +438,23 @@ test.describe('On this page reaches what the page renders', () => {
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 1200 });
-    await page.goto('/accounts');
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    await page.locator('a[href^="/accounts/"]').first().click();
-    await page.waitForURL(/\/accounts\/[0-9a-f-]{36}/);
+    // 🔴 **[B-1068](../../../docs/BUGS.md) — this used to click the FIRST row,
+    // and which row is first is a HIDDEN INPUT.** ⛔ **The accounts list orders
+    // by `created_at, id`; every seeded entity shares one `created_at`, so the
+    // order is a random UUID and changes on every reseed.** ⚠️ **Three full runs
+    // on one tree produced three different failure sets, and this test passed at
+    // 2.1s in one and timed out at 22.1s in the other two.**
+    //
+    // ⚡ **`openScoredAccount` ALREADY SOLVED THIS, on 2026-08-16, and said so:**
+    // *"a journey that clicks the first row is therefore green or red depending
+    // on seed order, which is a hidden input."* ⛔ **Thirteen call sites never
+    // adopted it and QE rediscovered the defect six days later from three
+    // browser runs and two wrong mechanisms.**
+    //
+    // ✅ **It also removes the 20s wait**: the walk resolves EITHER `#score` or
+    // *"Nothing has scored this account yet"*, so an unscored account moves the
+    // loop on instead of timing out.
+    await openScoredAccount(page);
     await expect(page.getByRole('heading', { name: 'Account score' })).toBeVisible({
       timeout: 20_000,
     });
@@ -510,10 +524,10 @@ test.describe('the record follows the Opportunity Intelligence design', () => {
   test("@design the score section carries the design's what-moved-it waterfall", async ({
     page,
   }) => {
-    await page.goto('/accounts');
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    await page.locator('a[href^="/accounts/"]').first().click();
-    await page.waitForURL(/\/accounts\/[0-9a-f-]{36}/);
+    // 🔴 **[B-1068](../../../docs/BUGS.md) — same hidden input as the rail test
+    // above.** ⛔ **The waterfall lives inside the score section, so this journey
+    // needs a SCORED account and took whichever the seed sorted first.**
+    await openScoredAccount(page);
 
     // 🔴 **Wait for the SECTION before asking about the waterfall.** ⛔ **`count()`
     // does not auto-wait**, so deciding on it immediately after navigation
