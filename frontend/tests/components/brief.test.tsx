@@ -36,6 +36,10 @@ const timeline = vi.hoisted(() => vi.fn());
 const observations = vi.hoisted(() => vi.fn());
 const commercials = vi.hoisted(() => vi.fn());
 const decision = vi.hoisted(() => vi.fn());
+/** 🔴 [B-1045](../../docs/BUGS.md) — the crumb is published into a context the
+ *  shell renders, so it never reaches this tree's DOM. **Capturing the call is
+ *  the only way to assert the label** rather than assert around it. */
+const publishCrumb = vi.hoisted(() => vi.fn());
 
 vi.mock('next/navigation', () => ({
   // The attention list and the brief read `?owner=` so a seller's view
@@ -56,6 +60,10 @@ vi.mock('@/lib/state/workspace-provider', () => ({
 }));
 
 vi.mock('@/lib/auth/client', () => ({ useSession: session }));
+
+vi.mock('@/components/shell/breadcrumb-trail', () => ({
+  usePublishBreadcrumb: publishCrumb,
+}));
 
 vi.mock('@/lib/query/hooks/timeline', () => ({ useAccountTimeline: timeline }));
 
@@ -176,6 +184,7 @@ beforeEach(() => {
   research.mockReturnValue(IDLE);
   accounts.mockReturnValue({ ...IDLE, data: { items: [] } });
   identities.mockReturnValue(IDLE);
+  publishCrumb.mockClear();
   observations.mockReturnValue(IDLE);
   commercials.mockReturnValue(IDLE);
   // ⛔ **404 is the ordinary state** — Signora has concluded nothing yet, which
@@ -1009,5 +1018,109 @@ describe('🔴 an account that does not exist says so', () => {
 
     expect(screen.queryByText(/not here/i)).toBeNull();
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Northwind Traders');
+  });
+});
+
+
+/**
+ * 🔴 **[B-1045](../../docs/BUGS.md) — the breadcrumb said *"This account"* where
+ * the header said the account is not named yet.**
+ *
+ * ## ⛔ The comment above the line described a rule the line did not carry
+ *
+ * ⚠️ **The crumb read `identity?.name ?? 'This account'`**, under a docblock
+ * claiming it *waited* and citing 🔴 [B-290](../../docs/BUGS.md) by name. **One
+ * `??` collapsed the two states B-290 exists to separate** — *the read has not
+ * landed* and *nobody has named this account* — **and asserted the second.**
+ *
+ * ⚡ **Why this is a guard and not a one-line diff left to review**: the header
+ * 190 lines down was already correct, so **one screen named one record two
+ * ways**, and neither surface looked wrong on its own. 📁 That is the failure
+ * `brief.test.tsx` was created for (D36, B-006) — *"two screens disagreeing is
+ * the one failure a component test structurally cannot see"* — which is why
+ * this asserts **the crumb and the header together** rather than the crumb
+ * alone. ⛔ **A test that pinned only the crumb would pass on the next surface
+ * that drifts.**
+ */
+describe('🔴 B-1045 — the crumb names the record the header names', () => {
+  /** The published trail's last segment — 📁 the design's every case ends in
+   *  `current`, and it is the one that carries this record's identity. */
+  function currentCrumb(): string {
+    const calls = publishCrumb.mock.calls;
+    expect(calls.length, 'the screen published no trail at all').toBeGreaterThan(0);
+    const trail = calls[calls.length - 1]?.[0] as ReadonlyArray<{
+      label: string;
+      kind: string;
+    }>;
+    const last = trail[trail.length - 1];
+    expect(last?.kind).toBe('current');
+    return last?.label ?? '';
+  }
+
+  it('says the name once the identity read has landed', () => {
+    identities.mockReturnValue({
+      ...IDLE,
+      isSuccess: true,
+      data: new Map([[ACCOUNT, { account_id: ACCOUNT, name: 'Vantage Logistics' }]]),
+    });
+
+    render(withQuery(<AccountBriefPage />));
+
+    expect(currentCrumb()).toBe('Vantage Logistics');
+  });
+
+  /**
+   * ⚡ **The state the row was filed on.** ⛔ **`'This account'` was true of
+   * nothing** — it names no record and distinguishes no state. **The identifier
+   * is true of this account in both unsettled states**, which is why one label
+   * can serve both without either becoming a claim.
+   */
+  it('says the identifier — never "This account" — while the read is in flight', () => {
+    identities.mockReturnValue({ ...IDLE, isLoading: true });
+
+    render(withQuery(<AccountBriefPage />));
+
+    expect(currentCrumb()).toBe(ACCOUNT.slice(0, 8));
+    expect(currentCrumb()).not.toBe('This account');
+  });
+
+  /**
+   * ⚠️ **The unnamed account is an identity PRESENT with a null name** — ⛔ not
+   * an absent entry. 📁 An identity the map does not hold at all means the
+   * workspace does not own the account, and 🔴
+   * [B-1053](../../docs/BUGS.md) makes this screen render *"That company is
+   * not here"* for it. ⚡ **Writing this test the obvious way asserted against
+   * the 404 branch and never reached the crumb at all** — the two states share
+   * a settled read and nothing else.
+   */
+  it('says the identifier when the read has landed and nobody has named it', () => {
+    identities.mockReturnValue({
+      ...IDLE,
+      isSuccess: true,
+      data: new Map([[ACCOUNT, { account_id: ACCOUNT, name: null }]]),
+    });
+
+    render(withQuery(<AccountBriefPage />));
+
+    expect(currentCrumb()).toBe(ACCOUNT.slice(0, 8));
+  });
+
+  /**
+   * 🔴 **The assertion the row actually made**: *two surfaces describe one
+   * state differently*. ⚠️ **Neither of the two tests above can see that** —
+   * they pin the crumb, and the crumb was never the whole defect.
+   */
+  it('agrees with the header on the same screen, in the unnamed state', () => {
+    identities.mockReturnValue({
+      ...IDLE,
+      isSuccess: true,
+      data: new Map([[ACCOUNT, { account_id: ACCOUNT, name: null }]]),
+    });
+
+    render(withQuery(<AccountBriefPage />));
+
+    // 📁 §04's `Title` — the header's visible label for this record.
+    const heading = screen.getByRole('heading', { level: 1 }).textContent ?? '';
+    expect(heading).toContain(currentCrumb());
   });
 });

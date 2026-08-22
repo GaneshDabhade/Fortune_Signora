@@ -501,13 +501,41 @@ export default function AccountBriefPage() {
    * ⚡ **The current crumb is the account's own name**, which is exactly why
    * the trail is published by the screen and never derived in the shell
    * ([D-193](../../../../docs/DECISION_REGISTER.md)) — **only this module knows
-   * it.** ⛔ **And it waits**: `EntityName`'s identifier is the honest label
-   * until the identity read lands, the same rule
-   * [B-290](../../../../docs/BUGS.md) settled for every other surface.
+   * it.**
+   *
+   * ## 🔴 [B-1045](../../../../docs/BUGS.md) — this comment described a rule the
+   * line below it did not carry
+   *
+   * ⛔ **The crumb read `identity?.name ?? 'This account'`**, and the paragraph
+   * above it claimed the crumb *waited*, citing
+   * [B-290](../../../../docs/BUGS.md) by name. **It did not wait.** ⚠️ **One
+   * `??` collapsed the two states B-290 exists to separate** — *the read has
+   * not landed* and *nobody has named this account* — **into one string that
+   * asserts the second.** ⚡ **A docblock stating behaviour the adjacent
+   * expression does not implement is 📁 [§2](../../../../CLAUDE.md)'s
+   * Decorative Logic in prose**, and it is worse than no comment: it is what a
+   * reader greps for when checking whether B-290's pattern reached this file.
+   *
+   * ✅ **The identifier is the honest label in BOTH unsettled states**, because
+   * `09cdf253` is true of this account before the read lands and after it
+   * lands empty. ⛔ **`'This account'` was true of nothing** — it names no
+   * record and distinguishes no state.
+   *
+   * ⚡ **This is exactly what the header 190 lines down already renders**
+   * (`title={identity?.name ?? accountId.slice(0, 8)}`), so the two surfaces
+   * that name this record on one screen now say the same word — **which is the
+   * divergence B-1045 reported.**
+   *
+   * ⚠️ **A crumb cannot carry `EntityName`'s stated absence.** 📁
+   * `Crumb.label` is a `string` ([`lib/shell/breadcrumb.ts`](../../../../lib/shell/breadcrumb.ts)),
+   * so *"— no source has named this account yet"* — an `sr-only` span — has
+   * **no** representation here without changing a shell primitive. ⛔ **Not
+   * changed inside a defect fix**: the identifier is the honest visible label,
+   * and the sentence stays where a reader can reach it, on the header.
    */
   usePublishBreadcrumb([
     { label: 'Accounts', kind: 'link', href: '/accounts' },
-    { label: identity?.name ?? 'This account', kind: 'current' },
+    { label: identity?.name ?? accountId.slice(0, 8), kind: 'current' },
   ]);
   // **The same query the attention page holds**, same cache key, so this costs
   // no request — the brief reads the ranked order rather than fetching it, and
