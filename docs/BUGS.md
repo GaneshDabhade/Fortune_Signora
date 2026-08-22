@@ -1898,6 +1898,23 @@ make certify
 
 **Steps to reproduce.** `npx playwright test perception.spec.ts` against `7fae6e18`.
 
+> ✅ **FIXED AND VERIFIED BY QE 2026-08-22, on prod-local rebuilt at `577411ec` and reseeded.** **Measured in a browser, not taken from the report:**
+>
+> | | before | after |
+> |---|---|---|
+> | **the accounts list** | **15 mints** | ✅ **5** |
+> | **the second screen** | **25 mints** | ✅ **5** |
+>
+> `693ms until a customer can act · 34 requests — 5 token mints, 15 data reads` · `627ms · 37 requests — 5 token mints, 23 data reads` · **6 passed**.
+>
+> ✅ **The ceiling was NOT raised** — QE checked that specifically, because it is the one thing that must not move. ⚡ **It is deduplication of work in flight and not a cache: nothing is stored, and `.finally` deletes each entry the moment its mint settles**, so no token outlives the requests that asked for it.
+>
+> ⚠️ **QE'S OPEN RECOMMENDATION: LOWER THE CEILING FROM 12 TO 6, and it is a TIGHTENING rather than a relaxation.** ⛔ **The actual is now 5 against a ceiling of 12, so the cost can MORE THAN DOUBLE before the instrument says anything.** 📁 **12 was calibrated when 15 was normal.** ⚡ **Leaving it converts a 3× improvement into headroom for silent regression — which is this row's own argument against raising it, applied more slowly.**
+>
+> 🔴 **The target is 1 and this reaches 5. Closing that gap needs the token's own `exp`, and Lane A correctly RAISED it rather than deciding it inside a defect fix.** ⚠️ **QE's reading, offered as input and not as a ruling: [§13](../CLAUDE.md)'s *"JWT parsing lives only in `signora_platform/auth/`"* sits inside a bullet scoped entirely to the PYTHON TIER, and Next.js is the sole Authentication Authority that mints these tokens** — **so the question to put is *"does §13's JWT-parsing clause bind the Next tier, which already mints?"***, which is answerable in a line.
+>
+> ⛔ **Also recorded, and it is Lane A's, caught by its author:** **a `fresh` flag was added with a comment claiming it prevented a hard failure, then removed — and nothing changed.** 📁 **§2 Decorative Logic, found by the three-way fire-test that most people never run: remove the dedupe → fails · remove the server guard → fails · remove the flag → PASSES, which is why it is gone.**
+
 > ⚡ **RE-MEASURED 2026-08-22 at `119c5f8a`, cycle 262: **15** mints, up from the 13 recorded below.** ⛔ **It is getting worse, not holding.** 📁 **The budget is 12 and the design target is 1** — *"the token is valid for minutes and nothing caches it"*. ⚠️ **Recorded here rather than as a new row: same assertion, same cause, a moved number.**
 
 **Expected.** `perception.spec.ts:75` — at most **12** access-token mints for one page.
