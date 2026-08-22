@@ -18101,6 +18101,70 @@ QE       1 failure  — competitors.tsx only
 
 ---
 
+### B-1064 · 🟠 The design's ink ramp has four steps and the product has three, so the fourth — used 342 times across all 35 screens — has nowhere to render from
+
+| | |
+|---|---|
+| **Module** | `product_surface` — **Lane A** · [`frontend/app/globals.css`](../frontend/app/globals.css) |
+| **Severity** | 🟠 **P2** — **every element the design draws in `--ink-4` renders one step too dark**, product-wide |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-22 by QE, UI conformance audit, on `main` at `58458fb2`, **by measuring the Settings nav rail and asking why its group label was the wrong colour** |
+| **Route** | Product-wide. **Measured on `/settings`** |
+| **Class** | **Visual / token layer.** ⛔ Not accessibility, not navigation, not producer |
+
+**Design requirement.** 📁 **The ink ramp is FOUR steps, identical across all 35 screen documents** (the unanimous token block of [B-1050](#b-1050)):
+
+| Role | Light |
+|---|---|
+| `--ink` | `#211f1d` |
+| `--ink-2` | `#5c554e` |
+| `--ink-3` | `#857d75` |
+| 🔴 **`--ink-4`** | 🔴 **`#a39a91`** |
+
+**Implementation found.** **The content ramp is THREE steps:**
+
+```
+--color-content          33 31 29     = --ink
+--color-content-muted    92 85 78     = --ink-2
+--color-content-subtle  133 125 117   = --ink-3
+--color-content-inverted 250 248 246  ← a different role, not a fourth step
+```
+
+🔴 **`#a39a91` exists in exactly one place — `--color-border-strong: 163 154 145` — which is a BORDER role.** ⛔ **There is no content token for the design's fourth ink step.**
+
+⚡ **So an author asked to draw text in `--ink-4` has two options and both are wrong**: use a border token as a text colour, or fall back to `--ink-3`. ✅ **Measured: `text-border-strong` appears ZERO times in the product** — nobody takes the first option, correctly — **so everything the design draws in `--ink-4` renders as `--ink-3`, one step too dark.**
+
+**How much this is.** 📁 **`color:var(--ink-4)` appears 342 times across 35 of 35 screen documents.** ⚡ **It is not a rare step — it sits in the same order of magnitude as the ramp's other members:**
+
+| | uses | screens |
+|---|---|---|
+| `--ink` | 109 | 35 |
+| `--ink-2` | 1164 | 35 |
+| `--ink-3` | 1464 | 35 |
+| 🔴 **`--ink-4`** | **342** | **35 of 35** |
+
+**Worked example — the Settings nav rail, measured on `main`:**
+
+| | Design | Rendered |
+|---|---|---|
+| Group label colour | **`--ink-4`** `#a39a91` | 🔴 `rgb(133,125,117)` = `--ink-3` |
+| Group label size | 10.5px | 11px |
+| Nav item size | 12.5px | 11px |
+
+⚠️ **The two SIZE rows are recorded for context and are NOT this row's subject** — 📁 Lane A has already moved the nav item to 12px on `lane-a-product-surface-r4`, **with a stated reason for 12 over 12.5** (the only 12.5px token, `--text-label`, carries weight 600 and the design draws this at 400). ⛔ **That is a separate question and it belongs with [C-1547](LANE_COORDINATION.md).** ⚡ **The COLOUR is not fixed on r4 either — it still reads `text-content-subtle`.**
+
+**Reproduction.** `grep -c '163 154 145' frontend/app/globals.css` → `1`, and the one hit is `--color-border-strong`. `grep -oE '\-\-color-content[a-z-]*:' frontend/app/globals.css | sort -u` → four entries, of which `-inverted` is a different role.
+
+**Acceptance criteria.**
+- A **content-role** token carries `#a39a91` in light and `#65737c` in dark — the design's `--ink-4` in both themes.
+- ⛔ **Naming need not match** ([D-220](DECISION_REGISTER.md) §10) — a fourth step named for its role is fine. ⚠️ **What must not happen is reusing `--color-border-strong` as a text colour**: a border token and a text token that happen to share a value today will diverge the first time either is tuned.
+- The Settings nav group label consumes it.
+- ⚠️ **Assert the ramp's DEPTH, not just its values** — 📁 this defect is invisible to a test that checks each existing token is right, because every existing token IS right. **The ramp is short, not wrong.**
+
+> ⚡ **Why this survived [B-1051](#b-1051) and [D-217](../DECISION_REGISTER.md).** **D-217 measured nine colour roles and found them exact. B-1051 found five absent status roles.** ⛔ **Neither asked whether a ramp was COMPLETE** — they checked the tokens that exist against the design, and every one of those passed. 📁 **A missing step in a scale is not a wrong value anywhere; it is an absence, and an absence is only visible if you count.**
+
+---
+
 ## Verified
 
 ### B-001 · `signal_profile` reads the wrong row as "current"
