@@ -45,6 +45,20 @@ const SURFACES: { element: string; file: string; label: string }[] = [
   { element: 'toast', file: join('components', 'ui', 'toast.tsx'), label: 'Toast' },
   { element: 'dialog', file: join('components', 'ui', 'dialog.tsx'), label: 'Dialog' },
   { element: 'card', file: join('components', 'ui', 'card.tsx'), label: 'Card' },
+  // ⚡ **`menu` is named by BOTH scales** — §05 `12px --r-lg` *"Card, menu,
+  // popover, toast…"* and §06 `--e3` *"Menu, popover, tooltip, toast…"*.
+  //
+  // 🔴 **This file's own Limitations said the palette, drawer and popover were
+  // *"named by the scales and NOT asserted, because element→file for those is a
+  // judgement I did not want to make silently inside a test."*** ✅ **[B-1059]
+  // (../../../docs/BUGS.md) supplies the mapping** — it names
+  // `account-menu.tsx` as the menu — **so it is evidence rather than my guess,
+  // and the exclusion no longer applies to this one.**
+  //
+  // ⚠️ **The defect that row describes was already fixed in `7274324b` and is
+  // on `main`.** ⛔ **What was missing is anything that would stop it coming
+  // back**, which is what this line is.
+  { element: 'menu', file: join('components', 'shell', 'account-menu.tsx'), label: 'Account menu' },
 ];
 
 function assignments(array: 'radii' | 'elevation'): { token: string; use: string }[] {
