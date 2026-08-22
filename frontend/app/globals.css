@@ -27,6 +27,19 @@
     --color-content: 33 31 29;
     --color-content-muted: 92 85 78;
     --color-content-subtle: 133 125 117;
+    /* 🔴 **[B-1064](../../docs/BUGS.md), found by QE — the design's ink ramp is
+     * FOUR steps deep and this one was three.** 📁 **`--ink-4` (`#a39a91`
+     * light, `#65737c` dark) is used `440` times across all 35 design
+     * documents**, and the only token carrying that value was
+     * `--color-border-strong` — **a BORDER role**. ⛔ **So every content use of
+     * `--ink-4` fell back to `--ink-3`, one step too dark**, and no per-token
+     * test could see it: the ramp was SHORT, not wrong.
+     *
+     * ⛔ **Deliberately NOT an alias of `--color-border-strong`.** ⚡ **A border
+     * token and a text token that share a value today diverge the first time
+     * either is tuned** — QE's warning, and it is the same reasoning that keeps
+     * `--text-label` off an element the design draws at weight 400. */
+    --color-content-faint: 163 154 145;
     --color-content-inverted: 250 248 246;
 
     /* ⚡ **TASK-491 gap ③ — the design specifies *two* hairline weights and
@@ -343,6 +356,9 @@
     --color-content: 234 240 243;
     --color-content-muted: 168 182 190;
     --color-content-subtle: 132 147 156;
+    /* 📁 **`--ink-4` dark, `#65737c`** — measured from the same two
+     * `Object.assign` payloads, not derived from the light value. */
+    --color-content-faint: 101 115 124;
     --color-content-inverted: 13 20 24;
 
     --color-border-soft: 36 50 57;

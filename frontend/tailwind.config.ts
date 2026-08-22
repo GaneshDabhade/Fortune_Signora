@@ -52,6 +52,8 @@ export default {
           DEFAULT: 'rgb(var(--color-content) / <alpha-value>)',
           muted: 'rgb(var(--color-content-muted) / <alpha-value>)',
           subtle: 'rgb(var(--color-content-subtle) / <alpha-value>)',
+          /* 📁 The design's fourth ink step — [B-1064](../docs/BUGS.md). */
+          faint: 'rgb(var(--color-content-faint) / <alpha-value>)',
           inverted: 'rgb(var(--color-content-inverted) / <alpha-value>)',
         },
         border: {

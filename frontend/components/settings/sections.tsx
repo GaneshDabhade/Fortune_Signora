@@ -65,6 +65,18 @@ export function SettingsNav({ className }: { className?: string }) {
               is the nearest role §04 publishes and the tracking is the
               design's own, the same pairing the Account 360 rail uses.
 
+              🔴 **`text-content-faint`, not `-subtle`** — 📁 the design draws this
+              label in `--ink-4` and the product's content ramp had no fourth
+              step ([B-1064](../../../docs/BUGS.md), QE). ⛔ **It rendered one
+              step too dark on every Settings section, and nothing could see it
+              because the ramp was SHORT rather than wrong.**
+
+              ⚡ **QE's audit of `main` settles the SIZE in the system's favour
+              too**: 📁 §04 `Column head` is `11 / 1.4 / 600 / upper`, so
+              `text-2xs` at 11px is correct and **this screen's `10.5px` is the
+              outlier** — the same shape as its 16px card radius, and covered by
+              the same [C-1547](../../../docs/LANE_COORDINATION.md).
+
               ⚠️ **TWO DOCUMENTS DISAGREE BY 0.01em AND THIS FOLLOWS THE SCREEN.**
               📁 **Design System v2 §04 `typeRows` gives `Column head` as
               `11 / 1.4 / 600 / +0.06em / upper`**; 📁 **this screen and Account
@@ -73,7 +85,7 @@ export function SettingsNav({ className }: { className?: string }) {
               rail, which is the worse of the two inconsistencies.
               ⚡ **`onboarding/rail.tsx` already uses `0.06em`**, so the product
               currently carries both — recorded rather than resolved in code. */}
-          <p className="px-2 pb-1.5 text-2xs font-semibold uppercase tracking-[0.07em] text-content-subtle">
+          <p className="px-2 pb-1.5 text-2xs font-semibold uppercase tracking-[0.07em] text-content-faint">
             {group.label}
           </p>
           {group.items.map((item) => (
@@ -90,13 +102,22 @@ export function SettingsNav({ className }: { className?: string }) {
                 // sizes, and this rendered both at `--text-2xs` (11px), which
                 // flattened the hierarchy the nav is built on.
                 //
-                // ⛔ **NOT `text-label`, though that token is exactly 12.5px.**
-                // 📁 **`--text-label` carries the whole `Label` role — `12.5 /
-                // 1.45 / 600` — and the design draws this item at the DEFAULT
-                // weight**, so taking the token would state a role this element
-                // does not have and render it bold. ⚡ **12px against 12.5px is
-                // invisible; 400 against 600 is not.** ⚠️ `12.5px` as a literal
-                // would breach the token rule ([§20c](../../CLAUDE.md)).
+                // ✅ **§04 NAMES THIS ROLE AND IT IS `Caption` — `12 / 1.5 / 400`.**
+                // 📁 **`--text-xs` is 12px**, so the token is the role rather
+                // than an approximation of a different one.
+                //
+                // ⛔ **NOT `text-label`, though that token is exactly 12.5px**:
+                // `--text-label` carries the whole `Label` role — `12.5 / 1.45 /
+                // 600` — and the design draws this item at the default weight,
+                // so taking it would state a role this element does not have
+                // and render it bold.
+                //
+                // ⚠️ **This comment used to argue to 12/400 from *"12 against
+                // 12.5 is invisible; 400 against 600 is not"*** — 🔴 **true, and
+                // it was a derivation standing where an authority exists.** ⚡
+                // **QE's audit of §04 found the role.** ⛔ **A reasoned guess
+                // that happens to be right still teaches the next reader to
+                // guess.**
                 'flex min-h-6 items-center gap-2 rounded-md px-2 py-1.5 text-xs transition-colors',
                 'coarse:min-h-11',
                 'text-content-muted hover:bg-surface-sunken hover:text-content',
