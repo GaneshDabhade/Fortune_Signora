@@ -1,5 +1,17 @@
 # Session Handoff
 
+> ## Cycle 260 — promoted `47244e79`, 2026-08-22 · **the Settings rebuild, and a divergence that was not one**
+>
+> **`main` = `47244e79` = the certified commit.** `pytest` **5452** · coverage **95.03%** · **679 Security Invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · `frontend-suite` **4023/209** · `eslint` · `smoke` 24/577s · **DR passed** · **reversible in 6s** · head **`0066`**. **13 commits — 11 QE documentation carried from `integration`, plus Lane A's Settings work. FIRST attempt.**
+>
+> ✅ **Browser 450/458 — 5 failed, 3 skipped. All five also failed on the previous `main`, which had six.** ⚡ **Zero regressions and one fewer failure**: `golden-journey:53` fixed by renaming the tenth invented heading (*"What has happened"* → the design's *"Recent activity"*).
+>
+> ⚡ **A newer SHA (`8d0ab949`) arrived 21 minutes into the run and was deliberately NOT taken.** 📁 **[ADR-0032](architecture/adr/0032-release-certification.md) binds certification to an immutable commit**, so `integration` moving never invalidates a run in flight. **Verified the delta first — 2 files, zero backend — so nothing recorded against `47244e79` was affected.** ⛔ **Restarting would have discarded 21 minutes AND let a lane extend a run indefinitely by pushing into it.** ✅ **`8d0ab949` is the next cycle's input.**
+>
+> 🔴 **[C-1547](LANE_COORDINATION.md) — a screen document can contradict the design system, and the screen is not automatically right.** **Settings draws section cards at 16px; `Card` renders 12px; §05 assigns 12px to Card and 16px to the table plane, and §09 says *"12px radius"* in words.** ⚡ **Three signals against one — the primitive is right.** 📁 **Same question as D13-A; rule them together.**
+>
+> ⚠️ **Still NOT VERIFIED and still [C-1544](LANE_COORDINATION.md)**: the POPULATED state of account narration, AI research and evidence citations. **Their ABSENT states are exercised.** **[B-296](BUGS.md)** is filed and not fixed — the Companies grid applies no `kind` filter, so technology entities render as unnamed companies.
+
 > ## Cycle 259 — promoted `68da093e`, 2026-08-21 · **Lane A's UI conformance work, after four candidates**
 >
 > **`main` = `68da093e` = the certified commit.** `pytest` **5452** · coverage **95.03%** · **679 Security Invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · `frontend-suite` **4010/208** · `eslint` · `smoke` 24/270s · **DR passed** · **reversible in 7s** · head **`0066`**. **5 commits, Lane A.**

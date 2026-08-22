@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `68da093e`, 2026-08-21.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `47244e79`, 2026-08-22.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,7 +12,15 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `68da093e`, 2026-08-21.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `47244e79`, 2026-08-22.** Every figure is read from the repository, never carried forward.
+
+> ⚡ **Cycle 260 promotes the Settings rebuild and the tenth invented heading — certified `47244e79e2ae` on the FIRST attempt.** ✅ **pytest 5452 · coverage 95.03% · 679 Security Invariants · mypy 956 · import-linter 37/37 · tsc · frontend-suite 4023/209 · eslint · smoke 24 stages/577s · DR passed · reversibility head→base→head in 6s.**
+>
+> ✅ **Browser 450 of 458 — 5 failed, 3 skipped, on a rebuilt and reseeded stack. Every one of the five also failed on the previous `main`, which had six.** ⚡ **Zero regressions, and one fewer failure**: `golden-journey:53` is fixed by the heading rename.
+>
+> ⚡ **A newer SHA arrived mid-run and was NOT taken.** 📁 **[ADR-0032](docs/architecture/adr/0032-release-certification.md): certification binds to an immutable commit, so `integration` moving during a run never invalidates it.** **`8d0ab949` opens the next cycle automatically** — the alternative would let a lane pushing during a run extend that run indefinitely.
+>
+> 🔴 **[C-1547](docs/LANE_COORDINATION.md) is the finding worth reading, and Lane A raised it rather than "fixing" it.** ⛔ **The Settings screen document draws section cards at 16px; `Card` renders 12px — and Design System v2 §05 assigns **12px to Card** and 16px to the table plane, with §09 saying *"12px radius"* in words.** ⚡ **THREE consistent signals against one screen: the shared primitive is right and the SCREEN document is the outlier.** 📁 **The same question as D13-A** — whether a screen document's raw value overrides a system role — **and the two should be ruled together.**
 
 > ⚡ **Cycle 259 promotes Lane A's UI conformance work — the first cycle this month whose subject is the product rather than QE's instruments.** ✅ **Certified `68da093e497a` — pytest 5452 · coverage 95.03% · 679 Security Invariants · mypy 956 · import-linter 37/37 · tsc · frontend-suite 4010/208 · eslint · smoke 24 stages/270s · DR passed · reversibility head→base→head in 7s.**
 >
