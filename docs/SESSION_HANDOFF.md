@@ -1,5 +1,17 @@
 # Session Handoff
 
+> ## Cycle 261 — promoted `7b835a0b`, 2026-08-22 · **a motion contract Tailwind was silently discarding**
+>
+> **`main` = `7b835a0b` = the certified commit.** `pytest` **5452** · coverage **95.03%** · **679 Security Invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · `frontend-suite` **4026/210** · `eslint` · `smoke` 24/528s · **DR passed** · **reversible in 6s** · head **`0066`**. **4 commits, Lane A.**
+>
+> ✅ **Browser 450/458 — 5 failed, 3 skipped, the SAME five as cycle 260 and all five pre-existing on the prior `main`. Zero regressions.**
+>
+> 🔴 **The cycle's finding is a defect CLASS.** ⛔ **`tailwind.config.ts` carried no `transitionDuration`/`transitionTimingFunction`, while four source sites wrote the design's §18 names.** ⚡ **Tailwind emitted nothing, so two progress bars had a transition with no duration and never animated.** 📁 **Verified by QE on `main` before certifying: config `0`, source uses `4`.** ⚠️ **A dead Tailwind class type-checks, lints, renders and passes every gate** — the new guard asserts every `duration-`/`ease-` class resolves to something the config can produce.
+>
+> ⚡ **[B-1064](BUGS.md) is FIXED and its call site deliberately is NOT.** **Lane A added the fourth ink step, then computed the contrast before moving the Settings group label: `--ink-4` is 2.77:1 on surface against `--ink-3`'s 4.05:1.** ⛔ **Moving it would have made the screen worse while closing a QE row.** 📁 **That is [C-1548](LANE_COORDINATION.md), and it is the SAME finding as QE's D13-C — identical ratios, reached from a rendered sweep and from the token side a day apart. THEY SHOULD BE RULED TOGETHER.**
+>
+> ⚠️ **NEXT CYCLE'S INPUT: `461a8de3` on `lane-a-product-surface-r4`**, 8 ahead of `58458fb2`, fast-forwardable. Carries a 4px→3px focus-ring correction and [B-297](BUGS.md) filed-not-fixed.
+
 > ## Cycle 260 — promoted `47244e79`, 2026-08-22 · **the Settings rebuild, and a divergence that was not one**
 >
 > **`main` = `47244e79` = the certified commit.** `pytest` **5452** · coverage **95.03%** · **679 Security Invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · `frontend-suite` **4023/209** · `eslint` · `smoke` 24/577s · **DR passed** · **reversible in 6s** · head **`0066`**. **13 commits — 11 QE documentation carried from `integration`, plus Lane A's Settings work. FIRST attempt.**

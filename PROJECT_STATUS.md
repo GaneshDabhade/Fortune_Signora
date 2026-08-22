@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `47244e79`, 2026-08-22.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `7b835a0b`, 2026-08-22.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,7 +12,7 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `47244e79`, 2026-08-22.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `7b835a0b`, 2026-08-22.** Every figure is read from the repository, never carried forward.
 
 > ⚡ **Cycle 260 promotes the Settings rebuild and the tenth invented heading — certified `47244e79e2ae` on the FIRST attempt.** ✅ **pytest 5452 · coverage 95.03% · 679 Security Invariants · mypy 956 · import-linter 37/37 · tsc · frontend-suite 4023/209 · eslint · smoke 24 stages/577s · DR passed · reversibility head→base→head in 6s.**
 >
@@ -21,6 +21,12 @@
 > ⚡ **A newer SHA arrived mid-run and was NOT taken.** 📁 **[ADR-0032](docs/architecture/adr/0032-release-certification.md): certification binds to an immutable commit, so `integration` moving during a run never invalidates it.** **`8d0ab949` opens the next cycle automatically** — the alternative would let a lane pushing during a run extend that run indefinitely.
 >
 > 🔴 **[C-1547](docs/LANE_COORDINATION.md) is the finding worth reading, and Lane A raised it rather than "fixing" it.** ⛔ **The Settings screen document draws section cards at 16px; `Card` renders 12px — and Design System v2 §05 assigns **12px to Card** and 16px to the table plane, with §09 saying *"12px radius"* in words.** ⚡ **THREE consistent signals against one screen: the shared primitive is right and the SCREEN document is the outlier.** 📁 **The same question as D13-A** — whether a screen document's raw value overrides a system role — **and the two should be ruled together.**
+
+> ⚡ **Cycle 261 promotes a motion contract the product had been writing classes against and Tailwind was silently discarding.** ✅ **Certified `7b835a0b91f6` — pytest 5452 · coverage 95.03% · 679 Security Invariants · mypy 956 · import-linter 37/37 · tsc · frontend-suite 4026/210 · eslint · smoke 24 stages/528s · DR passed · reversibility head→base→head in 6s. Browser 450 of 458 — 5 failed, 3 skipped, the SAME five as cycle 260 and all five pre-existing. Zero regressions.**
+>
+> 🔴 **The finding is Lane A's and it is a defect class rather than a bug.** ⛔ **`tailwind.config.ts` carried NO `transitionDuration` or `transitionTimingFunction`, while four source sites wrote the design's own names — `duration-slow`, `ease-premium`, `duration-DEFAULT`.** ⚡ **Tailwind emitted nothing for any of them, so two progress bars carried a transition with no duration and did not animate at all.** 📁 **QE verified it on `main` before certifying: config entries `0`, source uses `4`.**
+>
+> ⚠️ **A dead Tailwind class type-checks, lints, renders and passes every gate.** **The guard that now closes it asserts that every `duration-`/`ease-` class resolves to something the config can produce — which is the only gate that could have caught it.**
 
 > ⚡ **Cycle 259 promotes Lane A's UI conformance work — the first cycle this month whose subject is the product rather than QE's instruments.** ✅ **Certified `68da093e497a` — pytest 5452 · coverage 95.03% · 679 Security Invariants · mypy 956 · import-linter 37/37 · tsc · frontend-suite 4010/208 · eslint · smoke 24 stages/270s · DR passed · reversibility head→base→head in 7s.**
 >
