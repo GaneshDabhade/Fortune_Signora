@@ -94,12 +94,28 @@ test.describe('opening the product', () => {
      * request* — each an RS256 signature on the Next tier — for a token that is
      * valid for minutes. The target is **one**; the ceiling below is set to
      * catch a regression rather than to bless the current number.
+     *
+     * 🔴 **LOWERED FROM 12 TO 6** — [B-1035](../../../docs/BUGS.md), 2026-08-22,
+     * **and it is a TIGHTENING.** ⚡ **`fetchAccessToken` now shares the mint
+     * already in flight**, so this screen measures **5**, down from 15.
+     *
+     * ⛔ **12 was calibrated against a world where 15 was normal.** ⚠️ **Leaving
+     * it there would let the cost MORE THAN DOUBLE before the instrument said
+     * anything** — the next screen would get 11 mints for free with a green
+     * suite, which is the same defect as raising a ceiling to bless a
+     * regression, arrived at more slowly. **QE's argument, and it is right.**
+     *
+     * ✅ **6 rather than 5, on measurement**: this assertion read **5 on four
+     * runs across two machines**. ⚠️ **The account brief below varies 5–6 on the
+     * same tree** — the count depends on how the read waves split — **so one
+     * mint of headroom is the difference between a ceiling and a flake.** ⛔ **It
+     * fails the moment a change costs two.**
      */
     expect(
       perception.tokens,
       `${perception.tokens} access tokens for one page. The target is 1: the token ` +
         'is valid for minutes and nothing caches it.',
-    ).toBeLessThanOrEqual(12);
+    ).toBeLessThanOrEqual(6);
 
     // A customer's patience for a first screen, generously drawn.
     expect(perception.timeToFirstAction).toBeLessThan(15_000);

@@ -15352,6 +15352,57 @@ if (!offline && queued.length === 0) return null;
 **Third governance item this month whose cost is not a blocked slice but a *divided reading***, and the register's own standard is that an item exists when a lane cannot safely proceed without an answer. ⚠️ **A lane CAN proceed here — Lane A did, correctly.** ✅ **The row exists because the next lane may read the other sentence first**, and the two produce opposite behaviour in the same file.
 
 
+
+### C-1549 · Does §13's JWT-parsing clause bind the Next tier, which already mints?
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-22, on finishing [B-1035](BUGS.md) |
+| **Owner** | **Product owner** — a scope question about one sentence in `CLAUDE.md` |
+| **Status** | **`OPEN`** — ⚡ **nothing is blocked.** B-1035 is fixed to 5 mints without needing the answer |
+| **Blocks** | Nothing today. It decides whether the design target of **1** is reachable |
+
+**The question, and it is deliberately narrow:**
+
+> 🔴 **Does §13's *"JWT parsing lives only in `signora_platform/auth/`"* bind the
+> NEXT tier, or only the Python tier the rest of that bullet is about?**
+
+⚡ **Asked this way because it is answerable in one line.** ⛔ **"May we cache
+tokens in the browser?" invites a long conversation about something that may
+already be permitted.**
+
+### Why it comes up
+
+✅ **[B-1035](BUGS.md) is fixed**: `fetchAccessToken` shares the mint already in
+flight, and `/accounts` fell from **15 mints to 5**. ⛔ **That is deduplication,
+not a cache — nothing is stored, and the entry is deleted the moment its mint
+settles.**
+
+📁 **The design target is 1**, and reaching it needs a real cache keyed on the
+token's own `exp`. ⛔ **Reading `exp` means parsing a JWT in the browser.**
+
+### The two readings, and Lane A does not act on either
+
+⚠️ **§13's bullet opens *"The Python tier only ever verifies RS256 JWTs"* and
+its prohibitions are addressed to that tier** — *"never add TO THE PYTHON TIER: a
+private signing key, a login or token-refresh route…"*. ⚡ **Next.js is the sole
+Authentication Authority and already MINTS these tokens**, so the clause may
+never have been about it.
+
+⛔ **But *"may not be forbidden"* is exactly the inference [§20e](../CLAUDE.md)
+says not to make inside a slice**, so the cache is not built and the reading is
+not assumed. 📁 **QE reached the same narrow reading independently and said
+explicitly not to act on theirs either.**
+
+### What it is NOT
+
+⛔ **Not a request to store a token anywhere durable.** **No `localStorage`, no
+cookie, no persistence** — an in-memory map for the lifetime of a page, keyed on
+`workspaceId`, cleared on expiry. ⚡ **The existing browser guard would stay: a
+module-level map on the Next server would hand one customer's token to another,
+and `typeof window` is what prevents it.**
+
+
 ### C-1548 · The design's two lightest ink steps are below the AA floor its own §17 claims
 
 | | |
