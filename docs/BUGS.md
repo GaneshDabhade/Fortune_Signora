@@ -1898,6 +1898,8 @@ make certify
 
 **Steps to reproduce.** `npx playwright test perception.spec.ts` against `7fae6e18`.
 
+> ⚡ **RE-MEASURED 2026-08-22 at `119c5f8a`, cycle 262: **15** mints, up from the 13 recorded below.** ⛔ **It is getting worse, not holding.** 📁 **The budget is 12 and the design target is 1** — *"the token is valid for minutes and nothing caches it"*. ⚠️ **Recorded here rather than as a new row: same assertion, same cause, a moved number.**
+
 **Expected.** `perception.spec.ts:75` — at most **12** access-token mints for one page.
 
 **Actual.** **13.**
@@ -3128,7 +3130,7 @@ git push -q origin lane-qe && echo pushed          # pushed a branch with nothin
 
 ✅ **The habit that would have caught it, and it is one line:** **after any push, read the remote back and compare it to `HEAD`** — `git fetch && git rev-parse origin/<branch>` against `git rev-parse HEAD`. ⚡ **That answers the question actually being asked**, and it is the same discipline the promotion equality rule already applies to `main`: *verified from `ls-remote` after the push, not from `rev-parse` before it.* **The rule existed and was applied to promotions only.**
 
-### B-1019 · 🟠 The Team page scrolls sideways on a phone — 117 elements past a 375px viewport
+### B-1019 · 🟠 The Team page scrolls sideways on a phone — 81 elements past a 375px viewport
 
 | | |
 |---|---|
@@ -3137,6 +3139,10 @@ git push -q origin lane-qe && echo pushed          # pushed a branch with nothin
 | **Severity** | 🟠 — **a customer on a phone cannot read the page without dragging it sideways** |
 | **Status** | **`OPEN`** |
 | **Found** | **2026-08-18 by QE**, same baseline |
+
+> ⚡ **RE-MEASURED 2026-08-22 at `119c5f8a`, cycle 262: 81 elements, down from 117.** ⛔ **Still failing, and now at BOTH widths** — `layout-handset` (390px project, 375px viewport) and `layout-phone` (640px). 📁 **The offender is a `<table>` at `right:824` with `thead`/`tr`/`th` behind it: the Team table does not reflow, so the fix is the table and not the 81 descendants it drags past the edge.**
+>
+> ⚠️ **The headline figure above was updated; the original error text below is the record of what was found on 2026-08-18 and is deliberately left alone** (`CLAUDE.md` §2 — correct a claim about the present, date a record of the past).
 
 **Steps to reproduce.** `npx playwright test layout-invariants` — the `layout-handset` project, 375px.
 
@@ -18146,6 +18152,35 @@ QE       1 failure  — competitors.tsx only
 - ✅ **Fire-test it**: remove the subtitle from the page and confirm the test fails on a machine WITHOUT the corpus.
 
 > ⚡ **How it was found is the part worth keeping.** **Lane A reported two failures and I reported one.** ⛔ **Neither of us was wrong.** **I asked why the counts differed instead of assuming mine was complete** — and the answer was that my run could not see the second one. 📁 **A disagreement about a count, taken seriously, is what exposed a gate that cannot fail.**
+
+---
+
+### B-1065 · 🟠 The accounts list clips five labels, and a clipped label is a sentence a customer cannot read
+
+| | |
+|---|---|
+| **Module** | **Product Surface** — the accounts list |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** |
+| **Severity** | 🟠 — ⛔ **four of the five clipped strings are `Not reported`, which is the product declining to invent a value.** ⚡ **Clipping THAT is worse than clipping data: the customer is left unable to read the one label that explains an absence** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-22 by QE**, cycle 262's browser gate, **measured** rather than inferred |
+| **Commit found** | `119c5f8a` (`origin/main`, the promoted commit) |
+
+**Steps to reproduce.** `make e2e-quick E2E_URL=http://localhost:3100 ARGS="tests/e2e/visual.spec.ts"` against a rebuilt and reseeded prod-local.
+
+**Expected.** 📁 `visual.spec.ts:62` — *"the accounts list clips no text"*. ⚡ **The assertion's own reasoning: an element whose content is wider than itself AND which hides the overflow is a truncated sentence a customer cannot read. Ellipsis is deliberate and allowed; silent clipping is not.**
+
+**Actual.** ⛔ **Five clipped strings**, where the assertion expects an empty array:
+
+```
+["Preview", "Not reported", "Not reported", "Not reported", "Not reported"]
+```
+
+⚠️ **This is a LONG-STANDING failure, not a regression** — it fails identically on the previous three promoted commits. ⛔ **It is filed now because QE could not previously say what it WAS**: the per-spec causes lived in a `/tmp` log that was wiped, and QE had been carrying the five failures as a comparison baseline rather than as work.
+
+📁 **The row exists because a peer asked the right question.** **Lane A, 2026-08-22:** *"If any of the five is in a Lane A module, tell me and I will take it; I would rather that than have them stay pre-existing indefinitely because both of us keep classifying them as not this cycle's."*
+
+⚡ **Related and NOT the same:** [B-1019](#b-1019) is horizontal *overflow* on Team; this is *clipping* on the accounts list. **A page can clip without overflowing and overflow without clipping**, which is why the suite asserts them separately.
 
 ---
 

@@ -15419,6 +15419,44 @@ right population for a text-role finding**, and the two backgrounds are not what
 either item is about.
 
 
+### C-114 · The design's prose and the design's markup disagree, and a lane is resolving it by precedent
+
+| | |
+|---|---|
+| **Raised by** | **QE**, 2026-08-22, verifying cycle 262's candidate `119c5f8a` |
+| **Owner** | **Product owner** — this is a design-authority ruling, not an implementation choice |
+| **State** | **`READY FOR PRODUCT DECISION`** — the options and a recommendation are below; nothing else blocks it |
+| **Blocking** | **No.** Both slices shipped. ⛔ **It is filed because the NEXT one will not be able to proceed without inferring the answer** |
+
+**The pattern, and it is not the same as [C-1547](#c-1547).** C-1547 asks *which document wins when two disagree*. **This asks which REPRESENTATION wins when ONE document disagrees with itself** — its prose against its own drawn markup.
+
+**Two instances, both in cycle 262's slice, resolved two different ways:**
+
+| Element | The design's prose | The design's markup | Lane A did |
+|---|---|---|---|
+| **Focus indicator** (§17) | *"a 2px brand ring at 2px offset"* | `box-shadow: 0 0 0 3px var(--brand-tint)`, **21 occurrences across 35 documents, unanimous** | ⚡ **Adopted the markup and shipped it** — *"the markup is what is drawn"* |
+| **Skeleton** (§13) | *"a three-cycle shimmer"* | `animation: v2shimmer 1.4s ease-in-out infinite` | ⛔ **Refused** — [B-297](BUGS.md#b-297): *"Guessing would be inventing a behaviour"* |
+
+⚠️ **Both calls are defensible and that is the problem.** **The first sets a rule — markup beats prose — and the second declines to apply it.** ⛔ **Neither was ruled**, so the repository now has a resolution rule established by precedent inside a feature slice, which [§20e](../CLAUDE.md) names exactly: *"architecture is agreed explicitly or it is inferred, and inferred architecture is two lanes shipping incompatible halves of one contract."*
+
+⚡ **It will recur.** **There are 35 design documents**, and this is the **third and fourth** prose-versus-drawing conflict found so far — the [B-297](BUGS.md#b-297) row names a third independently.
+
+**Why QE raises it rather than Lane A.** ✅ **Lane A did the right thing twice**: shipped where the evidence was unanimous, refused where it was not. ⛔ **What neither lane can do is decide which of its own two treatments is the rule**, and a lane deciding that inside a slice is the failure mode, not the fix.
+
+**Options:**
+
+**①  Markup is authoritative; prose is commentary.** Matches what 21 unanimous occurrences already forced. ⚠️ **But B-297 shows it is not always decidable** — *"three-cycle"* may be describing the gradient's three colour stops (`25% · 50% · 75%`) rather than an iteration count, in which case prose and markup never disagreed at all.
+
+**②  Prose is authoritative; markup is an illustration.** ⛔ **Would require reverting the shipped 3px ring to 2px at 2px offset against 21 unanimous drawings.**
+
+**③  Neither is authoritative alone: a disagreement is a design defect, raised upstream and ruled per instance.** ⚡ **Slowest, and the only one that cannot silently ship the wrong answer.**
+
+**QE's recommendation — ③, narrowed by ①.** **Adopt the markup where the corpus is unanimous AND the prose is not plausibly describing something else** *(the ring: 21 of 21, and "2px offset" cannot mean a colour stop)*; **raise everything else upstream** *(the shimmer: "three-cycle" has a second reading that makes the conflict vanish)*. ⚡ **That is what Lane A actually did — this would make it a rule rather than a precedent.**
+
+⛔ **QE has no authority here and is not asking for any.** **The recommendation is input; the ruling is the product owner's.**
+
+---
+
 ### C-1547 · The Settings screen draws a 16px card; the Design System assigns 12px to cards
 
 | | |
