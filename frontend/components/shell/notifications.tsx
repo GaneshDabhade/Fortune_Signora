@@ -436,7 +436,7 @@ function NotificationRow({
              that reason. **The 1px is recorded rather than smuggled in.**
              ⚠️ And the literal is spelled out nowhere above: the gate reads
              the file, not the JSX, so naming it in prose fails it too. */
-          className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-md bg-ai text-2xs text-accent-contrast"
+          className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-sm bg-ai text-2xs text-accent-contrast"
         >
           ✦
         </span>

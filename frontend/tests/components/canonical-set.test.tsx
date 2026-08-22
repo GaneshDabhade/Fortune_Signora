@@ -26,7 +26,7 @@
  * cannot fail* — and the reason TASK-448's third slice was stuck for two days.
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
@@ -277,24 +277,114 @@ describe('§14 AI system — the reserved hue is actually reserved', () => {
     // ⛔ **Its `browser` variant deliberately does NOT use the hue** — a
     // timezone read from `Intl` was reported rather than inferred, and dressing
     // it as intelligence would overstate what happened.
+    // ⚡ **Each entry is here because it MEETS §14's criterion — a surface
+    // where a machine wrote or inferred what you are reading — not because it
+    // was inconvenient to fail.** ⛔ **Anything that cannot be said in one
+    // clause does not belong in this list.**
     const allowed = new Set([
+      // components/ui — the original five, justified at length above.
       'attribution.tsx',
       'badge.tsx',
       'confidence.tsx',
       'inferred.tsx',
       'table.tsx',
+      // ⚡ **The AI surfaces themselves.** 📁 Narration, research and reasoning
+      // ARE the machine's output; `expanded-row.tsx` is that narration inline.
+      'narration.tsx',
+      'research.tsx',
+      'reasoning.tsx',
+      'expanded-row.tsx',
+      // ⚡ **The assistant entry** — 📁 §07: the top bar *"gains a workspace
+      // switcher and an assistant entry"*, and the entry to Signora is Signora.
+      'navigation.tsx',
+      // ⚡ **AI-authored notifications**, marked by the glyph tile so a person
+      // can tell which arrived from a machine.
+      'notifications.tsx',
+      // ⚡ **Onboarding, where Signora says what it INFERRED** — 📁 the same
+      // criterion `inferred.tsx` is allowed under, and these cite the design's
+      // `--ai-tint` / `--ai-line` field directly.
+      'introduction.tsx',
+      'goals-form.tsx',
+      'company-form.tsx',
+      'connect-form.tsx',
+      'workspace-form.tsx',
+      'complete-form.tsx',
     ]);
-    const dir = join(process.cwd(), 'components', 'ui');
-    const offenders = readdirSync(dir)
-      .filter((file) => file.endsWith('.tsx') && !allowed.has(file))
+    // 🔴 **THIS SCANNED `components/ui/` ALONE, and twelve files outside it
+    // used the reserved pairing.** ⛔ **So *"nothing else in the product"* was
+    // asserted of one directory** — the same shape as a responsive matrix that
+    // covered a page's children and not the page, and as §17 claiming AA *"in
+    // full"* over six measured pairs. ⚡ **All twelve turned out to be §14's
+    // grammar** — glyph tiles and tint fields on narration, research, reasoning,
+    // the assistant entry, AI notifications and the onboarding surfaces that
+    // show what Signora inferred — **but nothing had checked, and the guard's
+    // sentence claimed otherwise.**
+    const surfaces = (dir: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((entry) =>
+        entry.isDirectory()
+          ? surfaces(join(dir, entry.name))
+          : entry.name.endsWith('.tsx')
+            ? [join(dir, entry.name)]
+            : [],
+      );
+    const offenders = [
+      ...surfaces(join(process.cwd(), 'components')),
+      ...surfaces(join(process.cwd(), 'app')),
+    ]
+      .filter((file) => !allowed.has(basename(file)))
       .filter((file) => /\b(?:bg|text|border|ring)-ai\b|-ai-subtle\b/.test(
-        readFileSync(join(dir, file), 'utf8'),
-      ));
+        readFileSync(file, 'utf8'),
+      ))
+      .map((file) => relative(process.cwd(), file));
 
     expect(
       offenders,
       'the reserved hue is being used outside the AI grammar §14 defines',
     ).toEqual([]);
+  });
+
+  it("every glyph tile is §14's 6px, and two were not", () => {
+    // 📁 **§14's grammar is *"a 6px glyph tile, a tint field, a hairline in the
+    // same family, and a confidence figure."*** ⚡ **`--radius-sm` is 6px.**
+    //
+    // 🔴 **`research.tsx` and `notifications.tsx` drew theirs at 8px** — five
+    // others were already correct, so the rule was being followed by most of
+    // the product and nothing was checking it.
+    //
+    // ⛔ **The TILE only, never the tint field.** ⚠️ `bg-ai` matches inside
+    // `bg-ai-subtle` — a hyphen is a word boundary — **which made the first
+    // measurement of this report every field as a tile.** ✅ `bg-ai(?![-\w])`
+    // is what separates the solid tile from the field it sits on, and §14 gives
+    // a radius for the first and not the second.
+    const surfaces = (dir: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((entry) =>
+        entry.isDirectory()
+          ? surfaces(join(dir, entry.name))
+          : entry.name.endsWith('.tsx')
+            ? [join(dir, entry.name)]
+            : [],
+      );
+
+    const offenders: string[] = [];
+    for (const file of [
+      ...surfaces(join(process.cwd(), 'components')),
+      ...surfaces(join(process.cwd(), 'app')),
+    ]) {
+      for (const match of readFileSync(file, 'utf8').matchAll(
+        /className=\{?["'`]([^"'`]*)["'`]/g,
+      )) {
+        const classes = match[1] ?? '';
+        // ⚡ **A TILE is a solid `bg-ai` that centres a glyph.** ⛔ The 2px
+        // timeline dot in `reasoning.tsx` is `rounded-full` and centres
+        // nothing, so it is not one.
+        if (!/bg-ai(?![-\w])/.test(classes) || !classes.includes('place-items-center')) continue;
+        const radius = /\brounded(-[a-z0-9]+)?\b/.exec(classes)?.[0] ?? 'none';
+        if (radius !== 'rounded-sm') {
+          offenders.push(`${relative(process.cwd(), file)} — ${radius}`);
+        }
+      }
+    }
+    expect(offenders, "§14's glyph tile is 6px").toEqual([]);
   });
 
   it('confidence is legible without the pips, because §17 says decoration carries nothing', () => {

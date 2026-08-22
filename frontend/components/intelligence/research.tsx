@@ -163,7 +163,7 @@ export function ResearchPanel({
           previous generation's wording and had no basis in the finalized
           design — 📁 the design says **Research summary**. */}
       <div className="flex items-center gap-2.5 border-b border-ai bg-ai-subtle px-4 py-3">
-        <span className="grid h-6 w-6 flex-none place-items-center rounded bg-ai">
+        <span className="grid h-6 w-6 flex-none place-items-center rounded-sm bg-ai">
           <Sparkles aria-hidden className="h-3 w-3 text-surface" />
         </span>
         <div className="min-w-0">
