@@ -77,6 +77,28 @@ export async function expectNoHorizontalOverflow(page: Page): Promise<void> {
       // the signal to all of it.** ⛔ **This is a population correction and not
       // a relaxation: it removes elements that could never have been the
       // customer-visible failure this asserts about.**
+      // ⚠️ **THE RULE IS UNSOUND IN PRINCIPLE FOR `absolute`, AND NOTHING HITS
+      // IT TODAY — reviewed and MEASURED by Lane A, 2026-08-22.** ⛔ **An
+      // absolutely-positioned descendant is contained by the scroller only if
+      // the scroller, or something between, is itself positioned.** 📁
+      // **Counted on `/settings/team` and `/accounts` at 375px: 50 absolute
+      // elements inside a scroller, EVERY one with a positioned ancestor before
+      // the scroller — escaping: 0. Shadow roots under `main`: 0, so the
+      // `parentElement` walk is complete.**
+      //
+      // ✅ **A comment naming the hole is worth more than code for it** — a
+      // containing-block check for zero live cases is the speculation
+      // [§6](../../../../CLAUDE.md) forbids, and this is what makes the case
+      // findable if one ever appears.
+      //
+      // ⚡ **`position: fixed` is NOT this hole.** It is exempted
+      // unconditionally on the next line and correctly so: a fixed element is
+      // out of flow and positioned against the viewport, so it cannot
+      // contribute to the document's `scrollWidth` — which is the failure this
+      // asserts about. ⚠️ **`contain: paint` and `overflow-x: hidden` ancestors
+      // CLIP rather than scroll, so their descendants stay reported — a false
+      // positive, and the safe direction. Worth knowing when a count looks
+      // high.**
       if (hasScrollingAncestor(element)) continue;
       if (style.position === 'fixed') continue;
       const rect = element.getBoundingClientRect();
