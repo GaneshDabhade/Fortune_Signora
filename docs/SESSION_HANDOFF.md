@@ -1,5 +1,21 @@
 # Session Handoff
 
+> ## Cycle 263 — promoted `c2aa8889`, 2026-08-22 · **QE's own instrument, corrected and peer-reviewed**
+>
+> **`main` = `c2aa8889` = the certified commit**, verified from the remote. `pytest` **5452** · coverage **95.03%** · **679 invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · frontend **4028/211** · `eslint` · smoke **24/155s** · DR · reversibility **4s**.
+>
+> ✅ **Browser 451/458 — 4 failed, 3 skipped, DOWN from five. Zero regressions.**
+>
+> ⚡ **The one-line fix: the overflow guard asked *"does this OWN a scroller?"* when the question is *"is this CONTAINED by one?"*** — **65 false offenders on a page that did not scroll, truncated to five, hiding the four real ones.**
+>
+> ⚡ **THE PROOF IS IN THE GATE'S OWN RESULT: `layout-invariants:33` now fails at 390px only, not 640px.** **This tree has the guard fix and NOT Lane A's label fix, so the page genuinely still scrolls at 390px** — **the corrected guard reports the real defect and no longer reports the false ones. That is better evidence than the fire-test.**
+>
+> ⚠️ **NEXT CYCLE'S INPUT: `18aa6da8` on `lane-a-product-surface-r4`** — verified fast-forwardable from `c2aa8889`, 10 ahead. **Carries B-1019's label fix, B-1065's two corrections, B-1035's dedupe AND the ceiling lowered 12 → 6.** ⚡ **Once it lands, `layout-invariants` should go fully green — and if it does not, the guard is reporting something real.**
+>
+> ⚠️ **ALSO PENDING: `~/qe-cert-records/263/hole-comment.patch`** — the comment naming the `absolute` hole with Lane A's measured counts. **Written, tsc-clean, and deliberately NOT in the certified tree** (QE caught itself editing a file on the certification branch). **Apply it on `lane-qe` next session.**
+
+> ---
+>
 > ## Cycle 262 — promoted `119c5f8a`, 2026-08-22 · **the ink ramp's fourth step, and an inference that measurement killed**
 >
 > **`main` = `119c5f8a` = the certified commit**, verified from the remote. `pytest` **5452** · coverage **95.03%** · **679 Security Invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · frontend-suite **4028/211** · `eslint` · smoke **24 stages/154s** · scenario **208 assertions** · DR passed · reversibility **head→base→head in 4s on a clean database**.

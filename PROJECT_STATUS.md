@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `119c5f8a`, 2026-08-22.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `c2aa8889`, 2026-08-22.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,7 +12,7 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `119c5f8a`, 2026-08-22.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `c2aa8889`, 2026-08-22.** Every figure is read from the repository, never carried forward.
 
 > ⚡ **Cycle 260 promotes the Settings rebuild and the tenth invented heading — certified `47244e79e2ae` on the FIRST attempt.** ✅ **pytest 5452 · coverage 95.03% · 679 Security Invariants · mypy 956 · import-linter 37/37 · tsc · frontend-suite 4023/209 · eslint · smoke 24 stages/577s · DR passed · reversibility head→base→head in 6s.**
 >
@@ -21,6 +21,16 @@
 > ⚡ **A newer SHA arrived mid-run and was NOT taken.** 📁 **[ADR-0032](docs/architecture/adr/0032-release-certification.md): certification binds to an immutable commit, so `integration` moving during a run never invalidates it.** **`8d0ab949` opens the next cycle automatically** — the alternative would let a lane pushing during a run extend that run indefinitely.
 >
 > 🔴 **[C-1547](docs/LANE_COORDINATION.md) is the finding worth reading, and Lane A raised it rather than "fixing" it.** ⛔ **The Settings screen document draws section cards at 16px; `Card` renders 12px — and Design System v2 §05 assigns **12px to Card** and 16px to the table plane, with §09 saying *"12px radius"* in words.** ⚡ **THREE consistent signals against one screen: the shared primitive is right and the SCREEN document is the outlier.** 📁 **The same question as D13-A** — whether a screen document's raw value overrides a system role — **and the two should be ruled together.**
+
+> ⚡ **Cycle 263 promotes a correction to QE's OWN instrument, and the browser gate proved it by REPORTING A DEFECT IT USED TO HIDE.** ✅ **Certified `c2aa8889bc4a` on the first attempt — pytest 5452 · coverage 95.03% · 679 Security Invariants · mypy 956 · import-linter 37/37 · tsc · frontend-suite 4028/211 · eslint · smoke 24 stages/155s · scenario 208 assertions · DR passed · reversibility head→base→head in 4s. Browser 451 of 458 — 4 failed, 3 skipped, DOWN from five. Zero regressions.**
+>
+> 🔴 **The horizontal-overflow guard asked *"does this element OWN a scroller?"* when the question is *"is this CONTAINED by one?"*** ⛔ **It reported 65 offenders on a page whose `scrollWidth` equalled its `clientWidth`, truncating to five — so the four controls that genuinely pushed the page sideways were invisible behind them, and [B-1019](docs/BUGS.md) carried the wrong cause for four days.**
+>
+> ✅ **Fire-tested BEFORE it was applied**: a 1200px block injected outside every scroller moved the old guard **65 → 66** and the corrected one **0 → 1**. ⚡ **A real defect was 1.5% of the old signal and is all of the new one.**
+>
+> ⚡ **THE GATE IS THE EVIDENCE, AND IT IS BETTER THAN THE FIRE-TEST.** 📁 **`layout-invariants:33` now fails at 390px ONLY and no longer at 640px.** ⛔ **This tree carries the guard fix and NOT Lane A's label fix, so the page really does still scroll at 390px** — **the corrected guard reports the real defect and has stopped reporting the sixty-five false ones.**
+>
+> ⚠️ **QE WROTE THIS CHANGE, AND QE DOES NOT VERIFY ITS OWN WORK.** ✅ **Reviewed by Lane A on request, who answered three named attacks with measurements: 50 absolute elements inside a scroller across two pages, EVERY one with a positioned ancestor before the scroller — escaping 0; shadow roots under `main` 0, so the walk is complete.** 🔴 **The rule is unsound in principle for `absolute` and nothing hits it** — **recorded as a comment rather than code, because a containing-block check for zero live cases is the speculation [§6](CLAUDE.md) forbids.**
 
 > ⚡ **Cycle 262 promotes the design's fourth ink step and a focus ring the corpus draws 21 times — and its most useful result is a QE inference that MEASUREMENT KILLED.** ✅ **Certified `119c5f8a8cd6` on the FIRST attempt — pytest 5452 · coverage 95.03% · 679 Security Invariants · mypy 956 · import-linter 37/37 · tsc · frontend-suite 4028/211 · eslint · smoke 24 stages/154s · scenario 208 assertions · DR passed · reversibility head→base→head in 4s on a clean database. Browser 450 of 458 — 5 failed, 3 skipped, on a rebuilt and reseeded stack. Zero regressions.**
 >
