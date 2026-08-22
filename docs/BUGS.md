@@ -401,6 +401,25 @@ needed** — **a forward-only fix repairs nothing already on disk.**
 | **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** |
 | **Severity** | 🟠 — **wrong behaviour a customer would hit.** A seller sees companies that are not companies, and cannot tell why they have no name |
 | **Status** | **`OPEN`** — ⛔ **reported, not fixed.** The read belongs to a module Lane A is not assigned, and finding a defect is not permission to fix it |
+
+> 🔴 **RE-MEASURED 2026-08-22 AND ESCALATED — the seed's growth turned a curiosity into most of the screen.**
+>
+> **Reported by Lane A on a large Playground and VERIFIED BY QE independently on prod-local's freshly reseeded one. Different scales, same defect:**
+>
+> | | Lane A's stack | QE's prod-local |
+> |---|---|---|
+> | `entity` kind `company` | **25,886** | **12** |
+> | `entity` kind `technology` | **23,219** | **3** |
+> | technologies as a share of `/accounts` | 🔴 **~47%** | 🔴 **20%** |
+>
+> ⛔ **CONFIRMED IN SOURCE, NOT INFERRED.** `queries.py:680` calls `entity_page(...)`, and `repository.py:308` selects `EntityModel` filtered on **`workspace_id` alone — there is no `kind` predicate.** ⚡ **And the value is in hand: `queries.py:694` constructs `ListedAccount` with `kind=entity.kind` fourteen lines later.**
+>
+> 🔴 **WHAT THE ORIGINAL ROW MISSED, and it is the half that reaches a customer as a number rather than a row.** **`count_accounts` (`queries.py:646`) returns `count_entities(workspace_id)`, which also has no `kind`.** ⛔ **So the total is wrong by the same amount** — and the method's own docstring says what that total is for: *"the first is the size of their book."* ⚡ **A customer is told how many companies they have and given a figure that counts technologies.**
+>
+> ⚠️ **Not Lane A's module, and Lane A did not fix it** — *"finding a defect is not permission to fix it"* (§20e). **Routed by QE to Knowledge Graph's current assignee.** 📁 **The fix is likely the `kind` filter `queries.py:795` already argues for in prose on the search endpoint.**
+>
+> ⛔ **AND IT CONSTRAINS QE'S OWN SEED WORK — Lane A flagged it and they are right.** **Nothing scores a technology, so `/accounts` renders scored companies AND unscored technologies from one page read.** ⚡ **When QE seeds the unnamed scored account for [B-1045](#b-1045), the OTHER unnamed rows in that grid are technologies that should not be there — so a test asserting *"the unnamed row shows the identifier"* could pass on a technology.** ✅ **The new fixture must be pinned BY ID, never by *"the row with no name"*.**
+
 | **Found** | **2026-08-21 by Lane A**, incidentally, while verifying that a seeded segment reached the Companies column |
 
 **Steps** — on a Playground workspace, open `/accounts`.
@@ -1510,7 +1529,7 @@ sleep 20; head -4 "$S/browser-257.log"     # ← the launch is not the evidence
 | **Module** | [`docs/RUNNING.md`](RUNNING.md) — **QE's** · `Makefile:236` — **`platform_foundation`, Lane A** |
 | **Current assignee** | **Split, one site each. Both fixed** |
 | **Severity** | 🟠 — **a lane following the documented path squats human review's port** |
-| **Status** | 🔴 **`OPEN` — reopened 2026-08-21 by QE.** ✅ [`RUNNING.md`](RUNNING.md):217 **fixed** 2026-08-20, verified from source. ⛔ **`Makefile`:236 is NOT fixed** — see the reopening note below. ⛔ **NOT `VERIFIED`**: QE wrote one half |
+| **Status** | ✅ **`VERIFIED`** — ⚡ **the reopened half is now closed too.** **QE re-read `Makefile:236` on `origin/main`: `@echo "  frontend  cd frontend && npm run dev -- --port $(SIGNORA_WEB)"`** — **the derived port is printed.** 📁 `RUNNING.md`:217 was fixed 2026-08-20; **both halves now hold** |
 | **Found** | **2026-08-20 by Lane A**, who caught it and moved to `-p 3300` |
 
 **`npm run dev` invoked with no port takes Next's default, `3000`, which [`RUNNING.md`](RUNNING.md#running-a-lane) allocates to `review`/slot 0.**
@@ -17552,7 +17571,7 @@ cd frontend && npx tsc --noEmit
 |---|---|
 | **Module** | `product_surface` — **Lane A** · [`frontend/app/globals.css`](../frontend/app/globals.css):264–313 |
 | **Severity** | 🟠 **P2** — ⚠️ **was P1; lowered 2026-08-21 when this row's own visual evidence was re-measured and found overstated.** **The token divergence is unambiguous; the verified rendered consequence is the loading skeleton ([B-1057](#b-1057)), not every sunken element** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`VERIFIED`** — the dark ramp separates — **QE measured on `origin/main`: `--color-canvas` `13 20 24` against `--color-surface-sunken` `27 39 47`** |
 | **Found** | 2026-08-21 by QE, full UI conformance audit, on `6442122e` |
 | **Route** | **Every authenticated route.** Measured on `/w/{ws}/home` and `/accounts` |
 | **Surface** | The token layer → every `bg-surface-sunken` consumer (**112 occurrences** across `frontend/components` and `frontend/app`) |
@@ -17638,7 +17657,7 @@ DARK   skeleton rgb(13,20,24)     page rgb(13,20,24)      n=3   IDENTICAL
 |---|---|
 | **Module** | `product_surface` — **Lane A** · [`frontend/app/globals.css`](../frontend/app/globals.css) |
 | **Severity** | 🟡 **P2** — wrong but survivable; the surfaces render, without the design's delineation |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`VERIFIED`** — **all five roles declared, light and dark** — QE counted independently: `--color-accent-ink` · `-accent-line` · `-ai-ink` · `-ai-line` · `-success-line`, **2 declarations each** |
 | **Found** | 2026-08-21 by QE, full UI conformance audit, on `6442122e` |
 | **Route** | Product-wide |
 | **Surface** | The token layer |
@@ -17692,7 +17711,22 @@ DARK   skeleton rgb(13,20,24)     page rgb(13,20,24)      n=3   IDENTICAL
 |---|---|
 | **Module** | `product_surface` — **Lane A** · [`frontend/components/ui/badge.tsx`](../frontend/components/ui/badge.tsx) |
 | **Severity** | 🟡 **P2** — 🟠 for the `neutral` tone in dark theme, where the badge has neither fill nor border |
-| **Status** | **`OPEN`** |
+| **Status** | 🔴 **`OPEN` — CLAUSE ② ONLY.** ⛔ **Clause ① was CORRECTED, not fixed: `badge.tsx` records **166 badges with no border against 14 with one**, so the design's badge is borderless and this row's original ask was wrong. The product did not change.** ⚡ **Clause ② is LIVE and is the half that reaches a customer** |
+
+> 🔴 **CLAUSE ② MEASURED AND CONFIRMED LIVE, 2026-08-22.** **Lane A measured it and QE recomputed the ratios INDEPENDENTLY from the tokens on the tree — identical to two decimal places:**
+>
+> | | |
+> |---|---|
+> | `neutral` badge (`--color-surface-sunken` `27 39 47`) on a card (`--color-surface` `21 32 39`) | 🔴 **1.09:1** |
+> | the same badge on the page canvas (`--color-canvas` `13 20 24`) | 🔴 **1.22:1** |
+> | **WCAG 1.4.11 needs** | **3:1 for a component boundary** |
+>
+> ⚡ **It has a fill; it does not have a VISIBLE one.** 📁 **QE's own severity cell said so when the row was filed** — *"🟠 for the `neutral` tone in dark theme, where the badge has neither fill nor border"* — **and that half was never addressed.**
+>
+> ⛔ **DELIBERATELY NOT FIXED, and neither route is a lane's to take.** **Giving `neutral` a border contradicts a design measured as borderless 166 times; changing the fill is a token decision.** ⚡ **It is the same shape as [C-1548](LANE_COORDINATION.md) and [B-1058](#b-1058): a value that reads as intentional and does not clear the floor.** ✅ **Attached to C-1548 rather than opened as a fourth item, on Lane A's suggestion.**
+>
+> ⚠️ **This is why the two clauses were not closed together.** **One was a wrong ask and the other is a live defect, and conflating them would have cleared a defect a customer meets by resolving a complaint that was never right.**
+
 | **Found** | 2026-08-21 by QE, full UI conformance audit, on `6442122e` |
 | **Route** | Product-wide |
 | **Surface** | `components/ui/badge.tsx` → every badge, chip and status pill |
@@ -17745,7 +17779,7 @@ ai:      'bg-ai-subtle text-ai'
 |---|---|
 | **Module** | `product_surface` — **Lane A** · [`frontend/app/(app)/accounts/[accountId]/page.tsx`](../frontend/app/(app)/accounts/[accountId]/page.tsx) |
 | **Severity** | 🟠 **P1** — a stale or mistyped link renders a plausible record instead of saying it is not there |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`VERIFIED`** — **`accessibility.spec.ts:656` — *"an account the workspace does not have renders a not-found state"*, passing in a browser.** ⚡ **Instrument chosen deliberately: a 404 path is BEHAVIOUR, and a variable name in source proves only that a variable exists** |
 | **Found** | 2026-08-21 by QE, full UI conformance audit, on `6442122e` |
 | **Route** | `/accounts/:accountId` |
 | **Surface** | Account 360 → page header, and every section's empty state |
@@ -17791,7 +17825,7 @@ ai:      'bg-ai-subtle text-ai'
 |---|---|
 | **Module** | `product_surface` — **Lane A** · [`frontend/app/(app)/accounts/[accountId]/page.tsx`](../frontend/app/(app)/accounts/[accountId]/page.tsx) — the *What changed* section |
 | **Severity** | 🟡 **P2** — the body tells the truth, so the customer can reach it; the **count states a false quantity in the line people scan** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`VERIFIED`** — the rail renders **no count** where a section is absent rather than a zero, and `sections.tsx` cites this row as the reason |
 | **Found** | 2026-08-21 by QE, UI conformance audit second pass, on `9448cfc3`, by **inducing the failure** rather than waiting for one |
 | **Route** | `/accounts/:accountId` |
 | **Surface** | Account 360 → *What changed* → the count beside the heading |
@@ -17840,7 +17874,7 @@ Nothing has changed about the account — reload to try again.
 |---|---|
 | **Module** | `product_surface` — **Lane A** · [`frontend/components/ui/tabs.tsx`](../frontend/components/ui/tabs.tsx) · [`frontend/components/shell/utility-panel.tsx`](../frontend/components/shell/utility-panel.tsx) |
 | **Severity** | 🟠 **P1 for assistive technology** — a control announces itself as a tab and names nothing it controls |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`VERIFIED`** — **`accessibility.spec.ts:747` — *"all three tablists carry the full contract, including the two that must be opened"*, passing.** `tabs.tsx`: `aria-controls` ×3, `aria-labelledby` ×2, `role="tabpanel"` ×2 |
 | **Found** | 2026-08-21 by QE, UI conformance audit, on `b9d09a4e`, **measured from the rendered accessibility tree** |
 | **Route** | `/signals` measured; **the shared component has three importers, so this is product-wide** |
 | **Surface** | `components/ui/tabs.tsx` → Signal Center queue tabs · Companies view switcher · notifications · the utility panel's Insights/Activity/Notes rail |
@@ -17894,7 +17928,7 @@ Nothing has changed about the account — reload to try again.
 |---|---|
 | **Module** | `product_surface` — **Lane A** · [`frontend/app/(app)/signals/page.tsx`](../frontend/app/(app)/signals/) · [`frontend/app/(app)/profile/security/page.tsx`](../frontend/app/(app)/profile/security/) |
 | **Severity** | 🟡 **P2** — the wrong type role on two shipped screens, and **invisible to the row that owns the migration** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`VERIFIED`** — both named screens carry the Title role — **`/signals` delegates to `SignalQueue`'s `PageHeader`, and `profile/security` carries `text-title` (`--text-title` = 26px, §04's Title)** |
 | **Found** | 2026-08-21 by QE, UI conformance audit, on `b9d09a4e`, **by rendering all 15 shell routes and reading the computed style of each `h1`** |
 | **Route** | `/signals` · `/profile/security` |
 | **Surface** | Page heading |
@@ -17933,7 +17967,7 @@ Nothing has changed about the account — reload to try again.
 |---|---|
 | **Module** | `product_surface` — **Lane A** · [`frontend/components/ui/skeleton.tsx`](../frontend/components/ui/skeleton.tsx) and its callers |
 | **Severity** | 🟡 **P2** — 🟠 **in dark theme, where [B-1050](#b-1050) also removes the visual half and the state becomes undetectable by any means** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`VERIFIED`** — **`skeleton.tsx` — QE counted: `aria-live` ×3, `aria-busy` ×4**, plus `useAnnouncedAfterMount` ×3 and `LoadingRegion` ×4 |
 | **Found** | 2026-08-21 by QE, UI conformance audit, on `3dda7292`, **by holding a read open for 12s and sampling mid-flight** |
 | **Route** | `/signals` measured · `/w/{ws}/home` shows the same shape |
 | **Surface** | Every route that renders `Skeleton` while a read is in flight |
@@ -17983,7 +18017,7 @@ DARK   skeleton rgb(13,20,24)     page rgb(13,20,24)      identical — nobody p
 |---|---|
 | **Module** | `product_surface` — **Lane A** · [`frontend/app/globals.css`](../frontend/app/globals.css):363 · `components/ui/**` |
 | **Severity** | 🟡 **P2** — every control is focusable and visibly focused; **what differs is which indicator appears**, which is a conformance and consistency defect rather than a blocker |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`VERIFIED`** — **`globals.css` declares exactly TWO `:focus-visible` rules** — the global one and `.focus-proxy` — **counted by QE**, and `accessibility.spec` is 31/31 including the tab-stop sweep |
 | **Found** | 2026-08-21 by QE, UI conformance audit, on `39fa8a93`, **by pressing Tab 28 times per route and reading the computed style of `document.activeElement`** |
 | **Route** | `/accounts` · `/signals` · `/settings/team` — **the same four treatments on each** |
 | **Surface** | Focus indication, product-wide |
@@ -18050,7 +18084,7 @@ DARK   skeleton rgb(13,20,24)     page rgb(13,20,24)      identical — nobody p
 |---|---|
 | **Module** | `product_surface` — **Lane A** · [`frontend/components/shell/account-menu.tsx`](../frontend/components/shell/account-menu.tsx):164 |
 | **Severity** | 🟢 **P3** — cosmetic, **one line**, and it is the only instance of its class left in the product |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`VERIFIED`** — `account-menu.tsx` reads `rounded-lg` (§05's 12px) and `shadow-lg` (§06's `--e3`) — **QE re-read it on `origin/main`; fixed in `7274324b`, which is an ancestor of `main`** |
 | **Found** | 2026-08-21 by QE, UI conformance audit, on `4f748232`, **by opening every overlay and measuring the rendered radius** |
 | **Route** | Any — the account menu lives in the shell |
 | **Surface** | Top bar → avatar → account menu, the container |
@@ -18284,6 +18318,197 @@ QE       1 failure  — competitors.tsx only
 - ✅ **Fire-test it**: remove the subtitle from the page and confirm the test fails on a machine WITHOUT the corpus.
 
 > ⚡ **How it was found is the part worth keeping.** **Lane A reported two failures and I reported one.** ⛔ **Neither of us was wrong.** **I asked why the counts differed instead of assuming mine was complete** — and the answer was that my run could not see the second one. 📁 **A disagreement about a count, taken seriously, is what exposed a gate that cannot fail.**
+
+---
+
+### B-1069 · 🟠 A docstring cites `B-3180` as precedent, and no such row has ever existed
+
+| | |
+|---|---|
+| **Module** | ⚠️ **[`docs/architecture/37-product-surface.md`](architecture/37-product-surface.md):1428** — ⛔ **NOT QE's document** (§20e assigns `38` and `39` to QE, not `37`) |
+| **Current assignee** | **Unassigned — reported, not routed.** The document's owner corrects it |
+| **Severity** | 🟠 — ⛔ **a false citation in a passage arguing that registers must not say untrue things** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-22 by Lane A**, auditing their own citations; **the source copy was theirs and is fixed at `0410bd95`.** ⚡ **They reported this second site rather than editing a document that is not theirs** |
+
+**The claim.** *"This lane has already shipped that exact shape once, in **B-3180**: a defect fixed in code and left reading `OPEN`."*
+
+**Measured, three ways:**
+
+| | |
+|---|---|
+| `grep -c '^### B-3180' docs/BUGS.md` | **0** |
+| `git log -S"B-3180" -- docs/BUGS.md` | **0 commits — no commit ever added that heading** |
+| highest identifier ever filed | **`B-1068`** |
+
+⛔ **It is not a stale reference to a deleted row. It is a reference to a row that never existed.**
+
+⚡ **And the passage it appears in is an argument that a register must not carry untrue claims.** 📁 **§2 landing on the sentence that quotes §2.**
+
+✅ **Lane A removed it rather than renumbering it, and the reasoning is the right one:** *"the argument does not need it — the failure mode is derived from what the registry IS, not from a past occurrence. A precedent that has to be invented was never carrying the argument, and picking a different number would be inventing it twice."* **Same treatment recommended here.**
+
+⚡ **HOW IT WAS FOUND IS THE TRANSFERABLE PART: by COUNTING, not by reading.** **198 row identifiers cited across 654 frontend source files; 196 resolve to a heading; 2 do not.** ⛔ **Every one of the 198 looks correct in place — a citation IS the evidence, so nobody checks it.** **This is the same instrument-population lesson as [B-1052](#b-1052) and [B-1066](#b-1066), applied to prose.**
+
+---
+
+### B-1068 · 🔴 Thirteen specs enter the product through `.first()`, and the list they enter through reorders itself on every seed
+
+| | |
+|---|---|
+| **Module** | ⚠️ **UNASSIGNED — the cause is not established.** ⛔ **Deliberately not routed to a lane on a guess** |
+| **Current assignee** | **QE**, until the cause names a module |
+| **Severity** | 🔴 — ⛔ **QE's validation instrument is not reproducible, so NOTHING it reports can be attributed to the tree.** ⚡ **It has already produced one held cycle, one wrongly-filed 🔴 and two discarded mechanisms** |
+| **Status** | **`OPEN` — CAUSE NOT ESTABLISHED** |
+| **Found** | **2026-08-22 by QE**, cycle 264's browser gate |
+| **Commit found** | `032f3bab7ec5` |
+
+
+> 🔴 **REWRITTEN 2026-08-22 — THE ROW WAS ABOUT THE WRONG THING, AND THE SECOND RUN SAID SO.**
+>
+> **Two full 458-test runs on ONE tree (`032f3bab`), each after `make down && make up` and a fresh seed:**
+>
+> | | failures |
+> |---|---|
+> | **run 1** | **2** — `notification-arrival:48` · `auth-credential-journeys:155` |
+> | **run 2** | **5** — `notification-arrival:48` · `accessibility:436` · `accessibility:510` · `confidence:26` · `golden-journey:53` |
+> | **common** | ⛔ **`notification-arrival:48` ONLY** — which is [C-111](LANE_COORDINATION.md), known, and awaiting a ruling |
+>
+> ⚡ **The failing SET varies, not one flaky test.** 📁 **That is [B-1018](#b-1018)'s exact signature** — *the failure count and the failing screens both vary.*
+>
+> ⛔ **AND THE MEASUREMENT WAS TAKEN UNDER CONDITIONS QE DID NOT CHECK FIRST.** **Measured after the fact: 3 GB available of 15, load average 8.21 across 12 CPUs, TWELVE containers running — prod-local, the lane stack, and another lane's stack.** ⚡ **Every one of run 2's new failures is `expect(locator).toBeVisible()` → `element(s) not found` at a 15–20s timeout, which is what a starved renderer produces.**
+>
+> ⚠️ **This is not a claim that memory pressure caused them — it is a statement that QE cannot exclude it, which is worse.** ⛔ **A gate that gives two answers on one tree is not measuring the tree**, and both runs are therefore uninterpretable as evidence about `032f3bab`.
+>
+> ⛔ **What this retracts:** the earlier framing of *"1 of 4 full runs"* for `auth-credential-journeys:155`. **That treated a varying set as a single intermittent test, and it was QE's third wrong reading on this thread.**
+>
+> ✅ **What survives:** **`auth-credential-journeys:155` did fail once at 18.1s where it had passed at 3.7s and 2.4s.** ⛔ **What that means is now unknown rather than intermittent**, and the honest next step is a run under controlled resources — not another interpretation of these two.
+
+
+> ⛔ **BLOCKED ON A DECISION ONLY THE USER CAN MAKE — 2026-08-22.**
+>
+> **Measured, rather than requested on a guess:** 📁 **the single dominant consumer is `next-server` (pid 17669) at **6.56 GB** on a 15 GB machine** — **Lane A's dev server on 3300.** ⛔ **The three Lane A CONTAINERS QE first asked about are idle Postgres/Redis/MinIO and are NOT what starves the renderer**; stopping them would have bought a clean-LOOKING measurement and almost none of the memory, which is the worst outcome available. **Lane A measured that and said so rather than complying.**
+>
+> ⛔ **Lane A's session classifier BLOCKED the stop and they did not work around it, and did not ask QE to run it for them.** ✅ **QE will not run it either — a peer executing what another's permissions refused is exactly the escalation neither lane performs.** **It is surfaced to the user and waits on their answer.**
+>
+> ✅ **What QE freed within its own authority: the idle `signora-lane-qe-*` stack — 181 MB.** ⛔ **Against 6.56 GB that changes nothing, and QE is NOT running a gate it would have to caveat.**
+>
+> ⚡ **The correct next measurement is one full 458 run with the machine to itself. Until then this row is open on a blocked dependency, not on an unfinished investigation.**
+
+
+> ⚡ **CAUSE ESTABLISHED 2026-08-22, THEN IMMEDIATELY NARROWED BY LANE A — AND THE NARROWING IS THE POINT.**
+>
+> **Thirteen call sites across twelve specs reach the product with `.first()` on `a[href^="/accounts/"]`** — `accessibility` ×3 · `daily-usage` ×3 · `visual` · `consistency` · `workflow` ×2 · `account-360` · `utility-panel` · **`shell-values`:219**.
+>
+> **① The list's order is random per seed.** 📁 **QE measured: 15 entities, ONE distinct `created_at`.** ⛔ **So `ORDER BY created_at, id` degenerates to `ORDER BY id`, and `id` is a random UUID minted per seed run.** ⚡ **Lane A measured the same defect at scale — 49,105 entities, 11,650 distinct timestamps — so this is NOT a small-seed artifact: a bulk insert produces ties at any size.**
+>
+> **② The list contains rows that cannot satisfy the assertion.** 📁 [B-296](#b-296) — no `kind` predicate, so a **technology** can be first, and a technology has no *"Account score"*.
+>
+> 🔴 **QE THEN ASSUMED ② WAS THE FIX AND LANE A DISPROVED IT — this is the day's own pattern, on QE's side.** ⛔ **A `kind` filter alone leaves the thirteen exactly as non-deterministic.** **Measured on QE's stack WITH the filter applied: the first row is `178e0526`, a company, `scored=false`. Five of twelve companies are unscored. Lane A's stack: 5,417 of 25,886, 20.9%.**
+>
+> ⚡ **The invariant those specs actually depend on is *"the first row is a SCORED company"*, and neither the filter nor the ordering supplies it.**
+>
+> ⛔ **DO NOT LET B-296'S FIX CLOSE THIS ROW.** **B-296 is *the list shows the wrong things*. This is *thirteen specs enter through a door that moves*.** ⚠️ **Fixing B-296 would make the failure rarer without making it rarer in any measurable way — the flake goes quiet and returns on a reseed, which is the worst available outcome.**
+>
+> **The evidence, three full runs on one tree `032f3bab`:**
+>
+> | run | `accessibility:436` | machine |
+> |---|---|---|
+> | 1 | ✅ 2.1s — first row happened to be a scored company | load 7–8 |
+> | 2 | 🔴 **22.1s** | load 7–8 |
+> | 3 | 🔴 **22.1s** | ⚡ **load 0.48, quiet** |
+>
+> ⚡ **Runs 2 and 3 agree to a tenth of a second across a loaded machine and an idle one. Load was never the cause, and neither was memory.**
+>
+> ⛔ **WHAT THIS RETRACTS.** **QE spent an hour reporting a peer's 6.56 GB dev server as the blocker and asked that lane to stop it.** **It was never established as a cause — it was the first plausible one named, and QE made it stick by acting on it.** 📁 **Lane A named that error about themselves before the evidence arrived; QE repeated it after.**
+>
+> ✅ **THE FIX IS QE'S — `tests/` is QE's under §20e.** **A spec that needs a scored account must ASK for one rather than take whatever is first.** ⚡ **Which is the same answer QE had already reached for the `playground@5` fixture from Lane A's technology warning — *pin by id, never by position or by a readable property*. It turns out to be the general answer for all thirteen.**
+
+**Steps.** The full 458-test browser gate against prod-local. ⛔ **It does not reproduce in isolation** — 8/8 on a cold rebuild — which is [B-281](#b-281)'s documented signature: *"a defect that only appears after other specs have run is one a targeted re-run will always report as fixed."*
+
+**Measured across four full runs on three trees:**
+
+| | |
+|---|---|
+| cycle 262 | ✅ PASSED 3.7s |
+| cycle 263 | ✅ PASSED 2.4s |
+| **cycle 264** | 🔴 **FAILED 18.1s** — the 15s timeout |
+| cycle 264 re-run, cold rebuild | ✅ PASSED 2.5s |
+
+```
+Error: expect(page).not.toHaveURL(/\/signin$/) failed
+Received: "http://localhost:3100/signin"
+```
+
+⛔ **TWO MECHANISMS WERE PROPOSED AND BOTH ARE EXCLUDED.** ⚡ **QE's first — the mint dedupe's key omitting the session — has no window: sign-in does not mint.** ⚡ **Lane A's second — [B-1067](#b-1067)'s shared rejection — is real and reproducible and produces the WRONG URL: a failed entry read stalls on `/`, so the assertion would pass.**
+
+⚠️ **WHERE TO LOOK, offered as a direction and NOT as a third confident mechanism.** 📁 [`app/(app)/layout.tsx`](../frontend/app/(app)/layout.tsx):34 performs a **server-side** `getSession` off the request headers and `redirect('/signin')` when it is absent. **A cookie-propagation race there would be load-sensitive — which fits appearing in a full run and not in isolation.** ⛔ **Nobody has instrumented it, and this row will not claim otherwise.**
+
+⚡ **THE ROW EXISTS BECAUSE THE FAILURE IS REAL AND THE CAUSE IS NOT.** ⛔ **Filing it as a flake would have been the third wrong answer** — QE nearly did, having said a green re-run would mean *"flake, and a flake still gets a row"*, which treats the absence of a reproduction as evidence about the code.
+
+---
+
+### B-1067 · 🟠 The mint dedupe shares a REJECTION, removing retries that would have succeeded
+
+| | |
+|---|---|
+| **Module** | **Product Surface** — [`frontend/lib/api/client.ts`](../frontend/lib/api/client.ts):62–84, 126, 144 |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** |
+| **Severity** | 🟠 — ⛔ **every authenticated read on a page fails together where some would have succeeded.** ⚠️ **DOWNGRADED from 🔴 2026-08-22: the customer symptom QE attributed to it is NOT this defect — see the correction below** |
+| **Status** | **`OPEN`** — ⚡ **mechanism PROVEN; the browser reproduction is intermittent by construction** |
+| **Found** | **2026-08-22 by QE** in cycle 264's browser gate; ⚡ **mechanism isolated and reproduced deterministically by Lane A** |
+| **Commit found** | `032f3bab7ec5` — ⚠️ **the first certified commit carrying `2e8dbbec`** |
+
+
+> 🔴 **CORRECTED 2026-08-22, AND THE CORRECTION IS THE IMPORTANT PART OF THIS ROW.**
+>
+> ⛔ **QE filed this as the cause of `auth-credential-journeys.spec.ts:155`. IT IS NOT.** ⚡ **Lane A argued the case against their own change, then followed one more hop and excluded it — and QE verified the exclusion independently, looking for the counter-evidence rather than for agreement.**
+>
+> **Three independent exclusions, all checked:**
+>
+> **①** **Sign-in never mints.** `lib/auth/client.ts` holds **zero** `/api/token` against a control of 1 in `lib/api/client.ts` — `signInWithPassword` is Better Auth, so the mint path is not on this journey's critical path.
+> **②** **The redirect is server-side.** [`app/(app)/layout.tsx`](../frontend/app/(app)/layout.tsx):34 — `getSession` reads the cookie off the request headers and `redirect('/signin')`. **`inFlightMints` is browser-only and guarded by `typeof window`.**
+> **③** 🔴 **THE FAILURE MODE IS THE WRONG SHAPE, and this is the decisive one.** **`lib/entry/use-entry.ts` contains NO routing calls** — its own docstring: *"no module performs its own entry redirect."* **A failed read yields `status: 'unresolved'` and the customer STALLS on `/` with a stated absence.** ⚡ **QE checked the one consumer that does route — `onboarding/exit.ts:76` — and `EXIT_WHEN_UNRESOLVED` is `'/'`, not `/signin`.** ⛔ **So under this mechanism `expect(page).not.toHaveURL(/\/signin$/)` PASSES.**
+>
+> ⚠️ **THE CORRELATION IS A COINCIDENCE.** `2e8dbbec` entering between cycles 263 and 264 is the same error as QE's commit-message grep with the sign flipped: **a correlation across a boundary, a mechanism that sounded right, and no traced path from one to the other.** 📁 **Lane A named it that way themselves, having given it more weight than it earned *because it pointed at their own change*.**
+>
+> ✅ **WHAT SURVIVES: the reproduction and the defect.** **The dedupe really does share rejections and really does remove retries that would have succeeded** — that is observed, controlled and reproducible, and it is worth fixing on its own merits. ⛔ **What does not survive is the customer symptom this row was filed under.**
+>
+> 📁 **The unexplained browser failure is [B-1068](#b-1068).**
+
+**What a customer meets.** On a page whose reads fire together, a mint failing in the window before the session cookie is readable takes **every** read down, where previously the later ones recovered on their own.
+
+**The mechanism, and it is three lines apart in one file:**
+
+```
+client.ts:126   const token = await fetchAccessToken(workspaceId);   ← THROWS HERE
+client.ts:127   const response = await fetch(...)
+client.ts:144   if (response.status === 401 && !options._retried)    ← never reached
+```
+
+⛔ **The single retry sits AFTER the fetch and catches only a `401` RESPONSE.** ⚡ **A mint that throws — which is what `POST /api/token` does in the milliseconds after sign-in, before the session cookie is readable — never reaches it.**
+
+**And `fetchAccessToken` shares the in-flight promise (`:76`), so every concurrent caller inherits that one rejection.**
+
+⚡ **REPRODUCED DETERMINISTICALLY, WITH A CONTROL THAT ISOLATES THE SHARING AS THE ONLY VARIABLE.** **Six reads fired within 8ms; the mint takes 60ms; the cookie becomes readable at 30ms. Identical timings in both runs:**
+
+| | mints | outcome |
+|---|---|---|
+| **shared** *(shipped behaviour)* | **1** | 🔴 `0ms:rejected 2:rejected 4:rejected 6:rejected 40:rejected 45:rejected` |
+| **control** *(distinct keys, so no match)* | **6** | ✅ `0:rejected 2:rejected 4:rejected 6:rejected` **`40:fulfilled 45:fulfilled`** |
+
+⚡ **The callers at 40ms and 45ms fire AFTER the cookie is readable and succeed on their own. Sharing, they inherit a rejection formed at 0ms — before there was anything to authenticate with.** ⛔ **One mint, six failures. Six mints, four failures and two successes.**
+
+📁 **The control gives each caller a distinct `workspaceId` so `inFlightMints.get(key)` cannot match** — same `apiRequest`, same `fetchAccessToken`, same rejection path. ✅ **No forked copy of the logic, because a copy would only have proved the copy.**
+
+⚠️ **THE BROWSER REPRODUCTION IS INTERMITTENT AND THAT IS EXPECTED, NOT EXONERATING.** 📁 **Cycle 264's full run failed at 18.1s where cycles 262 and 263 passed at 3.7s and 2.4s. A cold-rebuild re-run PASSED at 2.5s** — **because the mechanism needs the first mint to land in the pre-cookie window, and a cold fast machine puts that window early.** ⛔ **A green run removes a reproduction; it does not remove a mechanism that has been observed directly.**
+
+⛔ **QE HAD TO CORRECT ITS OWN READING TO GET HERE.** **QE first said a green re-run would mean *"flake, and a flake still gets a row"*.** ⚡ **That treated the absence of a reproduction as evidence about the code — the same error as QE's first mechanism, which blamed the dedupe's key.** 📁 **`lib/auth/client.ts` contains ZERO mints against a control of 1, so sign-in never mints and that mechanism had no window at all.**
+
+**The fix — and the key is not the problem.** ✅ **Sharing a SUCCESS is safe and is the whole point of [B-1035](#b-1035).** ⛔ **Sharing a REJECTION is what removes the retries, and the dedupe never needed to do it: a caller that joins a failing mint should mint its own rather than inherit a verdict formed before it existed.**
+
+⚠️ **The guard must be the repro AND its control together** — ⛔ **the repro alone passes on a build where mints never fail.**
+
+⚠️ **WHAT IS STILL NOT ESTABLISHED, stated rather than glossed:** **the mechanism produces total failure of authenticated reads; it has NOT been traced to why the browser lands specifically on `/signin`.** 📁 **`router.push('/')` lands on Home, and Home failing entirely could plausibly redirect — but nobody has followed that redirect, and Lane A withdrew the claim that it had.**
 
 ---
 
