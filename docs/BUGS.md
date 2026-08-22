@@ -467,6 +467,55 @@ fixes this has to choose, and the choice is not derivable** — 🔴 *three-cycl
 may also be describing the gradient's three colour stops (`25% · 50% · 75%`)
 rather than an iteration count. **Guessing would be inventing a behaviour.**
 
+
+### B-298 · 🟠 The design's most-used breakpoint has no token, so 24 screens cannot reflow where they are drawn to
+
+| | |
+|---|---|
+| **Module** | `product_surface` — [`frontend/tailwind.config.ts`](../frontend/tailwind.config.ts) |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** |
+| **Severity** | 🟠 — **every screen the design reflows at `768px` reflows at `640` or `1024` instead, or not at all** |
+| **Status** | **`OPEN`** — ⛔ **filed, not fixed. See *Why not yet*** |
+| **Found** | **2026-08-22 by Lane A**, while sizing [B-1019](#b-1019)'s design-specified fix |
+
+**Measured across all 35 design documents**, counting every number inside a
+`range:` declaration:
+
+| Breakpoint | Uses | Token? |
+|---|---|---|
+| 🔴 **`768`** | 🔴 **24** | ⛔ **none** |
+| `1280` | 13 | ✅ `laptop` |
+| `1024` | 5 | ✅ `smalllaptop` |
+| `640` | 4 | ✅ `phone` |
+| `1600` | 2 | ✅ `desktop` |
+
+⚡ **`768` is the most-used breakpoint in the entire corpus** — nearly twice
+`1280` — **and it is the one band the token layer does not have.**
+
+### ⛔ How it happened, and it is the pattern this audit keeps finding
+
+📁 **`tailwind.config.ts` says so itself**: *"The design's four bands, REPLACING
+Tailwind's defaults — TASK-1443, **App Shell** `breakpoints`."* ✅ **Those four
+are exactly right for the App Shell** — `≥1600` · `1280–1599` · `1024–1279` ·
+`<1024` — **and the config was never checked against the other 34 documents.**
+
+⚠️ **Both are true at once**: the SHELL's frame bands are 1024/1280/1600, and
+SCREENS commonly reflow their own content at 768. ⛔ **The config took one
+document's answer as the whole model** — the same shape as a reserved-hue guard
+scanning one directory, a responsive matrix covering a page's children but not
+the page, and §17 claiming AA *"in full"* over six measured pairs.
+
+### ⛔ Why not yet
+
+⚡ **Adding `tablet: '768px'` today would have ZERO consumers** — measured: no
+source file uses `[768px]` or any 768 literal. ⛔ **A token with no consumer is
+exactly the defect [`h-row`](#b-297) is** — declared, unused, and read by the
+next person as though it were load-bearing.
+
+✅ **So it lands with the first screen that needs it**, and [B-1019](#b-1019)'s
+mobile card list is that screen.
+
+
 ### ⛔ Why not now, and it is not effort
 
 ⚡ **The fix is three steps and the FIRST is the one that matters:**
@@ -3205,6 +3254,27 @@ git push -q origin lane-qe && echo pushed          # pushed a branch with nothin
 > ⛔ **Both failing widths — `layout-handset` at 375 and `layout-phone` at 640 — are below 768, where the design does not draw a table at all.** ✅ **So the correction is not "make the table reflow": it is the card list the design already specifies, and implementing it removes the four overflowing buttons with it.**
 >
 > ⚠️ **The headline figure above was updated; the original error text below is the record of what was found on 2026-08-18 and is deliberately left alone** (`CLAUDE.md` §2 — correct a claim about the present, date a record of the past).
+
+> ⚡ **RE-MEASURED 2026-08-22 by Lane A at `215eb695`, and NOT REPRODUCED.**
+> 📁 **Probed `/settings/team` at 360, 375 and 640 on a dev stack, counting only
+> elements outside every scrolling ancestor**: `outsideScrollers=0` at all three,
+> and **`document.scrollWidth === clientWidth` at all three** — 345/345,
+> 360/360, 625/625. ⛔ **The page did not scroll sideways and nothing sat past
+> the edge.**
+>
+> ⚠️ **QE measured 4 buttons at `right` 410–441 on promoted `b1a01882`, on
+> prod-local.** ⛔ **Neither measurement is dismissed**: prod-local is a
+> production build with its own seeded members, and the Team page's buttons are
+> per-row. **The disagreement is recorded rather than resolved from one side.**
+>
+> ⚡ **The DESIGN-specified fix is blocked on two things, and both are measured:**
+> ① 📁 Team draws **cards below `768px`** — *"Rows become cards: name, role chip,
+> status, last active"* — and **`768` has no breakpoint token**
+> ([B-298](#b-298), and it is the corpus's most-used band at 24 uses).
+> ② ⛔ **Two of the card's four fields have no producer**: `Membership` carries
+> `id`, `workspace_id`, `user_id`, `role`, `created_at`, `member_email` — **there
+> is no `status` and no `last active`.** ⚡ **A card showing two honest absences
+> where the table shows what exists would be worse than the table.**
 
 **Steps to reproduce.** `npx playwright test layout-invariants` — the `layout-handset` project, 375px.
 
