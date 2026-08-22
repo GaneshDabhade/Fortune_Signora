@@ -1,5 +1,28 @@
 # Session Handoff
 
+> ## Cycle 262 — promoted `119c5f8a`, 2026-08-22 · **the ink ramp's fourth step, and an inference that measurement killed**
+>
+> **`main` = `119c5f8a` = the certified commit**, verified from the remote. `pytest` **5452** · coverage **95.03%** · **679 Security Invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · frontend-suite **4028/211** · `eslint` · smoke **24 stages/154s** · scenario **208 assertions** · DR passed · reversibility **head→base→head in 4s on a clean database**.
+>
+> ✅ **Browser 450/458 — 5 failed, 3 skipped, on a rebuilt and reseeded prod-local. Zero regressions.**
+>
+> 🔴 **THE THING TO CARRY FORWARD IS A CORRECTION TO QE'S OWN ANSWER.** ⛔ **Last cycle QE told Lane A which of the five browser failures were probably theirs, reasoning from FILE PATHS because the causes died with a wiped `/tmp`.** ⚡ **The measured causes are now in `~/qe-cert-records/262/browser.log`, and TWO OF FIVE INFERENCES WERE WRONG:**
+>
+> | failure | measured cause | whose |
+> |---|---|---|
+> | `layout-invariants:33` ×2 | **81 elements past 375px** — the Team `<table>` at `right:824`. [B-1019](BUGS.md), whose row still records **117** | **Lane A** |
+> | `perception:75` | ⚠️ **NOT the entry-resolution family QE named.** **15 access-token mints for one page** against a budget of 12 and a target of 1 — [B-1035](BUGS.md), **up from 13** | **Lane A** |
+> | `visual:62` | **Clipped text on the accounts list** — `Preview`, `Not reported` ×4. **Had no row** | **Lane A** |
+> | `notification-arrival:48` | ⛔ **Not a product defect.** [C-111](LANE_COORDINATION.md) — **the local production stack composes ONE of EIGHT worker pools**, so `ai_research` is never consumed and the bell cannot ring | **Awaiting a product-owner ruling** |
+>
+> ⚠️ **`home-a11y:432` is NOT among the five and QE's earlier record said it was** — that record listed six items for a count of five, which is how an unchecked tally survives three cycles.
+>
+> ⛔ **Two candidates died on inspection and neither was filed.** 📁 **A populated-database downgrade fails on `0048_action_batch_dispatch`, and the migration's own docstring says it must — *"loudly, which is correct"*.** 📁 **A weak Better Auth secret was this workstation's file; the tracked example ships it empty** ([B-011](BUGS.md)).
+>
+> ⚠️ **NEXT CYCLE'S INPUT: nothing executable is waiting.** **Every other lane branch needs a rebase**, and Lane C's `lane-c-webhook` / `lane-c-sync` carry **real executable work** — a `webhook_delivery` module, migrations, `signora_platform` — that **cannot fast-forward** and must come through its own lane.
+
+> ---
+>
 > ## Cycle 261 — promoted `7b835a0b`, 2026-08-22 · **a motion contract Tailwind was silently discarding**
 >
 > **`main` = `7b835a0b` = the certified commit.** `pytest` **5452** · coverage **95.03%** · **679 Security Invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · `frontend-suite` **4026/210** · `eslint` · `smoke` 24/528s · **DR passed** · **reversible in 6s** · head **`0066`**. **4 commits, Lane A.**
