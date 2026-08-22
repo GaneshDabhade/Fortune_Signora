@@ -31,9 +31,59 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * 🔴 **[B-1035](../../../docs/BUGS.md) — one mint per data read, and each mint
+ * is an RS256 signature on the Next tier.** 📁 **Measured on `/accounts`: 15
+ * mints for 16 reads against a ceiling of 12 and a design target of 1** — *"the
+ * token is valid for minutes and nothing caches it."*
+ *
+ * ⚡ **Concurrent callers now share ONE mint.** A page opens by firing its
+ * queries together, so the reads that were minting a token each are the same
+ * reads that can share one — **this is deduplication of work already in
+ * flight, not a cache.**
+ *
+ * ⛔ **NOTHING IS STORED, and that is deliberate.** ⚠️ **The entry is removed
+ * the moment the mint settles**, so no token outlives the requests that asked
+ * for it. **A real cache wants the token's own `exp`, and 📁
+ * [CLAUDE.md §13](../../../CLAUDE.md) puts JWT parsing in
+ * `signora_platform/auth/`** — ⛔ **so reading `exp` in the browser is a
+ * decision to raise, not one to take here.** ✅ **Deduplication needs no expiry
+ * and makes no assumption about lifetime.**
+ *
+ * ⛔ **Browser only.** 🔴 **A module-level map on the Next server would be
+ * shared by every request in the process** — one customer's token handed to
+ * another. **`typeof window` is the guard, and it is a security boundary rather
+ * than an optimisation.**
+ */
+const inFlightMints = new Map<string, Promise<string>>();
+
 /** Fetches an access token from our own server-side route. The private
  * signing key stays on the server; the browser only ever sees the token. */
 async function fetchAccessToken(workspaceId?: string): Promise<string> {
+  // ⛔ **On the server every caller is a different customer.** No sharing.
+  if (typeof window === 'undefined') return mintAccessToken(workspaceId);
+
+  const key = workspaceId ?? '';
+  // ⚡ **A retry cannot receive the mint that just 401'd, and it needs no flag
+  // to prevent it.** 🔴 **I added one — `fresh`, deleting the entry before the
+  // lookup — and then fire-tested it: removing it changed nothing.** ⛔ **The
+  // `.finally` below deletes each entry the moment its mint SETTLES, so an
+  // entry never outlives the token it produced**; by the time a 401 comes back
+  // there is nothing left to reuse. ⚠️ **A guard whose removal does not change
+  // the property it claims to protect is what
+  // [§2](../../../CLAUDE.md) calls Decorative Logic**, and the comment beside
+  // it was already asserting a failure it did not prevent.
+  const pending = inFlightMints.get(key);
+  if (pending !== undefined) return pending;
+
+  const mint = mintAccessToken(workspaceId).finally(() => {
+    inFlightMints.delete(key);
+  });
+  inFlightMints.set(key, mint);
+  return mint;
+}
+
+async function mintAccessToken(workspaceId?: string): Promise<string> {
   const url = workspaceId ? `/api/token?workspace_id=${workspaceId}` : '/api/token';
   const response = await fetch(url, { method: 'POST' });
 
