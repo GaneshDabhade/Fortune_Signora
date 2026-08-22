@@ -480,6 +480,14 @@ stable hook already exists** — `page-header.test.tsx` looks for
 
 **②** Re-aim those five. **③** Then the primitive.
 
+⚠️ **A SIXTH consumer joined on 2026-08-22 and it is not a locator** — 📁
+[`visual.spec.ts`](../frontend/tests/e2e/visual.spec.ts)'s `settled()` **waits
+for `main .animate-pulse` to empty before asserting**, which is what stopped
+[B-1065](#b-1065)'s clipping check running against a skeleton. ⛔ **Changing the
+class without moving that wait puts every assertion in that file back to
+measuring an unfinished page** — and it would pass while doing so, which is the
+failure mode B-1065 was.
+
 ⚠️ **Doing ③ first turns a cosmetic change into five failing tests that look
 like a regression**, and 📁 **52 files render a `Skeleton`.** ⚡ **Filed with the
 sequence so whoever takes it does not discover the ordering the expensive way.**
