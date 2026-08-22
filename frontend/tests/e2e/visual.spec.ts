@@ -38,6 +38,28 @@ const SCREENS = [
 async function settled(page: import('@playwright/test').Page): Promise<void> {
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 20_000 });
   await page.waitForLoadState('networkidle');
+
+  // 🔴 **[B-1065](../../../docs/BUGS.md) — these assertions were running
+  // against a SKELETON.** ⛔ **An `h1` and `networkidle` arrive before the
+  // query layer resolves**, so `main` still held loading blocks: the clipping
+  // report on the accounts list read `["Loading…"]` on one run and five
+  // `sr-only` strings on another — **artifacts of an unfinished page, and none
+  // of the actual content.**
+  //
+  // ⚡ **Proved by injecting a genuinely clipped visible span** — `scroll=64
+  // client=16 overflow=hidden`, inside `main`, satisfying every filter — **and
+  // watching the test pass.** ⛔ **A guard that cannot see the page it is
+  // asserting about is documentation pretending to be code**
+  // ([§2](../../../CLAUDE.md)).
+  //
+  // ✅ **Waiting for the skeletons to go is the smallest thing that makes it
+  // look at the real page.** ⚠️ Bounded, because a screen with no skeleton at
+  // all must not hang here.
+  await page
+    .waitForFunction(() => document.querySelectorAll('main .animate-pulse').length === 0, null, {
+      timeout: 20_000,
+    })
+    .catch(() => undefined);
 }
 
 test.describe('the page fits the window', () => {
@@ -72,6 +94,22 @@ test.describe('the page fits the window', () => {
             const style = getComputedStyle(element);
             if (style.overflow === 'visible' && style.overflowX === 'visible') return false;
             if (style.textOverflow === 'ellipsis') return false;
+            // 🔴 **[B-1065](../../../docs/BUGS.md) — `sr-only` is not clipped
+            // text, it is text deliberately not shown.** ⛔ **Tailwind's
+            // `.sr-only` IS `width:1px; height:1px; overflow:hidden;
+            // clip:rect(0,0,0,0)`**, so every one of them satisfies the test
+            // above by construction. ⚡ **A screen reader reads the whole
+            // string regardless of the box**, and a sighted customer is not
+            // meant to see it at all — so neither reading of *"a truncated
+            // sentence a customer cannot read"* applies.
+            //
+            // 📁 **Measured on `/accounts`: 12 clipped elements, ALL `sr-only`,
+            // and ZERO once they are excluded.** ⚠️ **The five the row named —
+            // `Preview` and four `Not reported` — are `NothingSaid`'s
+            // accessible sentence beside an `aria-hidden` em dash**, whose own
+            // docstring says why: *"A dash announced as 'em dash' forty times
+            // is noise."*
+            if (element.classList.contains('sr-only')) return false;
             if (!element.textContent?.trim()) return false;
             return element.scrollWidth > element.clientWidth + 2;
           })
