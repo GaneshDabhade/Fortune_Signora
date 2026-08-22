@@ -89,8 +89,34 @@ describe('🔴 B-424 — no utility names a breakpoint the config does not defin
     expect(responsiveUtilities().length, 'no prefixed utilities found in the source').toBeGreaterThan(20);
   });
 
-  it('📁 the config defines the design’s four bands', () => {
-    expect(definedScreens().sort()).toEqual(['desktop', 'laptop', 'phone', 'smalllaptop']);
+  /**
+   * 🔴 **This asserted FOUR bands, and 📁 [B-298](../../docs/BUGS.md) is the
+   * reason it is now five.**
+   *
+   * ⚠️ **The four were right for the document they came from and for no
+   * other.** 📁 `tailwind.config.ts` named its own source — *"TASK-1443, **App
+   * Shell** `breakpoints`"* — and **this guard pinned that answer as though it
+   * were the corpus's.** ⛔ **Measured across all 35 design documents, inside
+   * `range:` declarations, `768` is the most-used breakpoint there is** — 24
+   * uses across 12 documents, against `1280`'s 13 — **and it was the one band
+   * with no token.**
+   *
+   * ⚡ **So the guard held, and what it held was one document's model.** 🔴
+   * **A guard is only ever as wide as the population it was written from**,
+   * and this one inherited its population from the config it was checking —
+   * which makes it a restatement rather than a check. **The fix is not to
+   * loosen it**: it still pins an exact set, and adding a sixth band still
+   * fails here. **The set is now derived from all 35 documents rather than
+   * from one.**
+   */
+  it('📁 the config defines the corpus’s five bands', () => {
+    expect(definedScreens().sort()).toEqual([
+      'desktop',
+      'laptop',
+      'phone',
+      'smalllaptop',
+      'tablet',
+    ]);
   });
 
   it('⛔ no Tailwind default breakpoint survives as a live utility', () => {

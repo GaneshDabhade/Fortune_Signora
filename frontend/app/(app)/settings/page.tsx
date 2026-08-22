@@ -323,13 +323,22 @@ export default function SettingsPage() {
           comment on it** — 📁 [§2](../../../../CLAUDE.md), *behaviour exists
           exactly once*. ⚡ **The track floor is kept because it bounds the
           column whatever a section later puts inside it.** */}
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 smalllaptop:grid-cols-[208px_minmax(0,1fr)] smalllaptop:items-start">
+      {/* 🔴 **[B-298](../../../docs/BUGS.md) — `laptop:`, not `smalllaptop:`.**
+          📁 **Two documents put the side rail at `≥ 1280px`** and the band
+          below it at *"a horizontal scroller above the content"*, which is one
+          column. ⛔ **`smalllaptop:` gave 1024–1279 the desktop layout**, so the
+          whole `768–1279px` band was drawn as something the design does not
+          draw at any width. */}
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 laptop:grid-cols-[208px_minmax(0,1fr)] laptop:items-start">
         {/* 📁 **Sticky, like the design's own navigation and Account 360's
             rail.** ⛔ **Below the laptop band it becomes an ordinary block
             above the sections**, which is the same regime change
             `OnThisPage` makes and for the same reason: 238px of navigation
             beside 320px of content is not a layout. */}
-        <SettingsNav className="smalllaptop:sticky smalllaptop:top-4" />
+        {/* ⚡ **Sticky only where it is a rail.** ⛔ A sticky horizontal
+            scroller above the content is a bar that follows the reader down
+            the page, which 📁 no document draws. */}
+        <SettingsNav className="laptop:sticky laptop:top-4" />
 
         <div className="flex flex-col gap-6">
           {SETTINGS_SECTIONS.map((section) => (

@@ -35,6 +35,36 @@ export default {
      */
     screens: {
       phone: '640px',
+      /**
+       * 🔴 **[B-298](../docs/BUGS.md) — the corpus's most-used breakpoint had
+       * no token, because this list was built from ONE document.**
+       *
+       * ⚠️ **The block above names its source and is the whole explanation**:
+       * *"TASK-1443, **App Shell** `breakpoints`"*. ✅ **Those four are exactly
+       * right for the App Shell's frame** — ⛔ **and the other 34 documents were
+       * never counted.** **Measured across all 35, inside `range:`
+       * declarations:**
+       *
+       * ```
+       *  768   24 uses across 12 documents   <- no token
+       * 1280   13 uses across 13 documents      laptop
+       * 1024    5 uses across  4 documents      smalllaptop
+       *  640    4 uses across  2 documents      phone
+       * 1600    2 uses across  2 documents      desktop
+       * ```
+       *
+       * ⚡ **`768` is the most-used breakpoint in the corpus, by nearly 2×** —
+       * and **twelve screens declare the same three-band model**: `< 768px` ·
+       * `768–1279px` · `≥ 1280px`. ⛔ **Both facts are true at once**: the
+       * SHELL's frame bands are 1024/1280/1600, and SCREENS commonly reflow
+       * their own content at 768. **The config took one document's answer as
+       * the whole model.**
+       *
+       * ⚠️ **Named `tablet` because that is what all twelve call the band** —
+       * 📁 *"Laptop / tablet"* — and 📁 [B-1019](../docs/BUGS.md)'s row is the
+       * `< 768px` half of the same table.
+       */
+      tablet: '768px',
       smalllaptop: '1024px',
       laptop: '1280px',
       desktop: '1600px',

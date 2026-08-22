@@ -57,10 +57,58 @@ export function SettingsNav({ className }: { className?: string }) {
   return (
     <nav
       aria-label="Settings sections"
-      className={cn('flex flex-col gap-4', className)}
+      /**
+       * 🔴 **[B-298](../../../docs/BUGS.md) — this rail had two bands where the
+       * design draws three, so the middle one was wrong in both directions.**
+       *
+       * 📁 **Two documents, the same model, in their own words.**
+       * `Fortune Signora Workspace Setup`: *"Settings rail collapses to a
+       * horizontal scroller above the content"* at `768–1279px`.
+       * `Fortune Signora User Profile`: *"Rail becomes a horizontal scroller of
+       * section chips."* ⛔ **Neither existed.**
+       *
+       * **Measured before and after, against what the design asks for:**
+       *
+       * ```
+       * width   design                     was                is
+       *  900    horizontal scroller        vertical column    scroller
+       * 1100    horizontal scroller        208px side rail    scroller
+       * 1400    rail beside the content    208px side rail    side rail
+       * ```
+       *
+       * ⚠️ **`smalllaptop:` was doing the job `laptop:` and `tablet:` do here**,
+       * which is why 1100px got the desktop treatment and 900px got the phone
+       * one. ⚡ **`< 768px` is unchanged** — 📁 *"sections … reached from a
+       * list"* — **a vertical list is already that.**
+       *
+       * ⛔ **THE RAIL'S WIDTH IS NOT TOUCHED, AND THAT IS DELIBERATE.** 📁
+       * **Workspace Setup says `220px`, User Profile says `212px`**, and this
+       * renders `208px`. **Three numbers for one rail**, so picking one would
+       * be resolving a design conflict in code. 🔴 Recorded as
+       * [C-1550](../../../docs/LANE_COORDINATION.md); the band structure is
+       * implemented because on THAT the two documents agree exactly.
+       */
+      className={cn(
+        'flex flex-col gap-4',
+        // 📁 The `768–1279px` band: one scrolling row above the content.
+        'tablet:flex-row tablet:items-center tablet:gap-3 tablet:overflow-x-auto',
+        // 📁 `≥ 1280px` — *"Settings rail … beside a two-column form"*.
+        'laptop:flex-col laptop:items-stretch laptop:gap-4 laptop:overflow-x-visible',
+        className,
+      )}
     >
       {SETTINGS_NAV.map((group) => (
-        <div key={group.label} className="flex flex-col">
+        <div
+          key={group.label}
+          className={cn(
+            'flex flex-col',
+            // ⚡ **The groups survive the band.** ⛔ Flattening four groups into
+            // one row of chips would drop the hierarchy the nav is built on,
+            // and the design collapses the RAIL, not its structure.
+            'tablet:flex-row tablet:items-center tablet:gap-1',
+            'laptop:flex-col laptop:items-stretch laptop:gap-0',
+          )}
+        >
           {/* 📁 *"10.5px / 600 / 0.07em / uppercase / --ink-4"* — ⚡ `text-2xs`
               is the nearest role §04 publishes and the tracking is the
               design's own, the same pairing the Account 360 rail uses.
@@ -104,7 +152,16 @@ export function SettingsNav({ className }: { className?: string }) {
               rail, which is the worse of the two inconsistencies.
               ⚡ **`onboarding/rail.tsx` already uses `0.06em`**, so the product
               currently carries both — recorded rather than resolved in code. */}
-          <p className="px-2 pb-1.5 text-2xs font-semibold uppercase tracking-[0.07em] text-content-subtle">
+          <p
+            className={cn(
+              'px-2 pb-1.5 text-2xs font-semibold uppercase tracking-[0.07em] text-content-subtle',
+              // ⛔ **`shrink-0` on every child of the scroller.** A flex row
+              // that is allowed to shrink does not scroll, it compresses —
+              // which is the truncation 📁 the design rules out by name.
+              'tablet:shrink-0 tablet:whitespace-nowrap tablet:pb-0',
+              'laptop:pb-1.5',
+            )}
+          >
             {group.label}
           </p>
           {group.items.map((item) => (
@@ -139,6 +196,9 @@ export function SettingsNav({ className }: { className?: string }) {
                 // guess.**
                 'flex min-h-6 items-center gap-2 rounded-md px-2 py-1.5 text-xs transition-colors',
                 'coarse:min-h-11',
+                // 📁 *"a horizontal scroller of section chips"* — the chip is
+                // this pill, unchanged; only its shrinking behaviour differs.
+                'tablet:shrink-0 tablet:whitespace-nowrap',
                 'text-content-muted hover:bg-surface-sunken hover:text-content',
               )}
             >
