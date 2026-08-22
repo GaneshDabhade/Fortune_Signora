@@ -1973,3 +1973,49 @@ Buying intent     font-size:12.5px; color:var(--ink-3)
 
 ⛔ **No bug is recorded for the collapsed or focus-mode states** (unbuilt, tracked), **nor for the section-label typography** (measured, and the implementation is right). 📁 **Reported as the result rather than converted into something reportable.**
 
+
+## R13-13 · Settings against the design system, and the name-versus-value trap a third time
+
+**2026-08-22, on `main` at `58458fb2`** — the promoted tree, which carries Lane A's Settings rebuild.
+
+### One finding, and it is a ramp rather than a value
+
+**[B-1064](../BUGS.md#b-1064)** 🟠 — **the design's ink ramp has four steps and the product's content ramp has three.** `--ink-4` `#a39a91` exists only as `--color-border-strong`, a **border** role, and `text-border-strong` appears **zero** times in the product. **So all 342 uses across 35 of 35 screens render one step too dark.** ⚡ **Found by measuring the Settings nav group label and asking why its colour was wrong.**
+
+### The sub-pixel questions resolve against §04, and they resolve in Lane A's favour
+
+📁 **§04 publishes NINE type roles, and two of them settle what looked like defects:**
+
+```
+Label        --text-label    12.5 / 1.45 / 600
+Caption      --text-caption  12   / 1.5  / 400      ← a 400-weight role at 12px
+Column head  --text-col      11   / 1.4  / 600 / +0.06em / upper
+```
+
+| Settings element | Screen document | `main` renders | Verdict |
+|---|---|---|---|
+| **Nav item** | 12.5px / 400 | 🔴 **11px** | ⛔ **wrong** — §04's `Caption` is **12 / 400** · ✅ **Lane A ships 12px on r4** |
+| **Group label** | 10.5px | **11px** | ✅ **CORRECT** — §04's `Column head` is **11 / 600 / upper** |
+| **Group tracking** | 0.07em | 0.07em | ⚠️ §04 says **+0.06em**, and the design uses `0.06em` **100** times against `0.07em` **20** — [C-1547](../LANE_COORDINATION.md) |
+
+⚡ **Lane A reasoned to `Caption` without naming it.** Their argument was *"12 against 12.5 is invisible; 400 against 600 is not"*, and §04 has a role at **exactly 12 / 400**. ✅ **The system had the answer their instinct reached, which is the strongest possible validation of [C-1547](../LANE_COORDINATION.md)'s thesis: the design SYSTEM governs and a screen document can be the outlier.**
+
+⛔ **So the group label's 10.5 and the card's 16px radius are the same argument** — and in both cases the shared layer is right.
+
+### 🔴 A finding that dissolved — name-versus-value, for the third time
+
+**I measured all nine §04 roles against `globals.css` and found FIVE ABSENT**: `--text-section`, `--text-body`, `--text-body-md`, `--text-caption`, `--text-col`.
+
+⛔ **That was a NAME check, and 499 §10 explicitly permits a different internal name for a faithful role.** ✅ **Checked by VALUE, every one of the nine sizes has a token:**
+
+```
+Section 18px -> --text-lg     Body 14px -> --text-sm
+Caption 12px -> --text-xs     Column head 11px -> --text-2xs
+```
+
+**Nine of nine. No finding.**
+
+> ⚠️ **Third time this audit has produced this class** — 📁 [B-1052](../BUGS.md#b-1052) counted panels and called them badges · [R13-12](#r13-12--the-collapsed-and-focus-mode-states-and-a-finding-that-dissolved-on-the-population-check) took two samples of fourteen · **and this one counted names while the question was about values.** ⚡ **The tell is the same each time: a confident count against a population nobody checked.**
+>
+> ✅ **And it is why [B-1064](../BUGS.md#b-1064) survives where these did not.** **`#a39a91` is absent BY VALUE**, under any name, and `text-border-strong` is used zero times — **so the ramp is genuinely short rather than differently spelled.**
+
