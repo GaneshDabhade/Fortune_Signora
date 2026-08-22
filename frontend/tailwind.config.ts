@@ -186,6 +186,39 @@ export default {
          * cast *over the page* looks like, rather than one sitting on it. */
         xl: 'var(--shadow-xl)',
       },
+      /* 🔴 **THE MOTION SCALE THE DESIGN PUBLISHES AND THIS CONFIG NEVER
+       * CARRIED** — 📁 Design System v2 §18, verbatim:
+       * `transitionDuration: { fast: "120ms", DEFAULT: "160ms", slow: "220ms" }`
+       * and `transitionTimingFunction: { premium: "cubic-bezier(.32,.72,0,1)" }`.
+       *
+       * ⛔ **Its absence was not theoretical.** 📁
+       * [`onboarding/rail.tsx:86`](./app/(onboarding)/onboarding/rail.tsx)
+       * already wrote `duration-slow ease-premium` — **the design's own names —
+       * and Tailwind generated NEITHER**, so that progress bar carried
+       * `transition-[width]` with no duration and did not animate at all.
+       * ⚡ **Measured in the built CSS**: `.duration-150` and `.duration-200`
+       * are the only two duration classes the product emits.
+       *
+       * ⚠️ **And it is why `workspace-strip.tsx` chose `duration-150` against a
+       * design that says `160`**: its comment reasoned that *"the motion scale
+       * is a token here"* and **a bespoke step would be the defect** — the
+       * reasoning was right and the premise was false.
+       *
+       * ✅ **`premium` resolves to `var(--ease)`** rather than restating the
+       * curve, so it has one representation ([§2](../CLAUDE.md)). **The value
+       * already in `globals.css` is the design's, character for character.**
+       *
+       * 📁 **The same shape as the type scale's three missing roles**
+       * (TASK-1453) — a role the design names that the token layer lacks, so
+       * every call site silently falls back to a framework default. */
+      transitionDuration: {
+        fast: '120ms',
+        DEFAULT: '160ms',
+        slow: '220ms',
+      },
+      transitionTimingFunction: {
+        premium: 'var(--ease)',
+      },
       maxWidth: {
         /* *"A single 400px card carries all 24 screens."* Named so the
          * arbitrary value it replaces becomes refusable rather than only

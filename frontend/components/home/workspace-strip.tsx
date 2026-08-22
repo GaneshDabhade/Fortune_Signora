@@ -63,7 +63,7 @@ export interface WorkspaceStripProps {
 
 /** 📁 *"Holds four seconds"* — Entry's own duration, `4000ms`. */
 const HOLD_MS = 4000;
-/** ⚡ **Matches `duration-150` below**, so the unmount waits for the fade. */
+/** ⚡ **Matches the `160ms` DEFAULT step below**, so the unmount waits for the fade. */
 const FADE_MS = 150;
 
 /**
@@ -161,10 +161,16 @@ export function WorkspaceStrip({
    *
    * ⚡ **Two phases rather than one timer**: `faded` drives the opacity, and the
    * unmount waits for the transition so the strip is not cut off mid-fade.
-   * ⛔ **`duration-150` rather than an arbitrary `160ms`** — the type and radius
-   * scales are tokens here and so is the motion scale; 📁 the App Shell already
-   * fades at `duration-150`, and a bespoke step would be the same defect
-   * `design-tokens.test.tsx` catches for colour.
+   * 🔴 **This said `duration-150` rather than an arbitrary `160ms`, on the
+   * grounds that *"the motion scale is a token here."*** ⛔ **It was not.**
+   * 📁 **Design System v2 §18 publishes `transitionDuration: { fast: 120ms,
+   * DEFAULT: 160ms, slow: 220ms }` and `tailwind.config.ts` carried none of
+   * it**, so every transition in the product fell back to Tailwind's own steps.
+   *
+   * ⚡ **The reasoning was right and the premise was false**: a bespoke `160ms`
+   * WOULD have been the defect `design-tokens.test.tsx` catches for colour —
+   * ✅ **the fix was to publish the scale, not to hardcode the value.** **The
+   * design's `160` is now `duration`, the DEFAULT step, and this is it.**
    */
   const [faded, setFaded] = useState(true);
 
@@ -213,7 +219,11 @@ export function WorkspaceStrip({
         className={cn(
           'flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-border-soft bg-surface px-4 py-2.5 shadow-sm',
           // ⛔ **Opacity only. Never a transform** — 📁 *"never slides."*
-          'transition-opacity duration-150 motion-reduce:transition-none',
+          // ⚡ **No duration class, deliberately.** 📁 §18 sets `DEFAULT: 160ms`,
+          // so `transition-opacity` already carries the design's step — ⛔ and a
+          // `duration` class does NOT exist for the DEFAULT key. **Writing one
+          // is the dead-class defect this slice was opened to fix.**
+          'transition-opacity ease-premium motion-reduce:transition-none',
           faded ? 'opacity-0' : 'opacity-100',
         )}
       >

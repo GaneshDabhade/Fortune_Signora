@@ -406,7 +406,8 @@ export function UtilityPanel({
         // never over the content.** A panel that covered the table would make
         // the customer close it to read what it describes.
         'hidden shrink-0 border-l border-border-soft bg-surface smalllaptop:flex',
-        'flex-col transition-[width] duration-150',
+        // 📁 **Drawer / assistant — `220ms`** (§16). This panel IS the assistant surface.
+        'flex-col transition-[width] duration-slow ease-premium',
       )}
     >
       {/**

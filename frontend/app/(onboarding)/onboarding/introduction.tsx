@@ -62,7 +62,12 @@ export function ProductIntroduction() {
               <span
                 key={entry.title}
                 className={cn(
-                  'h-1 w-7 rounded-full transition-colors duration-DEFAULT ease-premium',
+                  // 🔴 **`duration-DEFAULT` was written here and Tailwind emits no
+                  // such class** — 📁 measured in the built CSS, `0` occurrences.
+                  // ⚡ **The same defect as `onboarding/rail.tsx`'s `duration-slow`**:
+                  // written against §18's contract before this config carried it.
+                  // ✅ **`transition-colors` now carries the `160ms` DEFAULT itself.**
+                  'h-1 w-7 rounded-full transition-colors ease-premium',
                   index <= panel ? 'bg-accent' : 'bg-border-soft',
                 )}
               />

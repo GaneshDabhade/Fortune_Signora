@@ -113,7 +113,9 @@ test('@journey the panel PUSHES the content rather than covering it', async ({ p
 
   /**
    * ⚠️ **Wait for the WIDTH, not for the state.** ⛔ **`data-state` flips a
-   * frame before the 150ms width transition finishes**, and a box read in
+   * frame before the 220ms width transition finishes** — 📁 the design's
+   * Drawer step, and it was `150ms` until §18's scale was published — **and a
+   * box read in
    * between reports a panel that is neither 28 nor 300 — **which produced a
    * failure that looked like an overlap and was a stopwatch.**
    */

@@ -199,7 +199,8 @@ test.describe('§20 · the shell responds by regime, at every width between them
     // to open and the entries stayed off-canvas.
     await page.getByRole('button', { name: 'Open navigation' }).click();
     await expect(page.locator('[data-sheet-open="true"]')).toBeVisible();
-    // ⚡ **The sheet SLIDES** — 📁 `transition-transform duration-200`. ⛔ The
+    // ⚡ **The sheet SLIDES** — 📁 `transition-transform duration-slow`, the
+    // design's `220ms` Drawer step (§16; it was `duration-200`). ⛔ The
     // attribute flips on click; the geometry arrives a frame later, and
     // measuring in between reads the off-canvas position.
     await expect

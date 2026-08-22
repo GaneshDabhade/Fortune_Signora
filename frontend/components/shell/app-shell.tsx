@@ -279,13 +279,16 @@ export function AppShell({
           'flex flex-col overflow-hidden',
           // 📁 **Below 1024 — the sheet.** ⛔ `fixed`, so it is out of flow and
           // the content keeps the full width the band's `railW: 0` promises.
-          'fixed inset-y-0 left-0 z-40 transition-transform duration-200 motion-reduce:transition-none',
+          // 📁 **Drawer — `220ms`, `translateX + width push`** (§16). ⛔ Was `duration-200`,
+          // which is Tailwind's step and not the design's.
+          'fixed inset-y-0 left-0 z-40 transition-transform duration-slow ease-premium motion-reduce:transition-none',
           navOpen ? 'translate-x-0' : '-translate-x-full invisible',
           // 📁 **At and above 1024 — the rail, exactly as it was.** ⚡ `visible`
           // and `static` are what undo the two lines above; **the element is the
           // same one, in a different place.**
           'smalllaptop:visible smalllaptop:static smalllaptop:z-auto smalllaptop:translate-x-0',
-          'smalllaptop:transition-[width] smalllaptop:duration-150',
+          // 📁 **The same drawer motion, so it takes the same step.**
+          'smalllaptop:transition-[width] smalllaptop:duration-slow smalllaptop:ease-premium',
         )}
       >
         <div className="flex h-topbar items-center justify-between gap-2 px-5">
@@ -446,7 +449,8 @@ export function AppShell({
           data-refreshing={refreshing ? 'true' : undefined}
           className={cn(
             'min-w-0 flex-1 outline-none',
-            'transition-opacity duration-150 motion-reduce:transition-none',
+            // 📁 **§16: *"Scrim fades 120ms"*** — stated outright, and this was `150`.
+            'transition-opacity duration-fast ease-premium motion-reduce:transition-none',
             refreshing && 'opacity-60',
           )}
         >

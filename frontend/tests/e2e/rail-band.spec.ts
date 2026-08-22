@@ -33,10 +33,12 @@ const COLLAPSED = 56;
  * [B-1032](../../../docs/BUGS.md).
  *
  * 📁 `app-shell.tsx` carries `smalllaptop:transition-[width]
- * smalllaptop:duration-150`, and the rail's width genuinely changes after
+ * smalllaptop:duration-slow` — **`220ms`, the design's Drawer step** (§16;
+ * it was `duration-150` until the motion scale was published) — and the
+ * rail's width genuinely changes after
  * hydration: **the server renders it expanded** — its own comment says so —
  * **and the band collapses it on the client.** ⛔ So a read taken on arrival
- * races a 150ms clock, and **a loaded machine loses more often.** QE measured
+ * races a 220ms clock, and **a loaded machine loses more often.** QE measured
  * `232 · 109 · 85 · 61` against an expected `56` and reported it to Lane A as
  * a possible product defect; **those were four frames of one animation, and
  * the product was right every time.**
