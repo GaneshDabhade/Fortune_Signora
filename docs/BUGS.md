@@ -3142,6 +3142,33 @@ git push -q origin lane-qe && echo pushed          # pushed a branch with nothin
 
 > ⚡ **RE-MEASURED 2026-08-22 at `119c5f8a`, cycle 262: 81 elements, down from 117.** ⛔ **Still failing, and now at BOTH widths** — `layout-handset` (390px project, 375px viewport) and `layout-phone` (640px). 🔴 **CORRECTED THE SAME DAY, BY QE, AGAINST QE'S OWN INSTRUMENT — see [B-1066](#b-1066).** ⛔ **The `<table>` is NOT the offender: `components/ui/table.tsx:97` already wraps it in `overflow-x-auto`, and 77 of the 81 reported elements are correctly contained inside that scroller.** ✅ **Measured at a 360px viewport: the page genuinely scrolls — `scrollWidth` 441 against `clientWidth` 360 — and exactly FOUR elements sit outside any scroller: `<button>`s at `right` 410, 422, 430, 441.** ⚠️ **The report truncates to five offenders and all five are table elements, so the real cause was invisible in the diagnostic.**
 >
+> 🔴 **CAUSE FOUND 2026-08-22, AND IT IS NEITHER THE TABLE NOR THE BUTTON COMPONENT.** ⚡ **Lane A could not reproduce this and was right not to resolve it from their own side; the disagreement is what located it.**
+>
+> 📁 **The four offenders are the *Hand over this organization* controls** — [`app/(app)/settings/team/page.tsx`](../frontend/app/(app)/settings/team/page.tsx):460, one `<Button>` per other member, labelled **`Hand over to {email}`**:
+>
+> ```
+> button right=441  "Hand over to quinn.alvarez@northwind.example"
+> button right=430  "Hand over to marcus.hale@northwind.example"
+> button right=422  "Hand over to sam.okafor@northwind.example"
+> button right=410  "Hand over to priya.nair@northwind.example"
+> ```
+>
+> ⛔ **`Button` carries `shrink-0 whitespace-nowrap` DELIBERATELY**, and its own comment gives the reason: *"A button in a flex row with neither is squeezed to its ellipsis by a long sibling… The row wraps; the control does not."* ✅ **That behaviour is correct and must not be changed.** ⚡ **The defect is that a control's LABEL EMBEDS UNBOUNDED USER DATA** — an unshrinkable, unwrappable control is exactly as wide as whatever address a customer signed up with.
+>
+> **Measured on prod-local at the promoted `b1a01882`, `--project=owner`, 6 rows:**
+>
+> | viewport | clientWidth | scrollWidth | scrolls | outside any scroller |
+> |---|---|---|---|---|
+> | **360** | 345 | **441** | 🔴 **yes** | **4** |
+> | **375** | 360 | **441** | 🔴 **yes** | **4** |
+> | **640** | 625 | 625 | ✅ no | **0** |
+>
+> ⚡ **THE REPRODUCTION CONDITIONS ARE EXACT, AND THEY EXPLAIN BOTH THE NON-REPRODUCTION AND WHY NO COMPONENT TEST CATCHES IT:**
+>
+> **① signed in as `owner`** — the block is gated on `myRole === 'owner' && others.length > 0` · **② at least one other member** · **③ an address long enough that `"Hand over to " + email` exceeds the viewport.**
+>
+> ⛔ **`tests/components/team.test.tsx` asserts this very button and uses `jo@acme.com`.** 📁 **`Hand over to jo@acme.com` is 24 characters and fits at every width; `Hand over to quinn.alvarez@northwind.example` is 44 and does not.** ⚠️ **The guard exists and its fixture is too short to fire it** — the same shape as [B-1065](#b-1065) and [B-1066](#b-1066): **an instrument whose population cannot contain the defect.**
+
 > ⚡ **AND THE DESIGN SPECIFIES THE FIX RATHER THAN LEAVING IT TO JUDGEMENT.** 📁 **`Fortune Signora Team Management.dc.html` names three responsive regimes**, and this page is failing at two widths that fall in the third:
 >
 > | regime | range | the design |
