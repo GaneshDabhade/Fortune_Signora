@@ -49,6 +49,26 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
  * to read** — and the runs card takes *"failures first"* over **every** run.
  * ⛔ **The server ranks neither**: it returns the order the runs happened, so
  * one card's ranking cannot silently become the other's.
+ *
+ * ## ⛔ These are a VIEW of runs, not §15's agent workflow surface
+ *
+ * 📁 **§15 defines an agent as *"a named, scoped, interruptible sequence with a
+ * visible plan"*** — the plan shown before it runs, each step reporting what it
+ * read and produced, **anything writing to a system of record pausing for
+ * approval**, the whole run reversible and marked agent-authored in the record
+ * timeline.
+ *
+ * ⛔ **None of that is built, and these cards do not imply it.** ⚡ **Measured
+ * across `components/` and `app/`: `Pause` 0 files · `interruptible` 0 ·
+ * `agent-authored` 0 · `Reversible` 0 · `run history` 0.** **The AI Research
+ * Engine has `plan.py` and `orchestrate.py`; it has no approval, pause or
+ * reversal.**
+ *
+ * ✅ **So §15 is unbuilt scope rather than a divergence.** **What these two
+ * cards show is producer-backed and honest — completed runs, and failures
+ * first — and they claim nothing about controlling a run.** ⚠️ **Recorded here
+ * because somebody comparing Home to §15 will ask, and the answer is a
+ * capability decision rather than a missing component.**
  */
 export function AgentQueueCard() {
   const { runs, mine, names } = useRuns();
