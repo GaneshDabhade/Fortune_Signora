@@ -15351,6 +15351,49 @@ if (!offline && queued.length === 0) return null;
 
 **Third governance item this month whose cost is not a blocked slice but a *divided reading***, and the register's own standard is that an item exists when a lane cannot safely proceed without an answer. ⚠️ **A lane CAN proceed here — Lane A did, correctly.** ✅ **The row exists because the next lane may read the other sentence first**, and the two produce opposite behaviour in the same file.
 
+
+### C-1548 · The design's two lightest ink steps are below the AA floor its own §17 claims
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-22, while fixing [B-1064](BUGS.md) |
+| **Owner** | **Product Office** — a design document disagreeing with itself |
+| **Status** | **`OPEN`** — ⚡ **nothing is blocked.** The implementation takes the accessible option and says so at the call site |
+| **Blocks** | Nothing. Raised because BOTH available answers are wrong |
+
+📁 **Design System v2 §17 states — *"WCAG 2.2 AA is preserved in full."*** ⚡ **Its
+measured-pairs table lists six pairs**: `Ink on ground` 14.6:1 · `Secondary ink on
+surface` 7.1:1 · `White on brand` 7.4:1 · `Intelligence on its tint` 6.9:1 ·
+`Risk on its tint` 5.6:1 · `Dark theme ink on card` 13.2:1.
+
+⛔ **Neither `--ink-3` nor `--ink-4` is among them.** **Measured by Lane A:**
+
+| | on `--bg` | on `--surface` |
+|---|---|---|
+| **`--ink-3`** `#857d75` | **3.82:1** | **4.05:1** |
+| **`--ink-4`** `#a39a91` | **2.61:1** | **2.77:1** |
+| *dark* **`--ink-4`** `#65737c` | 3.80:1 | **3.39:1** |
+
+⚠️ **WCAG AA needs `4.5:1` for text of this size, and `3:1` even for large text.**
+🔴 **`--ink-4` fails both**, and **`--ink-3` fails AA too.**
+
+⛔ **And the design USES `--ink-4` for small text** — 📁 the Settings navigation's
+group labels are `10.5px / 600 / uppercase / var(--ink-4)`, and `--ink-4` is used
+**440 times across all 35 documents.**
+
+**What is actually being asked**: ⛔ **not a colour** — a ruling on **which wins
+when the ramp and §17 disagree.** ⚡ **Both options are wrong**: `--ink-4` matches
+the drawing and fails contrast; `--ink-3` clears more of it and is one step off.
+
+🔴 **Lane A's reading, offered as input only: §17 is a STANDARD and the ramp is a
+palette, so the standard governs and the palette needs a step that meets it.**
+✅ **The token exists either way** — B-1064's ramp really was short — **and this
+is only about what may be drawn in it.**
+
+⚡ **Same class as [B-1058](BUGS.md)**, QE's tint ring at 1.06:1: a design value
+that reads as intentional and does not clear the floor.
+
+
 ### C-1547 · The Settings screen draws a 16px card; the Design System assigns 12px to cards
 
 | | |

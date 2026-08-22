@@ -65,11 +65,30 @@ export function SettingsNav({ className }: { className?: string }) {
               is the nearest role §04 publishes and the tracking is the
               design's own, the same pairing the Account 360 rail uses.
 
-              🔴 **`text-content-faint`, not `-subtle`** — 📁 the design draws this
-              label in `--ink-4` and the product's content ramp had no fourth
-              step ([B-1064](../../../docs/BUGS.md), QE). ⛔ **It rendered one
-              step too dark on every Settings section, and nothing could see it
-              because the ramp was SHORT rather than wrong.**
+              🔴 **The design draws this label in `--ink-4` and this renders
+              `-subtle`, DELIBERATELY, because `--ink-4` cannot carry 11px text.**
+              📁 [B-1064](../../../docs/BUGS.md) was real and the token now
+              exists — ⛔ **the ramp WAS short** — but measuring it before using
+              it is what stopped an accessibility regression shipping:
+
+              ```
+              --ink-4 on --bg       2.61:1      --ink-4 on --surface  2.77:1
+              --ink-3 on --bg       3.82:1      --ink-3 on --surface  4.05:1
+              WCAG AA needs 4.5:1 for text this size
+              ```
+
+              ⚠️ **§17 says *"WCAG 2.2 AA is preserved in full"* and its measured-
+              pairs table lists SIX pairs — 📁 `Ink on ground`, `Secondary ink on
+              surface`, `White on brand`, `Intelligence on tint`, `Risk on tint`,
+              `Dark theme ink on card`.** ⛔ **Neither `--ink-3` nor `--ink-4` is
+              among them**, so the claim covers what it measured and these two
+              steps were never checked.
+
+              🔴 **Recorded as [C-1548](../../../docs/LANE_COORDINATION.md), not
+              resolved here.** ⚡ **Both options are wrong**: `-faint` matches the
+              design and fails contrast, `-subtle` clears more of it and is one
+              step off the drawing. **A design that draws small text in a colour
+              its own accessibility section would reject is a product decision.**
 
               ⚡ **QE's audit of `main` settles the SIZE in the system's favour
               too**: 📁 §04 `Column head` is `11 / 1.4 / 600 / upper`, so
@@ -85,7 +104,7 @@ export function SettingsNav({ className }: { className?: string }) {
               rail, which is the worse of the two inconsistencies.
               ⚡ **`onboarding/rail.tsx` already uses `0.06em`**, so the product
               currently carries both — recorded rather than resolved in code. */}
-          <p className="px-2 pb-1.5 text-2xs font-semibold uppercase tracking-[0.07em] text-content-faint">
+          <p className="px-2 pb-1.5 text-2xs font-semibold uppercase tracking-[0.07em] text-content-subtle">
             {group.label}
           </p>
           {group.items.map((item) => (
