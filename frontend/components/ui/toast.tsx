@@ -163,7 +163,19 @@ function ToastViewport({
         <div
           key={toast.id}
           className={cn(
-            'pointer-events-auto flex items-start gap-3 rounded border px-4 py-3 shadow',
+            // 🔴 **`rounded-lg` (12px) and `shadow-lg` (`--e3`).** 📁 **§05
+            // assigns `12px --r-lg` to *"Card, menu, popover, TOAST, chart
+            // container"* and §06 assigns `--e3` to *"Menu, popover, tooltip,
+            // TOAST, inline AI answer"*.** ⛔ **This was `rounded` (8px) and
+            // `shadow` (`--e2`)** — a step low on both.
+            //
+            // ⚠️ **§12's prose says dialog, drawer, palette and toast *"share
+            // one language: 16px radius … --e4"*, which would make a toast a
+            // dialog.** ⛔ **The two SCALES name toast explicitly and disagree
+            // with it**, and a scale that lists the element by name is more
+            // specific than a sentence grouping four surfaces — 📁 the same
+            // reading as [C-1547](../../../docs/LANE_COORDINATION.md).
+            'pointer-events-auto flex items-start gap-3 rounded-lg border px-4 py-3 shadow-lg',
             KINDS[kindOf(toast)],
           )}
         >

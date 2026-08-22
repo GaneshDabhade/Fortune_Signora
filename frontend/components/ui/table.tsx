@@ -69,7 +69,13 @@ export interface TableProps extends HTMLAttributes<HTMLTableElement> {
  */
 export function Table({ className, summary, onDismissSummary, ...props }: TableProps) {
   return (
-    <div className="overflow-hidden rounded-xl border border-border-soft bg-surface">
+    // 🔴 **`shadow-sm` — the plane had NO elevation.** 📁 **§06 lists
+    // *"Cards, TABLES, panels, page headers"* under `--e1`, and §11's own
+    // markup draws the plane as `border-radius:16px; background:var(--surface);
+    // border:1px solid var(--line-soft); box-shadow:var(--e1)`.** ⚡ **Both the
+    // scale and the drawing agree**, which is rarer in this corpus than it
+    // should be. ✅ `rounded-xl` is §05's `16px --r-xl` for a *"Table plane"*.
+    <div className="overflow-hidden rounded-xl border border-border-soft bg-surface shadow-sm">
       {summary !== undefined ? (
         <div
           // 📁 *"tinted with the intelligence hue"* — `--color-ai`'s subtle

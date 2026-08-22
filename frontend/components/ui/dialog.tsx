@@ -123,8 +123,20 @@ export function Dialog({
       ref={ref}
       aria-labelledby={titleId}
       className={cn(
-        'w-full max-w-md rounded-xl border border-border-soft bg-surface p-0 text-content shadow-lg',
-        'backdrop:bg-backdrop/40',
+        // 🔴 **`shadow-xl` (`--e4`) and not `shadow-lg` (`--e3`).** 📁 **§06
+        // assigns `--e4` to *"Dialog, drawer, assistant panel, command
+        // palette"* and `--e3` to *"Menu, popover, tooltip, toast, inline AI
+        // answer"*** — ⛔ **this sat one step low**, so a dialog cast the same
+        // shadow as a tooltip. ✅ `rounded-xl` is already §05's `16px --r-xl`
+        // for a dialog.
+        'w-full max-w-md rounded-xl border border-border-soft bg-surface p-0 text-content shadow-xl',
+        // 🔴 **`/24`, not `/40`.** 📁 **§12: *"a 24%-ink scrim with no blur."***
+        // ⚡ **Prose is the whole specification here and nothing contradicts it**
+        // — the design documents are static screens, so the corpus draws no
+        // scrim markup at all. ⚠️ **That is the opposite of §17's ring and §11's
+        // hover edge**, where prose was contradicted by 21 and 0 drawings
+        // respectively; an absent drawing is not a counter-example.
+        'backdrop:bg-backdrop/24',
       )}
       // Clicking the backdrop closes; clicking the panel must not. The
       // check compares the target to the dialog itself, which is the
