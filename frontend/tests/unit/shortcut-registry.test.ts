@@ -41,16 +41,13 @@ import {
  *
  * ## ⛔ A sentence was removed from here, and removing it is the point
  *
- * ⚠️ **This paragraph used to end**: *"This lane has already shipped that exact
- * shape once, in **B-3180**: a defect fixed in code and left reading `OPEN` in
- * the register."*
- *
- * 🔴 **B-3180 DOES NOT EXIST AND NEVER DID.** ⛔ **The highest identifier ever
- * filed in `docs/BUGS.md` is `B-1066`**, and `git log -S` finds no commit that
- * ever added a `B-3180` heading. **A docstring cited an invented row as the
- * precedent for its own argument** — and it did so in a comment *about* a
- * register that says untrue things, which is 📁 [§2](../../../CLAUDE.md)
- * landing on the file that quotes §2.
+ * ⚠️ **This paragraph used to end by citing a prior defect as its precedent** —
+ * *"this lane has already shipped that exact shape once"* — **naming a row
+ * identifier that has never existed.** 📁 The whole finding, including the
+ * fabricated identifier itself, is
+ * [B-1069](../../../docs/BUGS.md). ⛔ **The number is deliberately not repeated
+ * here**: it is not a row, so citing it from source is the defect rather than
+ * the record of it, and `row-citations.test.tsx` now fails on exactly that.
  *
  * ✅ **The argument stands without it and is not weakened by its removal**: the
  * failure mode above is derived from what the registry IS — a hand-maintained
@@ -58,12 +55,8 @@ import {
  * precedent that has to be invented was never carrying the argument**, and
  * replacing the number with a different one would be inventing it twice.
  *
- * ⚡ **Found by counting**: 198 row identifiers are cited across 654 frontend
- * source files and 196 of them resolve to a heading. **This was one of the
- * two.** 📁 The same sentence appears in
- * [`37-product-surface.md`](../../../docs/architecture/37-product-surface.md);
- * that document is not this lane's to edit and it is reported rather than
- * changed.
+ * ⚡ **Found by counting**: 198 identifiers are cited across 654 frontend
+ * source files and 196 resolve to a heading. **This was one of the two.**
  */
 
 const FRONTEND = join(process.cwd());
