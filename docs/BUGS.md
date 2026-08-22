@@ -3140,7 +3140,17 @@ git push -q origin lane-qe && echo pushed          # pushed a branch with nothin
 | **Status** | **`OPEN`** |
 | **Found** | **2026-08-18 by QE**, same baseline |
 
-> ⚡ **RE-MEASURED 2026-08-22 at `119c5f8a`, cycle 262: 81 elements, down from 117.** ⛔ **Still failing, and now at BOTH widths** — `layout-handset` (390px project, 375px viewport) and `layout-phone` (640px). 📁 **The offender is a `<table>` at `right:824` with `thead`/`tr`/`th` behind it: the Team table does not reflow, so the fix is the table and not the 81 descendants it drags past the edge.**
+> ⚡ **RE-MEASURED 2026-08-22 at `119c5f8a`, cycle 262: 81 elements, down from 117.** ⛔ **Still failing, and now at BOTH widths** — `layout-handset` (390px project, 375px viewport) and `layout-phone` (640px). 🔴 **CORRECTED THE SAME DAY, BY QE, AGAINST QE'S OWN INSTRUMENT — see [B-1066](#b-1066).** ⛔ **The `<table>` is NOT the offender: `components/ui/table.tsx:97` already wraps it in `overflow-x-auto`, and 77 of the 81 reported elements are correctly contained inside that scroller.** ✅ **Measured at a 360px viewport: the page genuinely scrolls — `scrollWidth` 441 against `clientWidth` 360 — and exactly FOUR elements sit outside any scroller: `<button>`s at `right` 410, 422, 430, 441.** ⚠️ **The report truncates to five offenders and all five are table elements, so the real cause was invisible in the diagnostic.**
+>
+> ⚡ **AND THE DESIGN SPECIFIES THE FIX RATHER THAN LEAVING IT TO JUDGEMENT.** 📁 **`Fortune Signora Team Management.dc.html` names three responsive regimes**, and this page is failing at two widths that fall in the third:
+>
+> | regime | range | the design |
+> |---|---|---|
+> | **Desktop** | **≥ 1280px** | Directory at full width with all seven columns; member details as a **480px docked panel** beside the table |
+> | **Laptop / tablet** | **768–1279px** | **Teams and Source collapse into the member cell as a second line**; the table scrolls horizontally behind a **1020px minimum** rather than truncating; details become an **overlay drawer** |
+> | ⚡ **Mobile** | 🔴 **< 768px** | ⛔ **"Rows become cards: name, role chip, status, last active."** Bulk selection is entered from an explicit **Select** button |
+>
+> ⛔ **Both failing widths — `layout-handset` at 375 and `layout-phone` at 640 — are below 768, where the design does not draw a table at all.** ✅ **So the correction is not "make the table reflow": it is the card list the design already specifies, and implementing it removes the four overflowing buttons with it.**
 >
 > ⚠️ **The headline figure above was updated; the original error text below is the record of what was found on 2026-08-18 and is deliberately left alone** (`CLAUDE.md` §2 — correct a claim about the present, date a record of the past).
 
@@ -18155,7 +18165,46 @@ QE       1 failure  — competitors.tsx only
 
 ---
 
-### B-1065 · 🟠 The accounts list clips five labels, and a clipped label is a sentence a customer cannot read
+### B-1066 · 🟠 The horizontal-overflow guard exempts a scroll container but not its contents, so it names the wrong cause
+
+| | |
+|---|---|
+| **Module** | ⚡ **QE's own repository-wide fixture** — [`tests/e2e/fixtures/layout-invariants.ts`](../frontend/tests/e2e/fixtures/layout-invariants.ts):48 |
+| **Current assignee** | **QE** — ⛔ **the defect is in the instrument, not in any module's production code** |
+| **Severity** | 🟠 — ⛔ **the verdict is right and the diagnosis is wrong**, which is worse than a plain false positive: it sends the fixing lane at the wrong element |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-22 by QE**, auditing [B-1019](#b-1019) against the Team Management design |
+| **Commit found** | `b1a01882` (`origin/main`) |
+
+**The code, and its own comment is the accusation:**
+
+```js
+// An element that owns a scroller is allowed to be wider than the window
+// — that is what `overflow-x: auto` is for, and a wide table inside one
+// is correct rather than broken.
+if (style.overflowX === 'auto' || style.overflowX === 'scroll') continue;
+```
+
+⛔ **It exempts the element that OWNS the scroller. It does not exempt anything INSIDE one.** ⚡ **So *"a wide table inside one is correct rather than broken"* is a claim the code does not implement** — the table and every descendant are still counted.
+
+**Measured on `/settings/team` at a 360px viewport, promoted `b1a01882`:**
+
+| | |
+|---|---|
+| **offenders reported** | **81** |
+| **inside a scrolling ancestor** — correctly contained, `components/ui/table.tsx:97` wraps the table in `overflow-x-auto` | 🔴 **77** |
+| **genuinely outside any scroller** | ✅ **4** — `<button>` elements at `right` 410, 422, 430, 441 |
+| **page truly scrolls?** | **YES** — `scrollWidth` 441 against `clientWidth` 360 |
+
+⚠️ **So [B-1019](#b-1019) is REAL and its stated cause was wrong.** ⛔ **The report truncates to the first five offenders, and all five are table elements — so the four buttons that actually push the page sideways are invisible in the diagnostic.** 📁 **QE's own row said *"the fix is the table"*. It is not: the table is correctly contained.**
+
+✅ **The fix is a population correction and NOT a weakening — it cannot turn the assertion green.** **Excluding descendants of a scroller leaves 4 offenders against an expectation of 0**, so Team still fails. **What changes is that the failure names the buttons.**
+
+⚡ **Same class as [B-1065](#b-1065), found the same day from the opposite direction**: a repository-wide layout guard measuring the wrong population. **Lane A found one by fire-testing; QE found the other by asking why a design-conformance question and a test disagreed.**
+
+---
+
+### B-1065 · 🟠 The clipping guard was reading a loading skeleton — and the five labels it named were accessibility, not a defect
 
 | | |
 |---|---|
@@ -18165,6 +18214,18 @@ QE       1 failure  — competitors.tsx only
 | **Status** | **`OPEN`** |
 | **Found** | **2026-08-22 by QE**, cycle 262's browser gate, **measured** rather than inferred |
 | **Commit found** | `119c5f8a` (`origin/main`, the promoted commit) |
+
+> 🔴 **CORRECTED 2026-08-22 BY LANE A, AND THE ROW WAS INVERTED.** ⛔ **QE's severity cell argued that clipping `Not reported` is *"worse than clipping data"* because the customer is left unable to read the label explaining an absence.** ⚡ **It is the exact opposite.**
+>
+> 📁 **All five strings are `sr-only`** — `NothingSaid`'s accessible sentence beside an `aria-hidden` em dash, whose own docstring says why: *"A dash announced as 'em dash' forty times is noise; the fact is that nothing has been reported, and that is what is said."* ✅ **A screen-reader customer hears the whole sentence regardless of the 1px box; a sighted customer sees the dash the design draws.** ⛔ **They are the affordance that makes the absence readable to the one reader who cannot see the dash.**
+>
+> ⚠️ **And they could never have been anything else: Tailwind's `.sr-only` IS `width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0)`, so every one satisfies *"content wider than itself and hides the overflow"* BY CONSTRUCTION.** 📁 **Measured on `/accounts`: 12 clipped elements, ALL `sr-only`, ZERO once excluded.**
+>
+> 🔴 **THE LARGER HALF, AND IT IS THE REAL DEFECT: the assertion was running against a LOADING SKELETON.** ⛔ **`settled()` waits for an `h1` and `networkidle`, both of which land before the query layer resolves**, so one run reported `["Loading…"]` and another five `sr-only` strings — **artifacts of an unfinished page, and none of the actual content.**
+>
+> ✅ **Proved rather than reasoned.** **Lane A injected a genuinely clipped visible span — `scroll=64 client=16 overflow=hidden`, inside `main`, satisfying every filter — and watched the test PASS. With a wait for the skeletons added, the same injection fails with four hits.** ⚡ **The guard could not see the page it was asserting about, and had been reporting five non-defects while missing everything it exists to catch.**
+>
+> ⛔ **QE filed this from a truncated five-string array without asking what those strings WERE.** ⚡ **That is the same error as [B-1052](#b-1052) — counting a population without checking what was in it — and the fourth time this audit that a QE row has been corrected by the lane implementing it.**
 
 **Steps to reproduce.** `make e2e-quick E2E_URL=http://localhost:3100 ARGS="tests/e2e/visual.spec.ts"` against a rebuilt and reseeded prod-local.
 
