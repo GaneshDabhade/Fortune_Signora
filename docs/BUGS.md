@@ -437,6 +437,54 @@ absence rather than three rows that should not be there at all. **A wrong row
 wearing a right state.**
 
 
+
+### B-297 · 🟢 Every loading state pulses; the design shimmers
+
+| | |
+|---|---|
+| **Module** | **Product Surface** — [`components/ui/skeleton.tsx`](../frontend/components/ui/skeleton.tsx) |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** |
+| **Severity** | 🟢 — **cosmetic.** Every loading state in the product, and none of them is wrong, only different |
+| **Status** | **`OPEN`** — ⛔ **filed rather than fixed, deliberately. See *Why not now*** |
+| **Found** | **2026-08-22 by Lane A**, in the §-by-§ Design System conformance pass that produced the motion scale and [B-1064](#b-1064) |
+
+**Steps** — load any screen with data behind it.
+
+**Expected** — 📁 §13: *"Skeletons keep the layout and gain rounded blocks with a
+three-cycle shimmer."* **The design's own markup:**
+
+```
+background: linear-gradient(90deg, var(--sunken) 25%, var(--line-soft) 50%, var(--sunken) 75%);
+background-size: 200% 100%;
+animation: v2shimmer 1.4s ease-in-out infinite;
+```
+
+**Actual** — `animate-pulse`: an **opacity** pulse, not a gradient sweep.
+
+⚠️ **THE DESIGN CONTRADICTS ITSELF ON THIS ELEMENT AND THAT IS PART OF THE ROW.**
+📁 **Its prose says *three-cycle*; its markup says `infinite`.** ⛔ **Whoever
+fixes this has to choose, and the choice is not derivable** — 🔴 *three-cycle*
+may also be describing the gradient's three colour stops (`25% · 50% · 75%`)
+rather than an iteration count. **Guessing would be inventing a behaviour.**
+
+### ⛔ Why not now, and it is not effort
+
+⚡ **The fix is three steps and the FIRST is the one that matters:**
+
+**①** ⛔ **Five tests locate skeletons by `animate-pulse`**, two of them Playwright
+specs that COUNT them — [`confidence.spec.ts:122`](../frontend/tests/e2e/confidence.spec.ts),
+[`perception.spec.ts:148`](../frontend/tests/e2e/perception.spec.ts). ✅ **A
+stable hook already exists** — `page-header.test.tsx` looks for
+`[data-testid="skeleton"]` **or** `.animate-pulse` — so the locators move first,
+**before** the class they depend on changes.
+
+**②** Re-aim those five. **③** Then the primitive.
+
+⚠️ **Doing ③ first turns a cosmetic change into five failing tests that look
+like a regression**, and 📁 **52 files render a `Skeleton`.** ⚡ **Filed with the
+sequence so whoever takes it does not discover the ordering the expensive way.**
+
+
 ### B-292 · 🟡 Entry resolution overrules a person who has already chosen somewhere else
 
 | | |

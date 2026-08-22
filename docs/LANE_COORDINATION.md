@@ -15393,6 +15393,31 @@ is only about what may be drawn in it.**
 ⚡ **Same class as [B-1058](BUGS.md)**, QE's tint ring at 1.06:1: a design value
 that reads as intentional and does not clear the floor.
 
+---
+
+🔴 **RULE THIS WITH QE's D13-C. They are one question, and the corroboration is
+the strongest available.** 📁 **D13-C is on `main` in
+[`39-product-review-findings.md`](architecture/39-product-review-findings.md)**,
+filed 2026-08-21 from a sweep of **203 rendered text nodes in a browser**. This
+item was reached a day later by computing a ratio for a token before using it.
+⚡ **Neither method could see the other, and the numbers are identical:**
+
+| | QE, rendered | Lane A, computed |
+|---|---|---|
+| `--ink-3` on `--bg` | **3.82** | **3.82** |
+| `--ink-3` on `--surface` | **4.05** | **4.05** |
+
+⚡ **D13-C carries three options — darken the token · restrict it to large text ·
+accept and record.** ⛔ **Whoever rules should see both items**: D13-C asks what
+to do about the measured pairs, and this asks which document wins when the ramp
+and §17 disagree. **One answer settles both.**
+
+⚠️ **And the population is reconciled — there is no defect under it.** 📁 **QE
+counts `342` uses of `--ink-4` as a TEXT colour; this item's `440` counts every
+use** — 341 `color`, 2 `background`, 1 `text-decoration-color`. ✅ **342 is the
+right population for a text-role finding**, and the two backgrounds are not what
+either item is about.
+
 
 ### C-1547 · The Settings screen draws a 16px card; the Design System assigns 12px to cards
 
