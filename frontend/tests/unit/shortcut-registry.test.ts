@@ -37,9 +37,33 @@ import {
  * **Without it, the ordinary failure is invisible**: somebody implements `G H`,
  * ships it, and the reference goes on saying `Not bound` — **the register
  * telling a customer a working feature does not exist**, which is
- * [§2](../../../CLAUDE.md)'s defect pointed the other way. ⚠️ **This lane has
- * already shipped that exact shape once**, in [B-3180](../../../docs/BUGS.md):
- * a defect fixed in code and left reading `OPEN` in the register.
+ * [§2](../../../CLAUDE.md)'s defect pointed the other way.
+ *
+ * ## ⛔ A sentence was removed from here, and removing it is the point
+ *
+ * ⚠️ **This paragraph used to end**: *"This lane has already shipped that exact
+ * shape once, in **B-3180**: a defect fixed in code and left reading `OPEN` in
+ * the register."*
+ *
+ * 🔴 **B-3180 DOES NOT EXIST AND NEVER DID.** ⛔ **The highest identifier ever
+ * filed in `docs/BUGS.md` is `B-1066`**, and `git log -S` finds no commit that
+ * ever added a `B-3180` heading. **A docstring cited an invented row as the
+ * precedent for its own argument** — and it did so in a comment *about* a
+ * register that says untrue things, which is 📁 [§2](../../../CLAUDE.md)
+ * landing on the file that quotes §2.
+ *
+ * ✅ **The argument stands without it and is not weakened by its removal**: the
+ * failure mode above is derived from what the registry IS — a hand-maintained
+ * list beside code that changes — **not from a past occurrence.** ⛔ **A
+ * precedent that has to be invented was never carrying the argument**, and
+ * replacing the number with a different one would be inventing it twice.
+ *
+ * ⚡ **Found by counting**: 198 row identifiers are cited across 654 frontend
+ * source files and 196 of them resolve to a heading. **This was one of the
+ * two.** 📁 The same sentence appears in
+ * [`37-product-surface.md`](../../../docs/architecture/37-product-surface.md);
+ * that document is not this lane's to edit and it is reported rather than
+ * changed.
  */
 
 const FRONTEND = join(process.cwd());

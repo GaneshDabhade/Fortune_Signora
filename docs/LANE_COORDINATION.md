@@ -15548,3 +15548,38 @@ document wins for a shared primitive**, so that future conformance passes stop
 re-deriving it. 🔴 **Lane A's reading, offered as input only: the Design System
 governs the primitive and a screen document governs that screen's composition.**
 
+
+### C-1550 · Three documents give the Settings rail three widths, and none of them is a shared primitive
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-22, implementing [B-298](BUGS.md)'s `768px` band |
+| **Owner** | **Product owner** — 📁 [§20c](../CLAUDE.md) makes the design the authority for a screen's composition, and **two design documents disagree with each other** |
+| **Status** | **`OPEN`** — ⚡ **nothing is blocked.** The band structure ships; only the width waits |
+| **Blocks** | Nothing. The rail renders at its existing width until this is answered |
+
+**The three numbers.**
+
+| Source | Rail width |
+|---|---|
+| 📁 `Fortune Signora Workspace Setup` — *"Settings rail at **220px** beside a two-column form"* | **220px** |
+| 📁 `Fortune Signora User Profile` — *"**212px** rail beside a two-column form"* | **212px** |
+| `app/(app)/settings/page.tsx` renders | **208px** |
+
+⛔ **This is design-vs-design, not code-vs-design**, which is why it is a ruling
+and not a defect. ⚡ **The two documents agree word for word on the STRUCTURE** —
+rail beside the content at `≥ 1280px`, *"a horizontal scroller"* at
+`768–1279px` — **so that half was implemented and needed nobody's permission.**
+🔴 **They disagree only on the number**, and picking one would be resolving a
+design conflict in code.
+
+⚠️ **Not the same shape as [C-1547](#c-1547).** There the Design System governs
+a shared primitive and the screen was the outlier. **Here there is no shared
+primitive**: the Settings rail is one screen's composition, and both documents
+describing it are screen documents of equal standing. ⛔ **So the rule proposed
+in C-1547 does not decide this one**, and applying it would look like an answer
+while resolving nothing.
+
+**What is actually being asked:** **which width does the Settings rail take** —
+`220`, `212`, or the `208` already shipped? ⚡ **Any of the three is
+implementable in one line**; what cannot be done in a lane is choosing.
