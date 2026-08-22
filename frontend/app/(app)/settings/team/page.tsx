@@ -451,13 +451,32 @@ export default function TeamPage() {
           </p>
           <div className="mt-1 flex flex-wrap gap-2">
             {others.map((one) => (
+              /* 🔴 **[B-1019](../../../../docs/BUGS.md) — this control's LABEL
+                 EMBEDS UNBOUNDED USER DATA.** ⛔ **`Button` is `shrink-0
+                 whitespace-nowrap` deliberately** — its own comment explains
+                 why, and it is correct — **so the control was exactly as wide
+                 as whatever address a customer signed up with.** 📁 **Measured
+                 by QE on prod-local: four of these at `right` 410–441 against a
+                 360px viewport, and the page scrolled sideways.**
+
+                 ✅ **`max-w-full` bounds the control to its container and
+                 `truncate` bounds the text inside it** — ⛔ **neither touches
+                 `Button`'s own shrink or wrap, which exist so a control is not
+                 squeezed to its ellipsis by a long sibling.**
+
+                 ⚡ **The accessible name is unchanged and complete**: `truncate`
+                 is a visual overflow, so the full *"Hand over to …"* still
+                 reaches assistive technology, and 📁 `visual.spec.ts` allows an
+                 ellipsis explicitly — *"Ellipsis is deliberate and allowed;
+                 silent clipping is not."* */
               <Button
                 key={one.id}
+                className="max-w-full"
                 variant="secondary"
                 size="sm"
                 onClick={() => setHandingTo(one)}
               >
-                Hand over to {nameOf(one, viewerId)}
+                <span className="truncate">Hand over to {nameOf(one, viewerId)}</span>
               </Button>
             ))}
           </div>

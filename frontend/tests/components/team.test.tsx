@@ -386,7 +386,17 @@ describe('the roster answers *who is in my organization?*', () => {
     members.mockReturnValue({
       ...IDLE,
       data: {
-        items: [person(), person({ id: 'm2', user_id: 'b', role: 'member', member_email: 'jo@acme.com' })],
+      // 🔴 **The fixture was `jo@acme.com`, and it was too short to fail.**
+      // 📁 **[B-1019](../../../docs/BUGS.md): *"Hand over to jo@acme.com"* is 24
+      // characters and fits at every width; *"Hand over to
+      // quinn.alvarez@northwind.example"* is 44 and does not.** ⛔ **The guard
+      // asserting this exact button existed the whole time and its data could
+      // not contain the defect it was written to catch.**
+      //
+      // ⚠️ **A realistic address, not a long one for its own sake** — this is
+      // what QE measured on prod-local, and a fixture that cannot reproduce
+      // production data is a population narrower than the claim it makes.
+        items: [person(), person({ id: 'm2', user_id: 'b', role: 'member', member_email: 'quinn.alvarez@northwind.example' })],
       },
     });
 
@@ -403,7 +413,7 @@ describe('removing somebody is offered only where it is real', () => {
     viewerRole.mockReturnValue({ role: 'member', resolved: true });
     members.mockReturnValue({
       ...IDLE,
-      data: { items: [person(), person({ id: 'm2', user_id: 'b', member_email: 'jo@acme.com' })] },
+      data: { items: [person(), person({ id: 'm2', user_id: 'b', member_email: 'quinn.alvarez@northwind.example' })] },
     });
 
     render(draw());
@@ -422,13 +432,13 @@ describe('removing somebody is offered only where it is real', () => {
   it('names the person and the consequence rather than asking *are you sure*', () => {
     members.mockReturnValue({
       ...IDLE,
-      data: { items: [person(), person({ id: 'm2', user_id: 'b', member_email: 'jo@acme.com' })] },
+      data: { items: [person(), person({ id: 'm2', user_id: 'b', member_email: 'quinn.alvarez@northwind.example' })] },
     });
 
     render(draw());
     fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
 
-    expect(screen.getByText(/jo@acme.com will lose access/)).toBeVisible();
+    expect(screen.getByText(/quinn.alvarez@northwind.example will lose access/)).toBeVisible();
   });
 
   it('promises that what they decided stays on the record', () => {
@@ -436,7 +446,7 @@ describe('removing somebody is offered only where it is real', () => {
     // timeline still say who acted.
     members.mockReturnValue({
       ...IDLE,
-      data: { items: [person(), person({ id: 'm2', user_id: 'b', member_email: 'jo@acme.com' })] },
+      data: { items: [person(), person({ id: 'm2', user_id: 'b', member_email: 'quinn.alvarez@northwind.example' })] },
     });
 
     render(draw());
@@ -453,7 +463,7 @@ describe('changing what somebody can do', () => {
       data: {
         items: [
           person(),
-          person({ id: 'm2', user_id: 'b', role: 'member', member_email: 'jo@acme.com' }),
+          person({ id: 'm2', user_id: 'b', role: 'member', member_email: 'quinn.alvarez@northwind.example' }),
         ],
       },
     });
@@ -466,7 +476,7 @@ describe('changing what somebody can do', () => {
 
     render(draw());
 
-    expect(screen.getByLabelText('What jo@acme.com can do')).toBeVisible();
+    expect(screen.getByLabelText('What quinn.alvarez@northwind.example can do')).toBeVisible();
   });
 
   it('a member reads roles and cannot change them', () => {
@@ -475,7 +485,7 @@ describe('changing what somebody can do', () => {
 
     render(draw());
 
-    expect(screen.queryByLabelText('What jo@acme.com can do')).toBeNull();
+    expect(screen.queryByLabelText('What quinn.alvarez@northwind.example can do')).toBeNull();
     expect(screen.getAllByText('Works accounts').length).toBeGreaterThan(0);
   });
 
@@ -483,7 +493,7 @@ describe('changing what somebody can do', () => {
     twoPeople();
 
     render(draw());
-    fireEvent.change(screen.getByLabelText('What jo@acme.com can do'), {
+    fireEvent.change(screen.getByLabelText('What quinn.alvarez@northwind.example can do'), {
       target: { value: 'owner' },
     });
 
@@ -495,12 +505,12 @@ describe('changing what somebody can do', () => {
     members.mockReturnValue({
       ...IDLE,
       data: {
-        items: [person(), person({ id: 'm2', user_id: 'b', member_email: 'jo@acme.com' })],
+        items: [person(), person({ id: 'm2', user_id: 'b', member_email: 'quinn.alvarez@northwind.example' })],
       },
     });
 
     render(draw());
-    fireEvent.change(screen.getByLabelText('What jo@acme.com can do'), {
+    fireEvent.change(screen.getByLabelText('What quinn.alvarez@northwind.example can do'), {
       target: { value: 'member' },
     });
 
@@ -522,7 +532,7 @@ describe('changing what somebody can do', () => {
     twoPeople();
 
     render(draw());
-    fireEvent.change(screen.getByLabelText('What jo@acme.com can do'), {
+    fireEvent.change(screen.getByLabelText('What quinn.alvarez@northwind.example can do'), {
       target: { value: 'owner' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Let them administer' }));
@@ -713,11 +723,45 @@ describe('handing the organization over is one operation', () => {
       data: {
         items: [
           person(),
-          person({ id: 'm2', user_id: 'b', role: 'member', member_email: 'jo@acme.com' }),
+          person({ id: 'm2', user_id: 'b', role: 'member', member_email: 'quinn.alvarez@northwind.example' }),
         ],
       },
     });
   }
+
+  it('🔴 bounds a label that embeds an address, because addresses are unbounded', () => {
+    // 📁 **[B-1019](../../../docs/BUGS.md)** — ⛔ **this control's label embeds
+    // user data, and `Button` is `shrink-0 whitespace-nowrap` DELIBERATELY**
+    // (its own comment: *"a button in a flex row with neither is squeezed to
+    // its ellipsis by a long sibling"*). ⚡ **So the control was exactly as wide
+    // as whatever address a customer signed up with** — QE measured four at
+    // `right` 410–441 against a 360px viewport, and the page scrolled sideways.
+    //
+    // ⚠️ **This asserts the MECHANISM, not the geometry** — jsdom has no
+    // layout, so `max-w-full` and `truncate` are what can be checked here. **The
+    // geometry is `layout-invariants` at 375px**, which needs a workspace whose
+    // viewer is an owner with other members; ⛔ **it does not reproduce on every
+    // seed, which is why this defect survived.**
+    withColleague();
+
+    render(draw());
+
+    const control = screen.getByRole('button', {
+      name: 'Hand over to quinn.alvarez@northwind.example',
+    });
+
+    // ⛔ **The control may not exceed what contains it**, whatever the address.
+    expect(control.className).toContain('max-w-full');
+    // ⛔ **And the text inside it ends in an ellipsis rather than a clip** —
+    // 📁 `visual.spec.ts`: *"Ellipsis is deliberate and allowed; silent
+    // clipping is not."*
+    expect(control.querySelector('.truncate')?.textContent).toBe(
+      'Hand over to quinn.alvarez@northwind.example',
+    );
+    // ✅ **The accessible name stays complete** — `truncate` is visual overflow,
+    // so assistive technology still receives the whole sentence.
+    expect(control).toHaveAccessibleName('Hand over to quinn.alvarez@northwind.example');
+  });
 
   it('is offered at the foot, away from the roster', () => {
     // Danger separated by scope: an administrator scanning names should not be
@@ -726,7 +770,7 @@ describe('handing the organization over is one operation', () => {
 
     render(draw());
 
-    expect(screen.getByRole('button', { name: 'Hand over to jo@acme.com' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Hand over to quinn.alvarez@northwind.example' })).toBeVisible();
   });
 
   it('promises that there is never a moment with two owners', () => {
@@ -760,7 +804,7 @@ describe('handing the organization over is one operation', () => {
     withColleague();
 
     render(draw());
-    fireEvent.click(screen.getByRole('button', { name: 'Hand over to jo@acme.com' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Hand over to quinn.alvarez@northwind.example' }));
 
     expect(screen.getByText(/will be able to invite people/)).toBeVisible();
     expect(screen.getByText(/You will keep working accounts/)).toBeVisible();
@@ -771,7 +815,7 @@ describe('handing the organization over is one operation', () => {
     withColleague();
 
     render(draw());
-    fireEvent.click(screen.getByRole('button', { name: 'Hand over to jo@acme.com' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Hand over to quinn.alvarez@northwind.example' }));
     fireEvent.click(screen.getByRole('button', { name: 'Hand over' }));
 
     expect(transfer).toHaveBeenCalledWith(
