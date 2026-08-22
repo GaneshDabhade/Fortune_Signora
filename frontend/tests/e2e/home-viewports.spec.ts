@@ -64,6 +64,59 @@ async function columns(page: import('@playwright/test').Page): Promise<number[]>
   return template.split(/\s+/).map((value) => Number.parseFloat(value));
 }
 
+/**
+ * 🔴 **THE DESIGN NAMES HEIGHT AS A LAW AND NOTHING ASSERTED IT.**
+ *
+ * 📁 Home's `responsiveLaws`: *"**Height is a first-class constraint.** 1024 ×
+ * 768 and 1280 × 800 clamp the briefing so the first attention item is above the
+ * fold. **Home is checked at height, not only at width.**"*
+ *
+ * ⚠️ **The two tests below already set exactly those viewports — and both assert
+ * a COLUMN RATIO.** ⛔ **So the suite was checked at height and still only
+ * measured width**, which is the law's own sentence describing the gap it exists
+ * to close.
+ *
+ * ✅ **Measured before it was written, so this guards something that holds rather
+ * than repairing something that does not**: the first *"Open the account"* sits
+ * at `322..353` against a fold of 768, and at `322..353` against 800. **Three of
+ * five items clear the fold at both.**
+ *
+ * ⚡ **The ITEM, not the card.** 📁 `needs-you-today` spans `253..1316` at
+ * 1024 × 768 and could never fit inside a fold — **a card of many rows is not an
+ * "attention item", and asserting the card would be a guard that can only
+ * fail.** ⛔ **That reading was measured and discarded before this was written**,
+ * which is [B-1066](../../../docs/BUGS.md)'s lesson: an instrument asserting the
+ * wrong population.
+ */
+test.describe('📁 height is a first-class constraint', () => {
+  for (const viewport of [
+    { width: 1024, height: 768 },
+    { width: 1280, height: 800 },
+  ]) {
+    test(`@regression the first attention item clears the fold at ${viewport.width} × ${viewport.height}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      await openHome(page);
+
+      const first = page.locator('[data-card="needs-you-today"]').locator('a[href]').first();
+      await expect(first).toBeVisible();
+
+      // ⚠️ **`boundingBox()` is `{ x, y, width, height }` and has NO `bottom`.**
+      // ⛔ A first draft read `box.bottom`, which is `undefined` — the guard
+      // would have compared `Infinity` and failed on every run.
+      const box = await first.boundingBox();
+      const bottom = box === null ? Number.POSITIVE_INFINITY : box.y + box.height;
+
+      expect(
+        bottom,
+        `the first attention item ends at ${Math.round(bottom)}px against a ${viewport.height}px fold — ` +
+          'the briefing no longer clamps, and a seller opens Home to work they cannot see',
+      ).toBeLessThanOrEqual(viewport.height);
+    });
+  }
+});
+
 test.describe('📁 the two-column split, and where it starts', () => {
   /**
    * 🔴 **Two columns RETURN at 1024, and they used to start at 1280.**
