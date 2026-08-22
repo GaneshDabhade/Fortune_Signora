@@ -1510,7 +1510,7 @@ sleep 20; head -4 "$S/browser-257.log"     # ← the launch is not the evidence
 | **Module** | [`docs/RUNNING.md`](RUNNING.md) — **QE's** · `Makefile:236` — **`platform_foundation`, Lane A** |
 | **Current assignee** | **Split, one site each. Both fixed** |
 | **Severity** | 🟠 — **a lane following the documented path squats human review's port** |
-| **Status** | 🔴 **`OPEN` — reopened 2026-08-21 by QE.** ✅ [`RUNNING.md`](RUNNING.md):217 **fixed** 2026-08-20, verified from source. ⛔ **`Makefile`:236 is NOT fixed** — see the reopening note below. ⛔ **NOT `VERIFIED`**: QE wrote one half |
+| **Status** | ✅ **`VERIFIED`** — ⚡ **the reopened half is now closed too.** **QE re-read `Makefile:236` on `origin/main`: `@echo "  frontend  cd frontend && npm run dev -- --port $(SIGNORA_WEB)"`** — **the derived port is printed.** 📁 `RUNNING.md`:217 was fixed 2026-08-20; **both halves now hold** |
 | **Found** | **2026-08-20 by Lane A**, who caught it and moved to `-p 3300` |
 
 **`npm run dev` invoked with no port takes Next's default, `3000`, which [`RUNNING.md`](RUNNING.md#running-a-lane) allocates to `review`/slot 0.**
@@ -17552,7 +17552,7 @@ cd frontend && npx tsc --noEmit
 |---|---|
 | **Module** | `product_surface` — **Lane A** · [`frontend/app/globals.css`](../frontend/app/globals.css):264–313 |
 | **Severity** | 🟠 **P2** — ⚠️ **was P1; lowered 2026-08-21 when this row's own visual evidence was re-measured and found overstated.** **The token divergence is unambiguous; the verified rendered consequence is the loading skeleton ([B-1057](#b-1057)), not every sunken element** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`VERIFIED`** — the dark ramp separates — **QE measured on `origin/main`: `--color-canvas` `13 20 24` against `--color-surface-sunken` `27 39 47`** |
 | **Found** | 2026-08-21 by QE, full UI conformance audit, on `6442122e` |
 | **Route** | **Every authenticated route.** Measured on `/w/{ws}/home` and `/accounts` |
 | **Surface** | The token layer → every `bg-surface-sunken` consumer (**112 occurrences** across `frontend/components` and `frontend/app`) |
@@ -17638,7 +17638,7 @@ DARK   skeleton rgb(13,20,24)     page rgb(13,20,24)      n=3   IDENTICAL
 |---|---|
 | **Module** | `product_surface` — **Lane A** · [`frontend/app/globals.css`](../frontend/app/globals.css) |
 | **Severity** | 🟡 **P2** — wrong but survivable; the surfaces render, without the design's delineation |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`VERIFIED`** — **all five roles declared, light and dark** — QE counted independently: `--color-accent-ink` · `-accent-line` · `-ai-ink` · `-ai-line` · `-success-line`, **2 declarations each** |
 | **Found** | 2026-08-21 by QE, full UI conformance audit, on `6442122e` |
 | **Route** | Product-wide |
 | **Surface** | The token layer |
@@ -17692,7 +17692,22 @@ DARK   skeleton rgb(13,20,24)     page rgb(13,20,24)      n=3   IDENTICAL
 |---|---|
 | **Module** | `product_surface` — **Lane A** · [`frontend/components/ui/badge.tsx`](../frontend/components/ui/badge.tsx) |
 | **Severity** | 🟡 **P2** — 🟠 for the `neutral` tone in dark theme, where the badge has neither fill nor border |
-| **Status** | **`OPEN`** |
+| **Status** | 🔴 **`OPEN` — CLAUSE ② ONLY.** ⛔ **Clause ① was CORRECTED, not fixed: `badge.tsx` records **166 badges with no border against 14 with one**, so the design's badge is borderless and this row's original ask was wrong. The product did not change.** ⚡ **Clause ② is LIVE and is the half that reaches a customer** |
+
+> 🔴 **CLAUSE ② MEASURED AND CONFIRMED LIVE, 2026-08-22.** **Lane A measured it and QE recomputed the ratios INDEPENDENTLY from the tokens on the tree — identical to two decimal places:**
+>
+> | | |
+> |---|---|
+> | `neutral` badge (`--color-surface-sunken` `27 39 47`) on a card (`--color-surface` `21 32 39`) | 🔴 **1.09:1** |
+> | the same badge on the page canvas (`--color-canvas` `13 20 24`) | 🔴 **1.22:1** |
+> | **WCAG 1.4.11 needs** | **3:1 for a component boundary** |
+>
+> ⚡ **It has a fill; it does not have a VISIBLE one.** 📁 **QE's own severity cell said so when the row was filed** — *"🟠 for the `neutral` tone in dark theme, where the badge has neither fill nor border"* — **and that half was never addressed.**
+>
+> ⛔ **DELIBERATELY NOT FIXED, and neither route is a lane's to take.** **Giving `neutral` a border contradicts a design measured as borderless 166 times; changing the fill is a token decision.** ⚡ **It is the same shape as [C-1548](LANE_COORDINATION.md) and [B-1058](#b-1058): a value that reads as intentional and does not clear the floor.** ✅ **Attached to C-1548 rather than opened as a fourth item, on Lane A's suggestion.**
+>
+> ⚠️ **This is why the two clauses were not closed together.** **One was a wrong ask and the other is a live defect, and conflating them would have cleared a defect a customer meets by resolving a complaint that was never right.**
+
 | **Found** | 2026-08-21 by QE, full UI conformance audit, on `6442122e` |
 | **Route** | Product-wide |
 | **Surface** | `components/ui/badge.tsx` → every badge, chip and status pill |
@@ -17745,7 +17760,7 @@ ai:      'bg-ai-subtle text-ai'
 |---|---|
 | **Module** | `product_surface` — **Lane A** · [`frontend/app/(app)/accounts/[accountId]/page.tsx`](../frontend/app/(app)/accounts/[accountId]/page.tsx) |
 | **Severity** | 🟠 **P1** — a stale or mistyped link renders a plausible record instead of saying it is not there |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`VERIFIED`** — **`accessibility.spec.ts:656` — *"an account the workspace does not have renders a not-found state"*, passing in a browser.** ⚡ **Instrument chosen deliberately: a 404 path is BEHAVIOUR, and a variable name in source proves only that a variable exists** |
 | **Found** | 2026-08-21 by QE, full UI conformance audit, on `6442122e` |
 | **Route** | `/accounts/:accountId` |
 | **Surface** | Account 360 → page header, and every section's empty state |
@@ -17791,7 +17806,7 @@ ai:      'bg-ai-subtle text-ai'
 |---|---|
 | **Module** | `product_surface` — **Lane A** · [`frontend/app/(app)/accounts/[accountId]/page.tsx`](../frontend/app/(app)/accounts/[accountId]/page.tsx) — the *What changed* section |
 | **Severity** | 🟡 **P2** — the body tells the truth, so the customer can reach it; the **count states a false quantity in the line people scan** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`VERIFIED`** — the rail renders **no count** where a section is absent rather than a zero, and `sections.tsx` cites this row as the reason |
 | **Found** | 2026-08-21 by QE, UI conformance audit second pass, on `9448cfc3`, by **inducing the failure** rather than waiting for one |
 | **Route** | `/accounts/:accountId` |
 | **Surface** | Account 360 → *What changed* → the count beside the heading |
@@ -17840,7 +17855,7 @@ Nothing has changed about the account — reload to try again.
 |---|---|
 | **Module** | `product_surface` — **Lane A** · [`frontend/components/ui/tabs.tsx`](../frontend/components/ui/tabs.tsx) · [`frontend/components/shell/utility-panel.tsx`](../frontend/components/shell/utility-panel.tsx) |
 | **Severity** | 🟠 **P1 for assistive technology** — a control announces itself as a tab and names nothing it controls |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`VERIFIED`** — **`accessibility.spec.ts:747` — *"all three tablists carry the full contract, including the two that must be opened"*, passing.** `tabs.tsx`: `aria-controls` ×3, `aria-labelledby` ×2, `role="tabpanel"` ×2 |
 | **Found** | 2026-08-21 by QE, UI conformance audit, on `b9d09a4e`, **measured from the rendered accessibility tree** |
 | **Route** | `/signals` measured; **the shared component has three importers, so this is product-wide** |
 | **Surface** | `components/ui/tabs.tsx` → Signal Center queue tabs · Companies view switcher · notifications · the utility panel's Insights/Activity/Notes rail |
@@ -17894,7 +17909,7 @@ Nothing has changed about the account — reload to try again.
 |---|---|
 | **Module** | `product_surface` — **Lane A** · [`frontend/app/(app)/signals/page.tsx`](../frontend/app/(app)/signals/) · [`frontend/app/(app)/profile/security/page.tsx`](../frontend/app/(app)/profile/security/) |
 | **Severity** | 🟡 **P2** — the wrong type role on two shipped screens, and **invisible to the row that owns the migration** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`VERIFIED`** — both named screens carry the Title role — **`/signals` delegates to `SignalQueue`'s `PageHeader`, and `profile/security` carries `text-title` (`--text-title` = 26px, §04's Title)** |
 | **Found** | 2026-08-21 by QE, UI conformance audit, on `b9d09a4e`, **by rendering all 15 shell routes and reading the computed style of each `h1`** |
 | **Route** | `/signals` · `/profile/security` |
 | **Surface** | Page heading |
@@ -17933,7 +17948,7 @@ Nothing has changed about the account — reload to try again.
 |---|---|
 | **Module** | `product_surface` — **Lane A** · [`frontend/components/ui/skeleton.tsx`](../frontend/components/ui/skeleton.tsx) and its callers |
 | **Severity** | 🟡 **P2** — 🟠 **in dark theme, where [B-1050](#b-1050) also removes the visual half and the state becomes undetectable by any means** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`VERIFIED`** — **`skeleton.tsx` — QE counted: `aria-live` ×3, `aria-busy` ×4**, plus `useAnnouncedAfterMount` ×3 and `LoadingRegion` ×4 |
 | **Found** | 2026-08-21 by QE, UI conformance audit, on `3dda7292`, **by holding a read open for 12s and sampling mid-flight** |
 | **Route** | `/signals` measured · `/w/{ws}/home` shows the same shape |
 | **Surface** | Every route that renders `Skeleton` while a read is in flight |
@@ -17983,7 +17998,7 @@ DARK   skeleton rgb(13,20,24)     page rgb(13,20,24)      identical — nobody p
 |---|---|
 | **Module** | `product_surface` — **Lane A** · [`frontend/app/globals.css`](../frontend/app/globals.css):363 · `components/ui/**` |
 | **Severity** | 🟡 **P2** — every control is focusable and visibly focused; **what differs is which indicator appears**, which is a conformance and consistency defect rather than a blocker |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`VERIFIED`** — **`globals.css` declares exactly TWO `:focus-visible` rules** — the global one and `.focus-proxy` — **counted by QE**, and `accessibility.spec` is 31/31 including the tab-stop sweep |
 | **Found** | 2026-08-21 by QE, UI conformance audit, on `39fa8a93`, **by pressing Tab 28 times per route and reading the computed style of `document.activeElement`** |
 | **Route** | `/accounts` · `/signals` · `/settings/team` — **the same four treatments on each** |
 | **Surface** | Focus indication, product-wide |
@@ -18050,7 +18065,7 @@ DARK   skeleton rgb(13,20,24)     page rgb(13,20,24)      identical — nobody p
 |---|---|
 | **Module** | `product_surface` — **Lane A** · [`frontend/components/shell/account-menu.tsx`](../frontend/components/shell/account-menu.tsx):164 |
 | **Severity** | 🟢 **P3** — cosmetic, **one line**, and it is the only instance of its class left in the product |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`VERIFIED`** — `account-menu.tsx` reads `rounded-lg` (§05's 12px) and `shadow-lg` (§06's `--e3`) — **QE re-read it on `origin/main`; fixed in `7274324b`, which is an ancestor of `main`** |
 | **Found** | 2026-08-21 by QE, UI conformance audit, on `4f748232`, **by opening every overlay and measuring the rendered radius** |
 | **Route** | Any — the account menu lives in the shell |
 | **Surface** | Top bar → avatar → account menu, the container |
