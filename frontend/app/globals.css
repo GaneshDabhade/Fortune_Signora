@@ -520,8 +520,20 @@
      * properties**, so claiming the ring slot leaves the element's own shadow
      * intact and puts the halo exactly where a ring belongs. ⚠️ **The fallbacks
      * matter**: an element with no Tailwind shadow has neither variable set.
+     *
+     * 🔴 **`3px`, and it was `4px` for no stated reason.** 📁 **The design draws
+     * this indicator 21 times across the 35 documents and all 21 agree** —
+     * `box-shadow: 0 0 0 3px var(--brand-tint)` beside `border: 1px solid
+     * var(--brand)`. ⚡ **The colours map exactly**: `--brand-tint` is
+     * `#e6f1f8` light and `#14303e` dark, which is `--color-accent-subtle` in
+     * both. **Only the width was ours.**
+     *
+     * ⚠️ **§17's prose says *"a 2px brand ring at 2px offset"* and the corpus
+     * says 3px at no offset, unanimously.** ⛔ **The markup is what is drawn**,
+     * and this is the third place the design's prose disagrees with its own
+     * drawing — 📁 [B-297](../../docs/BUGS.md) is another.
      */
-    --tw-ring-shadow: 0 0 0 4px rgb(var(--color-accent-subtle));
+    --tw-ring-shadow: 0 0 0 3px rgb(var(--color-accent-subtle));
     box-shadow:
       var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow),
       var(--tw-shadow, 0 0 #0000);
@@ -545,7 +557,7 @@
   .focus-proxy:has(:focus-visible) {
     outline: 1px solid rgb(var(--color-accent));
     outline-offset: 0;
-    --tw-ring-shadow: 0 0 0 4px rgb(var(--color-accent-subtle));
+    --tw-ring-shadow: 0 0 0 3px rgb(var(--color-accent-subtle));
     box-shadow:
       var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow),
       var(--tw-shadow, 0 0 #0000);

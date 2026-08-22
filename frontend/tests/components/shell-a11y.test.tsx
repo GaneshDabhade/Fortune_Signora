@@ -8,6 +8,8 @@ import { AppShell } from '@/components/shell/app-shell';
 import { SkipLinks } from '@/components/shell/skip-links';
 import { RouteAnnouncer } from '@/components/shell/route-announcer';
 
+import { focusRings } from '../support/design-snapshot';
+
 /**
  * **The shell's accessibility contract** — [TASK-1444](../../../docs/BACKLOG.md),
  * 📁 App Shell `a11yRules` and `landmarks`.
@@ -235,7 +237,21 @@ describe('📁 2.4.7 — one focus indicator, and it is the design\'s', () => {
     expect(rule).toMatch(/outline:\s*1px solid rgb\(var\(--color-accent\)\)/);
     // ⚡ **Through the ring slot**, so an element's own `shadow-*` survives —
     // 🔴 the halo was silently deleted on every one of them before.
-    expect(rule).toMatch(/--tw-ring-shadow:\s*0 0 0 4px rgb\(var\(--color-accent-subtle\)\)/);
+    //
+    // 🔴 **The WIDTH is read out of the design rather than written here.** ⛔
+    // **This asserted `4px` — a value nothing justified, against a design whose
+    // 21 focus indicators unanimously draw `3px`.** ⚡ **A test that states the
+    // number itself passes on the next wrong one too**, which is the same
+    // defect as a guard reading an uncommitted corpus.
+    const design = focusRings().find((reading) => reading.ring.includes('brand-tint'));
+    const width = /0 0 0 (\d+)px/.exec(design?.ring ?? '')?.[1];
+    expect(width, 'the design draws a brand-tint ring').toBeDefined();
+    expect(rule).toMatch(
+      new RegExp(`--tw-ring-shadow:\\s*0 0 0 ${width}px rgb\\(var\\(--color-accent-subtle\\)\\)`),
+    );
+    // ⛔ **And the border beside it is the half that carries the contrast** —
+    // 📁 [B-1058](../../../docs/BUGS.md): the tint alone is about 1.06:1.
+    expect([...(design?.paired.keys() ?? [])].join(' ')).toContain('1px solid var(--brand)');
     expect(rule).toMatch(/var\(--tw-shadow, 0 0 #0000\)/);
     // ♿ **A real outline, not a transparent one** — forced-colors discards
     // `box-shadow` and honours `outline`.
