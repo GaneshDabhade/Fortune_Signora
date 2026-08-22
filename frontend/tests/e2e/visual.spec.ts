@@ -56,7 +56,7 @@ async function settled(page: import('@playwright/test').Page): Promise<void> {
   // look at the real page.** ⚠️ Bounded, because a screen with no skeleton at
   // all must not hang here.
   await page
-    .waitForFunction(() => document.querySelectorAll('main .animate-pulse').length === 0, null, {
+    .waitForFunction(() => document.querySelectorAll('main [data-skeleton]').length === 0, null, {
       timeout: 20_000,
     })
     .catch(() => undefined);

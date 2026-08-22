@@ -101,8 +101,8 @@ export function RecentsCard() {
         <div aria-hidden className="mt-2.5 space-y-3">
           {phase === 'skeleton' ? (
             <>
-              <div className="h-4 w-2/3 animate-pulse rounded bg-surface-sunken" />
-              <div className="h-4 w-1/2 animate-pulse rounded bg-surface-sunken" />
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="h-4 w-1/2" />
             </>
           ) : null}
         </div>

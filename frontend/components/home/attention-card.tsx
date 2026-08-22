@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { Money, Posture, QueueEntry, SignalTypeName } from '@/lib/api/types';
 import { formatMoney } from '@/lib/accounts/table';
 import { cn } from '@/lib/design/cn';
+import { Skeleton } from '@/components/ui';
 import { AccountName } from '@/components/intelligence/account-name';
 import { CardFailure } from '@/components/home/card-failure';
 import { HM_COPY_06 } from '@/lib/home/copy';
@@ -119,10 +120,7 @@ export function AttentionCard() {
               holds its footprint**, so nothing reflows when the data lands. */}
           {phase === 'skeleton'
             ? [0, 1, 2].map((i) => (
-                <div
-                  key={i}
-                  className="h-[46px] animate-pulse rounded-lg bg-surface-sunken"
-                />
+                <Skeleton key={i} className="h-[46px] rounded-lg" />
               ))
             : null}
           {/* ♿ **Announced from the first frame**, whatever is drawn. A reader

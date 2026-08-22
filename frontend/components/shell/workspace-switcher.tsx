@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 
+import { Skeleton } from '@/components/ui';
 import { cn } from '@/lib/design/cn';
 import { RAIL_WIDTH } from '@/lib/shell/rail';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
@@ -180,7 +181,7 @@ export function WorkspaceSwitcher({ collapsed = false }: { collapsed?: boolean }
 
   if (isLoading) {
     return (
-      <div className="mx-3 mt-3 h-[38px] animate-pulse rounded-md bg-surface-sunken" />
+      <Skeleton className="mx-3 mt-3 h-[38px] rounded-md" />
     );
   }
   if (activeWorkspace === null) return null;

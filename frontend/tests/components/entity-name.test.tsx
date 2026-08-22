@@ -36,7 +36,7 @@ describe('the row does not rewrite itself under the reader', () => {
       <EntityName identity={undefined} fallbackId={ACCOUNT} isLoading />,
     );
 
-    expect(container.querySelector('.animate-pulse')).toBeInTheDocument();
+    expect(container.querySelector('[data-skeleton]')).toBeInTheDocument();
     expect(screen.queryByText('6b8efd21')).not.toBeInTheDocument();
   });
 

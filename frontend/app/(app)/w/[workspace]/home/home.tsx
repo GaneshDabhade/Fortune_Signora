@@ -3,6 +3,7 @@
 import { Home as HomeIcon } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
+import { Skeleton } from '@/components/ui';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { cn } from '@/lib/design/cn';
 import {
@@ -632,10 +633,9 @@ function HomeContent() {
            * the substitution itself.
            */}
           {resolving ? (
-            <div
-              aria-hidden
+            <Skeleton
               data-testid="home-resolving"
-              className="h-[164px] animate-pulse rounded-lg border border-border-soft bg-surface-sunken"
+              className="h-[164px] rounded-lg border border-border-soft"
             />
           ) : null}
           {resolving

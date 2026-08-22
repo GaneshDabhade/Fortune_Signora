@@ -142,7 +142,7 @@ test('@journey a queue row carries its own summary, not its type’s', async ({ 
      * `queue.isPending`, so their absence is the tab's read having landed,
      * which is the thing being waited for rather than a proxy for it.
      */
-    await expect(page.locator('.h-16.animate-pulse')).toHaveCount(0, { timeout: 20_000 });
+    await expect(page.locator('[data-skeleton].h-16')).toHaveCount(0, { timeout: 20_000 });
 
     const groups = page.locator('h2').locator('..');
     for (let i = 0; i < (await groups.count()); i += 1) {

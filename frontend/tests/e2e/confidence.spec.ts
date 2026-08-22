@@ -119,7 +119,7 @@ test.describe('the network is not what it was in development', () => {
      * definition every other assertion in these journeys uses.
      */
     const inFlight = await page.locator('main').evaluate((main) => ({
-      skeletons: main.querySelectorAll('[class*="animate-pulse"]').length,
+      skeletons: main.querySelectorAll('[data-skeleton]').length,
       rows: main.querySelectorAll('a[href^="/accounts/"]').length,
       words: (main.textContent ?? '').trim().length,
     }));

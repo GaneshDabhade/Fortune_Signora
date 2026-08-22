@@ -161,7 +161,7 @@ test.describe('how many times a screen changes shape', () => {
         .locator('main')
         .evaluate((element) => {
           const rows = element.querySelectorAll('ol > li').length;
-          const skeletons = element.querySelectorAll('[class*="animate-pulse"]').length;
+          const skeletons = element.querySelectorAll('[data-skeleton]').length;
           return `rows:${rows} skeleton:${skeletons > 0}`;
         })
         .catch(() => 'gone');

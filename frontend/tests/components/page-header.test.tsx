@@ -212,7 +212,7 @@ describe('📁 §08 — the record header', () => {
      */
     const { container } = render(<RecordHeader title="" titleLoading />);
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
-    expect(container.querySelector('h1 [data-testid="skeleton"], h1 .animate-pulse')).not.toBeNull();
+    expect(container.querySelector('h1 [data-testid="skeleton"], h1 [data-skeleton]')).not.toBeNull();
   });
 
   it('⛔ the identity tile is not a circle', () => {

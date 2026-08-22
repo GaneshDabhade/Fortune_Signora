@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Card } from '@/components/ui';
+import { Card, Skeleton } from '@/components/ui';
 
 import { CardFailure } from '@/components/home/card-failure';
 import { useCardPhase } from '@/lib/home/loading';
@@ -92,8 +92,8 @@ export function IntegrationHealthCard() {
         <div aria-hidden className="space-y-3 px-5 py-[15px]">
           {phase === 'skeleton' ? (
             <>
-              <div className="h-4 w-1/2 animate-pulse rounded bg-surface-sunken" />
-              <div className="h-4 w-2/3 animate-pulse rounded bg-surface-sunken" />
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-4 w-2/3" />
             </>
           ) : null}
         </div>

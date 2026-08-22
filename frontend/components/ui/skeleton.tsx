@@ -39,6 +39,28 @@ export function Skeleton({ className, ...props }: HTMLAttributes<HTMLDivElement>
   return (
     <div
       aria-hidden
+      /**
+       * 🔴 **[B-297](../../../docs/BUGS.md) — the stable hook, and it exists so
+       * that the animation is not the identity.**
+       *
+       * ⛔ **Six test locators selected skeletons by `animate-pulse`** — 📁
+       * `visual.spec.ts:59`, `perception.spec.ts:164`, `confidence.spec.ts:122`,
+       * `signal-center.spec.ts:145` and two component tests — **so the class
+       * that says *how this looks* was also the class that said *this is a
+       * skeleton***. ⚡ **Changing the look would have silently emptied every
+       * one of those selectors**, and `visual.spec.ts`'s is a *wait*: it would
+       * not have failed, it would have stopped waiting and asserted against a
+       * loading screen. 🔴 **That is [B-1065](../../../docs/BUGS.md) exactly**,
+       * and it would have been reintroduced by a cosmetic change.
+       *
+       * ✅ **`data-skeleton` is what a test should ask for**: it survives the
+       * shimmer §13 draws, and it is false of the refresh bar in
+       * [`app-shell.tsx`](../shell/app-shell.tsx) — ⛔ **which also carries
+       * `animate-pulse` and is a `role="progressbar"`, not a placeholder.**
+       * ⚠️ **Every `[class*="animate-pulse"]` selector was counting it as a
+       * skeleton.**
+       */
+      data-skeleton=""
       className={cn('animate-pulse rounded bg-surface-sunken', className)}
       {...props}
     />
