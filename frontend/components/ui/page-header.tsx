@@ -106,6 +106,27 @@ export interface PageHeaderProps {
  */
 const PLANE = 'rounded-xl border border-border-soft bg-surface shadow-sm';
 
+/**
+ * ⛔ **§08's *"condenses to 48px on scroll"* IS NOT BUILT, and it is recorded
+ * here rather than invented.**
+ *
+ * 📁 **The sentence appears once, in prose, in one document.** ⚡ **Measured
+ * across the 35-document snapshot: `condens` occurs in the Design System alone,
+ * and NO document draws a 48px header in any state.**
+ *
+ * 🔴 **So what survives the condense is not derivable.** §08 gives this header
+ * *"identity, status, four key facts as a quiet strip, an AI health line, and
+ * one primary action"* — **at 48px most of that has to go, and which parts is a
+ * product decision.** ⛔ **Choosing would be reinterpreting the design**, the
+ * same reason Settings' navigation marks no active item.
+ *
+ * ⚠️ **The elevation is `--e1` and that is checked**: §06 lists *"Cards, tables,
+ * panels, page headers"*. ⚡ **`p-6` is §08's 24px**; the design's own markup
+ * pads `24px 24px 0` because its facts strip sits flush at the bottom, and this
+ * plane contains its own spacing instead — **noted, not changed, because there
+ * is no drawing of this composition to change it toward.**
+ */
+
 function Actions({
   primaryAction,
   secondaryActions,
