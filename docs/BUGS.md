@@ -18199,7 +18199,7 @@ QE       1 failure  — competitors.tsx only
 | **Module** | ⚡ **QE's own repository-wide fixture** — [`tests/e2e/fixtures/layout-invariants.ts`](../frontend/tests/e2e/fixtures/layout-invariants.ts):48 |
 | **Current assignee** | **QE** — ⛔ **the defect is in the instrument, not in any module's production code** |
 | **Severity** | 🟠 — ⛔ **the verdict is right and the diagnosis is wrong**, which is worse than a plain false positive: it sends the fixing lane at the wrong element |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED`** — awaiting QE verification in a full browser gate |
 | **Found** | **2026-08-22 by QE**, auditing [B-1019](#b-1019) against the Team Management design |
 | **Commit found** | `b1a01882` (`origin/main`) |
 
@@ -18226,6 +18226,19 @@ if (style.overflowX === 'auto' || style.overflowX === 'scroll') continue;
 ⚠️ **So [B-1019](#b-1019) is REAL and its stated cause was wrong.** ⛔ **The report truncates to the first five offenders, and all five are table elements — so the four buttons that actually push the page sideways are invisible in the diagnostic.** 📁 **QE's own row said *"the fix is the table"*. It is not: the table is correctly contained.**
 
 ✅ **The fix is a population correction and NOT a weakening — it cannot turn the assertion green.** **Excluding descendants of a scroller leaves 4 offenders against an expectation of 0**, so Team still fails. **What changes is that the failure names the buttons.**
+
+✅ **FIXED 2026-08-22 by QE, and FIRE-TESTED BEFORE IT WAS APPLIED** — the standard Lane A set on [B-1065](#b-1065), applied to QE's own instrument.
+
+**Injected a 1200px block into `main`, outside every scroller — a genuine customer-visible overflow — and measured both guards on the same tree:**
+
+| | current guard | corrected guard | page actually scrolls |
+|---|---|---|---|
+| **clean page** | 🔴 **65** | ✅ **0** | **no** |
+| **real overflow injected** | **66** | ✅ **1** | **yes** |
+
+⛔ **A real defect moved the old guard by 1.5% and was invisible; it is the entire signal in the corrected one.** ⚡ **The corrected guard tracks reality exactly: 0 when `scrollWidth == clientWidth`, 1 the moment it does not.**
+
+⚠️ **`layout-invariants` now runs 39/39 where it ran 37/2.** ⛔ **The green is NOT this change** — it is [B-1019](#b-1019)'s real fix landing at the same time. **This change removed 65 elements that could never have been the failure being asserted about; had the page still scrolled, the corrected guard would still fail, which is what the injection proves.**
 
 ⚡ **Same class as [B-1065](#b-1065), found the same day from the opposite direction**: a repository-wide layout guard measuring the wrong population. **Lane A found one by fire-testing; QE found the other by asking why a design-conformance question and a test disagreed.**
 

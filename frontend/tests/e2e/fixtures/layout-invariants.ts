@@ -39,6 +39,18 @@ import { expect, type Page } from '@playwright/test';
 export async function expectNoHorizontalOverflow(page: Page): Promise<void> {
   const overflow = await page.evaluate(() => {
     const viewport = document.documentElement.clientWidth;
+    // **Inside a scroller is inside a scroller, at any depth.** ⛔ Checking only
+    // the element's own `overflow-x` answers *"does this own a scroller?"* when
+    // the question is *"is this contained by one?"* — [B-1066](../../../../docs/BUGS.md).
+    const hasScrollingAncestor = (el: HTMLElement): boolean => {
+      let parent = el.parentElement;
+      while (parent) {
+        const overflowX = getComputedStyle(parent).overflowX;
+        if (overflowX === 'auto' || overflowX === 'scroll') return true;
+        parent = parent.parentElement;
+      }
+      return false;
+    };
     const offenders: { tag: string; id: string; cls: string; right: number }[] = [];
     for (const element of Array.from(document.body.querySelectorAll<HTMLElement>('*'))) {
       const style = getComputedStyle(element);
@@ -47,6 +59,25 @@ export async function expectNoHorizontalOverflow(page: Page): Promise<void> {
       // — that is what `overflow-x: auto` is for, and a wide table inside one
       // is correct rather than broken.
       if (style.overflowX === 'auto' || style.overflowX === 'scroll') continue;
+      // 🔴 **[B-1066](../../../../docs/BUGS.md) — the line above exempted the
+      // element that OWNS a scroller and nothing INSIDE one, so the sentence it
+      // is written under — *"a wide table inside one is correct rather than
+      // broken"* — was a claim this code did not implement.**
+      //
+      // ⛔ **Measured on `/settings/team` at 375px: 65 offenders reported on a
+      // page whose `scrollWidth` EQUALS its `clientWidth`.** Every one was a
+      // descendant of the table's own `overflow-x-auto`, and the report
+      // truncates to five — so the four controls that genuinely pushed the page
+      // sideways ([B-1019](../../../../docs/BUGS.md)) were invisible behind
+      // them.
+      //
+      // ⚡ **Fire-tested before it was applied, by injecting a 1200px block into
+      // `main` outside every scroller** — the guard as written moved **65 → 66**
+      // and the corrected one **0 → 1**. ✅ **A real defect goes from 1.5% of
+      // the signal to all of it.** ⛔ **This is a population correction and not
+      // a relaxation: it removes elements that could never have been the
+      // customer-visible failure this asserts about.**
+      if (hasScrollingAncestor(element)) continue;
       if (style.position === 'fixed') continue;
       const rect = element.getBoundingClientRect();
       if (rect.width === 0 || rect.height === 0) continue;
