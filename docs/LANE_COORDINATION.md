@@ -15611,3 +15611,51 @@ you read the second one closely**, because both begin *"full-bleed"*.
 **which of these two documents governs the Settings family?** Once that is
 known the rail width and the mobile treatment both follow from it, and no lane
 has to choose either.
+
+### C-1551 · The Gap Closure Designs document is outside the snapshot, and 13 of its 14 actionable items have no producer
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-23, performing a full gap → implementation pass against `Design Documents/Fortune Signora Gap Closure Designs.html` |
+| **Owner** | **Product owner** — ① a [D-138](../docs/DECISION_REGISTER.md) snapshot question and ② a build-order question. **Neither is a lane's to take** |
+| **Status** | **`OPEN`** — ⛔ **implementation is stopped on this document and on nothing else.** Lane A's other work is unaffected |
+| **Blocks** | Every one of GAP-01…GAP-11, DS-12, DS-13, DS-14 |
+
+## ① ⛔ It is not in the design snapshot, and 📁 [D-138](../docs/DECISION_REGISTER.md) makes the snapshot the implementation authority
+
+📁 **D-138**: *"Product Office maintains `docs/design-snapshot/`; **every lane works only from it**… it changes only on an explicit refresh instruction."*
+
+⛔ **`Fortune Signora Gap Closure Designs` is not among the snapshot's 35 documents**, and **no repository document references it** — measured, zero hits across `docs/`.
+
+⚠️ **The consequence is not procedural.** 🔴 **QE cannot certify against a document it cannot read, and no guard may read `Design Documents/`** — that is 📁 [B-1063](BUGS.md), where a guard reading the uncommitted corpus **silently passed on every machine but the author's.** ⚡ **So work built from this document is unverifiable by anyone except the lane that built it.**
+
+✅ **The fix is D-138's own refresh procedure**, and it is Lane C's to perform.
+
+## ② 🔴 The producer audit — 19 items, and the shape is the finding
+
+**Measured against all 117 API routes, the module tree and the frontend contracts.**
+
+| | count | |
+|---|---|---|
+| `ALREADY` / `CLOSED` / `GATED` | **5** | compliant, or gated on [D-02](../docs/DECISION_REGISTER.md) |
+| **Already compliant** | **1** | DS-12 Operations Home |
+| **Zero producer** | **7** | access requests · signal rules · share tokens · data quality · seat usage · suggest-edit · status subscribe |
+| **Partial — the container exists, the differentiating data does not** | **6** | deals · bulk plays · meeting brief · provenance · notification history · outcomes |
+| 🔴 **Unambiguous, producer-backed and unblocked** | **0** | |
+
+⚡ **Three measurements carry the conclusion, and each is the product saying it about itself:**
+
+- 📁 `opportunity_engine/interface/schemas.py:622` — ***"nothing can currently decide which cohort an account is in"***. **DS-02a is *"deltas vs matched cohorts"*.**
+- 📁 `AccountCommercial` is `open_acv · renewal_date · stage`. **No source, no synced-at, no provider.** **DS-11's popover is Source · Field · Synced · Transform** — it would have nothing true to render.
+- 📁 `NotificationRow` carries `summary · category · occurred_at` and a `read_at`. **No action-taken column.** **DS-10's history is *"Opened" · "Answered via email"*.**
+
+## ⛔ Why nothing was built, stated plainly
+
+⚠️ **This is not *"no producer"* used to avoid work.** 📁 **DS-12 was audited card by card and IS compliant** — its `data-quality` and `pending-requests` cards are named by the composition, absent from the registry and skipped, which `cards.ts` documents as deliberate: *"the design's full list can sit above while the product shows only what exists."*
+
+⛔ **And the two items with real producers still need NEW ROUTES** — `/w/:ws/deals`, `/w/:ws/discovery` — **from a document outside the snapshot.** 📁 `navigation.tsx` already refuses that shape by rule: *"the design's RAIL, holding the entries that exist"*, because 📁 [500 §3](../docs/architecture/500-authenticated-entry-reconciliation.md) measured **eighteen of the entry engine's twenty-four destinations returning `404`**, and this file *"already paid that price once — three of six said `coming soon` on the screen a customer sees first."*
+
+**What is actually being asked:**
+
+1. 🔴 **Should the Gap Closure document enter the snapshot under D-138?** Until it does, nothing built from it is certifiable.
+2. 🔴 **Are the seven zero-producer items backend work first?** They are designs for capabilities the platform does not have, and building their UI would be the placeholder [§20c](../CLAUDE.md) forbids.
