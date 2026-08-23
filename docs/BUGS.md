@@ -534,6 +534,41 @@ next person as though it were load-bearing.
 ✅ **So it lands with the first screen that needs it**, and [B-1019](#b-1019)'s
 mobile card list is that screen.
 
+### ✅ Landed 2026-08-23, and the row's headline overstated the exposure
+
+⚡ **The token shipped WITH consumers, twice**: Settings (`b1a93a1a`) and
+`/profile` — each had **two bands where its design draws three**, so
+`smalllaptop:` was handing `1024–1279` the desktop layout and the whole middle
+band was drawn as something the design draws at no width.
+
+⛔ **But *"24 screens cannot reflow where they are drawn to"* was a count of
+DECLARATIONS, not of screens.** **Measured per screen, comments stripped:**
+
+| Screen | phone | tablet | smalllaptop | laptop | reading |
+|---|---|---|---|---|---|
+| Workspace Setup | 9 | ✅ | 0 | 4 | **fixed** |
+| User Profile | 1 | ✅ | 0 | ✅ | **fixed** |
+| Authenticated Entry | 0 | 0 | 7 | 1 | **unmeasured** |
+| Security Center | 1 | 0 | 1 | 0 | **unmeasured** |
+| Team Management | 4 | 0 | 0 | 0 | 📁 [B-1019](#b-1019), blocked on producers |
+| Help Center | 0 | 0 | 0 | 0 | ⚡ **not a divergence** |
+| System States | 0 | 0 | 0 | 0 | ⚡ **not a divergence** |
+
+⛔ **Help Center and System States have no responsive rules and need none.**
+**Both are single-column**: `/help` is a `ReadingColumn` with one `Card`, and
+the System State pages are one `SystemState` each — **there is no second column
+to stack and no row to wrap.** ⚠️ **The Help Center DOCUMENT describes a docked
+panel, a documentation nav, a TOC and status services two across; almost none
+of that is built.** ⚡ **So the gap there is SCOPE, not responsiveness** — the
+same reading §15's agent workflows got, and a responsive fix would be
+reflowing a screen that does not exist.
+
+⚠️ **One thing genuinely unresolved rather than dismissed:** 📁 System States
+says *"actions remain on a single row until 640px"*, and `SystemState` draws
+`flex flex-wrap` — **which wraps when the content stops fitting, not at 640.**
+⛔ **Whether those coincide is a browser measurement nobody has taken**, and it
+is recorded as unmeasured rather than judged.
+
 
 ### ⛔ Why not now, and it is not effort
 
