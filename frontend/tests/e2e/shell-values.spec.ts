@@ -11,6 +11,7 @@
  * exactly what a class-name assertion cannot see.
  */
 import { expect, test } from './fixtures/signora';
+import { openNamedAccount } from './fixtures/accounts';
 
 test.describe('§09 · the command palette', () => {
   test('@journey it is anchored at 14% of the viewport height and is 640px wide', async ({
@@ -215,11 +216,13 @@ test.describe('§04 · §05 — the breadcrumb is in the top bar', () => {
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto('/accounts');
-    const first = page.locator('main a[href^="/accounts/"]').first();
-    const name = (await first.textContent())?.trim() ?? '';
-    await first.click();
-    await page.waitForURL(/\/accounts\/[0-9a-f-]{36}/, { timeout: 30_000 });
+    // 🔴 **[B-1068](../../../docs/BUGS.md) — this took whichever row the seed
+    // sorted first, and that order is a random UUID.** ⛔ **On an UNNAMED account
+    // it fails against a CORRECT product: `textContent` picks up the `sr-only`
+    // sentence inside the link, and `Crumb.label` is a bare string that cannot
+    // carry it.** ✅ **`openNamedAccount` resolves a row where the two surfaces
+    // can agree, and says so rather than reading less of the element.**
+    const name = await openNamedAccount(page);
 
     const slot = page.locator('[data-slot="breadcrumb"]');
     await expect(slot).toContainText('Accounts');
