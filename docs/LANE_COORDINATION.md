@@ -15583,3 +15583,31 @@ while resolving nothing.
 **What is actually being asked:** **which width does the Settings rail take** —
 `220`, `212`, or the `208` already shipped? ⚡ **Any of the three is
 implementable in one line**; what cannot be done in a lane is choosing.
+
+### ⛔ A second disagreement, found later, and it is not a number
+
+⚠️ **The same two documents also describe DIFFERENT mobile treatments**, and
+this one changes the navigation model rather than a measurement.
+
+| Source | `< 768px` |
+|---|---|
+| 📁 `Workspace Setup` | *"**Cards lose their radius and become full-bleed sections.**"* |
+| 📁 `User Profile` | *"**Sections become full-bleed pages reached from a list, with a back arrow** — a settings rail on a phone is a scrolling accident."* |
+
+🔴 **One is a single scrolling page whose cards go edge-to-edge. The other is a
+LIST that navigates to separate pages.** ⛔ **They are not two phrasings of one
+idea** — the second adds a route, a back affordance and a list screen that the
+first does not have.
+
+⚡ **The product implements NEITHER today**: Settings does nothing at all below
+`768px`, and its cards keep `rounded-lg` and their borders at every width.
+
+⚠️ **This was nearly implemented from the first document alone.** ⛔ **Reading
+one authority and stopping is the mistake [C-1547](#c-1547) exists to name**,
+and it is more dangerous here than there: **the two notes look compatible until
+you read the second one closely**, because both begin *"full-bleed"*.
+
+✅ **So the ask is bigger than a width, and answering it settles both**: 🔴
+**which of these two documents governs the Settings family?** Once that is
+known the rail width and the mobile treatment both follow from it, and no lane
+has to choose either.
