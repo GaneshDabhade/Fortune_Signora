@@ -1271,9 +1271,25 @@ export default function AccountBriefPage() {
               ⛔ **No ideal customer here, and that is the ruling rather than a
               layout choice.** An ICP rendered beside a real company is a
               comparison a reader completes whether or not the product does,
-              and matching waits on
-              [C-002](../../../../docs/LANE_COORDINATION.md). `/business` is
-              where a seller reads it and makes that comparison knowingly. */}
+              and matching is DEFERRED.
+
+              ⚠️ **This used to say matching *"waits on
+              [C-002](../../../../docs/LANE_COORDINATION.md)"*, and C-002 is
+              `CLOSED`** — Lane C, 2026-08-06,
+              [D-116](../../../../docs/DECISION_REGISTER.md). ⛔ **A closed row
+              cited as a live blocker is worse here than a stale one is
+              elsewhere**: the next reader checks it, finds it answered, and
+              concludes matching is free.
+
+              ✅ **It is not.** 📁 **The product owner deferred it** — *"keep
+              grouped with [C-322](../../../../docs/LANE_COORDINATION.md), do
+              not split, review when Epic B1 begins"* — and
+              📁 [TASK-903](../../../../docs/BACKLOG.md) still carries the live
+              scope bound in its own words: ***"display the declarations,
+              assert no match."*** ⚡ **That is exactly what this renders.**
+
+              `/business` is where a seller reads it and makes that comparison
+              knowingly. */}
           <WhatYouSell
             catalog={catalog.data}
             committee={committee.data}
