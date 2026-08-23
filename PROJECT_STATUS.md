@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `c2aa8889`, 2026-08-22.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `3c179352`, 2026-08-23.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,7 +12,7 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `c2aa8889`, 2026-08-22.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `3c179352`, 2026-08-23.** Every figure is read from the repository, never carried forward.
 
 > ⚡ **Cycle 260 promotes the Settings rebuild and the tenth invented heading — certified `47244e79e2ae` on the FIRST attempt.** ✅ **pytest 5452 · coverage 95.03% · 679 Security Invariants · mypy 956 · import-linter 37/37 · tsc · frontend-suite 4023/209 · eslint · smoke 24 stages/577s · DR passed · reversibility head→base→head in 6s.**
 >
@@ -21,6 +21,16 @@
 > ⚡ **A newer SHA arrived mid-run and was NOT taken.** 📁 **[ADR-0032](docs/architecture/adr/0032-release-certification.md): certification binds to an immutable commit, so `integration` moving during a run never invalidates it.** **`8d0ab949` opens the next cycle automatically** — the alternative would let a lane pushing during a run extend that run indefinitely.
 >
 > 🔴 **[C-1547](docs/LANE_COORDINATION.md) is the finding worth reading, and Lane A raised it rather than "fixing" it.** ⛔ **The Settings screen document draws section cards at 16px; `Card` renders 12px — and Design System v2 §05 assigns **12px to Card** and 16px to the table plane, with §09 saying *"12px radius"* in words.** ⚡ **THREE consistent signals against one screen: the shared primitive is right and the SCREEN document is the outlier.** 📁 **The same question as D13-A** — whether a screen document's raw value overrides a system role — **and the two should be ruled together.**
+
+> ⚡ **Cycle 265 promotes TWENTY-EIGHT commits and retires a certified one — and the day's finding is that the repository had already solved its own worst defect and never propagated the answer.** ✅ **Certified `3c1793528360` on the first attempt — pytest 5452 · coverage 95.03% · 679 Security Invariants · mypy 956 · import-linter 37/37 · tsc · frontend-suite 4050/217 · eslint · smoke 24 stages/227s · scenario 208 assertions · DR passed · reversibility head→base→head in 5s. Browser 455 of 460 — 2 failed, 3 skipped, ZERO regressions.**
+>
+> 🔴 **[B-1068](docs/BUGS.md) — thirteen specs entered the product through `.first()` on a list that reorders itself.** ⛔ **All 15 seeded entities share ONE `created_at`, so `ORDER BY created_at, id` decides on a random UUID; combined with [B-296](docs/BUGS.md) the first row could be a technology, which has no score and therefore no *"Account score"* heading.** ⚡ **Three runs on one tree produced THREE DIFFERENT FAILURE SETS.**
+>
+> ⚡ **THE FIX ALREADY EXISTED. `openScoredAccount` landed 2026-08-16 and its docstring named the defect, the mechanism, the §2 classification and a worked instance — six days before QE filed it.** ⛔ **Two specs used it; thirteen did not.** ⚠️ **QE rediscovered it from three browser runs, two mechanisms that were both wrong, a permission request that blocked a peer for an hour, and an accusation against a tree that was fine — then nearly wrote a fourth copy.**
+>
+> ✅ **VERIFIED ON A HOSTILE DRAW, which is the only reason the number is defensible.** 📁 **The certification seed drew `technology · scored=false` — the exact shape that broke the old code — and every adopted site passed.** ⛔ **The previous run drew favourably and QE said in writing, before it landed, that a green result there would prove nothing.**
+>
+> ⛔ **CYCLE 264 WAS RETIRED RATHER THAN PROMOTED.** **Its certified commit `032f3bab7ec5` is one whose browser validation QE had publicly called unattributable** — promoting it would have made the repository assert something QE had already said was untrue. ⚠️ **Its certification record survives at `certification/reports/032f3bab7ec5.md`; its manifest entry was lost when QE stashed before certifying 265, and QE did NOT reconstruct it — nothing is marked certified by hand.**
 
 > ⚡ **Cycle 263 promotes a correction to QE's OWN instrument, and the browser gate proved it by REPORTING A DEFECT IT USED TO HIDE.** ✅ **Certified `c2aa8889bc4a` on the first attempt — pytest 5452 · coverage 95.03% · 679 Security Invariants · mypy 956 · import-linter 37/37 · tsc · frontend-suite 4028/211 · eslint · smoke 24 stages/155s · scenario 208 assertions · DR passed · reversibility head→base→head in 4s. Browser 451 of 458 — 4 failed, 3 skipped, DOWN from five. Zero regressions.**
 >

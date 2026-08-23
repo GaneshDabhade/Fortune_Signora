@@ -1,5 +1,29 @@
 # Session Handoff
 
+> ## Cycle 265 — promoted `3c179352`, 2026-08-23 · **twenty-eight commits, and a fix the repository already had**
+>
+> **`main` = `3c179352` = the certified commit**, verified from the remote. `pytest` **5452** · coverage **95.03%** · **679 invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · frontend **4050/217** · `eslint` · smoke **24/227s** · DR · reversibility **5s**.
+>
+> ✅ **Browser 455 of 460 — 2 failed, 3 skipped, ZERO regressions, ON A HOSTILE SEED.**
+>
+> ⚡ **READ THIS BEFORE TRUSTING ANY BROWSER NUMBER: the seed's first row decides several specs' fate.** 📁 **All 15 entities share ONE `created_at`, so the list orders by a random UUID.** ⛔ **A run whose first row is a scored company proves nothing; one whose first row is `technology · scored=false` proves something.** ✅ **This cycle drew the hostile one. Check it before reading a result:**
+>
+> ```
+> docker exec signora-prod-postgres-1 psql -U signora -d signora -tAc \
+>   "select e.kind, (exists(select 1 from buying_score b where b.entity_id=e.id))
+>    from entity e order by e.created_at, e.id limit 1;"
+> ```
+>
+> 🔴 **[B-1068](BUGS.md) is the day's finding and it is a class: *a solved problem solved once and never propagated*.** **`openScoredAccount` existed six days early, naming the defect in its own docstring; 2 specs used it and 13 did not.**
+>
+> ⚠️ **STILL OPEN AND NOT FLAKES:** **`profile-journey:175`** and **`perception:124`** both fail in a full run and pass in isolation — [B-281](BUGS.md)'s signature, which a targeted re-run ALWAYS reports as fixed. **`golden-journey:53`** reads ✓✘✘✓✘ across five runs. **`notification-arrival:48`** is [C-111](LANE_COORDINATION.md), a pending ruling.
+>
+> ⛔ **CYCLE 264 WAS RETIRED, NOT PROMOTED.** **`032f3bab7ec5` was certified; QE had called its browser validation unattributable, so promoting it would have asserted something QE had said was untrue.** **Its report is committed; its manifest entry was lost to a stash and deliberately NOT reconstructed** — nothing is marked certified by hand.
+>
+> ⚠️ **NEXT CYCLE'S INPUT: Lane A holds `069a62b4` UNPUSHED** — vitest 4060/4060, tsc 0, eslint 0, **and no browser at all**, which is why they are holding it. They need prod-local for four widths.
+
+> ---
+>
 > ## Cycle 263 — promoted `c2aa8889`, 2026-08-22 · **QE's own instrument, corrected and peer-reviewed**
 >
 > **`main` = `c2aa8889` = the certified commit**, verified from the remote. `pytest` **5452** · coverage **95.03%** · **679 invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · frontend **4028/211** · `eslint` · smoke **24/155s** · DR · reversibility **4s**.
