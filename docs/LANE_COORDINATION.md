@@ -15659,3 +15659,35 @@ has to choose either.
 
 1. 🔴 **Should the Gap Closure document enter the snapshot under D-138?** Until it does, nothing built from it is certifiable.
 2. 🔴 **Are the seven zero-producer items backend work first?** They are designs for capabilities the platform does not have, and building their UI would be the placeholder [§20c](../CLAUDE.md) forbids.
+
+### C-1552 · The design's Leave copy promises reassignment and a notification; the platform does neither
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-23, implementing 📁 User Profile → Activity → *"Your data"* |
+| **Owner** | **Product owner** — ⛔ **either the copy is wrong or two capabilities are missing.** A lane cannot pick |
+| **Status** | **`OPEN`** — ⚡ **nothing is blocked.** The row ships with the true consequence; only the design's sentence waits |
+| **Blocks** | Nothing |
+
+📁 **`Fortune Signora User Profile`, `dataRights[2]`:**
+
+> *"You lose access immediately. **Work you own must be reassigned first, and your administrator is notified.**"*
+
+⛔ **`leave_workspace.py` locks the membership, counts live owners, refuses to
+leave a workspace ownerless — and does nothing else.** **No reassignment is
+required. No notification is sent.** ⚡ **The first sentence is true; the second
+describes two capabilities that do not exist.**
+
+⚠️ **Rendering it verbatim would tell a customer their work is safe because
+something reassigned it.** 🔴 That is 📁 [§2](../CLAUDE.md)'s false claim, and
+it is the fifth time this lane has found design prose asserting behaviour the
+product does not have — see 📁 [C-1540](#c-1540), and the *"2px brand edge"*
+and *"three-cycle shimmer"* readings in [B-297](BUGS.md).
+
+✅ **Shipped with the consequence the code produces**, and the honest half of
+the removal dialog's own wording — *"what they have already decided stays on
+the record"* — because that part IS true.
+
+**What is being asked:** 🔴 **is the sentence aspirational, or are reassignment
+and administrator notification missing platform capabilities?** ⚡ **If the
+latter, they are backend rows and the copy follows them.**

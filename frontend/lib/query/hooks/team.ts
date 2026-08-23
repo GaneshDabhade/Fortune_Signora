@@ -244,6 +244,48 @@ export function useRemoveMember(workspaceId: string | null) {
 }
 
 /**
+ * 🔴 **Leave this organization** — `POST /workspaces/{id}/membership/leave`.
+ *
+ * ## ⛔ It takes no target, and that is the security property
+ *
+ * 📁 **The endpoint's own docstring**: *"There is no `membership_id` to
+ * substitute, so there is no check that the caller owns the one they named —
+ * the membership is found from the workspace and the verified token."* ⚡ **So
+ * this mutation deliberately accepts NO arguments.** ⛔ **Giving it a
+ * `membershipId` would reintroduce the substitution the endpoint was shaped to
+ * make impossible**, and it would be a parameter the server ignores — 📁
+ * [§2](../../../CLAUDE.md)'s Decorative Logic.
+ *
+ * ⚠️ **NOT {@link useRemoveMember} with the caller's own id.** 📁 The endpoint
+ * separates them on purpose: *"an administrator removing a colleague records
+ * why; a person leaving owes the organization no explanation, and
+ * `ended_by == user_id` is what tells the two apart afterwards."* **Two
+ * operations, two records, and the audit can distinguish them.**
+ *
+ * ⚡ **An owner may leave; a workspace may never become ownerless.** 📁 The
+ * refusal is the domain's, ruled into the application layer by
+ * [ADR-0404](../../../docs/architecture/adr/0404-platform-composition.md)
+ * because *"a workspace invariant hidden in the policy model is invisible to
+ * anyone reading the workspace"*. ⛔ **So this does not pre-check anything** —
+ * the last owner's attempt is refused by the server and the error is rendered,
+ * which is the only reading that cannot be raced by a second tab.
+ */
+export function useLeaveOrganization(workspaceId: string | null) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      apiRequest<Membership>(`/workspaces/${workspaceId}/membership/leave`, {
+        method: 'POST',
+        workspaceId: workspaceId ?? undefined,
+      }),
+    // ⚡ **The whole standing is stale, not just the roster** — the caller is no
+    // longer a member, so the viewer's own role must be re-read before any
+    // shell control is drawn from it.
+    onSuccess: () => invalidateStanding(client, workspaceId),
+  });
+}
+
+/**
  * Change what somebody is allowed to do.
  *
  * **Invalidates the roster and the viewer's own role**, because an owner may

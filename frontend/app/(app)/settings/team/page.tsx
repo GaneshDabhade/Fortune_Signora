@@ -390,8 +390,19 @@ export default function TeamPage() {
                         {/* **Absent, never disabled**, and absent for two
                             different reasons: a member is not offered a control
                             the server would refuse, and nobody is offered one
-                            that removes themselves — leaving is a different
-                            operation, and it is blocked on C-207. */}
+                            that removes themselves.
+                            🔴 **Leaving is a different operation and is now
+                            BUILT** — 📁 `profile/data-rights-panel.tsx`, where
+                            the design puts it (User Profile → Activity →
+                            *"Your data"*). ⛔ **This comment said it was
+                            *"blocked on C-207"* for eighteen days after
+                            [C-207](../../../../docs/LANE_COORDINATION.md)
+                            closed** — 2026-08-05, ADR-0404, whose own
+                            *unblocks* column reads *"Leaving an organization"*.
+                            ⚠️ **A stale blocker in a comment is indistinguish-
+                            able from a live one**, and it is why nobody looked
+                            again at an endpoint that had been shipping the
+                            whole time. */}
                         {myRole === 'owner' && one.user_id !== viewerId ? (
                           <Button
                             variant="secondary"

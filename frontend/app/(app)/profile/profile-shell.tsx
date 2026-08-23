@@ -8,6 +8,7 @@ import { AccessibilityPanel } from './accessibility-panel';
 import { AiPanel } from './ai-panel';
 import { AppearancePanel } from './appearance-panel';
 import { AvatarArea } from './avatar-area';
+import { DataRightsPanel } from './data-rights-panel';
 import { LocalePanel } from './locale-panel';
 import { ProfilePanel } from './profile-panel';
 import { ShortcutsPanel } from './shortcuts-panel';
@@ -209,9 +210,20 @@ export function ProfileShell({ name, email }: { name: string | null; email: stri
             conflict rule describes an editor, and no preference field or
             endpoint stores a binding. */}
         {current === 'shortcuts' ? <ShortcutsPanel /> : null}
-        {current === 'accounts' || current === 'activity' ? (
-          <SectionNotBuilt section={current} />
+        {/* 🔴 **Activity is PART built now, and the split is the point.** 📁
+            The design's Activity screen holds a timeline, a visibility table
+            and the *"Your data"* block. ✅ **One row of that block is
+            producer-backed and shipped** — leaving the organization, unblocked
+            by [C-207](../../../docs/LANE_COORDINATION.md)'s closure. ⛔ **The
+            rest still says so**, rather than the whole section claiming to be
+            unbuilt while a live control sits inside it. */}
+        {current === 'activity' ? (
+          <div className="flex flex-col gap-6">
+            <DataRightsPanel />
+            <SectionNotBuilt section="activity" />
+          </div>
         ) : null}
+        {current === 'accounts' ? <SectionNotBuilt section="accounts" /> : null}
       </div>
     </div>
   );
@@ -228,8 +240,11 @@ function SectionNotBuilt({ section }: { section: string }) {
   const WHAT: Record<string, string> = {
     accounts:
       'The accounts you have connected, their scope, and every session signed in as you.',
+    // ⛔ **"your data rights" is GONE from this sentence.** ✅ One of them is
+    // built and rendered directly above this block, and a not-built notice
+    // that still claims it would be describing the screen it is sitting on.
     activity:
-      'What you have done in Signora, what is visible to others, and your data rights.',
+      'What you have done in Signora, and what is visible to others.',
   };
   return (
     <div className="rounded-md border border-border-soft bg-surface-sunken p-5">
