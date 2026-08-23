@@ -18356,6 +18356,36 @@ QE       1 failure  — competitors.tsx only
 
 ---
 
+### B-1070 · 🟠 A merge commit reached `main` against §20e, and QE promoted it without noticing
+
+| | |
+|---|---|
+| **Module** | ⚡ **Repository process** — [`CLAUDE.md`](../CLAUDE.md) §20e, *Branches and promotion* |
+| **Current assignee** | **QE** — ⛔ **QE promoted it, and QE caused the condition that produced it** |
+| **Severity** | 🟠 — **the history is no longer linear**, and §20e gives three reasons that is not taste: Alembic's chain is linear, the records are append-only narratives, and a linear history is the only one where *what was true when* is readable |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-23 by QE**, checking a cycle 266 candidate and noticing a second one |
+| **Commit found** | `753732a5` (`origin/main`) |
+
+**§20e, verbatim, two lines apart:**
+
+> **"Rebase, never merge, onto `integration`. Rebase freely: nobody else has your lane branch."**
+> **"Fast-forward only, everywhere. No merge commits."**
+
+⛔ **`d351ac0a` — *"Merge remote-tracking branch 'origin/integration' into lane-a-product-surface-r4"* — is on `main`, inside cycle 265's 28 promoted commits.** ⚠️ **QE ran `--audit-main`, which passed, because that guard checks whether every commit is inside a certified snapshot — NOT whether the history is linear.** ⚡ **A guard answering a different question than the one being relied on, which is [B-1069](#b-1069)'s shape in the promotion path.**
+
+🔴 **AND THE CAUSE IS QE'S OWN BEHAVIOUR, WHICH IS THE PART WORTH RECORDING.**
+
+📁 **QE moved `integration` under Lane A THREE times in one session.** **Lane A's stated reason for merging:** *"I merged `origin/integration` rather than rebasing — you are tracking my SHAs and rewriting underneath them is the one thing my notes say never to do."* ⚡ **They wrote it into their standing rules as *"never rebase under you — merge"*.**
+
+⛔ **So a lane adopted a rule that violates §20e in order to protect QE from QE's own carelessness, and QE then promoted the result.** **The lane's reasoning was sound at every step; the premise it was protecting against should not have existed.**
+
+✅ **THE FIX IS NOT TO ASK THE LANE TO REBASE UNDER RISK. It is for QE to stop moving `integration` under a lane mid-slice** — the condition that made merging the safer choice. ⛔ **§20e already says rebasing is safe *because nobody else has your lane branch*; that premise was false while QE was restaging on top of it.**
+
+⚠️ **The cycle 266 candidate `e1c7e4e3` carries a second merge commit.** **It is not accepted silently: the candidate is fine and the shape is not, and QE says so before certifying rather than after promoting.**
+
+---
+
 ### B-1069 · 🟠 A docstring cites `B-3180` as precedent, and no such row has ever existed
 
 | | |
