@@ -229,6 +229,41 @@ describe('screen 03 · appearance is the account\'s, not the browser\'s', () => 
     expect(screen.getAllByRole('radio').length).toBe(5);
   });
 
+  /**
+   * 🔴 **The theme picker is a CARD list, not a segmented control** — 📁 the
+   * design's own component inventory names them as two separate entries at
+   * different depths: `Segmented / Toggle / Select` under *"v2 · controls"*,
+   * and **`ThemeCard` under *"v2 · card 12px"***.
+   *
+   * ## ⚠️ Why this assertion exists, and what the suite could not see
+   *
+   * ⛔ **This panel drew `SegmentedControl` and the whole 4060-test suite
+   * passed after it was corrected to `ChoiceCards`** — because every existing
+   * assertion asks for `getByRole('radio')` and a radiogroup, **and both
+   * primitives satisfy both.** ⚡ **The tests were right about accessibility
+   * and blind to the treatment.**
+   *
+   * ✅ **So this pins what actually differed**: 📁 the design fills the selected
+   * card with `--brand-tint` and rounds it to `12px`; the segmented control
+   * left it on `--surface` at `6px`. **A radio group can be perfectly correct
+   * and be the wrong component.**
+   */
+  it('🔴 draws the selected theme as the design\'s card — brand tint at 12px', async () => {
+    render(<AppearancePanel />);
+
+    const system = await screen.findByRole('radio', { name: /^System/ });
+    const card = system.closest('label');
+    expect(card, 'the choice is not wrapped in a label').not.toBeNull();
+
+    // 📁 *"border-radius:12px"* — `rounded-lg`, not `rounded`.
+    expect(card?.className).toContain('rounded-lg');
+    // 📁 The selected card takes the brand border AND the brand tint.
+    expect(card?.className).toContain('border-accent');
+    expect(card?.className, 'the selected card is not filled with the brand tint').toContain(
+      'bg-accent-subtle',
+    );
+  });
+
   it('⛔ does not paint the page itself', async () => {
     // It records the choice; the design system renders it. A panel that wrote
     // a class onto the document would be a second place a theme is decided.

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { FieldOriginTag, SegmentedControl } from '@/components/ui';
+import { ChoiceCards, FieldOriginTag, SegmentedControl } from '@/components/ui';
 import { changePreferences, getPreferences, type Preferences } from '@/lib/api/preferences';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
@@ -146,10 +146,33 @@ export function AppearancePanel() {
       {prefs === null ? null : (
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-1.5">
-          <SegmentedControl
+          {/* 🔴 **`ChoiceCards`, not `SegmentedControl`** — 📁 the design's own
+              component inventory lists them as two SEPARATE entries at
+              different depths: `Segmented / Toggle / Select` under *"v2 ·
+              controls"*, and **`ThemeCard` under *"v2 · card 12px"***. ⛔ **The
+              theme picker is a card list; it was drawn as a segmented control.**
+
+              ⚡ **Measured, and every difference was visible:**
+
+              ```
+                              design            SegmentedControl   ChoiceCards
+                radius        12px              rounded (6px)      rounded-lg ✅
+                selected bg   --brand-tint      bg-surface         bg-accent-subtle ✅
+                selected bd   --brand           border-accent ✅   border-accent ✅
+                unselected    --line-soft, e1   transparent        border-border-soft
+                                                                   + shadow-sm ✅
+              ```
+
+              ✅ **Nothing is built here.** 📁 `choice-cards.tsx` already carries
+              the design's own numbers — *"padding:14px 15px;
+              border-radius:12px"* and *"width:16px;height:16px;border:1.5px"* —
+              and 📁 `segmented-control.tsx` already points at it by name. **The
+              defect was reaching for the wrong existing primitive**, and the
+              fix is reaching for the right one. */}
+          <ChoiceCards
             legend="Theme"
             name="theme"
-            segments={THEMES}
+            choices={THEMES}
             value={prefs?.theme ?? 'system'}
             onChange={(value) => change({ theme: value as Preferences['theme'] })}
           />
