@@ -117,22 +117,40 @@ export function ProfileShell({ name, email }: { name: string | null; email: stri
     <div
       className={cn(
         'overflow-hidden rounded-lg border border-border-soft bg-surface shadow-sm',
-        // 📁 ***"grid-template-columns:212px 1fr"***. ⚡ **One column below
-        // `smalllaptop`**, which is this product's own band — ⛔ not a new
-        // breakpoint, and not Tailwind's `sm:`, which generates no CSS here.
-        'grid grid-cols-1 smalllaptop:grid-cols-[212px_1fr]',
+        // 📁 ***"grid-template-columns:212px 1fr"***.
+        //
+        // 🔴 **[B-298](../../../../docs/BUGS.md) — `laptop:`, not
+        // `smalllaptop:`.** 📁 **`Fortune Signora User Profile` gives THREE
+        // bands and this had two**: *"≥ 1280px — **212px rail** beside a
+        // two-column form"*, *"768–1279px — **Rail becomes a horizontal
+        // scroller of section chips**"*, and a mobile treatment below that.
+        // ⛔ **`smalllaptop:` handed 1024–1279 the desktop layout**, so the
+        // whole middle band was drawn as something the design draws at no
+        // width — the identical defect the Settings rail had, one screen over.
+        'grid grid-cols-1 laptop:grid-cols-[212px_1fr]',
       )}
     >
       <nav
         aria-label="Profile settings"
         className={cn(
           'bg-canvas px-3.5 py-5',
-          // ⚡ **A right border on wide, a bottom border when stacked** — the
-          // divider follows the axis rather than disappearing.
-          'border-b border-border-soft smalllaptop:border-b-0 smalllaptop:border-r',
+          // ⚡ **A right border beside the content, a bottom border above it** —
+          // the divider follows the axis rather than disappearing. ⛔ **The
+          // scroller band is ABOVE**, so it keeps the bottom border.
+          'border-b border-border-soft laptop:border-b-0 laptop:border-r',
         )}
       >
-        <ul className="flex flex-col gap-0.5">
+        {/* 📁 *"Rail becomes a horizontal scroller of section chips"* at
+            `768–1279px`. ⛔ **`shrink-0` on every chip**: a flex row allowed to
+            shrink does not scroll, it compresses — which is the truncation the
+            design rules out by name. */}
+        <ul
+          className={cn(
+            'flex flex-col gap-0.5',
+            'tablet:flex-row tablet:items-center tablet:gap-1.5 tablet:overflow-x-auto',
+            'laptop:flex-col laptop:items-stretch laptop:gap-0.5 laptop:overflow-x-visible',
+          )}
+        >
           {PROFILE_SECTIONS.map((section) => {
             const selected = section.id === current;
             return (
@@ -144,6 +162,8 @@ export function ProfileShell({ name, email }: { name: string | null; email: stri
                   aria-current={selected ? 'page' : undefined}
                   className={cn(
                     'w-full rounded-md px-2.5 py-1.5 text-left text-sm',
+                    'tablet:w-auto tablet:shrink-0 tablet:whitespace-nowrap',
+                    'laptop:w-full',
                     selected
                       ? 'bg-surface font-semibold text-content shadow-sm'
                       : 'font-medium text-content-muted hover:bg-surface hover:text-content',
@@ -159,7 +179,12 @@ export function ProfileShell({ name, email }: { name: string | null; email: stri
         {/* 📁 **The design's own block, verbatim, beneath the rail.** ⚡ **It is
             the screen's one privacy claim** and it belongs where a reader is
             deciding what to put in these fields. */}
-        <div className="mt-5 rounded-md bg-surface-sunken p-3">
+        {/* ⛔ **Hidden in the scroller band, not deleted.** ⚡ A 3-line privacy
+            block inside a horizontal chip rail would either force the rail
+            taller than its chips or scroll away sideways; 📁 the design draws
+            it *"beneath the rail"*, and in this band there is no beneath. It
+            returns at `laptop:` where the rail is a rail again. */}
+        <div className="mt-5 rounded-md bg-surface-sunken p-3 tablet:hidden laptop:block">
           <p className="text-xs font-semibold text-content">Yours alone</p>
           <p className="mt-1 text-xs leading-5 text-content-muted">
             Nothing on these pages is visible to other members except your name, avatar,
