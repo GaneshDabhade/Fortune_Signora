@@ -8957,7 +8957,7 @@ SIGNORA_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@loca
 | **Module** | **`product_surface`** — [`app/(app)/page.tsx`](../frontend/app/(app)/page.tsx) |
 | **Current assignee** | **Lane A** — ⚡ **found and fixed on the run that found it** |
 | **Severity** | 🟠 **Wrong behaviour a customer would hit, and the wrong answer is the confident one.** ⛔ **The screen does not say *something went wrong* — it says *you are not part of an organization yet*, which is a statement about the customer's account rather than about the platform** |
-| **Status** | ⛔ **`OPEN` — REOPENED 2026-08-25 by QE.** **Verification FAILED: it reproduces on this row's OWN stated steps.** *(was `FIXED` — Lane A, 2026-08-11, awaiting QE)* |
+| **Status** | ✅ **`VERIFIED` — QE, 2026-08-25, at `35e613ed`** — ⚡ **in a BROWSER, on this row's own steps, with a healthy control beside every failing run.** ⚠️ **That commit is on `lane-a-product-surface-r4` and NOT yet on `integration`** *(was `FIXED` 2026-08-11 and reopened by QE the same day when it reproduced)* |
 | ⚠️ **Severity, unchanged at 🟠** | ⛔ **QE considered raising it and did not.** **The second symptom — a permanent spinner — is arguably worse than the one filed**, but 🔴 means *blocks a milestone*, and **a 🔴 here would block promotion, which QE has an interest in and therefore should not reach for.** 📁 The [B-1075](#b-1075) discipline, applied to a row QE did not write |
 | **Commit found** | ⛔ **Found by using the product with a broken API tier**, not by a test — the attention screen was read while `/api/proxy/workspaces` was returning `500` |
 
@@ -9042,7 +9042,35 @@ query errors  →  error set, isLoading false  →  GATE OPENS  →  page mounts
 
 > ⚠️ **Lane A wrote *"if it still cycles, my mechanism is wrong."* It still cycles and the mechanism was RIGHT.** ⛔ **The falsifier was aimed at the wrong claim — the mechanism and the fix were two statements and only one was under test.** 📁 **The same shape as QE's *"a race would be intermittent"* on [B-1073](#b-1073), and the fourth time in one day.**
 
-### 📁 And 20 workspace reads in 20 seconds at `/`
+### ✅ VERIFIED AT `35e613ed` — all four screens, in a browser
+
+**Preconditions confirmed before the run:** worktree at `35e613ed` · prod-local rebuilt · auth migrated · reseeded · **storage state regenerated** · **the `readFailed` latch confirmed present in the built tree**.
+
+| route | reads broken | broken | healthy |
+|---|---|---|---|
+| ✅ **`/`** | ⚡ **6** *(was 20–22, unbounded)* | ***"Could not load your organizations. Nothing has changed — reload to try again."*** | *"Good afternoon, Dana"* |
+| ✅ `/accounts` | 3 | states the failure | *"Companies — 15 total"* |
+| ✅ `/business` | 3 | states the failure | *"Nothing declared"* |
+| ✅ `/help` | 3 | states the failure | *"Help & support"* |
+
+**The loop is gone, and the timing says so rather than the absence of a symptom:**
+
+```
+0.27  1.33  3.36  │  3.40  4.42  6.47  │  (nothing)
+└── observer 1 ──┘  └── observer 2 ──┘
+     three attempts each, then SILENCE
+```
+
+⚡ **Frame trace — `main` polled at 60 ms — shows exactly two distinct frames: `Loading…`, then the failure sentence at 6.48 s, and no oscillation after it.** ⛔ **Before the fix there was one frame for fourteen seconds.**
+
+### 📁 Two observations QE is NOT filing as defects
+
+| | |
+|---|---|
+| **`role="alert"` count is 0** on every failing screen | **The failure is STATED in the page body and not ANNOUNCED.** ⚠️ **QE has not established that it should be** — a full-page state that renders a heading is legitimately not an alert, and asserting otherwise would be a preference dressed as a finding. **Recorded because the earlier probe found an `alert` present and EMPTY, and this is a different shape** |
+| **3 nodes remain `aria-busy`** after the failure renders | ⛔ **`main` shows the failure, so these are elsewhere — the rail is the obvious candidate and QE did not check.** **A number without a subject** |
+
+### 📁 And 20 workspace reads in 20 seconds at `/`### 📁 And 20 workspace reads in 20 seconds at `/`
 
 ⚡ **`/accounts` made exactly 3 — one plus the two retries `shouldRetry` allows for a 5xx, which is the policy behaving correctly.** ⛔ **`/` made 20.** **QE has NOT established why** — a remount loop and multiple independent consumers of the same read are both live candidates and neither is measured. **It is recorded because it is a measured difference between two routes on one policy, not because QE knows what it means.**
 
