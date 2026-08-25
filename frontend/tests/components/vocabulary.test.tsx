@@ -120,8 +120,18 @@ function humanReadable(source: string): string[] {
 
   // `title="…"`, `description="…"`, `label="…"`, `placeholder="…"`,
   // `message: '…'`, `aria-label="…"` — the props that reach a reader.
+  //
+  // 🔴 **`subject` was missing and it is the sharpest of them.** ⛔ It is not
+  // decoration: `StatedAbsence` composes it into a sentence — *"Signora could
+  // not load ${subject}."* — **so its whole purpose is to be read.** ⚡ **A
+  // customer was told *"Signora could not load your workspaces"*** on the audit
+  // screen, and this guard could not see it because the population named eight
+  // props and not the ninth.
+  //
+  // ⚠️ **The population was too NARROW, which fails silently** — the guard was
+  // green throughout, which is the worst way for a guard to be wrong.
   const props =
-    /(?:title|description|label|placeholder|message|detail|hint|heading|aria-label)\s*[=:]\s*["'`]([^"'`]+)["'`]/gi;
+    /(?:title|description|label|placeholder|message|detail|hint|heading|subject|aria-label)\s*[=:]\s*["'`]([^"'`]+)["'`]/gi;
   for (const match of text.matchAll(props)) found.push(match[1] ?? '');
 
   // JSX text nodes: `>Some words<`, with expressions and tags excluded.

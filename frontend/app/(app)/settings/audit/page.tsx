@@ -84,7 +84,7 @@ export default function AuditLogPage() {
   const history = useOrganizationHistory(activeWorkspace?.id ?? null);
 
   if (error) {
-    return <StatedAbsence as="page" icon={ScrollText} subject="your workspaces" />;
+    return <StatedAbsence as="page" icon={ScrollText} subject="your organizations" />;
   }
 
   if (!workspaceLoading && activeWorkspace === null) return <NoWorkspace />;

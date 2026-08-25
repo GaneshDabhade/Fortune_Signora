@@ -56,7 +56,11 @@ import { ReadingColumn } from '../reading-column';
  * and there is no field that could carry the verdict if it did.
  */
 export default function BusinessPage() {
-  const { activeWorkspace, isLoading: workspacesLoading } = useWorkspaceContext();
+  const {
+    activeWorkspace,
+    isLoading: workspacesLoading,
+    error: workspacesError,
+  } = useWorkspaceContext();
   const workspaceId = activeWorkspace?.id ?? null;
   const { data: session } = useSession();
   const { role } = useViewerRole(workspaceId, session?.user?.id ?? null);
@@ -131,7 +135,26 @@ export default function BusinessPage() {
         }
       />
 
-      {!workspacesLoading && activeWorkspace === null ? <NoWorkspace /> : null}
+      {workspacesError ? (
+        /**
+         * 🔴 **[B-237](../../../docs/BUGS.md) — a FAILED read rendered as *"You are
+         * not part of an organization yet"*, with a `Create an organization` button
+         * beneath it.**
+         *
+         * ⛔ **`activeWorkspace` is `null` when the read fails and when there is
+         * genuinely nothing** — 📁 [P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md):
+         * *a failed read must never render as an empty result*. ⚡ **The two are
+         * opposite claims about the customer's own account**, and the wrong one tells
+         * somebody with organizations that they have none.
+         *
+         * ✅ **The provider has exposed `error` all along and this screen did not read
+         * it** — 📁 `settings/audit/page.tsx` already does exactly this, so the shape
+         * is reused rather than invented.
+               */
+        <StatedAbsence as="page" subject="your organizations" />
+      ) : !workspacesLoading && activeWorkspace === null ? (
+        <NoWorkspace />
+      ) : null}
       {loading ? <SkeletonText lines={5} /> : null}
       {failed ? (
         <StatedAbsence
