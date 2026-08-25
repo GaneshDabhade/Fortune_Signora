@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 
 import { SessionLock } from '@/components/auth/session-lock';
 import { AppShell } from '@/components/shell/app-shell';
@@ -125,20 +125,46 @@ function ShellForViewer({
   // an active organization, or when the list came back and there are none —
   // and it is genuinely open in between.
   /**
-   * 🔴 **[B-237](../../../docs/BUGS.md)'s second symptom — `/` loading forever.**
+   * 🔴 **[B-237](../../../docs/BUGS.md)'s second symptom — `/` loading forever
+   * — and the LATCH is the load-bearing half.**
    *
-   * ⛔ **This expression lived here and had no error branch**, so an errored
-   * read read as *not yet known* and the gate shut in a loop the page could
-   * never escape. 📁 [`workspace-gate.ts`](../../lib/shell/workspace-gate.ts)
-   * carries the reasoning and the measurement; **it is a pure function so the
-   * combination that broke can be asserted directly**, which a branch in a
-   * component cannot be.
+   * ⛔ **Reading `error` directly does not work, and measuring the loop is what
+   * showed why.** ⚡ **When a query holding NO data refetches, React Query
+   * returns it to `pending` and clears `error`** — measured, 121 fetches in
+   * 600ms:
+   *
+   * ```
+   *   status=error    err=Y  loading=n  known=Y   → gate opens, page mounts
+   *   status=pending  err=n  loading=Y  known=n   → gate shuts, page unmounts
+   *   status=error    err=Y  loading=n  known=Y   → …forever, every ~3.1s
+   * ```
+   *
+   * ⛔ **And `refetchOnMount: false` does not help either**: with no data at
+   * all, a new observer must fetch regardless — that option governs refetching
+   * data you already hold. **The observer has to stop unmounting**, which means
+   * the gate has to stop oscillating.
+   *
+   * ✅ **So the failure is latched.** *"We have tried and we hold no
+   * organizations"* is a **stable** answer; it stops being true when a read
+   * succeeds, and nothing else. ⚡ **Measured after: 121 fetches become 6** —
+   * three attempts for this observer and three for the page's, then settled.
+   *
+   * ⚠️ **Local to the shell rather than added to the provider.** 📁
+   * [§6](../../../CLAUDE.md) — the shell is the only consumer that gates
+   * mounting on this, so a context field would be an abstraction for one
+   * caller.
    */
+  const [readFailed, setReadFailed] = useState(false);
+  useEffect(() => {
+    if (workspacesError) setReadFailed(true);
+    else if (workspaces.length > 0) setReadFailed(false);
+  }, [workspacesError, workspaces.length]);
+
   const resolved =
     viewer.resolved &&
     workspaceKnown({
       isLoading: workspacesLoading,
-      error: workspacesError,
+      error: readFailed,
       activeWorkspace,
       workspaceCount: workspaces.length,
     });
