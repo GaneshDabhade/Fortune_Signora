@@ -18808,7 +18808,24 @@ Received: "http://localhost:3100/signin"
 - **Cycle 267's full run was 454 passed · 3 failed · 3 skipped, and every one of the three is named and accounted for.**
 - **The `.first()` door is closed at every site whose own assertions require a scored or named account.**
 
-✅ **Whether that resolves this row is the product owner's call. QE has recorded the measurement and stopped.** 📁 **[B-1075](#b-1075) is why QE is being careful here: this rule was already missed twice.**
+### 📋 The three sites, complete — so the decision rests on evidence rather than on a count
+
+| site | state | how it is known |
+|---|---|---|
+| `demo/golden-journey.spec.ts:84` | ✅ **FIXED** | ⚡ **Predicted from the code BEFORE the run, failed on cycle 267's draw, fixed, and re-run green on the SAME unchanged hostile draw** |
+| `accessibility.spec.ts:706` | ✅ **FIXED** | ⚠️ **Undemonstrated, and the code comment says so.** The assertion's requirement is stated in its own comment and the resolver existed already |
+| `workflow.spec.ts:38` | ✅ **MEASURED NOT EXPOSED** | ⛔ **Not *"could not reproduce"*.** **Home offers FIVE links over THREE accounts, all from the ranked card, scored by construction; opening three unscored accounts as a customer left `recently_viewed` at 0** |
+
+⚠️ **QE ALSO CORRECTED ITS OWN INCONSISTENCY HERE**: one site was fixed undemonstrated and another was left on *"could not reproduce"*, and the same standard applies to both. ✅ **The distinction that actually holds is whether the DOOR can serve what the assertion forbids** — the Companies list demonstrably serves unnamed accounts; Home's links demonstrably cannot serve unscored ones.
+
+### ⚖️ What the product owner is actually deciding
+
+| | |
+|---|---|
+| **If this stays 🔴** | ⛔ **Nothing promotes.** **Cycle 267's certified `6172091066aa` waits, and so does every verified fix behind it** — including [B-237](#b-237), verified in a browser across four screens |
+| **If it becomes 🟠 or `VERIFIED`** | **The blocking rule stops applying and the normal lifecycle resumes.** ⚡ **The technical content of the row is complete either way; the severity is a judgement about what the row still asserts** |
+
+✅ **Whether that resolves this row is the product owner's call. QE has recorded the measurement and stopped.** 📁 **[B-1075](#b-1075) is why QE is being careful here: this rule was already missed twice, by QE.**
 
 ---
 
