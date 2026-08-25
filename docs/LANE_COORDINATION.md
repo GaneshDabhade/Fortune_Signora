@@ -15823,7 +15823,46 @@ toast whose action does nothing is worse than a toast without one"* — and
 `/reverse` reverses an **applied** batch, so an Undo here would name a call that
 cannot succeed.
 
-**What is being asked:** 🔴 **is approval a screen Signora ships, and if so what
-lists the batches?** ⚡ **If approval is instead meant to be implicit for a
-caller who already holds `ACCOUNT_TAG:UPDATE`, that is a smaller answer and it
-changes `propose` rather than adding a screen.**
+### ✅ AMENDED SAME DAY — the screen IS designed, and it is in a document nobody had read
+
+⚠️ **This row was filed asking *"is approval a screen Signora ships?"*. It is,
+and the design was already in the snapshot** — 📁 **`Fortune Signora Workflow
+Automation`**, one of the documents this lane's citation sweep had listed as
+**never audited**. ⛔ **The question was only open because the document was
+unopened.**
+
+📁 **Its `approvals` array, verbatim:**
+
+> **`Drafts for 2 accounts`** · *expires in 63h* · *"Review shows the draft, the
+> cause it was built from, and the evidence."* · **`Approve · edit and approve ·
+> reject with a reason`**
+>
+> **`Field writes on 41 accounts`** · *blocked* · *"The exact values are listed
+> per account before you approve."* · **`Bulk approval requires a named
+> reviewer`**
+
+📁 **And its `guardrails` array answers the reversal half:** **`Undo window` —
+*"Batch revert of everything a run wrote"* — `24h`**, which is the same 24 hours
+Companies and the AI Copilot both name.
+
+### ⚡ So most of the product question is already answered
+
+| Filed as open | The design's answer |
+|---|---|
+| *What lists the batches?* | **Pending work, grouped by action kind, with a count and an expiry** — *"Drafts for 2 accounts"*, *"Field writes on 41 accounts"* |
+| *Is approval a screen?* | ✅ **Yes**, with three verbs: **approve · edit and approve · reject with a reason** |
+| *Is reversal exposed?* | ✅ **Yes — a 24h undo window over everything a run wrote** |
+
+⛔ **What is still genuinely missing is the route, not the ruling.** ⚡ **`GET
+/action-batches/{batch_id}` takes an id and nothing enumerates**, so the screen
+the design specifies cannot be built against today's API however clear the
+design is.
+
+**What is being asked, narrowed:** 🔴 **a route that lists pending batches for a
+workspace** — and whether *"expires in 63h"* implies an expiry the batch itself
+carries, **which is a domain question rather than a transport one.**
+
+⚠️ **`propose` needs no change.** ⛔ **The alternative reading — that approval is
+implicit for a caller holding `ACCOUNT_TAG:UPDATE`** — **is refused by the
+design**: *"bulk approval requires a named reviewer"* is the opposite of
+implicit.
