@@ -292,3 +292,30 @@ describe('📁 contract 3 — Home never navigates away', () => {
     );
   });
 });
+
+describe('🔴 the card registry names the module that actually produces the card', () => {
+  /**
+   * ⛔ **`top-risks` and `top-opportunities` said `signal_engine`** — the
+   * module a note in the same file records a previous audit searching, finding
+   * no risk/opportunity classification in, and wrongly concluding the cards
+   * were unbuildable.
+   *
+   * ⚡ **Measured**: `GET /workspaces/{id}/scoring-model` is `buying_score_engine`'s,
+   * and `signal_engine` serves triage, catalog, decisions and resolution —
+   * **no posture among them.**
+   *
+   * ⚠️ **The correction was written and never applied to the two lines it
+   * described**, because the note said *"the module named below"* and four
+   * unrelated cards had grown in between. ⛔ **Nothing reads `module` at
+   * runtime, so no behaviour broke** — but its stated purpose is *"so a broken
+   * one has an owner without a `git blame`"*, and it pointed at the module with
+   * no producer.
+   */
+  it('attributes the posture cards to the engine that judges posture', () => {
+    for (const id of ['top-risks', 'top-opportunities'] as const) {
+      const card = REGISTRY.find((c) => c.id === id);
+      expect(card, `${id} is not registered`).toBeDefined();
+      expect(card?.module, `${id} names the wrong producer`).toBe('buying_score_engine');
+    }
+  });
+});

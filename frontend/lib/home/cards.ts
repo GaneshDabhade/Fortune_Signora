@@ -301,7 +301,9 @@ export const REGISTRY: readonly CardContract[] = [
    * found none, and concluded the cards were unbuildable.** ✅ **The judgement
    * is `buying_score_engine`'s**, ratified in `scoring_model@1.json` as a
    * `posture` per type and published on `GET /workspaces/{id}/scoring-model` —
-   * **the module named below is the one that owns it.**
+   * **the module on the two entries at the foot of this registry is the one
+   * that owns it** — ⚠️ **and it said `signal_engine` until 2026-08-25, because
+   * *"below"* is not a location.**
    */
   /**
    * ✅ **`card.inthealth`** — 📁 *"per-connection state"*, whose dependency
@@ -343,8 +345,33 @@ export const REGISTRY: readonly CardContract[] = [
     requires: null,
   },
   { id: 'agent-runs', title: 'Agent runs', module: 'ai_research_engine', requires: null },
-  { id: 'top-risks', title: 'Top risks', module: 'signal_engine', requires: null },
-  { id: 'top-opportunities', title: 'Top opportunities', module: 'signal_engine', requires: null },
+  /**
+   * 🔴 **`buying_score_engine`, and the correction above was written and never
+   * applied to the two lines it described.**
+   *
+   * ⛔ **They said `signal_engine`** — the module the note four entries up says
+   * a previous audit searched, found no risk/opportunity classification in, and
+   * wrongly concluded the cards were unbuildable. ⚡ **Measured**:
+   * `GET /workspaces/{id}/scoring-model` is served by `buying_score_engine`, and
+   * `signal_engine`'s routes are triage, catalog, decisions and resolution —
+   * **no posture among them.**
+   *
+   * ⚠️ **Nothing reads `module` at runtime, so no behaviour broke.** ⛔ **But its
+   * stated purpose is *"so a broken one has an owner without a `git blame`"***,
+   * so a wrong value misdirects precisely the person the field exists for — and
+   * it pointed at the module with no producer.
+   *
+   * ✅ **Kept beside the entries rather than four above them**, because *"the
+   * module named below"* stopped naming anything as soon as unrelated cards grew
+   * in between.
+   */
+  { id: 'top-risks', title: 'Top risks', module: 'buying_score_engine', requires: null },
+  {
+    id: 'top-opportunities',
+    title: 'Top opportunities',
+    module: 'buying_score_engine',
+    requires: null,
+  },
 ];
 
 /**
