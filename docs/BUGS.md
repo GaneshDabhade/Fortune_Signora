@@ -8981,6 +8981,38 @@ SIGNORA_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@loca
 
 ⚠️ **`role="alert"` IS present on the failing page and its text is EMPTY** — measured, `[""]`. **The announcement element exists and announces nothing**, which is [B-1057](#b-1057)'s shape one screen over.
 
+### ✅ RE-VERIFIED ON `ea2002b3` — three screens FIXED, `/` is NOT
+
+**QE's own steps, on a prod-local built from Lane A's fix, freshly seeded, with a healthy control beside every failing run:**
+
+| route | reads broken | broken | healthy |
+|---|---|---|---|
+| **`/accounts`** | 3 | ✅ ***"Could not load your organizations"*** | *"Companies — 15 total"* |
+| **`/business`** | 3 | ✅ **states the failure** | *"Nothing declared"* |
+| **`/help`** | 3 | ✅ **states the failure** | *"Help & support"* |
+| ⛔ **`/`** | ⛔ **22** | 🔴 **`Loading…`, and 5 nodes still `aria-busy`** | *"Good afternoon, Dana"* |
+
+✅ **And the customer vocabulary is right** — *"your organizations"*, not *workspaces* (ADR-0034).
+
+> ⚠️ **THE FIRST ATTEMPT AT THIS RE-VERIFICATION WAS A FALSE PASS AND QE ALMOST REPORTED IT.** **Rebuilding prod-local invalidated the stored session, so every route landed on the SIGN-IN page** — which is neither `NoWorkspace` nor `Loading`, so a verdict computed by elimination called it *"states a failure"* on all eight runs. ⛔ **`broken(0)` — zero faults injected — was printed beside every line and QE read past it.** ✅ **The probe now ABORTS on a signed-out page or on zero interceptions rather than computing a verdict from an unmet precondition.**
+
+### 🔴 WHY `/` NEVER REACHES ITS OWN ERROR BRANCH — the timing, measured
+
+📁 **`app/(app)/page.tsx:101` renders `StatedAbsence` on `state.status === 'unresolved'`, and `use-entry.ts:93` sets that on `workspaces.isError`. The branch exists.** ⛔ **It never renders.**
+
+**Twenty-two workspace reads in 22 seconds, and the gaps are not random:**
+
+```
+1.04  2.03  0.03  │  1.02  2.04  0.03  │  1.01  2.02  0.02  │  1.02  2.02  0.03  │  …
+└──────┬───────┘
+  three attempts, 1s then 2s — React Query's two retries for a 5xx
+                     └── then 0.03s later, A FRESH QUERY STARTS
+```
+
+⚡ **The 1s/2s pair is `shouldRetry` behaving exactly as written.** 🔴 **The 0.03s gap is the finding: the query settles to `isError` and something IMMEDIATELY refetches it, roughly every 3.1 seconds, indefinitely.**
+
+⛔ **QE has NOT established what.** **A remount of the subtree holding the query is the obvious candidate — a fresh mount refetches at once, which is what a 0.03s gap looks like — but QE has not proved a remount and is not going to name one.** ⚡ **What is measured: the cycle, its period, and that `isError` is reached and then discarded before `page.tsx` can render on it.**
+
 ### 📁 And 20 workspace reads in 20 seconds at `/`
 
 ⚡ **`/accounts` made exactly 3 — one plus the two retries `shouldRetry` allows for a 5xx, which is the policy behaving correctly.** ⛔ **`/` made 20.** **QE has NOT established why** — a remount loop and multiple independent consumers of the same read are both live candidates and neither is measured. **It is recorded because it is a measured difference between two routes on one policy, not because QE knows what it means.**
