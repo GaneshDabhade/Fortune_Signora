@@ -63,7 +63,7 @@ test.describe('Workflow 9 · a person makes Signora theirs', () => {
 
     const displayName = page.getByLabel('Display name');
     await displayName.fill('Aurélie');
-    await page.getByRole('button', { name: 'Save' }).click();
+    await page.getByRole('button', { name: /^Save/ }).click();
     await expect(page.getByText('Saved')).toBeVisible();
 
     // ⛔ **Server-persisted, not the browser's.** A reload proves the round

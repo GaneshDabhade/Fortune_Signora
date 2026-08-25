@@ -100,7 +100,7 @@ describe('screen 01 · the fields that are real, and the ones that are absent', 
     await screen.findByLabelText('Display name');
 
     await userEvent.type(screen.getByLabelText('Display name'), 'Aurélie');
-    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await userEvent.click(screen.getByRole('button', { name: /^Save/ }));
 
     expect(changePreferences).toHaveBeenCalledWith('ws-1', {
       display_name: 'Aurélie',
@@ -308,7 +308,7 @@ describe('B-215 · a slow read must not erase what somebody has typed', () => {
     // The read lands late, carrying the older, empty value.
     release({ ...DEFAULTS });
 
-    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await userEvent.click(screen.getByRole('button', { name: /^Save/ }));
 
     expect(changePreferences).toHaveBeenCalledWith('ws-1', {
       display_name: 'Aurélie',
@@ -442,7 +442,7 @@ describe('🔴 the profile with no organization behind it', () => {
 
     render(<Panel name={null} email="dana@northwind.test" />);
 
-    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await userEvent.click(screen.getByRole('button', { name: /^Save/ }));
 
     const refusal = await screen.findByRole('alert');
     expect(refusal).toHaveTextContent(/not in one yet/i);
