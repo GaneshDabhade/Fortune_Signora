@@ -299,7 +299,27 @@ test.describe('Workflow 9 · a person makes Signora theirs', () => {
     let changed = false;
     for (const theme of themes) {
       if (await page.getByRole('radio', { name: theme }).isChecked()) continue;
-      await page.getByRole('radio', { name: theme }).check();
+      /**
+       * 🔴 **Clicked by label, for the reason this file already states 80
+       * lines up** — *"`.check()` on the input never completes… the input is
+       * behind its own label by design."*
+       *
+       * ⚡ **The theme picker is now `ChoiceCards`**, which the design lists as
+       * its own component (*`ThemeCard · v2 · card 12px`*, separate from
+       * *`Segmented / Toggle / Select`*). 📁 `choice-cards.tsx:132` says the
+       * selected dot *"sits over the `sr-only` input and intercepts"*, so
+       * `.check()` retries until the scenario times out — **the identical
+       * trace, on a different overlay.**
+       *
+       * ✅ **Not a weakening**: the assertion below still reads
+       * `toBeChecked()` on the input, and ⛔ **`force: true` would have been
+       * the weakening** — it clicks through whatever is on top, which is the
+       * class of defect a journey exists to catch.
+       */
+      await page
+        .locator('label')
+        .filter({ has: page.getByRole('radio', { name: theme }) })
+        .click();
       changed = true;
       break;
     }
@@ -322,7 +342,10 @@ test.describe('Workflow 9 · a person makes Signora theirs', () => {
         response.ok(),
       { timeout: 20_000 },
     );
-    await page.getByRole('radio', { name: /^System\b/ }).check();
+    await page
+      .locator('label')
+      .filter({ has: page.getByRole('radio', { name: /^System\b/ }) })
+      .click();
     await persisted;
     await page.reload();
 
