@@ -98,11 +98,35 @@ export function StatedAbsence({
 
   if (as === 'page') {
     return (
-      <EmptyState
-        icon={icon}
-        title={title ?? `Could not load ${subject}`}
-        description={sentence}
-      />
+      /**
+       * 🔴 **It announced NOTHING, and 📁 `System States` §4.1.3 leaves no
+       * third option**: ***"Region errors and retries announce politely. Only
+       * a state that ends the session — 500, maintenance — announces
+       * assertively, once."***
+       *
+       * ⚡ **Polite is unambiguous here even though the SCOPE is not.** 📁
+       * `system-state.tsx`'s own `politeness()` gives **region and page the
+       * same answer** — `status`/`polite` — and reserves `alert`/`assertive`
+       * for `app` and `platform`. **A failed read is neither.**
+       *
+       * ⚠️ **Found by QE, in a browser, and reported as an observation they
+       * had deliberately NOT established.** ⛔ **They were right not to**: the
+       * absence of `role="alert"` is correct, and it was the absence of any
+       * announcement that was the defect.
+       *
+       * ⛔ **The `h1` half is NOT fixed here and needs a ruling** — 📁 §1.3.1
+       * asks a full-page state for *"an h1 that names what happened"*, and
+       * `EmptyState` renders a `<p>` because it is shared with genuine empty
+       * states where an `h1` would be wrong. 🔴
+       * [C-1557](../../../docs/LANE_COORDINATION.md).
+       */
+      <div role="status">
+        <EmptyState
+          icon={icon}
+          title={title ?? `Could not load ${subject}`}
+          description={sentence}
+        />
+      </div>
     );
   }
 

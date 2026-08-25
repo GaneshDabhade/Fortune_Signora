@@ -198,3 +198,37 @@ describe('a tenth local implementation cannot be written quietly', () => {
     expect(SENTENCE.test(code('const t = "it\\"s: could not load";'))).toBe(true);
   });
 });
+
+describe('📁 §4.1.3 — a failed read announces, and announces politely', () => {
+  /**
+   * 📁 `System States`, `a11y` §4.1.3, verbatim:
+   *
+   * > ***"Region errors and retries announce politely. Only a state that ends
+   * > the session — 500, maintenance — announces assertively, once."***
+   *
+   * ⛔ **The page-level branch announced NOTHING**, across seven callers.
+   * ⚠️ **Found by QE in a browser and reported as an observation they had
+   * deliberately not established** — *"a full-page state rendering a heading
+   * is legitimately not an alert, and asserting otherwise would be a
+   * preference dressed as a finding."* ✅ **They were right: the absence of
+   * `alert` is correct. The absence of any announcement was the defect.**
+   */
+  it('🔴 announces the failure politely', () => {
+    render(<StatedAbsence as="page" subject="your organizations" />);
+
+    const announcement = screen.getByRole('status');
+    expect(announcement).toHaveTextContent(/could not load your organizations/i);
+  });
+
+  it('⛔ never assertively — that is reserved for a state that ends the session', () => {
+    /**
+     * ⚡ **The positive control.** ⛔ Without it, wrapping the block in
+     * `role="alert"` would satisfy the test above while interrupting a
+     * customer for a region read — which 📁 `system-state.tsx`'s own
+     * `politeness()` reserves for `app` and `platform` scope.
+     */
+    render(<StatedAbsence as="page" subject="your organizations" />);
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+});

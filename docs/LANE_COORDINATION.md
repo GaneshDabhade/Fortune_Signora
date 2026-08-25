@@ -15981,3 +15981,68 @@ a reassignment the platform does not perform.
 without enumerating the book. 🔴 **② on removal, is reassignment mandatory (the
 design's word is *requires*), or offered?** ⚡ **If mandatory, removal cannot
 complete without it and that is a backend rule, not a dialog.**
+
+---
+
+### C-1557 · A full-page read failure has no `h1`, and the ladder does not classify it
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-25, on an observation QE recorded without filing |
+| **Module** | `product_surface` — 📁 [`stated-absence.tsx`](../frontend/components/feedback/stated-absence.tsx) |
+| **Owner of the answer** | 🔴 **Product owner** |
+| **Status** | **`OPEN`** — ⚠️ **the announcement half is fixed; the heading half is a design question** |
+
+📁 **`System States` §1.3.1:** ***"Every full-page state is a single `<main>`
+with an h1 that names what happened — not 'Error' and not the status code."***
+
+⛔ **`StatedAbsence as="page"` renders `EmptyState`, whose title is a `<p>`.**
+**Seven callers**, and a customer whose organizations fail to load reaches a
+page with **no heading at all**.
+
+### 🔴 Why this is not a one-line fix
+
+⚠️ **`EmptyState` is shared with genuine empty states** — *"No reports yet"*,
+*"Nothing declared yet"* — **where an `h1` would be wrong.** ⛔ So the heading
+level belongs to the caller, and the caller cannot decide it without knowing
+which scope this state is.
+
+### ⛔ And the ladder does not enumerate this state
+
+📁 [`ladder.ts`](../frontend/lib/system-states/ladder.ts) assigns every state to
+exactly one scope, and refusing illegal pairings is *"the whole mechanism"*:
+
+| scope | legal states |
+|---|---|
+| `region` | `retry` · `skeleton` · **`region-error`** · `empty-result` |
+| `page` | `404` · `403` · `feature-not-enabled` · `permission-required` |
+| `app` | `500` · `global-error-boundary` |
+| `platform` | `maintenance` · `region-outage` · `no-internet` |
+
+🔴 **A primary read failing is a `region-error`, and `region-error` is legal
+only at region scope** — so rendering it at page scope **throws**. ⚡ **But by
+§01's own *"what survives"* column it IS page scope**: *"Shell, navigation,
+workspace context, other tabs"* all survive, which is exactly what happens when
+`/accounts` fails to read organizations.
+
+⛔ **The design classifies the state and the survival independently, and for
+this case they disagree.**
+
+### ✅ What was implemented without a ruling
+
+📁 **§4.1.3 gives one answer under either reading** — `system-state.tsx`'s own
+`politeness()` returns `status`/`polite` for **both** region and page, reserving
+`alert`/`assertive` for `app` and `platform`. ⛔ **The page branch announced
+nothing at all**, and *"silent"* is not among the design's options. **Fixed and
+guarded, with a positive control against over-correcting to `alert`.**
+
+⚠️ **Found by QE, who explicitly declined to call it a finding** — *"a full-page
+state rendering a heading is legitimately not an alert, and asserting otherwise
+would be a preference dressed as a finding."* ✅ **They were right about the
+`alert` and the real defect was one layer under it.**
+
+**What is being asked:** 🔴 **① which scope is *a primary read failed* — the
+state says region, the survival column says page?** 🔴 **② at page scope, does
+`StatedAbsence` stop using `EmptyState`** — 📁 `system-state.tsx` says the two
+*"must never merge"* because *"conflating them is how a broken widget renders as
+an empty one"*, **and the page branch is currently that conflation.**
