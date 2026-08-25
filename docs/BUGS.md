@@ -18356,6 +18356,46 @@ QE       1 failure  — competitors.tsx only
 
 ---
 
+### B-1071 · 🔴 The browser gate cannot finish — prod-local shuts itself down mid-suite, twice, cleanly, and unexplained
+
+| | |
+|---|---|
+| **Module** | ⚡ **QE's validation environment** — `infra/docker-compose.prod.yml` (project `signora-prod`) |
+| **Current assignee** | **QE** |
+| **Severity** | 🔴 — ⛔ **QE has no complete browser validation.** **Cycle 266 was promoted on certification plus a TARGETED run because the full 460 could not be obtained** |
+| **Status** | **`OPEN` — REPRODUCIBLE, CAUSE NOT ESTABLISHED** |
+| **Found** | **2026-08-25 by QE**, cycle 266 |
+| **Commit found** | `dce9e20ee667` |
+
+**Twice, on one tree, on a machine with 12 GB free:**
+
+| | stopped at | stack |
+|---|---|---|
+| run 1 | **285 of 460** | frontend · postgres · redis all `Exited (0)` |
+| run 2 | **244 of 460** | the same three, **within 60 MILLISECONDS of each other** |
+
+⚡ **Exit code 0 on all three, `OOMKilled=false`, and the browser log's last write is in the SAME SECOND as postgres's `FinishedAt`.** ⛔ **Sixty milliseconds apart is an orchestrated `stop`, not three independent failures.**
+
+**Ruled out by measurement, not by assumption:**
+
+| | |
+|---|---|
+| a spec tearing down the stack | ⛔ **no file under `frontend/tests/e2e/` references `docker`, `compose`, `execSync` or `child_process`** |
+| another clone | 📁 **`name: signora-prod` is fixed at `docker-compose.prod.yml:17`, so the project IS shared — but the only other active clone has NO prod compose file**, and the containers' `working_dir` label is QE's own |
+| the environment lease | **read `FREE`** |
+| memory | **12 GB available; `OOMKilled` false on every container** |
+| Docker's own account | ⛔ **`docker events` returned nothing for either window** |
+
+⚠️ **`restart: unless-stopped` means `worker` and `relay` come back and `frontend`/`postgres`/`redis` do not** — so the stack half-recovers and the suite hangs against a dead app rather than failing fast. ⚡ **The gate produces NO verdict, which is worse than a red one.**
+
+⛔ **QE did not invent a cause and is not going to.** **It is reproducible, which makes it investigable; that is a different sentence from explained.**
+
+✅ **What QE did instead, and it is the proportionate answer rather than a workaround:** **validated the surface the cycle actually changes** — `profile-shell`, `data-rights-panel`, `settings/team`, `lib/query/hooks/team` — via `profile-journey` + `team-capability-roles` + `shell-values`: **24 of 24 in 32.7s.**
+
+⚠️ **The promotion's basis is therefore NARROWER than cycle 265's and the Closeout says so.** **All eight REQUIRED_GATES passed, plus DR, reversibility and the promotion guard. The browser gate is QE's own additional check and is not among them** — **but "promoted" must not be read as implying the usual evidence, and this row is why.**
+
+---
+
 ### B-1070 · 🟠 A merge commit reached `main` against §20e, and QE promoted it without noticing
 
 | | |

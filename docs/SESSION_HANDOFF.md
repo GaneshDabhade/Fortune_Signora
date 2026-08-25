@@ -1,5 +1,21 @@
 # Session Handoff
 
+> ## Cycle 266 — promoted `dce9e20e`, 2026-08-25 · **leaving an organization, and a blocker that closed 18 days ago**
+>
+> **`main` = `integration` = `dce9e20e` = the certified commit**, verified from the remote. **ZERO merge commits.** `pytest` **5452** · coverage **95.03%** · **679 invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · frontend **4060/218** · `eslint` · smoke **24/571s** · DR · reversibility **7s**.
+>
+> 🔴 **READ THIS BEFORE TREATING THIS PROMOTION LIKE THE LAST ONE. The full 460 browser gate COULD NOT BE OBTAINED.** ⛔ **It died TWICE — at 285 and at 244 — with prod-local's frontend, postgres and redis exiting cleanly WITHIN 60 MILLISECONDS of each other, 12 GB free, no OOM.** 📁 **[B-1071](BUGS.md) — reproducible, cause NOT established.** ⚠️ **The suite, other clones, the lease, memory and `docker events` were all ruled out by measurement; no cause was invented.**
+>
+> ✅ **Validated instead: the surface the cycle changes** — `profile-journey` + `team-capability-roles` + `shell-values`, **24 of 24 in 32.7s.** ⚡ **All eight `REQUIRED_GATES` passed and the browser gate is not among them** — ⛔ **but this promotion rests on LESS evidence than cycle 265's, and that is deliberate to say.**
+>
+> ⚠️ **BEFORE THE NEXT BROWSER GATE, expect it to die.** **`restart: unless-stopped` brings `worker` and `relay` back and leaves `frontend`/`postgres`/`redis` down, so the suite HANGS against a dead app rather than failing fast — no verdict at all, which is worse than a red one.** ✅ **Check `curl -s -o /dev/null -w '%{http_code}' http://localhost:3100/` and the container count before believing a stall.**
+>
+> ⛔ **[B-1070](BUGS.md), against QE: a merge commit reached `main` in cycle 265.** **`--audit-main` passed because it asks whether every commit is in a certified snapshot, not whether history is linear.** ⚡ **QE caused it by moving `integration` under a lane three times, so the lane adopted merging to protect the SHAs QE was tracking.** ✅ **266 carries zero, checked explicitly. The fix is QE holding still, not a new guard.**
+>
+> ⚠️ **NEXT: Lane A holds `ad66d55d` unpushed** — the theme picker drawn as a segmented control where the design lists `ThemeCard · v2 · card 12px` separately. 🔴 **All 4060 tests passed after the swap, because both primitives satisfy `getByRole('radio')`.** ⚡ **Right objects, well-formed question, WRONG AXIS — a suite loudly and correctly green about something else.**
+
+> ---
+>
 > ## Cycle 265 — promoted `3c179352`, 2026-08-23 · **twenty-eight commits, and a fix the repository already had**
 >
 > **`main` = `3c179352` = the certified commit**, verified from the remote. `pytest` **5452** · coverage **95.03%** · **679 invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · frontend **4050/217** · `eslint` · smoke **24/227s** · DR · reversibility **5s**.

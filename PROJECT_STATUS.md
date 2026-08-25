@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `3c179352`, 2026-08-23.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `dce9e20e`, 2026-08-25.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,7 +12,7 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `3c179352`, 2026-08-23.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `dce9e20e`, 2026-08-25.** Every figure is read from the repository, never carried forward.
 
 > ⚡ **Cycle 260 promotes the Settings rebuild and the tenth invented heading — certified `47244e79e2ae` on the FIRST attempt.** ✅ **pytest 5452 · coverage 95.03% · 679 Security Invariants · mypy 956 · import-linter 37/37 · tsc · frontend-suite 4023/209 · eslint · smoke 24 stages/577s · DR passed · reversibility head→base→head in 6s.**
 >
@@ -21,6 +21,16 @@
 > ⚡ **A newer SHA arrived mid-run and was NOT taken.** 📁 **[ADR-0032](docs/architecture/adr/0032-release-certification.md): certification binds to an immutable commit, so `integration` moving during a run never invalidates it.** **`8d0ab949` opens the next cycle automatically** — the alternative would let a lane pushing during a run extend that run indefinitely.
 >
 > 🔴 **[C-1547](docs/LANE_COORDINATION.md) is the finding worth reading, and Lane A raised it rather than "fixing" it.** ⛔ **The Settings screen document draws section cards at 16px; `Card` renders 12px — and Design System v2 §05 assigns **12px to Card** and 16px to the table plane, with §09 saying *"12px radius"* in words.** ⚡ **THREE consistent signals against one screen: the shared primitive is right and the SCREEN document is the outlier.** 📁 **The same question as D13-A** — whether a screen document's raw value overrides a system role — **and the two should be ruled together.**
+
+> ⚡ **Cycle 266 promotes leaving an organization — a capability whose endpoint had shipped and whose UI was blocked by a comment for eighteen days after the blocker closed.** ✅ **Certified `dce9e20ee667` on the FIRST attempt — pytest 5452 · coverage 95.03% · 679 Security Invariants · mypy 956 · import-linter 37/37 · tsc · frontend-suite 4060/218 · eslint · smoke 24 stages/571s · scenario 208 assertions · DR passed · reversibility head→base→head in 7s · ZERO merge commits.**
+>
+> ⛔ **THE PROMOTION'S BASIS IS NARROWER THAN CYCLE 265's AND THAT IS STATED RATHER THAN LEFT TO INFERENCE.** 🔴 **The full 460-test browser gate COULD NOT BE OBTAINED — it died twice, at 285 and at 244, with prod-local's frontend, postgres and redis exiting cleanly within 60 MILLISECONDS of each other on a machine with 12 GB free.** 📁 **[B-1071](docs/BUGS.md), reproducible and unexplained; QE ruled out the suite, other clones, the lease, memory and Docker's own event log, and did NOT invent a cause.**
+>
+> ✅ **What was validated instead is the surface the cycle changes** — `profile-shell` · `data-rights-panel` · `settings/team` · `lib/query/hooks/team` — **via `profile-journey` + `team-capability-roles` + `shell-values`: 24 of 24 in 32.7s.** ⚠️ **All eight `REQUIRED_GATES` passed and the browser gate is not among them — but *promoted* must not be read as implying cycle 265's evidence.**
+>
+> ⚡ **THE SLICE ITSELF IS A THIRD FORM OF THE DAY'S CLASS.** **`POST /workspaces/{id}/membership/leave` shipped; [C-207](docs/LANE_COORDINATION.md) closed 2026-08-05; and `settings/team/page.tsx` went on saying *"blocked on C-207"* for eighteen days.** ⛔ **A stale blocker in a comment is indistinguishable from a live one, which is why nobody looked at the endpoint again.** 📁 **Lane A then swept the whole class and found the more dangerous direction: a `CLOSED` row cited in the PRESENT tense, where the next reader checks it, finds it answered, and concludes the work is free.**
+>
+> ⛔ **AND A MERGE COMMIT REACHED `main` IN CYCLE 265 AGAINST §20e** — [B-1070](docs/BUGS.md), **filed against QE.** **`--audit-main` passed because it asks whether every commit is inside a certified snapshot, NOT whether the history is linear.** ⚡ **A guard can be perfectly scoped, assert something true, and be evidence for nothing — if what it asserts is not what its reader believes it asserts.** ✅ **Cycle 266 carries ZERO merge commits, checked explicitly.**
 
 > ⚡ **Cycle 265 promotes TWENTY-EIGHT commits and retires a certified one — and the day's finding is that the repository had already solved its own worst defect and never propagated the answer.** ✅ **Certified `3c1793528360` on the first attempt — pytest 5452 · coverage 95.03% · 679 Security Invariants · mypy 956 · import-linter 37/37 · tsc · frontend-suite 4050/217 · eslint · smoke 24 stages/227s · scenario 208 assertions · DR passed · reversibility head→base→head in 5s. Browser 455 of 460 — 2 failed, 3 skipped, ZERO regressions.**
 >
