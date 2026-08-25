@@ -41,6 +41,31 @@ const LANGUAGES = [
   { value: 'en-US', label: 'English (US)' },
 ] as const;
 
+/**
+ * 🔴 **The design ENUMERATES these, in a different document from the one that
+ * draws the control** — which is why they were absent while the backend has
+ * stored them all along.
+ *
+ * 📁 **`Workspace Setup`, `preferences`**: ***"Number format — 1.234,56 or
+ * 1,234.56 — applies to exports too."*** ⚡ **Two options, named by the design.**
+ * 📁 **`User Profile` §02 draws the control** — `select`, exemplar `1.234,56`,
+ * tagged *"Yours"*.
+ *
+ * ⛔ **This is NOT an invented option set.** ⚠️ 📁 `domain/preferences.py`
+ * refuses to enum these — *"inventing a `DateFormat` enum from a single sample
+ * would decide which formats Signora supports"* — and it is right about **date
+ * format**, which appears **once in all 35 documents with no list beside it**.
+ * ✅ **Number format is different: the design gives the list.**
+ *
+ * ⚡ **Stored as the design's own strings** rather than as codes, because 📁 the
+ * backend keeps these as text for the same reason: a code would be a second
+ * vocabulary for a value the design already writes out.
+ */
+const NUMBER_FORMATS = [
+  { value: '1.234,56', label: '1.234,56' },
+  { value: '1,234.56', label: '1,234.56' },
+] as const;
+
 const TIME_FORMATS = [
   { value: '24h', label: '24-hour' },
   { value: '12h', label: '12-hour' },
@@ -103,8 +128,19 @@ export function LocalePanel() {
         <h2 id="locale-heading" className="text-lg font-semibold text-content">
           Language &amp; region
         </h2>
+        {/* 🔴 **This was the TIMEZONE field's help text, promoted to the
+            section.** 📁 §02's own section description is different and says
+            something the screen was not saying: ***"Your choices override the
+            workspace defaults for you alone. Data is never reformatted at the
+            source — only how it is displayed to you changes."***
+
+            ⚡ **That second sentence is the one worth having** — it tells
+            somebody their exports and their colleagues' screens are unchanged,
+            which is the question a locale setting actually raises. ✅ The
+            timezone sentence returns to the timezone field, below. */}
         <p className="text-sm leading-6 text-content-muted">
-          Sets when digests arrive and what “today” means.
+          Your choices override the organization’s defaults for you alone. Data is never
+          reformatted at the source — only how it is shown to you changes.
         </p>
       </header>
 
@@ -133,6 +169,8 @@ export function LocalePanel() {
         <div className="flex flex-col gap-1.5">
           <Select
             label="Language"
+            // 📁 The design's own help, verbatim.
+            hint="Interface language. Your data stays in its original language."
             value={prefs?.language ?? 'en-GB'}
             options={LANGUAGES}
             onChange={(event) => change({ language: event.target.value })}
@@ -152,8 +190,29 @@ export function LocalePanel() {
           <FieldOriginTag origin="yours" className="self-start" />
         </div>
 
+        {/* 📁 §02's fifth field, and 📁 `Workspace Setup` tags it *"Member can
+            override"* — so it belongs to the person, here. ⚡ **`Select` and
+            `FieldOriginTag` are the panel's existing primitives**; nothing new
+            is built for this row. */}
+        <div className="flex flex-col gap-1.5">
+          <Select
+            label="Number format"
+            // 📁 The design's own help text, verbatim.
+            hint="Decimal and thousands separators."
+            value={prefs?.number_format ?? NUMBER_FORMATS[0].value}
+            options={NUMBER_FORMATS}
+            onChange={(event) => change({ number_format: event.target.value })}
+          />
+          <FieldOriginTag origin="yours" className="self-start" />
+        </div>
+
         <div className="flex flex-col gap-1.5">
           <p className="text-sm font-medium text-content">Timezone</p>
+          {/* 📁 §02's help for THIS field, returned to it from the section
+              header where it had been standing in for the design's own. */}
+          <p className="text-sm text-content-muted">
+            Sets when digests arrive and what “today” means.
+          </p>
           <p className="text-sm text-content-muted">
             {prefs?.timezone ?? 'Not set — Signora is using your browser’s zone for now.'}
           </p>

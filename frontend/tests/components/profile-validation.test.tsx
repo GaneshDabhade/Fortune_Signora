@@ -20,7 +20,7 @@
  * again."* ⛔ **The connection was fine.** These assert the stated refusal that
  * replaced the false one.
  */
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -34,6 +34,7 @@ vi.mock('@/lib/state/workspace-provider', () => ({
   useWorkspaceContext: () => ({ activeWorkspace: { id: 'ws-1', name: 'Northwind' } }),
 }));
 
+import { LocalePanel } from '@/app/(app)/profile/locale-panel';
 import { ProfilePanel } from '@/app/(app)/profile/profile-panel';
 import { displayNameProblem, normalizeDisplayName } from '@/lib/profile/display-name';
 
@@ -233,5 +234,54 @@ describe('screen 07 · Save carries a count of changed fields', () => {
     await user.type(field, '   ');
 
     expect(screen.getByRole('button', { name: 'Save changes' })).toBeInTheDocument();
+  });
+});
+
+describe('screen 02 · the design draws six locale fields', () => {
+  /**
+   * 📁 `User Profile` §02's `localeFields` is six entries, and its own
+   * `hint-placeholder-count="6"` agrees. **The product rendered three.**
+   *
+   * ✅ **Number format is implemented here because the design ENUMERATES it**,
+   * in a different document from the one that draws the control: 📁
+   * `Workspace Setup`, `preferences` — ***"Number format — 1.234,56 or
+   * 1,234.56 — applies to exports too"*** — tagged ***"Member can
+   * override"***, and `number_format` has been stored and patchable
+   * server-side all along.
+   *
+   * ⛔ **Date format is NOT implemented and that is deliberate.** ⚡ It appears
+   * **once in all 35 documents**, with one exemplar and no list beside it —
+   * so a `<select>` here would decide which date formats Signora supports,
+   * which is 📁 the question `domain/preferences.py` refuses in writing.
+   * 🔴 [C-1555](../../../docs/LANE_COORDINATION.md).
+   */
+  it('🔴 offers the two number formats the design names, and no others', async () => {
+    render(<LocalePanel />);
+
+    const field = await screen.findByLabelText('Number format');
+    const offered = within(field)
+      .getAllByRole('option')
+      .map((option) => option.textContent);
+
+    // ⛔ **Exactly these two.** A third would be this panel deciding what
+    // Signora supports.
+    expect(offered).toEqual(['1.234,56', '1,234.56']);
+  });
+
+  it('carries the design’s help text, which no locale field had', async () => {
+    render(<LocalePanel />);
+
+    // 📁 §02 gives every `localeField` a `help` string and the product
+    // rendered none, because `Select` had nowhere to put one while `Input`
+    // did. ⚡ Queried through the accessible description, not by text.
+    const field = await screen.findByLabelText('Number format');
+    expect(field).toHaveAccessibleDescription('Decimal and thousands separators.');
+  });
+
+  it('⛔ still draws no Date format, because the design lists no options', async () => {
+    render(<LocalePanel />);
+    await screen.findByLabelText('Number format');
+
+    expect(screen.queryByLabelText('Date format')).not.toBeInTheDocument();
   });
 });
