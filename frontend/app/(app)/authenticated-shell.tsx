@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { signOut, useSession } from '@/lib/auth/client';
 import { useViewerRole } from '@/lib/query/hooks/team';
 import { ResumeOnboarding } from '@/components/workspace/resume-onboarding';
+import { workspaceKnown } from '@/lib/shell/workspace-gate';
 import { WorkspaceProvider, useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -85,6 +86,7 @@ function ShellForViewer({
     workspaces,
     activeWorkspace,
     isLoading: workspacesLoading,
+    error: workspacesError,
   } = useWorkspaceContext();
   const { data: session } = useSession();
 
@@ -122,9 +124,24 @@ function ShellForViewer({
   // `activeWorkspace` is still `null`. The question is answered when there is
   // an active organization, or when the list came back and there are none —
   // and it is genuinely open in between.
-  const workspaceKnown =
-    !workspacesLoading && (activeWorkspace !== null || workspaces.length === 0);
-  const resolved = viewer.resolved && workspaceKnown;
+  /**
+   * 🔴 **[B-237](../../../docs/BUGS.md)'s second symptom — `/` loading forever.**
+   *
+   * ⛔ **This expression lived here and had no error branch**, so an errored
+   * read read as *not yet known* and the gate shut in a loop the page could
+   * never escape. 📁 [`workspace-gate.ts`](../../lib/shell/workspace-gate.ts)
+   * carries the reasoning and the measurement; **it is a pure function so the
+   * combination that broke can be asserted directly**, which a branch in a
+   * component cannot be.
+   */
+  const resolved =
+    viewer.resolved &&
+    workspaceKnown({
+      isLoading: workspacesLoading,
+      error: workspacesError,
+      activeWorkspace,
+      workspaceCount: workspaces.length,
+    });
   const role = viewer.role;
 
   return (
