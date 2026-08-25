@@ -15866,3 +15866,65 @@ carries, **which is a domain question rather than a transport one.**
 implicit for a caller holding `ACCOUNT_TAG:UPDATE`** — **is refused by the
 design**: *"bulk approval requires a named reviewer"* is the opposite of
 implicit.
+
+---
+
+### C-1555 · Language & region draws six fields; the product renders three, and the missing three are one product question twice
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-25, auditing `User Profile` §02 against `lib/api/preferences.ts` |
+| **Module** | `product_surface` · `workspace_tenancy` |
+| **Owner of the answer** | 🔴 **Product owner** |
+| **Status** | **`OPEN`** — ⚠️ **blocking nobody**; the three shipped fields work |
+
+📁 **The design's `localeFields` array is six entries**, and its own
+`hint-placeholder-count="6"` agrees:
+
+| # | Field | Control | Rendered? |
+|---|---|---|---|
+| 1 | Language | `select` | ✅ |
+| 2 | Timezone | `select` | ✅ |
+| 3 | **Date format** | `select`, exemplar *"31 Dec 2026"* | ⛔ **absent** |
+| 4 | Time format | segmented | ✅ |
+| 5 | **Number format** | `select`, exemplar *"1.234,56"* | ⛔ **absent** |
+| 6 | **Week starts on** | **`locked: true`**, policy tag | ⛔ **absent** |
+
+⚡ **All three are stored, patchable and tested server-side** —
+`preferences.py:318-320`, `schemas.py:743`, and `test_preferences.py` asserts
+their defaults. **`lib/api/preferences.ts` declares them in the `Preferences`
+type and NO component reads or writes one.**
+
+### 🔴 The blocker is not effort — it is the question the backend already refused to answer
+
+📁 **`domain/preferences.py`, in its own words:**
+
+> ***"Text rather than an enum, and deliberately. The design shows ONE value for
+> each — ' 31 Dec 2026', '1.234,56', 'Monday' — and never lists the options.
+> Inventing a `DateFormat` enum from a single sample would decide which formats
+> Signora supports, which is a product question this file is not entitled to
+> answer."***
+
+⛔ **A `<select>` in the frontend is that same decision at a different layer.**
+⚠️ **Deriving the options from `Intl` instead does not escape it** — *which*
+`Intl` option sets to offer is still a choice about what Signora supports, made
+by whoever writes the array.
+
+### ⛔ And `Week starts on` is a direct contradiction between two documents
+
+| Document | Says |
+|---|---|
+| 📁 **User Profile** | **`locked: true`** with a **policy** tag — *"Locked so weekly rollups mean the same thing for everyone."* |
+| 📁 **Workspace Setup** | **`tag: 'Member can override'`** |
+
+🔴 **One draws a field the member may not change; the other says they may.** ⛔
+**And the backend implements neither**: `week_starts_on` is a **per-person**
+free-text field with **no workspace-level policy behind it**, so there is
+nothing for a locked control to display.
+
+⚠️ **Same shape as [C-1550](#c-1550--three-documents-give-the-settings-rail-three-widths-and-none-of-them-is-a-shared-primitive)** — two documents, one element, opposite treatments — and it is the second time the Settings/Profile family has produced one.
+
+**What is being asked:** 🔴 **① which date and number formats does Signora
+support?** — a list, and it can be short. 🔴 **② is `Week starts on` the
+person's or the organization's?** ⚡ **If the organization's, it needs a
+workspace-level field before any screen can draw it locked.**
