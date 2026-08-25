@@ -19171,7 +19171,7 @@ removed person GETs /workspaces/{id}/members                  → 200  ← shoul
 
 ⛔ **And it is not a 267 regression:** `git log origin/main..HEAD -- frontend/components/shell/ frontend/components/ui/` is **empty**. **Playwright 1.62.0, Chromium dated 3 August, `node_modules` unmoved since 8 August.** **Component, browser and dependencies all unchanged — 18 passes, then 12 of 12 failures.**
 
-### ⚠️ A SECOND mechanism, from the snapshot that was already on disk, and also UNCONFIRMED
+### ⚠️ A SECOND mechanism, from the snapshot that was already on disk — ALSO REFUTED, see SOLVED below
 
 ```yaml
 - status: Navigated to /w/0defa12d-…/home     ← the spec asked for `/`
@@ -19188,6 +19188,48 @@ removed person GETs /workspaces/{id}/members                  → 200  ← shoul
 ⛔ **QE did NOT edit the spec to find out.** ⚡ **Navigating to the resolved workspace URL instead of `/` would very likely turn it green, and turning an unexplained failure green by changing the test is the move this register keeps catching.**
 
 ⛔ **Consistent with every fact and confirmed by none of them.** **Intermittent · 15.6s is the poll timeout not a slow pass · stuck at EXACTLY 224 rather than mid-transition.** ⚠️ **Neither lane has reproduced it, and QE will report an all-green repeat run as INCONCLUSIVE rather than as absence** — 📁 the reading QE already had to retract once on `auth-credential-journeys:155`.
+
+### ✅ SOLVED 2026-08-25 — the shell focuses the content region on route change, and the PRODUCT IS CORRECT
+
+⛔ **Four mechanisms were proposed across two lanes and THREE were refuted by tests their own proposers named.** ✅ **The fourth was measured.**
+
+| proposed | by | killed by |
+|---|---|---|
+| **hydration ordering** — `.focus()` before the handler attaches | Lane A | ⛔ **`data-widened=true` at the first focus.** The handler WAS attached |
+| **warm/cold redirect timing** | Lane A | ⛔ **6 of 6 on a warm stack**, API health at 2.7 ms — **and runs 2–12 of the original repeat were already warm** |
+| **the tree — 267 is the boundary** | **QE** | ⛔ **6 of 6 on a worktree built from `origin/main`.** **Main fails identically** |
+| ✅ **something blurs the slot** | Lane A | ✅ **CONFIRMED** |
+
+**The probe — a working-copy edit, run twice, reverted with `git checkout --` in the same command, `diff` byte-identical afterwards:**
+
+```
+w1=224  d1=true   af1=INPUT:combobox     ← handler attached, setSearchFocused(true) fired
+w2=224  d2=null   af2=H1:null            ← 2.5s later, focus has LEFT the slot
+w3=320  d3=true   ← re-focusing restores it
+```
+
+⚡ **`w1=224` WITH `d1=true` is the 150 ms `transition-[width]` caught mid-flight, not a failure.**
+
+📁 **`components/shell/app-shell.tsx:430`, in the shell's own words:** *"`main` — the content region. **Receives focus on route change** and announces the new page title."*
+
+```
+goto('/')                    →  SSR paints the top bar at 224
+expect(search).toBeVisible() ✓  satisfied by MARKUP — no JavaScript required
+poll(width) === 224          ✓  the SSR inline style, before hydration matters
+.focus()                     ✓  handler attached, data-widened = true
+   ← useEntryDecision resolves; router.replace('/w/<id>/home')
+   ← AppShell moves focus to the content region — BY DESIGN, for screen readers
+   ← the slot blurs, searchFocused = false, the width returns to 224
+poll(width) === 320          ✗  polling a width nothing will move again
+```
+
+> ✅ **THE PRODUCT IS BEHAVING CORRECTLY. Focusing the content region on route change is the accessibility behaviour, not a defect.**
+>
+> ⛔ **The spec measures a focus interaction ACROSS A NAVIGATION IT NEVER WAITED FOR.** ⚡ **On a faster machine the navigation and the focus-move both complete before its first assertion — which is the 18 recorded passes, and why one unchanged tree gives opposite answers on different days.**
+
+✅ **The fix is Lane A's and is `await page.waitForURL(/\/w\/.+\/home/)` after `goto('/')`, before anything is measured.** ⛔ **Not *navigate somewhere easier* — wait for the navigation the chosen route performs**, which is what the spec always assumed and never said.
+
+⚠️ **QE said *"a race would be intermittent"* and that was sloppy — a race whose loser reliably loses is deterministic.** **What settled it was `d1=true`, not the repeat count.**
 
 ### B-1074 · 🟠 One stack, two restart policies — three services cannot return, so a stopped gate hangs instead of failing
 
