@@ -18773,7 +18773,25 @@ Received: "http://localhost:3100/signin"
 | **the seeded state** | **`recently_viewed` = 5 rows, NONE unscored.** ✅ **8 of 8 green** |
 | ⚡ **populating recents by USING the product** — running `accessibility.spec.ts`, whose `openScoredAccount` walks PAST unscored rows on its way to a scored one | ⛔ **2 rows arrived and BOTH are scored** — `Arvely Payments`, `Porterfield Health Systems` |
 
-⚠️ **And the two entry points use DIFFERENT DOORS, which may be the reason.** `openScoredAccount` walks `getByRole('table').getByRole('row')`; `accounts.accountLinks` is `main a[href^="/accounts/"]` — **any account link in `main`, table row or not.** ⛔ **QE did not establish that these resolve to the same first element**, and the difference is a live candidate for why one entry demonstrably failed and this one cannot be made to.
+### ✅ MEASURED NOT EXPOSED — 2026-08-25, and this is stronger than *"could not reproduce"*
+
+⛔ **QE opened three UNSCORED accounts as a customer would** — `Tessellate Security`, `Sandgate Retail Systems`, `Oakenshaw Manufacturing Software`, each confirmed `scored=false` on its own brief — **and then went to Home.**
+
+| | |
+|---|---|
+| **`recently_viewed` afterwards** | ⛔ **0 rows.** **Opening an account brief does not record a recent by this path** |
+| ⚡ **Home's account links, inventoried** | 🔴 **FIVE links, covering THREE accounts** — `caca1587 · caca1587 · caca1587 · 49bd6515 · be001040` |
+| **unscored among the first six** | ✅ **0** |
+
+⚡ **So `hrefs.slice(0, 6)` does not select six accounts. It selects five links over three accounts, every one of them from the RANKED card — which is scored by construction.** ✅ **The recents card contributes nothing, because nothing QE did as a customer put a row in it.**
+
+> ✅ **THAT IS THE THIRD SITE ACCOUNTED FOR ON EVIDENCE, and it is a different claim from the earlier one.** ⛔ **Twice QE said *"could not reproduce"*, which is a statement about QE.** ⚡ **This is a statement about the product: the door cannot serve what the assertion forbids, because every link it offers comes from a scored source.**
+
+### 📁 An observation QE is not filing
+
+**Opening an account by its URL did not add it to `recently_viewed`, while an earlier in-app walk did add two.** ⛔ **QE has NOT established which navigation records a recent, nor whether a direct link failing to is intended.** ⚠️ **It is recorded because it is the reason the reproduction failed, not because QE knows it is wrong.**
+
+⚠️ **And the two entry points use DIFFERENT DOORS.** `openScoredAccount` walks `getByRole('table').getByRole('row')`; `accounts.accountLinks` is `main a[href^="/accounts/"]` — **any account link in `main`, table row or not.** ⛔ **QE did not establish that these resolve to the same first element**, and the difference is a live candidate for why one entry demonstrably failed and this one cannot be made to.
 
 > ⚠️ **AMENDED — the `workflow.spec.ts` exposure depends on CLIPPING as well as on the draw.** 📁 **[C-1553](LANE_COORDINATION.md), Lane A, 2026-08-25: the recents card renders five rows into `h-[160px] overflow-hidden`, and five 37px rows with 8px separation need 217px.** ⛔ **So a `:visible` query sees two recents links where the DOM holds five, and *"the first six account links on Home"* is not the set QE assumed when it failed to reproduce this.** ⚡ **That makes the exposure RARER, not likelier — which is a reason to leave the spec alone, not a reason to change it.**
 
