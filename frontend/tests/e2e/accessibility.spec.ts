@@ -12,7 +12,7 @@
  */
 
 import { expect, test } from './fixtures/signora';
-import { openScoredAccount } from './fixtures/accounts';
+import { openNamedAccount, openScoredAccount } from './fixtures/accounts';
 
 test.describe('reaching the product without a mouse', () => {
   test('@a11y the first tab stop is reachable and visible', async ({ page }) => {
@@ -704,13 +704,21 @@ test.describe('a record that is not there says so', () => {
    * run, from the list, rather than from a hardcoded id.
    */
   test('@design a real account is untouched by that check', async ({ page }) => {
-    await page.goto('/accounts');
-    const first = page.locator('table a[href^="/accounts/"]').first();
-    await expect(first).toBeVisible();
-    const href = await first.getAttribute('href');
-    expect(href).not.toBeNull();
-
-    await page.goto(href!);
+    /**
+     * ⛔ **Not `.first()`** — 📁 [B-1068](../../../docs/BUGS.md). **This test's
+     * last assertion requires a NAMED company**, and the comment on it says so.
+     * ⚡ **Companies is the whole book in the book's own order, so its first row
+     * is whichever account sorts first — and *"no source has named this account
+     * yet"* is a designed state the product is allowed to render.** ⛔ **On a
+     * draw where that account sorts first, this test would report the identity
+     * regression it exists to catch, against a product behaving correctly.**
+     *
+     * ✅ **`openNamedAccount` asks for what the assertion needs.** ⚠️ **Not
+     * demonstrated on cycle 267's draw — all twelve Playground companies carry
+     * a legal name there — so this is the hidden input removed rather than a
+     * failure reproduced, and QE states which.**
+     */
+    await openNamedAccount(page);
     const heading = page.getByRole('heading', { level: 1 });
     await expect(heading).toBeVisible();
     await expect(heading).not.toHaveText(/not here/i);

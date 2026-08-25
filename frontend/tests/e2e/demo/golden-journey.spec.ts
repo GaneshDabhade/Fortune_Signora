@@ -36,6 +36,7 @@
  */
 
 import { expect, test } from '../fixtures/signora';
+import { openScoredAccount } from '../fixtures/accounts';
 import { OWNER } from '../fixtures/personas';
 
 /** Narration, so a person watching knows what they are looking at, and so the
@@ -81,9 +82,25 @@ test('a working morning at Signora', async ({ page, accounts, brief }) => {
 
   // ── 3 ─────────────────────────────────────────────────────────────────────
   say('3 · "Why this account?"', 'The question the list cannot answer.');
-  const opened = await accounts.openFirstAccount();
+  /**
+   * ⛔ **Not `accounts.openFirstAccount()`** — 📁 [B-1068](../../../../docs/BUGS.md).
+   * **Companies is the whole book in the book's own order, and the Playground's
+   * first row is an account no provider has scored** — a designed state, not a
+   * failure. ⚡ **This step then calls `waitForScore()`, so it is one of the few
+   * entries that genuinely REQUIRES a scored account**, and taking whichever
+   * row sorts first made the demonstration depend on the seed draw.
+   *
+   * ✅ **Confirmed rather than reasoned about: cycle 267's draw put
+   * `Sandgate Retail Systems` first, unscored, and this line timed out at
+   * `brief.ts:93` on exactly that.**
+   *
+   * ⚡ **`openScoredAccount` still enters the way a customer does** — it clicks
+   * a row in the Companies table — **it just asks for one that can answer the
+   * question step 3 is about to ask.**
+   */
+  await openScoredAccount(page);
   await brief.waitForScore();
-  say(`   opened ${opened}`);
+  say(`   opened ${(await brief.title.innerText()).trim()}`);
   await beat(page, 2000);
 
   // ── 4 ─────────────────────────────────────────────────────────────────────

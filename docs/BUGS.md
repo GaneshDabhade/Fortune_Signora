@@ -18356,14 +18356,14 @@ QE       1 failure  — competitors.tsx only
 
 ---
 
-### B-1071 · 🔴 The browser gate cannot finish — prod-local shuts itself down mid-suite, twice, cleanly, and unexplained
+### B-1071 · 🟢 The browser gate cannot finish — prod-local shuts itself down mid-suite, twice, cleanly, and unexplained
 
 | | |
 |---|---|
 | **Module** | ⚡ **QE's validation environment** — `infra/docker-compose.prod.yml` (project `signora-prod`) |
 | **Current assignee** | **QE** |
-| **Severity** | 🔴 — ⛔ **QE has no complete browser validation.** **Cycle 266 was promoted on certification plus a TARGETED run because the full 460 could not be obtained** |
-| **Status** | **`OPEN` — REPRODUCIBLE, CAUSE NOT ESTABLISHED** |
+| **Severity** | ~~🔴~~ → 🟢 — ⛔ **the cause was a machine reboot, not the repository.** ⚠️ **Cycle 266's narrowing to a TARGETED run was therefore unnecessary, and the Closeout that recorded it was measuring an environment fault as a repository limit** |
+| **Status** | ✅ **`RESOLVED` 2026-08-25, cycle 267 — cause established by `journalctl`.** **The restart-policy asymmetry it exposed is carried forward as [B-1074](#b-1074)** |
 | **Found** | **2026-08-25 by QE**, cycle 266 |
 | **Commit found** | `dce9e20ee667` |
 
@@ -18393,6 +18393,41 @@ QE       1 failure  — competitors.tsx only
 ✅ **What QE did instead, and it is the proportionate answer rather than a workaround:** **validated the surface the cycle actually changes** — `profile-shell`, `data-rights-panel`, `settings/team`, `lib/query/hooks/team` — via `profile-journey` + `team-capability-roles` + `shell-values`: **24 of 24 in 32.7s.**
 
 ⚠️ **The promotion's basis is therefore NARROWER than cycle 265's and the Closeout says so.** **All eight REQUIRED_GATES passed, plus DR, reversibility and the promotion guard. The browser gate is QE's own additional check and is not among them** — **but "promoted" must not be read as implying the usual evidence, and this row is why.**
+
+### ✅ SOLVED 2026-08-25, cycle 267 — the cause was never in the repository
+
+**`journalctl -u docker`, against the two logs' final write:**
+
+| collapse | browser log's last write | the docker daemon |
+|---|---|---|
+| **run 1 — died at 285** | **2026-08-23T17:02:53Z** | **17:02:52 — `Stopping docker.service`** |
+| **run 2 — died at 244** | **2026-08-25T11:15:55Z** | **11:15:55 — `Stopping docker.service`** |
+
+⚡ **One second, then the SAME SECOND. The machine was rebooted under a running suite, both times.** **Each stop is followed by a start minutes later — 17:05:35 and 11:18:06 — and the second precedes this machine's boot at 11:17:51.**
+
+### ⛔ Every item this row had "ruled out by measurement" is now EXPLAINED rather than excluded
+
+| the evidence | what it actually meant |
+|---|---|
+| **60 ms simultaneity** | **the daemon SIGTERMing every container at once** |
+| **exit 0 on all three** | **a graceful stop, which is what a daemon shutdown performs** |
+| 🔴 **"an orchestrated `stop`, not three independent failures"** | ⛔ **TRUE, and QE's inference from it was FALSE.** **The three were not *selected*.** `api`, `worker` and `relay` declare `restart: unless-stopped`; **`postgres`, `redis` and `frontend` declare NO restart policy at all** (`docker-compose.prod.yml`). **The event hit every container; only three lacked the means to come back** |
+| ⚡ **`docker events` returned nothing** | ⛔ **THE DAEMON WAS NOT RUNNING TO RECORD ITS OWN SHUTDOWN.** **QE read an empty result as *nothing happened* when it meant *nothing was listening*** — 📁 *an empty result that suits you is an instrument claim, not evidence* |
+| `OOMKilled` false · 12 GB free · lease `FREE` · no e2e file touches docker | ✅ **all correct, and all irrelevant** |
+
+> ⛔ **QE searched the repository for a cause that was in the machine's journal.** ⚡ **`smoke.sh:135` (Lane A's hypothesis) and every repository path QE examined were disconfirmed correctly — and the search was in the wrong place the whole time.** 📁 **The *wrong question* class again: *what in this repository stops containers?* has an answer, and it was not the question.**
+
+### ⚠️ The real repository defect inside it, and it is NOT the cause
+
+⛔ **The gate produced NO VERDICT rather than a red one, and that part is the repository's.** **`postgres`, `redis` and `frontend` carry no restart policy while `api`, `worker` and `relay` carry `unless-stopped` — one stack, two policies, and nothing states the asymmetry is intended.**
+
+✅ **A uniform policy would not prevent a reboot. It would let the stack return, so the suite fails honestly instead of hanging against a dead app.** ⛔ **QE will fix it as its own slice, not fold it into a cycle** — 📁 §20e, *fixing a gate is a slice, not a Closeout*, because it changes what certification runs against.
+
+### 📁 What this cost, stated plainly
+
+⚠️ **Cycle 266 was promoted on a TARGETED run and the Closeout said so.** ⛔ **That narrowing was unnecessary: the gate was never broken.** ✅ **Cycle 267 ran the full suite.**
+
+**Severity 🔴 → 🟢.** **Status `OPEN` → `RESOLVED` for the cause; the restart-policy asymmetry is carried forward as [B-1074](#b-1074).**
 
 ---
 
@@ -18549,6 +18584,51 @@ Received: "http://localhost:3100/signin"
 ⚠️ **WHERE TO LOOK, offered as a direction and NOT as a third confident mechanism.** 📁 [`app/(app)/layout.tsx`](../frontend/app/(app)/layout.tsx):34 performs a **server-side** `getSession` off the request headers and `redirect('/signin')` when it is absent. **A cookie-propagation race there would be load-sensitive — which fits appearing in a full run and not in isolation.** ⛔ **Nobody has instrumented it, and this row will not claim otherwise.**
 
 ⚡ **THE ROW EXISTS BECAUSE THE FAILURE IS REAL AND THE CAUSE IS NOT.** ⛔ **Filing it as a flake would have been the third wrong answer** — QE nearly did, having said a green re-run would mean *"flake, and a flake still gets a row"*, which treats the absence of a reproduction as evidence about the code.
+
+
+### ⚡ MEASURED 2026-08-25, cycle 267 — the exposure is THREE sites, not thirteen, and one of them failed on the day
+
+⛔ **QE enumerated every entry into an account rather than counting `.first()` calls.** **133 `.first()` calls exist in `frontend/tests/e2e/`; almost none of them are this defect.**
+
+| door | sites | exposed? |
+|---|---|---|
+| **`home.openFirstRankedAccount()`** | ~12 | ✅ **NO — enters via `card.attention`, the RANKED card.** ⚡ **An account appearing there is scored by construction** |
+| **`accounts.openFirstAccount()`** | 3 | ⚠️ **ONE.** 📁 `resilience.spec.ts:37` and `daily-usage.spec.ts:271` **already carry comments saying they deliberately skip `waitForScore()` because the first Companies row is unscored** — they were reasoned about before QE got here |
+| **raw `main a[href^="/accounts/"]').first()`** | 9 | ⚠️ **ONE.** **Eight need only *an* account** — a heading, a visibility, a layout shift, a measurement |
+| **`workflow.spec.ts:38`** | 1 | ⚠️ **UNPROVEN** — below |
+
+### 🔴 The one that failed, predicted from the code BEFORE the run and confirmed by it
+
+📁 **`demo/golden-journey.spec.ts:84`** — `openFirstAccount()` then **`brief.waitForScore()`**.
+
+**Cycle 267's draw, stated before the run: 7 scored of 12, and the first company by id — `Sandgate Retail Systems` — UNSCORED.** ⛔ **The step timed out at `pages/brief.ts:93`.**
+
+✅ **FIXED — `openScoredAccount`, and `brief.title` for the narration so the demonstration still names a company rather than a path.** ⚡ **Verified on the SAME UNCHANGED HOSTILE DRAW: 4 passed, 33.9s.** **That is a before/after under identical conditions, not a re-run** — 📁 which is what [B-281](#b-281) says a targeted re-run can never be.
+
+### ✅ The second, fixed without a reproduction, and QE states which
+
+📁 **`accessibility.spec.ts:706`** asserts **`not.toHaveText(/^[0-9a-f]{8}$/)`** under its own comment *"A named company, not the URL's first group"* — and 📁 `entity-name.tsx:91` renders exactly `fallbackId.slice(0,8)` for an account no source has named. ⛔ **On a draw where that account sorts first, this test reports the identity regression it exists to catch, against a product behaving correctly.**
+
+⚠️ **NOT demonstrated: all twelve Playground companies carry a legal name on this draw.** ✅ **`openNamedAccount` adopted anyway — the assertion's requirement is stated in its own comment and the resolver built for it has existed since 2026-08-16.** **31 of 31 green.**
+
+### ⛔ The third is NOT changed, because QE could not demonstrate it
+
+📁 **`workflow.spec.ts:38`** goes to `/` — **Home, not Companies** — and requires **all six** of the first account links to render `Account score \d+ out of 100`. ⚡ **Home's ranked card is scored; its RECENTS card is not**, so a recents row for an unscored account inside the first six would fail it.
+
+⛔ **QE tried to reproduce it and could not: `recently_viewed` holds 5 rows and NONE is unscored.** ✅ **8 of 8 green.** **The mechanism is stated and the change is not made** — 📁 *evidence over prediction*, and changing a test QE cannot demonstrate is the speculative move this register keeps catching.
+
+### 🔴 THE SEVERITY IS NOT QE'S TO LOWER, AND QE IS NOT LOWERING IT
+
+⛔ **This row is 🔴, and §20e's one blocking rule says `integration` never fast-forwards to `main` while it is.** **It blocks cycle 267 — QE's own cycle.**
+
+⚠️ **QE has an obvious interest in the answer, so QE is not the one who should give it.** **What QE can put on the record:**
+
+- **The row's stated 🔴 rationale was *"QE's validation instrument is not reproducible, so NOTHING it reports can be attributed to the tree."***
+- **That non-determinism now has its own row — [B-1073](#b-1073) — measured and separated from this one.**
+- **Cycle 267's full run was 454 passed · 3 failed · 3 skipped, and every one of the three is named and accounted for.**
+- **The `.first()` door is closed at every site whose own assertions require a scored or named account.**
+
+✅ **Whether that resolves this row is the product owner's call. QE has recorded the measurement and stopped.** 📁 **[B-1075](#b-1075) is why QE is being careful here: this rule was already missed twice.**
 
 ---
 
@@ -18984,3 +19064,111 @@ removed person GETs /workspaces/{id}/members                  → 200  ← shoul
 1. **Move `ThemeProvider` inside the workspace tree** so *"the document reads it"* becomes buildable where it belongs. Largest change, smallest number of rules broken.
 2. **Narrow AC-15 to its stated purpose** — forbid *branching on* the theme rather than *importing* the module — and allow one reader.
 3. **Rule the design's sentence aspirational** and make the theme device-scoped, which is what the product actually does today. ⛔ **Then the panel's copy must change**, because it currently promises otherwise.
+
+### B-1073 · 🟠 The browser gate is not deterministic — one unchanged tree produced four different failure sets
+
+| | |
+|---|---|
+| **Module** | ⚡ **QE's browser gate** — `frontend/tests/e2e/**` |
+| **Current assignee** | **QE** — ⛔ **this is a statement about the gate, not about any spec in it** |
+| **Severity** | 🟠 — **the gate's verdict depends on something outside its declared inputs.** 📁 **§2, *hidden inputs are architecture defects*: one tree must not produce four answers** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-25 by QE**, cycle 267, auditing thirteen browser logs to write a different row |
+| **Commit found** | `abd29ae02c56` — ⚠️ **the evidence is cycle 264's, on `032f3bab`** |
+
+**Cycle 264. One tree. Four valid runs. Counts and names taken from Playwright's own `N failed` summary block, never from the list reporter's glyphs — see the correction below.**
+
+| run | passed | failed |
+|---|---|---|
+| 1 | **455** | `auth-credential-journeys:155` · **`notification-arrival:48`** |
+| 2 | **452** | `accessibility:436` · `accessibility:510` · `confidence:26` · **`notification-arrival:48`** |
+| 3 | **451** | `accessibility:436` · `accessibility:510` · **`notification-arrival:48`** · `reports:29` · `shell-values:214` |
+| 5 | **455** | **`notification-arrival:48`** · `profile-journey:175` |
+
+> ⛔ **Run 4 is excluded, and QE states why rather than dropping it: 54 passed, `auth.setup` failed three times, because QE launched it against an EMPTY DATABASE.** ⚡ **`make e2e` seeds and `make e2e-quick` does not** (`Makefile:635` against `:638`), **and QE ran the second.** **That is QE's own error, not a repository finding.**
+
+| | |
+|---|---|
+| ✅ **Constant** | **`notification-arrival:48` ALONE** — [C-111](LANE_COORDINATION.md), known, awaiting a ruling |
+| ⛔ **Variable** | **SEVEN specs, and not one failed in every run.** The count moves **2 → 4 → 5 → 2** on a tree that did not change |
+
+### ⚠️ Why one row and not seven
+
+⛔ **Seven rows would get seven fixes, and every one would "pass" on re-run — because re-running is the thing that makes them pass.** 📁 **[B-281](#b-281): *a defect that only appears after other specs have run is one a targeted re-run will always report as fixed.*** ⚡ **The common factor is not the spec. It is having other specs run first.**
+
+### ⛔ What QE has NOT established
+
+**A cause.** **Worker count, shared `recently_viewed` state, seed draw order and cross-spec data mutation are all live candidates and none is measured.** **Reproducible is a different sentence from explained.**
+
+### 📁 Two corrections this row exists because of, both QE's own instruments
+
+**① QE told Lane A that `perception:124`, `profile-journey:175` and `accessibility:302` shared one signature. THEY NEVER CO-FAILED.** `perception:124` and `accessibility:302` have **zero** failures across thirteen logs. ⚠️ **And the handle was unsafe anyway: the same perception test was `:108` in cycle 262 and `:124` by 265, because the file grew above it.** ✅ **A flake is named by its TEST TITLE from here.**
+
+**② QE then told Lane A that `home-a11y:432` failed in 9 of 13 runs. IT HAS NEVER FAILED.** ⛔ **It is a `test.fail()` under [B-289](#b-289), and a `test.fail()` that fails renders `✘` in the list reporter while Playwright does NOT count it as failed** — it appears in **zero** summary failure blocks. ⚡ **QE counted glyphs and called it a failure count.** **Lane A caught it and refused to start the slice.**
+
+> ⛔ **Both are the same error: asking a question the instrument does not answer.** *"Which lines carry `✘`?"* is not *"which tests did Playwright count as failed?"* — 📁 **the *wrong question — guard right, reader wrong* class.** ✅ **The authority is the `N failed` summary block. Nothing else is.**
+
+### B-1074 · 🟠 One stack, two restart policies — three services cannot return, so a stopped gate hangs instead of failing
+
+| | |
+|---|---|
+| **Module** | ⚡ **QE's validation environment** — `infra/docker-compose.prod.yml` |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — **the gate produces NO verdict rather than a red one, which is worse than a red one** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-25 by QE**, cycle 267, solving [B-1071](#b-1071) |
+| **Commit found** | `abd29ae02c56` |
+
+| service | `restart:` |
+|---|---|
+| `api` · `worker` · `relay` | **`unless-stopped`** |
+| `migrate` | `"no"` — ⚡ **correct, it is one-shot** |
+| ⛔ **`postgres` · `redis` · `frontend`** | ⛔ **NONE DECLARED** — Docker's default is `no` |
+
+**Whenever the daemon stops and returns, three of the six come back and three do not.** ⚡ **That asymmetry is what turned [B-1071](#b-1071)'s reboot into a suite hanging against a half-recovered stack for the rest of its run**, and it is why the gate reported nothing at all.
+
+⛔ **Nothing in the file states the asymmetry is intended**, and the three without a policy are the three the browser gate depends on most directly: the database, the transport and the app itself.
+
+> ⚠️ **This is a change to what certification runs against, so it is a SLICE and not a Closeout** — 📁 §20e. ⛔ **QE must not fold it into a cycle it is also certifying.**
+
+### B-1075 · 🟠 Two promotions reached `main` with an open 🔴 row, against §20e's one blocking rule
+
+| | |
+|---|---|
+| **Module** | ⚡ **Repository process** — [`CLAUDE.md`](../CLAUDE.md) §20e, *Branches and promotion* |
+| **Current assignee** | **QE** — ⛔ **QE promoted both, and QE is the only lane that can** |
+| **Severity** | 🟠 — **the rule §20e calls *the one blocking rule* did not block anything.** ⚠️ **Calibrated against [B-1070](#b-1070), not chosen** — the direct analogue, same lane, same rule family, filed 🟠. **The scale's 🔴 is *blocks a milestone*, and a missing guard blocks none** |
+| ⚠️ **On the severity, said out loud** | ⛔ **QE first filed this 🔴 and then lowered it, which is a move QE should be suspicious of in itself: a 🔴 here would block QE's own cycle, so QE has an interest in the number.** ✅ **The reason it is 🟠 is [B-1070](#b-1070)'s precedent and the scale's own wording, both of which predate this row.** **If the product owner reads it as 🔴, it is 🔴** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-25 by QE**, cycle 267, when `infra/state-check.py` said so and QE read it |
+| **Commit found** | `303920f3` (`origin/main`) |
+
+**§20e, verbatim:**
+
+> **"`integration` never fast-forwards to `main` with an open 🔴 bug. That is the one blocking rule; 🟠 and below are the product owner's call."**
+
+**Measured per commit, with `git show <sha>:docs/BUGS.md`, not inferred:**
+
+| promotion | [B-1068](#b-1068) at that commit |
+|---|---|
+| **`753732a5`** — Repository Closeout, cycle 265 | 🔴 **present and open** |
+| **`dce9e20e`** | 🔴 **present and open** |
+| **`303920f3`** — Repository Closeout, cycle 266 | 🔴 **present and open** |
+
+### ⛔ Why it was not caught, and this is the part worth fixing
+
+⚡ **`state-check.py` reports it — and `state-check.py` is ADVISORY.** 📁 §20e: *"It reports and never repairs."* ⛔ **`certification-guard.py` is the gate that exits non-zero, and it answers a DIFFERENT question: *was this commit certified?*** **Nothing on the promotion path asks *is a 🔴 open?***
+
+> 📁 **This is [B-1070](#b-1070)'s shape exactly, one rule over.** **There, `--audit-main` passed because it checks snapshot membership rather than linearity.** **Here, the guard passes because it checks certification rather than the bug register.** ⚡ **Both times a guard answered truthfully and QE relied on it for a question it was never asked.**
+
+### ⚠️ And QE's own reading failed twice before the tool was consulted
+
+⛔ **QE ran `state-check.py` at both Closeouts. The line was in its output both times.** ⚡ **Twenty-two advisory findings scroll past, and the one that blocks a promotion reads exactly like the twenty-one that do not.**
+
+### ✅ What QE is doing about it, in order
+
+**① The immediate one: cycle 267 is CERTIFIED (`abd29ae02c56`) and is NOT being promoted while [B-1068](#b-1068) is open.** ⛔ **The rule binds this cycle too, and the first correct application of a rule QE has twice missed is to apply it against itself.**
+
+**② Fix [B-1068](#b-1068).** 📁 **Its own text says the fix is QE's — *"`tests/` is QE's under §20e"*.**
+
+**③ The blocking check belongs in `certification-guard.py --promote`, where it exits non-zero.** ⛔ **An advisory line QE has already scrolled past twice is not protection** — 📁 §2, *a guard that cannot fail is documentation pretending to be code.* ⚠️ **Filed as its own slice, because changing the promotion gate changes what promotion means.**
