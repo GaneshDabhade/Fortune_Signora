@@ -290,6 +290,29 @@ export function WorkspaceSwitcher({ collapsed = false }: { collapsed?: boolean }
                         {initialsFor(workspace.name)}
                       </span>
                       <span className="min-w-0 flex-1 truncate">{workspace.name}</span>
+                      {/* 🔴 **📁 `Workspace Chooser` §1.4.1, and the third of the
+                          three markers it names was missing.**
+
+                          > ***"The selected row uses the brand tint, a
+                          > 600-weight name and the word 'Current'. Colour alone
+                          > never marks selection."***
+
+                          ✅ **The tint and the weight were both here.** ⛔ **The
+                          word was not** — `grep` for it returned zero. ⚡ **The
+                          weight difference is a real non-colour signal, so this
+                          was not *colour alone***; it is the design naming three
+                          markers and the product carrying two, and **a 600-weight
+                          name is the weakest of the three for a reader with low
+                          vision.**
+
+                          ♿ **`aria-checked` on the `menuitemradio` already tells
+                          assistive technology** — ⛔ **so this is the SIGHTED
+                          half**, which is what 1.4.1 is about. */}
+                      {current ? (
+                        <span className="flex-none text-2xs font-semibold uppercase tracking-wide text-accent">
+                          Current
+                        </span>
+                      ) : null}
                       {/* 📁 *"1–9 selects by position."* ⚡ The hint is shown so
                           the shortcut is discoverable rather than documented
                           somewhere a customer will not read. */}

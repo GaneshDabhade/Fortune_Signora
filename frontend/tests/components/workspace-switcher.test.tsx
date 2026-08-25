@@ -238,3 +238,46 @@ describe('🔴 what the switcher does NOT claim', () => {
     }
   });
 });
+
+describe('📁 §1.4.1 — the selected row carries three markers, not two', () => {
+  /**
+   * 📁 `Workspace Chooser`, `a11y` §1.4.1, verbatim:
+   *
+   * > ***"The selected row uses the brand tint, a 600-weight name and the word
+   * > 'Current'. Colour alone never marks selection."***
+   *
+   * ✅ **The tint and the weight were both present.** ⛔ **The word was not** —
+   * `grep` for it in `workspace-switcher.tsx` returned **zero**.
+   *
+   * ⚠️ **This was not *colour alone***: a 600-weight name is a genuine
+   * non-colour signal, so the strict reading of 1.4.1 was already satisfied.
+   * ⚡ **It is the design naming three markers and the product carrying two**,
+   * and weight is the weakest of the three for a reader with low vision.
+   *
+   * ♿ **`aria-checked` on the `menuitemradio` already tells assistive
+   * technology, and did before this** — ⛔ **so the gap was the SIGHTED half**,
+   * which is the half 1.4.1 is about.
+   */
+  it('🔴 names the current organization in words, not only in tint and weight', async () => {
+    switcher(THREE);
+    await userEvent.click(screen.getByRole('button', { name: /Active organization/ }));
+
+    const rows = screen.getAllByRole('menuitemradio');
+    const current = rows.find((row) => row.getAttribute('aria-checked') === 'true');
+    expect(current, 'no row is marked current').toBeDefined();
+
+    expect(current).toHaveTextContent('Current');
+  });
+
+  it('⛔ says it on the current row ONLY', async () => {
+    switcher(THREE);
+    await userEvent.click(screen.getByRole('button', { name: /Active organization/ }));
+
+    // ⚡ A label on every row would mark nothing — the positive control for
+    // this assertion, and the shape [B-1033](../../../docs/BUGS.md) lacked.
+    const labelled = screen
+      .getAllByRole('menuitemradio')
+      .filter((row) => row.textContent?.includes('Current'));
+    expect(labelled).toHaveLength(1);
+  });
+});
