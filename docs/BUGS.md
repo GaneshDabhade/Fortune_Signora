@@ -18934,3 +18934,53 @@ removed person GETs /workspaces/{id}/members                  → 200  ← shoul
 ---
 
 ⚠️ **A second `B-327` row stood here until 2026-08-06.** **It described the same defect from the fix side while the report side sat under `## Open` at the top of this file, and neither referenced the other.** **Merged into the single row above** — **`state-check`'s duplicate-identifier check is what found it**, and the partial fix it was concealing is recorded there.
+
+### B-1072 · 🟠 The account's theme is recorded and read by nothing, and the fix collides with AC-15
+
+| | |
+|---|---|
+| **Module** | `product_surface` — `app/(app)/profile/appearance-panel.tsx` · `lib/state/theme-provider.tsx` |
+| **Current assignee** | **Lane A** — ⛔ **but ② below is a product-owner decision, not an implementation** |
+| **Severity** | 🟠 — **a promise the design makes in its own words and the product does not keep** |
+| **Status** | **`OPEN`** — ⚠️ **diagnosed and NOT fixed. A fix was written, verified to work, and reverted.** See ② |
+| **Found** | **2026-08-25 by Lane A**, probing the theme picker after 📁 [B-1071](#b-1071)'s conformance swap |
+
+## ① The defect
+
+📁 **The design's sentence, quoted verbatim in the panel's own docstring:**
+
+> ***"applies to this account on every device you sign in from, not to this browser."***
+
+⛔ **It applies to neither.** **Selecting `Dark` checks the radio, records the preference — and the page stays light.**
+
+**Measured by waiting on the attribute rather than sleeping**, so *not applied* is distinguished from *not applied yet*: `data-theme` never became `dark` in 8s. 📁 `globals.css:339` is `:root[data-theme='dark']`, so the attribute **is** the mechanism.
+
+⚡ **The cause is that two places choose a theme and only one applies it:**
+
+| | writes | applies |
+|---|---|---|
+| `components/shell/theme-toggle.tsx` | `localStorage` | ✅ `applyTheme` |
+| `app/(app)/profile/appearance-panel.tsx` | **the account preference** | ⛔ **nothing** |
+
+🔴 **`prefs.theme` is referenced in exactly ONE place in the entire product — the panel's own control value.** Meanwhile `ThemeProvider` and `THEME_INIT_SCRIPT` read `localStorage`. **The two representations never meet.**
+
+⚠️ **The panel is not at fault and must not be changed.** Its docstring is right: *"It records the choice; **the document reads it**. Nothing here writes a class onto `<html>` — a panel that painted the page would be the second place a theme is decided."* ⛔ **The unbuilt half is *the document reads it*.**
+
+## ② 🔴 Why it is not fixed: three rules cannot all hold
+
+**A fix was written** — a reader mounted inside `WorkspaceProvider` that applies the account preference — **and verified: after it, a reload painted `dark` where before it never did.** ⛔ **It was reverted**, because it collides with a ratified guard.
+
+| | |
+|---|---|
+| 📁 The design | the theme is **account-scoped, every device** |
+| 📁 `ThemeProvider` | is mounted in the **root layout, above `WorkspaceProvider`** — so it **structurally cannot** read a workspace-scoped preference |
+| 📁 `design-tokens.test.tsx` — AC-15 | ***"no component reads the active theme"***, toggle excepted |
+
+⚡ **Any reader at a layer that CAN see the workspace is, by that guard's letter, a second component that knows a theme exists.** ⛔ **The three are jointly unsatisfiable**, and picking which one yields is an architecture decision.
+
+⚠️ **The guard's stated PURPOSE is narrower than its assertion** — *"any other component **branching** on it would need editing when a third theme is added"* — and a reader that only calls `setTheme` does not branch. ⛔ **But sharpening a guard so one's own new code passes is not a lane's call to make**, and it is the exact move this lane has challenged in others this week.
+
+**What is being asked — one of:**
+1. **Move `ThemeProvider` inside the workspace tree** so *"the document reads it"* becomes buildable where it belongs. Largest change, smallest number of rules broken.
+2. **Narrow AC-15 to its stated purpose** — forbid *branching on* the theme rather than *importing* the module — and allow one reader.
+3. **Rule the design's sentence aspirational** and make the theme device-scoped, which is what the product actually does today. ⛔ **Then the panel's copy must change**, because it currently promises otherwise.
