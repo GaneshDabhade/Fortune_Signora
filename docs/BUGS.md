@@ -19210,7 +19210,24 @@ w3=320  d3=true   ← re-focusing restores it
 
 ⚡ **`w1=224` WITH `d1=true` is the 150 ms `transition-[width]` caught mid-flight, not a failure.**
 
-📁 **`components/shell/app-shell.tsx:430`, in the shell's own words:** *"`main` — the content region. **Receives focus on route change** and announces the new page title."*
+> 🔴 **CORRECTED — QE NAMED THE WRONG MECHANISM HERE, AND NAMED IT FROM A COMMENT.**
+>
+> **QE wrote that `components/shell/app-shell.tsx:430` moves focus to the content region on route change, quoting the line above the element:** *"`main` — the content region. Receives focus on route change and announces the new page title."*
+>
+> ⛔ **NOTHING CALLS `.focus()` ON THAT ELEMENT.** **A repository-wide search for `SKIP_TARGETS.content` outside tests returns three uses: the `id` on the element, the skip-link `href`, and a comment.** ⚡ **The line quotes the DESIGN, sits directly above the implementation, and is not marked as describing something unbuilt.**
+>
+> ⛔ **QE read a design quotation as an implementation claim and published it as a solved mechanism.** 📁 **The [B-1016](#b-1016) rule — *read the thing before filing about it* — applied to a comment rather than to a docstring.**
+>
+> ⚠️ **Lane A found it by looking for the code and finding none, then annotated the comment in place.** ⛔ **And it had already cost a wrong fix: QE proposed waiting on `expect(locator('#shell-content')).toBeFocused()`, which would have HUNG to its timeout with no diagnostic — the worst failure shape, because it reads as slowness rather than as a false premise.**
+
+✅ **THE ACTUAL BLUR IS THE PAGE, NOT THE SHELL** — 📁 `app/(app)/w/[workspace]/home/home.tsx:173`:
+
+```ts
+const heading = useRef<HTMLHeadingElement>(null);
+useEffect(() => { heading.current?.focus(); }, []);   // once per MOUNT
+```
+
+⚡ **Deliberate, and asserted one file over** — `home-a11y.spec.ts`: *"focus lands on the h1, never the search field."* ⛔ **`af2=H1` was pointing straight at its owner and neither lane followed it.**
 
 ```
 goto('/')                    →  SSR paints the top bar at 224
@@ -19227,7 +19244,17 @@ poll(width) === 320          ✗  polling a width nothing will move again
 >
 > ⛔ **The spec measures a focus interaction ACROSS A NAVIGATION IT NEVER WAITED FOR.** ⚡ **On a faster machine the navigation and the focus-move both complete before its first assertion — which is the 18 recorded passes, and why one unchanged tree gives opposite answers on different days.**
 
-✅ **The fix is Lane A's and is `await page.waitForURL(/\/w\/.+\/home/)` after `goto('/')`, before anything is measured.** ⛔ **Not *navigate somewhere easier* — wait for the navigation the chosen route performs**, which is what the spec always assumed and never said.
+### ✅ THE FIX, and the two wrong ones it took to reach it
+
+| attempt | result |
+|---|---|
+| `waitForURL(/\/w\/.+\/home/)` | 🔴 **RED 6/6.** ⛔ **Necessary, not sufficient** — the URL commits when `router.replace` does; **the page's focus effect runs after.** ⚡ **QE's probe on Lane A's own version: `afterSettled=BODY`** |
+| `expect(locator('#shell-content')).toBeFocused()` — **QE's proposal** | ⛔ **NEVER RUN, and would have HUNG.** Nothing focuses that element |
+| ✅ **`await expect(page.getByRole('heading', { level: 1 })).toBeFocused()` inside `settled()`** | ✅ **GREEN 15/15** on the same stack that had failed 18 consecutive times |
+
+⛔ **AND NAVIGATING DIRECTLY TO `/w/<id>/home` WOULD NOT HAVE WORKED** — Lane A, and it settles a question QE raised. **Home focuses its heading on MOUNT, so the race survives the change of route: it would narrow the window and turn a certain failure into a rare one.** ⚠️ **That is strictly worse than what was there — a spec failing 18 times running gets fixed; a spec failing once a fortnight becomes another line in this row.**
+
+✅ **So the hazard belongs to the PAGE and not to the entry route, which is what makes the wait a wait rather than a dodge.** ⚡ **It is one fact, and it is true of every route in this product: *a page takes focus on entry*. Any spec focusing a shell control before a page has mounted carries the same bug.**
 
 ⚠️ **QE said *"a race would be intermittent"* and that was sloppy — a race whose loser reliably loses is deterministic.** **What settled it was `d1=true`, not the repeat count.**
 
