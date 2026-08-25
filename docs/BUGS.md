@@ -9013,6 +9013,35 @@ SIGNORA_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@loca
 
 ⛔ **QE has NOT established what.** **A remount of the subtree holding the query is the obvious candidate — a fresh mount refetches at once, which is what a 0.03s gap looks like — but QE has not proved a remount and is not going to name one.** ⚡ **What is measured: the cycle, its period, and that `isError` is reached and then discarded before `page.tsx` can render on it.**
 
+### 🔴 `6871972b` DOES NOT BREAK THE LOOP — and the fix is one step from its own diagnosis
+
+**Preconditions verified before the run, having burned one on exactly this:** worktree at `6871972b` · prod-local rebuilt, **image 3 minutes old** · auth migrated · reseeded · **storage state regenerated** · `lib/shell/workspace-gate.ts` confirmed present in the built tree and `workspaceKnown` confirmed returning `true` on `error`.
+
+```
+/   broken(20)   STILL LOADING   Loading…   5 nodes aria-busy
+GAPS  1.05 2.05 0.03 │ 1.05 2.05 0.03 │ 1.05 2.06 0.04 │ …
+```
+
+⛔ **Identical to the pre-fix measurement. Same period, same three-phase cycle, same 0.03 s.**
+
+**`main`'s text polled every 60 ms for 14 seconds — ~230 samples — yields ONE distinct frame: `"Loading…"`.** ⚠️ **QE does NOT claim the gate never opens: a ~30 ms window is smaller than the sampling interval.** **What is established is that `StatedAbsence` was never observed.**
+
+### ⚡ THE MECHANISM IS RIGHT AND THE FIX DOES NOT ACT ON IT
+
+📁 **Lane A's own diagnosis names the damage:** *"the ~30 ms it opened was exactly long enough — the entry page mounted, its `useWorkspaces` observer joined a query holding no data, **React Query refetched on mount** — and the gate shut again."*
+
+⛔ **The damage is the REFETCH-ON-MOUNT, and opening the gate is what permits it.** ⚡ **A correct gate cannot break this loop, because the gate opening is step one of it.**
+
+```
+query errors  →  error set, isLoading false  →  GATE OPENS  →  page mounts
+      ↑                                                            │
+      └────────  gate shuts, isLoading true  ←  new observer refetches on mount
+```
+
+📁 **`grep -rn refetchOnMount frontend/lib frontend/app` returns NOTHING** — React Query's default is `true` — and 📁 `useWorkspaces()` declares only `queryKey` and `queryFn`, **no `refetchOnMount` and no `staleTime` of its own**, so it inherits the 30 s default and an errored query is stale at once.
+
+> ⚠️ **Lane A wrote *"if it still cycles, my mechanism is wrong."* It still cycles and the mechanism was RIGHT.** ⛔ **The falsifier was aimed at the wrong claim — the mechanism and the fix were two statements and only one was under test.** 📁 **The same shape as QE's *"a race would be intermittent"* on [B-1073](#b-1073), and the fourth time in one day.**
+
 ### 📁 And 20 workspace reads in 20 seconds at `/`
 
 ⚡ **`/accounts` made exactly 3 — one plus the two retries `shouldRetry` allows for a 5xx, which is the policy behaving correctly.** ⛔ **`/` made 20.** **QE has NOT established why** — a remount loop and multiple independent consumers of the same read are both live candidates and neither is measured. **It is recorded because it is a measured difference between two routes on one policy, not because QE knows what it means.**
