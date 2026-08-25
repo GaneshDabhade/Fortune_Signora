@@ -231,6 +231,27 @@ export function CommandPalette({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           aria-label={placeholder}
+          /**
+           * 🔴 **[B-1061](../../../docs/BUGS.md) — the two hardest attributes
+           * were right and the two that make them work were missing.**
+           *
+           * 📁 §4.1.2, verbatim: ***"The input is a **combobox** with
+           * **aria-expanded**, aria-activedescendant and an owned listbox;
+           * results are options, groups are labelled groups."***
+           *
+           * ⛔ **`aria-activedescendant` is only meaningful on an element with
+           * a widget role.** ⚡ On a plain `<input>` there is nothing for
+           * assistive technology to apply it to — **so somebody arrowing
+           * through fourteen results was never told which one was
+           * highlighted**, while the source read as correct.
+           */
+          role="combobox"
+          // ⚡ **The list's state, not the dialog's.** ⛔ `aria-expanded` on a
+          // combobox describes whether the popup is SHOWING options — and the
+          // palette opens with none until something is typed, so hardcoding
+          // `true` would announce a list that is not there.
+          aria-expanded={items.length > 0}
+          aria-autocomplete="list"
           aria-controls={listId}
           aria-activedescendant={index >= 0 ? `${listId}-${index}` : undefined}
           className={cn(
@@ -244,8 +265,28 @@ export function CommandPalette({
             <PaletteState status={status} query={query} />
           ) : (
             groups.map((group) => (
-              <div key={group.label}>
-                <p className="px-4 pb-1 pt-3 text-2xs font-semibold uppercase tracking-wide text-content-subtle">
+              /**
+               * 🔴 **[B-1061](../../../docs/BUGS.md)'s second half** — 📁
+               * ***"groups are labelled groups."***
+               *
+               * ⛔ **This was a bare `<div>` with a `<p>` above it**, so
+               * `document.querySelectorAll('[role=group]').length` was `0`:
+               * **a sighted reader saw fourteen results in five labelled
+               * sections and a screen-reader user heard fourteen flat
+               * options.** ⚠️ **And a `listbox` may only own `option` and
+               * `group` children**, so the loose paragraph was not merely
+               * unhelpful — it was invalid inside the role it sat in.
+               *
+               * ⚡ **`aria-labelledby` at the label already rendered**, rather
+               * than an `aria-label` repeating the string: 📁 [§2](../../../CLAUDE.md)
+               * — one authoritative representation, and a duplicate would be
+               * the copy that goes stale.
+               */
+              <div key={group.label} role="group" aria-labelledby={`${listId}-${group.label}`}>
+                <p
+                  id={`${listId}-${group.label}`}
+                  className="px-4 pb-1 pt-3 text-2xs font-semibold uppercase tracking-wide text-content-subtle"
+                >
                   {group.label}
                 </p>
                 {group.items.map((item) => {

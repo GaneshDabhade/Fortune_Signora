@@ -18198,7 +18198,7 @@ Audit log                   /settings/audit
 |---|---|
 | **Module** | `product_surface` — **Lane A** · [`frontend/components/ui/command-palette.tsx`](../frontend/components/ui/command-palette.tsx) · [`frontend/components/shell/shell-palette.tsx`](../frontend/components/shell/shell-palette.tsx) |
 | **Severity** | 🟠 **P1 for assistive technology** — **the highlighted result is never announced**, so the palette cannot be used without sight |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-25.** ⛔ **`VERIFIED` is QE's** |
 | **Found** | 2026-08-21 by QE, UI conformance audit, on `98793262`, **read from the rendered accessibility tree with a query typed** |
 | **Route** | Any — shell-wide, `⌘K` |
 | **Surface** | The palette's input and its result list |
@@ -18235,6 +18235,37 @@ document.querySelectorAll('[role=group]').length   // -> 0
 > ✅ **Measured in the same pass and CORRECT, so not filed:** **the palette container is 640×401.5 at 16px radius** with `role="dialog"` and `aria-modal="true"`, matching §05's dialog plane · **`role="listbox"` is present and each result is a `role="option"`** · **`Escape` closes it and returns the document to zero overlays** · **the design's own label *"Search or ask…"* is the placeholder, verbatim.**
 
 ---
+
+### ✅ Fixed — Lane A, 2026-08-25
+
+📁 **All five acceptance criteria, and the row's diagnosis was exactly right**:
+*"the two hardest attributes are already correct and the two that make them
+work are missing."*
+
+| | |
+|---|---|
+| `role="combobox"` | ✅ **added** |
+| `aria-expanded` | ✅ **added — and it reflects the LIST, not the dialog** |
+| `aria-autocomplete="list"` | ✅ **added** |
+| `role="group"` per section | ✅ **added, `aria-labelledby` at the label already rendered** |
+| Options contained BY their group | ✅ **the `<div>` that was bare now carries the role** |
+
+⚠️ **`aria-expanded` is `items.length > 0` rather than `true`.** ⛔ **Hardcoding
+`true` would have satisfied the criterion and been wrong**: the palette opens
+with no results until something is typed, and announcing an expanded list there
+tells somebody there are options to arrow through when there are none. **There
+is a test for the `false` case for that reason.**
+
+✅ **Guarded by `tests/components/palette-combobox.test.tsx`, asserted by ROLE
+throughout** — 📁 the row's own criterion. ⚡ **Fire-tested in two halves**:
+removing `role="combobox"` turns 5 red, removing the group role turns 3 red,
+and the two sets do not overlap.
+
+⚡ **`aria-controls` and `aria-activedescendant` are asserted as RELATIONSHIPS
+rather than as attributes** — the active id must resolve to an element that is
+actually an option, and the controlled id must be the listbox's. ⛔ **A test
+that read the two attributes and stopped would have been green before this fix
+and after it**, which is the whole shape of [B-1055](#b-1055)'s family.
 
 ### B-1062 · 🟠 Five settings screens reserve a third of the content region for a column that holds nothing, at every width
 
