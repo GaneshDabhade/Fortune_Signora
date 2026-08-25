@@ -52,6 +52,13 @@ from registers import bug_rows  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "backend"))
 from tests.certification.record import MINIMUM_COVERAGE, REQUIRED_GATES  # noqa: E402
 
+# ⛔ **The one blocking rule is parsed HERE by nobody** — it was read only by
+# `state-check.py`, which is advisory. `registers.py` exists so the tools cannot
+# disagree about what "blocking" means (§2), so the gate imports the same
+# reading rather than growing a second one.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from registers import bug_rows  # noqa: E402
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MANIFEST = REPO_ROOT / "certification" / "manifest.json"
 MIGRATIONS = REPO_ROOT / "backend" / "migrations" / "versions"
@@ -351,6 +358,25 @@ def _promote(sha: str) -> int:
         print(f"          {identifier}: VERIFIED -> {became}")
     if reopened:
         failures.append(f"{len(reopened)} defect(s) lose a VERIFIED state")
+
+    # ⛔ **`CLAUDE.md` §20e, and it calls itself *the one blocking rule***:
+    # *"`integration` never fast-forwards to `main` with an open 🔴 bug."*
+    #
+    # 🔴 **It was checked by `state-check.py` ALONE, which is advisory and prints
+    # it among twenty-odd findings that read identically.** [B-1075] — QE
+    # promoted past an open 🔴 twice, and the line was in the output both times.
+    #
+    # ⚠️ **Read from the CANDIDATE's register, never the working tree**: the
+    # question is what that commit says about itself, and a working tree can
+    # hold an edit the commit does not.
+    blocking = [
+        row.identifier for row in bug_rows(cand_bugs) if row.blocks_promotion
+    ] if cand_bugs else []
+    print(f"  {'PASS' if not blocking else 'FAIL'}  no unresolved 🔴 (§20e, the one blocking rule)")
+    for identifier in blocking:
+        print(f"          {identifier}")
+    if blocking:
+        failures.append(f"{len(blocking)} unresolved 🔴: {', '.join(blocking)}")
 
     if failures:
         print()
@@ -1577,16 +1603,40 @@ def main() -> int:
         )
         return 1
 
-    print(f"CERTIFIED — {short} may be promoted.")
+    print(f"CERTIFIED — {short}: every gate passed at this tree.")
     print(f"  certified at   {run.get('certified_at')}")
     print(f"  migration head {certified_head}")
     print(
         f"  gates          {len(_entries(run, 'gates')[0])} of {len(REQUIRED_GATES)} required"
         f", coverage {run.get('coverage')}%"
     )
+    # 🔴 **[B-1075](../docs/BUGS.md) — THIS BLOCK PRINTED THE COMMAND THAT
+    # BYPASSES EVERY OTHER GATE.** `--promote` exists precisely so `git merge`
+    # cannot be reached without them ([D-228](../docs/DECISION_REGISTER.md)), and
+    # QE used this form at every promotion and typed the line below instead.
+    #
+    # ⛔ **`CERTIFIED — may be promoted` was ALSO a false claim**: certification
+    # answers *"did the gates pass at this tree?"*, never *"may this ship?"*, and
+    # §20e's one blocking rule is a separate question this form never asked.
+    candidate_bugs = _git("show", f"{target}:docs/BUGS.md")
+    open_red = [
+        row.identifier for row in bug_rows(candidate_bugs) if row.blocks_promotion
+    ] if candidate_bugs else []
+    if open_red:
+        print(
+            f"\n  ⛔ NOT PROMOTABLE — {len(open_red)} unresolved 🔴"
+            f" ({', '.join(open_red)}).\n"
+            "  `integration` never fast-forwards to `main` with one open"
+            " (CLAUDE.md §20e).\n"
+            "  Certification says the gates passed at this tree. It does not say"
+            " this may ship."
+        )
+        return 1
+
     print(
-        "\n  Promote this SHA and no other:\n"
-        f"    git checkout main && git merge --ff-only {target}"
+        "\n  Promote this SHA and no other, and through the gate rather than"
+        " around it:\n"
+        f"    python3 infra/certification-guard.py --promote {target}"
     )
     return 0
 
