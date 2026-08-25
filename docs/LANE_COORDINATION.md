@@ -15691,3 +15691,75 @@ the record"* — because that part IS true.
 **What is being asked:** 🔴 **is the sentence aspirational, or are reassignment
 and administrator notification missing platform capabilities?** ⚡ **If the
 latter, they are backend rows and the copy follows them.**
+
+---
+
+### C-1553 · Four statements about one card, and no three of them can hold together
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-25, measuring [B-1033](BUGS.md)'s remaining half rather than taking the row's arithmetic |
+| **Module** | `product_surface` — 📁 [`recents-card.tsx`](../frontend/components/home/recents-card.tsx) |
+| **Owner of the answer** | 🔴 **Product owner.** ⛔ **Every resolution changes what a customer sees, so no lane may take it** |
+| **Status** | **`OPEN`** — ⚠️ **blocking nobody; the card ships and is honest about nothing** |
+
+**The design makes four claims about `card.recents`. They are individually
+clear and jointly unsatisfiable.**
+
+| # | Claim | Where | Costs |
+|---|---|---|---|
+| ① | **`1fr × 160px`** | 📁 Home, `registry` | **a fixed 160px** |
+| ② | ***"Last five records touched"*** | 📁 Home, `registry`, same row | **five rows** |
+| ③ | **A row is a 20px tile at `padding:8px 0` with a rule — 37px** | 📁 Entry §05, **the only place the card is *drawn*** | **37px each** |
+| ④ | ***"…with 8px separation"*** | 📁 Home, `a11y`, `2.5.8` | **+8px between rows** |
+
+**②③④ need 217px of rows. ① offers about 94px** once the card's own `p-5` and
+the design's 11px eyebrow at `margin-top:10px` are taken out. ⛔ **So the
+product renders five rows and shows two, with no scrollbar, no *more*
+affordance and no indication that three exist.**
+
+### ⚠️ And it is not an artefact of this implementation — the design overruns its own figure
+
+📁 **Entry draws the card at `padding:16px 18px` with `hint-placeholder-count="3"`
+and `gap:0`** — ⚡ **three rows, not five.** **That drawing comes to ≈171px**
+(`16 + 17.6 + 10 + 111 + 16`), **against the 160px Home declares.** ⛔ **Even
+the design's own most generous reading does not fit, and it is showing three of
+the five records ② names.**
+
+✅ **Measured rather than asserted**: `--text-2xs` is `0.6875rem` and
+`--text-label` is `0.78125rem` — **11px and 12.5px, exactly the design's own
+figures** — so the row height is the design's 37px and not a divergence this
+lane introduced.
+
+### 🔴 Why this lane is not choosing
+
+⛔ **Each of the four is somebody's decision and three of them are not
+engineering's:**
+
+| Resolution | What it costs |
+|---|---|
+| **Grow the card** | ⛔ Breaks ①, **the one height in the registry that is a number rather than `auto`** — 📁 and Home §6 gives the reason: recents is *"Context, never urgent, and always below the fold"*, which a growing card stops being |
+| **Show three, not five** | ⛔ Breaks ②, **and drops records a customer opened** |
+| **Drop the 8px separation** | ⛔ Breaks ④ **and re-opens [B-1033](BUGS.md)** — 📁 two 37px links flush together are one mis-tap |
+| **Make the list scroll** | ⚠️ **Keeps all four and is drawn nowhere** — a nested scroller in a 160px card on a phone is new UI, not an implementation of existing UI |
+
+⚡ **The fourth is the one this lane would pick and precisely the one it may not
+invent** — 📁 [§20c](../CLAUDE.md).
+
+### ⛔ What is NOT being asked
+
+**Nothing here is blocked and no gate is red.** 📁 [B-289](BUGS.md)'s
+`test.fail()` already holds the 44px clause, and **QE confirmed on 2026-08-25
+that it never counted as a suite failure** — ⚠️ *"a `test.fail()` that fails
+renders `✘` and Playwright does not count it as failed"*, which is what nine
+apparent failures across thirteen logs actually were.
+
+⚠️ **This is a different finding from B-1033 and is filed separately rather than
+appended to it.** ⛔ **B-1033 is *targets are too small and too close*, and both
+halves are answered** — the separation is fixed at `b3089a95` and the 44px is
+held. **C-1553 is *the card cannot show what it is declared to show*,** which no
+target-size fix reaches.
+
+**What is being asked:** 🔴 **which of the four gives way** — and if it is ①,
+whether `card.recents` becomes `auto` like every other context card in the
+registry.
