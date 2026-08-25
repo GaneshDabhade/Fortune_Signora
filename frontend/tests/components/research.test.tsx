@@ -441,3 +441,46 @@ describe('the design’s six states — Collapsed and Expanded', () => {
     expect(wide).toContain('laptop:grid-cols-3');
   });
 });
+
+describe('📁 "Esc returns to the record" — and the focus half that was claimed but absent', () => {
+  /**
+   * 🔴 **The comment said the focus return was *"the half usually dropped"*,
+   * and it had been dropped here.**
+   *
+   * ⛔ **`research.tsx` had zero `.focus()` calls** and the parent's
+   * `onToggleExpanded` only rewrites the URL with `scroll: false` — so the
+   * design's sentence was satisfied (the scroll position IS kept) while a
+   * keyboard reader who pressed `Escape` was left on `<body>`, with the next
+   * `Tab` starting from the top of the document. **2.4.3.**
+   *
+   * ⚠️ **Found by sweeping for design quotations that assert a behaviour**,
+   * after the same shape in `app-shell.tsx` sent an investigation at a fix
+   * that would have hung.
+   */
+  it('🔴 returns focus to the control that left focus mode', async () => {
+    const user = userEvent.setup();
+    const onToggleExpanded = vi.fn();
+    render(
+      <ResearchPanel
+        research={null}
+        onRequest={vi.fn()}
+        isRequesting={false}
+        isExpanded
+        onToggleExpanded={onToggleExpanded}
+        viewerId={null}
+        kind={null}
+      />,
+    );
+
+    const control = screen.getByRole('button', { name: 'Leave focus mode' });
+    // ⛔ **Focus deliberately starts somewhere else**, so a pass cannot come
+    // from the control simply never having lost it.
+    document.body.focus();
+    expect(control).not.toHaveFocus();
+
+    await user.keyboard('{Escape}');
+
+    expect(onToggleExpanded).toHaveBeenCalledWith(false);
+    expect(control).toHaveFocus();
+  });
+});

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronDown, Maximize2, Minimize2, Sparkles } from 'lucide-react';
 
 import { formatDay } from '@/components/intelligence/dates';
@@ -134,7 +134,28 @@ export function ResearchPanel({
   // 📁 *"Esc returns to the record at the same scroll position."* ⚡ **Returning
   // focus to the control is the half usually dropped** — without it a keyboard
   // reader who leaves focus mode is returned to the top of the document.
-  const leaveFocus = useCallback(() => onToggleExpanded?.(false), [onToggleExpanded]);
+  /**
+   * 🔴 **The focus return this comment claimed and did not perform.**
+   *
+   * ⛔ **`research.tsx` had ZERO `.focus()` calls**, and the parent's
+   * `onToggleExpanded` only rewrites the URL with `scroll: false`. ⚡ **So the
+   * design's sentence was honoured and the commentary beside it was not**: the
+   * scroll position was kept, and a keyboard reader who pressed `Escape` was
+   * left with focus on `<body>` — 2.4.3, and the next `Tab` starts from the
+   * top of the document.
+   *
+   * ⚠️ **Found by sweeping for design quotations that assert a behaviour**,
+   * after the identical shape in `app-shell.tsx` cost a wrong fix: **a claim
+   * sitting beside an implementation reads as a description of it.**
+   */
+  const toggle = useRef<HTMLButtonElement>(null);
+  const leaveFocus = useCallback(() => {
+    onToggleExpanded?.(false);
+    // ⚡ **After the state change, not before** — the control is still mounted
+    // either way, but focusing first and re-rendering after invites the
+    // browser to scroll to it twice.
+    toggle.current?.focus();
+  }, [onToggleExpanded]);
   useEffect(() => {
     if (!isExpanded) return;
     const onKey = (event: KeyboardEvent) => {
@@ -220,6 +241,7 @@ export function ResearchPanel({
         {onToggleExpanded === undefined ? null : (
           <button
             type="button"
+            ref={toggle}
             onClick={() => onToggleExpanded(!isExpanded)}
             aria-pressed={isExpanded}
             /* 📁 The design's *"Focus mode"* control. ⛔ **Absent rather than
