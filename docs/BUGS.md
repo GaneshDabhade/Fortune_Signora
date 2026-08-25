@@ -18646,7 +18646,9 @@ Received: "http://localhost:3100/signin"
 
 📁 **`workflow.spec.ts:38`** goes to `/` — **Home, not Companies** — and requires **all six** of the first account links to render `Account score \d+ out of 100`. ⚡ **Home's ranked card is scored; its RECENTS card is not**, so a recents row for an unscored account inside the first six would fail it.
 
-⛔ **QE tried to reproduce it and could not: `recently_viewed` holds 5 rows and NONE is unscored.** ✅ **8 of 8 green.** **The mechanism is stated and the change is not made** — 📁 *evidence over prediction*, and changing a test QE cannot demonstrate is the speculative move this register keeps catching.
+⛔ **QE tried to reproduce it and could not: `recently_viewed` holds 5 rows and NONE is unscored.** > ⚠️ **AMENDED — the `workflow.spec.ts` exposure depends on CLIPPING as well as on the draw.** 📁 **[C-1553](LANE_COORDINATION.md), Lane A, 2026-08-25: the recents card renders five rows into `h-[160px] overflow-hidden`, and five 37px rows with 8px separation need 217px.** ⛔ **So a `:visible` query sees two recents links where the DOM holds five, and *"the first six account links on Home"* is not the set QE assumed when it failed to reproduce this.** ⚡ **That makes the exposure RARER, not likelier — which is a reason to leave the spec alone, not a reason to change it.**
+
+✅ **8 of 8 green.** **The mechanism is stated and the change is not made** — 📁 *evidence over prediction*, and changing a test QE cannot demonstrate is the speculative move this register keeps catching.
 
 ### 🔴 THE SEVERITY IS NOT QE'S TO LOWER, AND QE IS NOT LOWERING IT
 
@@ -19139,6 +19141,34 @@ removed person GETs /workspaces/{id}/members                  → 200  ← shoul
 
 > ⛔ **Both are the same error: asking a question the instrument does not answer.** *"Which lines carry `✘`?"* is not *"which tests did Playwright count as failed?"* — 📁 **the *wrong question — guard right, reader wrong* class.** ✅ **The authority is the `N failed` summary block. Nothing else is.**
 
+### 🔴 A NAMED CLASS — an assertion that cannot tell a satisfied rule from an absent case
+
+**Named 2026-08-25 by Lane A, on `top-bar-search.spec.ts:65`. It has produced THREE wrong readings in this repository and every one of them looked green.**
+
+| the assertion | what it cannot distinguish |
+|---|---|
+| 📁 **`top-bar-search:65`** — *the field stays 224 at 1599, because there is no room* | ⛔ **the rule holding** from ⛔ **the focus event being lost** — which is [the failure sitting one test above it](#b-1073). **It is green through every occurrence** |
+| 📁 **[B-1033](#b-1033)** — Home's target-size assertions | ⛔ **a compliant list** from ⛔ **an EMPTY list.** Green on QE's environment and on Lane A's, for opposite reasons |
+| 📁 **`home-a11y:432`** — a `test.fail()` | ⛔ **a genuine failure** from ⛔ **the expected one.** ⚠️ **Not the assertion's fault — QE's reader counted `✘` glyphs** — but the same shape: a green outcome carrying no information |
+
+> ⚡ **This is NOT the *wrong question* class.** **There the guard is right and the reader asks it something else.** ⛔ **Here the assertion itself is satisfied by two different worlds, and passing tells you which one you are in exactly never.**
+>
+> ✅ **The test to apply when writing one: *what would this assert if the thing it describes did not exist at all?*** **If the answer is *"it would pass"*, the assertion needs a precondition it can fail on** — 📁 which is what `openHomeWithRecents()`'s `toHaveCount(5)` was added to be, and what the 1599 case has not got.
+
+### ⚠️ `top-bar-search:26` — a mechanism, held as UNCONFIRMED
+
+📁 **Lane A's, read against `components/shell/top-bar.tsx` by QE rather than accepted:**
+
+```
+:143  useState(SEARCH_WIDTH.focusWidensAbove)   // 1600 — the viewport half is
+:153  widened = searchFocused && bandFor(…)     //        permissive from paint
+:254  onFocus={() => setSearchFocused(true)}    // React — needs hydration
+```
+
+⚡ **The spec sets the viewport to 1600 and the initial state IS 1600, so `bandFor` returns the same answer either side of hydration. `searchFocused` is the only variable, and `.focus()` is a ONE-SHOT DOM call that does not retry** — a miss before hydration is permanent, and `expect.poll` then polls a width that can never move.
+
+⛔ **Consistent with every fact and confirmed by none of them.** **Intermittent · 15.6s is the poll timeout not a slow pass · stuck at EXACTLY 224 rather than mid-transition.** ⚠️ **Neither lane has reproduced it, and QE will report an all-green repeat run as INCONCLUSIVE rather than as absence** — 📁 the reading QE already had to retract once on `auth-credential-journeys:155`.
+
 ### B-1074 · 🟠 One stack, two restart policies — three services cannot return, so a stopped gate hangs instead of failing
 
 | | |
@@ -19203,3 +19233,30 @@ removed person GETs /workspaces/{id}/members                  → 200  ← shoul
 **② Fix [B-1068](#b-1068).** 📁 **Its own text says the fix is QE's — *"`tests/` is QE's under §20e"*.**
 
 **③ The blocking check belongs in `certification-guard.py --promote`, where it exits non-zero.** ⛔ **An advisory line QE has already scrolled past twice is not protection** — 📁 §2, *a guard that cannot fail is documentation pretending to be code.* ⚠️ **Filed as its own slice, because changing the promotion gate changes what promotion means.**
+
+### 🔴 SHARPENED 2026-08-25 — THE GATE EXISTS, RUNS BLOCKING CHECKS, AND QE HAS NEVER USED IT
+
+⛔ **`infra/certification-guard.py` has TWO promotion paths, and QE has used the wrong one at every promotion.**
+
+| form | what it does |
+|---|---|
+| **`certification-guard.py <sha>`** | ⚠️ **ADVISORY.** Answers *"may this be promoted?"* and then **PRINTS THE COMMAND THAT BYPASSES ITSELF**: *"Promote this SHA and no other: `git checkout main && git merge --ff-only <sha>`"* |
+| ✅ **`certification-guard.py --promote <sha>`** | ⛔ **Runs every blocking gate AND performs the merge in the same process.** 📁 **[D-228](DECISION_REGISTER.md), the product owner, after QE promoted while a gate was firing: *"the promotion command itself must be structurally incapable of proceeding after a blocking gate failure."*** |
+
+⚡ **`_promote` already carries three blocking gates** — *this exact commit is certified* · *no `VERIFIED` state is undone* ([B-168](#b-168)) · *no `VERIFIED` defect is reopened* ([B-197](#b-197)).
+
+🔴 **NOT ONE OF THEM HAS EVER RUN ON A PROMOTION QE PERFORMED.** ⛔ **QE ran the advisory form, read `CERTIFIED — may be promoted`, and then typed the `git merge` it printed.**
+
+> ⚠️ **`backend/tests/test_verified_bug_regressions.py` SAYS SO, in its own docstring, and has since B-197 was filed:** *"It survived unnoticed because QE promotes through the guard's single-argument form and `_promote` was never exercised — an unreachable defect in a gate."*
+>
+> ⛔ **QE read that file today, while investigating something else.** **The observation was written down, in the repository, and QE had not read it.**
+
+### ✅ So the fix has two halves and only one of them is a change
+
+**① USE `--promote`. Free, immediate, and entirely QE's to adopt** — no code, no decision, no approval. ⛔ **QE was choosing the advisory path and hand-merging; that is a procedure defect, not a tooling gap.**
+
+**② ADD THE 🔴 GATE to `_promote`.** ⚡ **`registers.bug_rows()` and `BugRow.blocks_promotion` already exist and already encode exactly this rule** — `state-check.py` imports them, so the guard would share one definition rather than grow a second (§2).
+
+> 🔴 **② IS A SEMANTIC CHANGE TO THE PROMOTION CONTRACT and QE is NOT making it unilaterally.** **Promotions that would previously have succeeded would now fail.** ⚠️ **They *should* have failed — but *"the gate now means something it did not mean yesterday"* is a decision, and §20e puts a change to what a gate MEANS outside a repair.** **Prepared, demonstrated, and held for a ruling.**
+
+⚡ **① alone would not have caught [B-1068](#b-1068)**, because the 🔴 check does not exist yet. **② alone would not have caught it either**, because QE would still have hand-merged past it. ⛔ **It takes both, which is why the row records both.**
