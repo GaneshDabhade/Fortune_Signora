@@ -19167,6 +19167,26 @@ removed person GETs /workspaces/{id}/members                  → 200  ← shoul
 
 ⚡ **The spec sets the viewport to 1600 and the initial state IS 1600, so `bandFor` returns the same answer either side of hydration. `searchFocused` is the only variable, and `.focus()` is a ONE-SHOT DOM call that does not retry** — a miss before hydration is permanent, and `expect.poll` then polls a width that can never move.
 
+⛔ **REFUTED 2026-08-25 — `--repeat-each=12` on the unmodified spec, fresh stack, fresh seed: 12 FAILURES OF 12.** ⚡ **A hydration race is intermittent; this is DETERMINISTIC.**
+
+⛔ **And it is not a 267 regression:** `git log origin/main..HEAD -- frontend/components/shell/ frontend/components/ui/` is **empty**. **Playwright 1.62.0, Chromium dated 3 August, `node_modules` unmoved since 8 August.** **Component, browser and dependencies all unchanged — 18 passes, then 12 of 12 failures.**
+
+### ⚠️ A SECOND mechanism, from the snapshot that was already on disk, and also UNCONFIRMED
+
+```yaml
+- status: Navigated to /w/0defa12d-…/home     ← the spec asked for `/`
+- search "Search Signora":
+  - combobox "Find an account by name"        ← exists, so `.focus()` DID resolve
+```
+
+📁 **`perception.spec.ts` records the behaviour in its own comment: *"`/` became the shell's entry resolver."*** ⚡ **If that client-side navigation lands AFTER the focus, the top bar remounts, `useState(false)` runs again, and nothing re-focuses** — so `expect.poll` polls a width that can never move.
+
+✅ **It fits the two facts the hydration reading could not: DETERMINISTIC** (the redirect reliably lands after a paint that is faster than it) **and STUCK AT EXACTLY 224 rather than mid-transition** (the state was RESET, not never set).
+
+⛔ **NOT ISOLATED. QE has not proved the redirect lands between the poll and the focus rather than before either.** **What QE holds: 12/12 · the shell untouched by this cycle · the page ending on a URL the spec never requested.**
+
+⛔ **QE did NOT edit the spec to find out.** ⚡ **Navigating to the resolved workspace URL instead of `/` would very likely turn it green, and turning an unexplained failure green by changing the test is the move this register keeps catching.**
+
 ⛔ **Consistent with every fact and confirmed by none of them.** **Intermittent · 15.6s is the poll timeout not a slow pass · stuck at EXACTLY 224 rather than mid-transition.** ⚠️ **Neither lane has reproduced it, and QE will report an all-green repeat run as INCONCLUSIVE rather than as absence** — 📁 the reading QE already had to retract once on `auth-credential-journeys:155`.
 
 ### B-1074 · 🟠 One stack, two restart policies — three services cannot return, so a stopped gate hangs instead of failing
