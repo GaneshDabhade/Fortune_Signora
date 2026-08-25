@@ -824,3 +824,54 @@ describe('handing the organization over is one operation', () => {
     );
   });
 });
+
+describe('📁 Settings rule 01 — removal states the consequence that outlives it', () => {
+  /**
+   * 📁 ***"Every setting states its consequence before it is changed, not
+   * after."*** ⚡ **One consequence was missing and it is the one that
+   * survives the removal.**
+   *
+   * ⛔ **Measured**: `remove_member.py` does not touch account assignments and
+   * **nothing in `commercial_profile` consumes a membership-ended event** — so
+   * accounts assigned to somebody who has lost access **stay assigned to
+   * them**, and the dialog said nothing about it.
+   *
+   * ⚠️ 📁 Team Management §3.3.4 asks for more — *"removal additionally
+   * requires an explicit reassignment choice"* — and **that is not built and
+   * cannot be**: `GET /account-assignments` requires `account_ids`, so nothing
+   * answers *which accounts does this member hold*.
+   * 🔴 [C-1556](../../../docs/LANE_COORDINATION.md).
+   */
+  it('🔴 says the accounts stay assigned, and that Signora cannot move them here', () => {
+    // ⚡ Somebody who is NOT the viewer — the control is absent for yourself,
+    // which is correct and is why the default fixture cannot exercise this.
+    members.mockReturnValue({
+      ...IDLE,
+      data: { items: [person(), person({ id: 'm2', user_id: 'u2', role: 'member' })] },
+    });
+    render(draw());
+    fireEvent.click(screen.getAllByRole('button', { name: 'Remove' })[0]!);
+
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toHaveTextContent(/accounts assigned to them stay assigned/);
+    expect(dialog).toHaveTextContent(/cannot reassign them here yet/);
+  });
+
+  it('⛔ offers no reassignment control, because nothing can list the accounts', () => {
+    /**
+     * ⚡ **The positive control for the absence.** ⛔ A picker that could not
+     * name what it was reassigning would be the placeholder
+     * [§20c](../../../CLAUDE.md) forbids — **worse than the missing choice**,
+     * because it would look operational.
+     */
+    members.mockReturnValue({
+      ...IDLE,
+      data: { items: [person(), person({ id: 'm2', user_id: 'u2', role: 'member' })] },
+    });
+    render(draw());
+    fireEvent.click(screen.getAllByRole('button', { name: 'Remove' })[0]!);
+
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).queryByRole('combobox')).not.toBeInTheDocument();
+  });
+});

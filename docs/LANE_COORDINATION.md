@@ -15928,3 +15928,56 @@ nothing for a locked control to display.
 support?** — a list, and it can be short. 🔴 **② is `Week starts on` the
 person's or the organization's?** ⚡ **If the organization's, it needs a
 workspace-level field before any screen can draw it locked.**
+
+---
+
+### C-1556 · Removal must offer a reassignment choice, and nothing can answer *which accounts*
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-25, auditing the design's `rules` and `a11y` contracts |
+| **Module** | `commercial_profile` — the read · `workspace_tenancy` — removal |
+| **Owner of the answer** | 🔴 **Product owner**, and it needs a route before a control can exist |
+| **Status** | **`OPEN`** — ⚠️ **the consequence is now stated; the choice is not built** |
+
+📁 **Team Management, `a11y` §3.3.4:**
+
+> ***"Removal, suspension and transfer state their consequences before the
+> control activates; removal additionally requires an explicit reassignment
+> choice."***
+
+✅ **The first clause is implemented.** ⛔ **The second cannot be.**
+
+### ⚡ The write exists and is already consumed; the read does not exist
+
+| | |
+|---|---|
+| **`POST /workspaces/{id}/account-assignments`** | ✅ *"Put a member on these accounts"* — takes `account_ids`, `role`, `member_user_id`, returns a `ReassignmentResponse`. **Consumed today by `/accounts`** |
+| **`GET /workspaces/{id}/account-assignments`** | ⛔ *"Who owns **these accounts**"* — **`account_ids` is required, `min_length=1`** |
+
+🔴 **There is no route answering *which accounts does this member hold*.** ⛔ **So
+a reassignment picker could not name what it was reassigning**, and one that
+guessed would be the placeholder [§20c](../CLAUDE.md) forbids.
+
+⚠️ **Enumerating every account and asking who owns each is not a workaround.** 📁
+The accounts read is keyset-paginated and **publishes no total** — the same wall
+that removed *"Select all 312"* from Companies ([C-1505](#c-1505)).
+
+### 🔴 And removal currently leaves the assignments in place
+
+⚡ **Measured**: `remove_member.py` **does not touch assignments**, and **nothing
+in `commercial_profile` consumes a membership-ended event** — so an account
+assigned to somebody who has lost access **stays assigned to them.**
+
+⛔ **That was not stated anywhere.** ✅ **The dialog now says it**, under 📁
+Settings `rules` 01 — *"Every setting states its consequence before it is
+changed, not after."*
+
+⚠️ **Whether it SHOULD stay assigned is the product question**, and it is the
+same one [C-1552](#c-1552) raises from the other end: the *Leave* copy promises
+a reassignment the platform does not perform.
+
+**What is being asked:** 🔴 **① a route that lists the accounts a member holds**,
+without enumerating the book. 🔴 **② on removal, is reassignment mandatory (the
+design's word is *requires*), or offered?** ⚡ **If mandatory, removal cannot
+complete without it and that is a backend rule, not a dialog.**

@@ -751,9 +751,32 @@ export default function TeamPage() {
         title="Remove from this organization"
         // Names the person and the consequence. Never "are you sure" — a
         // question the customer has no way to answer.
+        /**
+         * 🔴 **📁 Settings `rules` 01 — *"Every setting states its consequence
+         * before it is changed, not after."*** ⛔ **One consequence was
+         * missing, and it is the one that outlives the removal.**
+         *
+         * ⚡ **Measured rather than assumed**: `remove_member.py` does not
+         * touch account assignments, and **nothing in `commercial_profile`
+         * consumes a membership-ended event** — so the accounts this person is
+         * assigned to **stay assigned to them** after they lose access.
+         *
+         * ⛔ **The design asks for more than a sentence.** 📁 Team Management
+         * §3.3.4: ***"removal additionally requires an explicit reassignment
+         * choice."*** ⚠️ **That is NOT built here and cannot be**: the write
+         * exists (`POST /account-assignments`, already consumed on
+         * `/accounts`), but **the read takes `account_ids` and there is no
+         * route answering *which accounts does this member hold*** — so a
+         * picker could not name what it was reassigning.
+         * 🔴 [C-1556](../../../../docs/LANE_COORDINATION.md).
+         *
+         * ✅ **So the consequence is stated and the choice is not faked.** ⛔ A
+         * reassignment control that could not list the accounts would be the
+         * placeholder that makes an unavailable capability look operational.
+         */
         description={
           leaving
-            ? `${nameOf(leaving, viewerId)} will lose access to this organization\u2019s accounts, evidence and decisions. What they have already decided stays on the record.`
+            ? `${nameOf(leaving, viewerId)} will lose access to this organization\u2019s accounts, evidence and decisions. What they have already decided stays on the record, and any accounts assigned to them stay assigned — Signora cannot reassign them here yet.`
             : ''
         }
         footer={
