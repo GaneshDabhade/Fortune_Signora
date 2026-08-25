@@ -8,6 +8,7 @@ import { AccessibilityPanel } from './accessibility-panel';
 import { AiPanel } from './ai-panel';
 import { AppearancePanel } from './appearance-panel';
 import { AvatarArea } from './avatar-area';
+import { ConnectedAccountsPanel } from './connected-accounts-panel';
 import { DataRightsPanel } from './data-rights-panel';
 import { LocalePanel } from './locale-panel';
 import { ProfilePanel } from './profile-panel';
@@ -223,7 +224,12 @@ export function ProfileShell({ name, email }: { name: string | null; email: stri
             <SectionNotBuilt section="activity" />
           </div>
         ) : null}
-        {current === 'accounts' ? <SectionNotBuilt section="accounts" /> : null}
+        {/* 🔴 **Was `SectionNotBuilt`, and the notice was untrue.** ⚡ It
+            claimed *"every session signed in as you"* was unbuilt while the
+            card at the foot of this same screen links to it. **Half of §05 is
+            shipped and half has no producer**, and the section now says which
+            is which — 📁 [§2](../../../../CLAUDE.md). */}
+        {current === 'accounts' ? <ConnectedAccountsPanel /> : null}
       </div>
     </div>
   );
@@ -238,8 +244,6 @@ export function ProfileShell({ name, email }: { name: string | null; email: stri
  */
 function SectionNotBuilt({ section }: { section: string }) {
   const WHAT: Record<string, string> = {
-    accounts:
-      'The accounts you have connected, their scope, and every session signed in as you.',
     // ⛔ **"your data rights" is GONE from this sentence.** ✅ One of them is
     // built and rendered directly above this block, and a not-built notice
     // that still claims it would be describing the screen it is sitting on.
