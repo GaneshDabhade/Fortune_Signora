@@ -21,35 +21,59 @@ async function widthOf(page: import('@playwright/test').Page): Promise<number> {
 }
 
 /**
- * 🔴 **`/` IS A REDIRECT, AND THIS SPEC MEASURED ACROSS IT** — the cause of
- * eighteen consecutive failures that four hypotheses could not explain.
+ * 🔴 **THIS SPEC MEASURES A FOCUS INTERACTION, AND THE PAGE TAKES FOCUS ON
+ * ENTRY.** Eighteen consecutive failures, five hypotheses, four of them wrong.
  *
- * 📁 `app/(app)/page.tsx` is a **client-side** `router.replace` in an effect,
- * gated on `useEntryDecision()` → `useWorkspaces()` — **a network read.** ⚡ And
- * 📁 `app-shell.tsx:430` says what happens when it lands: ***"`main` — the
- * content region. **Receives focus on route change** and announces the new page
- * title."***
+ * ## ⚡ What actually blurs the field
  *
- * ⛔ **So the sequence was: focus the field · the redirect resolves · the shell
- * moves focus to the content region for screen readers · the slot blurs ·
- * `searchFocused` returns to `false` · the width returns to 224 with nothing
- * left to put it back.**
+ * 📁 **`w/[workspace]/home/home.tsx:173`**, and it is the page rather than the
+ * shell:
  *
- * ✅ **The product is correct.** ⚠️ **Focusing the content region on a route
- * change is the accessibility behaviour, not a defect** — and every assertion
- * before the focus passed on **server-rendered markup with no JavaScript run at
- * all**, because `width: 224` is an inline style off `SEARCH_WIDTH.rest`. **The
- * spec waited for appearance, and appearance is free.**
+ * ```ts
+ * const heading = useRef<HTMLHeadingElement>(null);
+ * useEffect(() => { heading.current?.focus(); }, []);   // once per MOUNT
+ * ```
  *
- * ⛔ **This is NOT navigating somewhere easier.** ⚡ It waits for the navigation
- * **this route performs** — the thing the spec always assumed and never said,
- * and which a faster machine completed before the first assertion. **That is
- * the eighteen passes, and why one tree gave opposite answers on different
- * days.**
+ * ⚡ **It is deliberate and it is asserted elsewhere** — 📁 `home-a11y.spec.ts`:
+ * ***"focus lands on the h1, never the search field."*** **The product is
+ * correct; this spec simply focused the field before Home had mounted and taken
+ * focus back.**
+ *
+ * ## ⛔ Two waits that are NOT sufficient, both measured
+ *
+ * **`goto('/')` alone** — 📁 `app/(app)/page.tsx` is a *client-side*
+ * `router.replace` in an effect, gated on `useWorkspaces()`, **a network read**.
+ * ⚠️ And every assertion before the focus passes on **server-rendered markup
+ * with no JavaScript run at all**, because `width: 224` is an inline style off
+ * `SEARCH_WIDTH.rest`. **The spec waited for appearance, and appearance is
+ * free.**
+ *
+ * **`waitForURL` as well** — ⛔ **still red, 6 of 6.** ⚡ **The URL commits when
+ * `router.replace` does; Home mounts and steals focus AFTER that.** QE measured
+ * `activeElement` as `BODY` at the moment `waitForURL` resolved.
+ *
+ * ## ⛔ And `main` is never focused by anything
+ *
+ * ⚠️ **`app-shell.tsx` quotes the design — *"the content region. Receives focus
+ * on route change"* — and NOTHING IMPLEMENTS IT.** `SKIP_TARGETS.content` is an
+ * `id` and a skip-link target, and `grep` for anything focusing it returns
+ * **zero**. **Waiting on it would hang rather than fail.**
+ *
+ * ## ✅ So the wait is for the entry focus to have HAPPENED
+ *
+ * 🔴 **And it is required whichever route this spec enters by.** ⛔ **Navigating
+ * straight to `/w/<id>/home` would not remove the race — Home still mounts and
+ * still focuses its h1 on mount**; it would only narrow the window and make the
+ * failure rare instead of certain. ✅ **That is why this waits rather than
+ * relocating: the hazard belongs to the page, not to the entry route**, so
+ * going somewhere easier would hide it rather than handle it.
  */
 async function settled(page: import('@playwright/test').Page): Promise<void> {
   await page.goto('/');
   await page.waitForURL(/\/w\/.+\/home/);
+  // ⚡ **The completion signal for entry, and the only one there is.** ⛔ Not the
+  // URL, which commits a mount too early.
+  await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
 }
 
 test.describe('at 1600, where the design gives the field room', () => {

@@ -429,7 +429,22 @@ export function AppShell({
             exists.** */}
         {/* 📁 **`main`** — *"the content region. Receives focus on route change
             and announces the new page title."* ⚡ `tabIndex={-1}` is what makes
-            it a focus target without putting it in the tab order. */}
+            it a focus target without putting it in the tab order.
+
+            🔴 **That quotation is the DESIGN'S sentence, and this element is
+            not what performs it.** ⛔ **Nothing focuses `SKIP_TARGETS.content`
+            — it is an `id` and a skip-link target, and a repository-wide grep
+            for anything calling `.focus()` on it returns zero.** ⚡ **The route
+            does it instead**: 📁 `home/home.tsx:173` focuses its own `h1` once
+            per mount, and 📁 `home-a11y.spec.ts` asserts exactly that —
+            *"focus lands on the h1, never the search field."*
+
+            ⚠️ **Said here because the quotation reads as a claim about this
+            element and is not one.** **It cost a wrong fix**: `top-bar-search`
+            was nearly made to wait on `#${SKIP_TARGETS.content}` becoming
+            focused, **which would have hung rather than failed.** 📁
+            [§2](../../../CLAUDE.md) — a design quotation beside an
+            implementation has to say which of the two it is describing. */}
         <main
           id={SKIP_TARGETS.content}
           tabIndex={-1}
