@@ -17,6 +17,8 @@ import type { AccountSegment } from '@/lib/query/hooks/account-segments';
 import type { Membership } from '@/lib/api/types';
 import { AddTagControl } from '@/components/accounts/add-tag-control';
 import { BulkBar } from '@/components/accounts/bulk-bar';
+import { useToast } from '@/components/ui/toast';
+import { PROPOSED_DETAIL, proposedMessage } from '@/lib/accounts/tag-batch';
 import type { Selection } from '@/lib/accounts/selection';
 import {
   NOTHING_SELECTED,
@@ -375,6 +377,7 @@ export default function CompaniesPage() {
   const [selection, setSelection] = useState<Selection>(NOTHING_SELECTED);
   const createTag = useCreateTag(workspaceId);
   const proposeBatch = useProposeTagBatch(workspaceId);
+  const { toast } = useToast();
   const onScreen = useMemo(() => shown.map((r) => r.account.account_id), [shown]);
   /**
    * 🔴 **The design's *"Select all 312"* is NOT offered, and the reason is that
@@ -714,7 +717,49 @@ export default function CompaniesPage() {
                               : (tagId) => {
                                   proposeBatch.mutate(
                                     { tagId, accounts: resolvedIds(selection) ?? [] },
-                                    { onSuccess: () => setSelection(NOTHING_SELECTED) },
+                                    {
+                                      /**
+                                       * 🔴 **This cleared the selection and said
+                                       * NOTHING.**
+                                       *
+                                       * ⛔ **A customer selected companies, chose a
+                                       * tag, watched the selection vanish, and saw
+                                       * no row change** — because 📁 `router.py:676`
+                                       * *"proposes rather than applies"* under
+                                       * [ADR-0405](../../../docs/architecture/adr/):
+                                       * *an action is approved before it is
+                                       * effective*. **Nothing was wrong and nothing
+                                       * said so**, which is
+                                       * [B-255](../../../docs/BUGS.md)'s rule: *a
+                                       * control that silently does nothing is worse
+                                       * than one that is absent.*
+                                       *
+                                       * ⚠️ **The second sentence is the honest half
+                                       * and it is uncomfortable on purpose.** 📁
+                                       * ADR-0405 puts approval *"on a screen"* and
+                                       * **that screen does not exist** — `grep` for
+                                       * `action-batches` across the frontend returns
+                                       * zero. **Saying *awaiting approval* alone
+                                       * would imply an approval that cannot come.**
+                                       * Raised as [C-1554](../../../docs/LANE_COORDINATION.md).
+                                       *
+                                       * ⛔ **No `action` on the toast, though the
+                                       * design asks for undo.** 📁 `toast.tsx`: *"a
+                                       * toast whose action does nothing is worse
+                                       * than a toast without one"* — and
+                                       * `/reverse` reverses an APPLIED batch, so
+                                       * offering Undo here would name a call that
+                                       * cannot succeed.
+                                       */
+                                      onSuccess: (result) => {
+                                        setSelection(NOTHING_SELECTED);
+                                        toast({
+                                          kind: 'success',
+                                          message: proposedMessage(result.item_count),
+                                          detail: PROPOSED_DETAIL,
+                                        });
+                                      },
+                                    },
                                   );
                                 }
                           }

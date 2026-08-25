@@ -39,6 +39,7 @@ vi.mock('@/lib/state/workspace-provider', () => ({
   }),
 }));
 
+import { ToastProvider } from '@/components/ui/toast';
 import CompaniesPage from '@/app/(app)/accounts/page';
 import { ApiError } from '@/lib/api/client';
 import type { AccountOpportunity, DecisionPackage, ListedAccount } from '@/lib/api/types';
@@ -147,7 +148,14 @@ function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
-      <CompaniesPage />
+      {/* ⚡ **The provider the real tree has and this one did not.** 📁
+          `app/layout.tsx` mounts `ToastProvider` above every route, so a page
+          calling `useToast` is correct and this render was the incomplete
+          one. ⛔ **`useToast` is NOT made tolerant of a missing provider** —
+          that would hide the same omission everywhere else. */}
+      <ToastProvider>
+        <CompaniesPage />
+      </ToastProvider>
     </QueryClientProvider>,
   );
 }

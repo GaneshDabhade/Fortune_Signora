@@ -60,12 +60,20 @@ vi.mock('@/lib/query/hooks/accounts-list', () => ({
   }),
 }));
 
+import { ToastProvider } from '@/components/ui/toast';
 import CompaniesPage from '@/app/(app)/accounts/page';
 
 function renderPage() {
   return render(
     <QueryClientProvider client={new QueryClient()}>
-      <CompaniesPage />
+      {/* ⚡ **The provider the real tree has and this one did not.** 📁
+          `app/layout.tsx` mounts `ToastProvider` above every route, so a page
+          calling `useToast` is correct and this render was the incomplete
+          one. ⛔ **`useToast` is NOT made tolerant of a missing provider** —
+          that would hide the same omission everywhere else. */}
+      <ToastProvider>
+        <CompaniesPage />
+      </ToastProvider>
     </QueryClientProvider>,
   );
 }

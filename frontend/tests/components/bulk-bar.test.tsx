@@ -123,3 +123,37 @@ describe('🔴 “Select all N” is offered only with a real N behind it', () =
     expect(onSelectAll).toHaveBeenCalled();
   });
 });
+
+import { PROPOSED_DETAIL, proposedMessage } from '@/lib/accounts/tag-batch';
+
+describe('🔴 the bulk tag proposed a batch and told nobody', () => {
+  /**
+   * 📁 `router.py:676` — ***"201, and it proposes rather than applies. Nothing
+   * is tagged by this request."*** under [ADR-0405](../../../docs/architecture/adr/):
+   * *an action is approved before it is effective*.
+   *
+   * ⛔ **The call site's `onSuccess` cleared the selection and did nothing
+   * else.** ⚡ **So a customer selected companies, chose a tag, watched the
+   * selection vanish, and saw no row change** — 📁 [B-255](../../../docs/BUGS.md):
+   * *a control that silently does nothing is worse than one that is absent.*
+   *
+   * ⚠️ **These assert the SECOND sentence too**, because *"awaiting approval"*
+   * on its own implies an approval that can come, and 📁 the approval screen
+   * ADR-0405 names does not exist — `action-batches` has zero frontend
+   * consumers. [C-1554](../../../docs/LANE_COORDINATION.md).
+   */
+  it('says how many companies it proposed for', () => {
+    expect(proposedMessage(41)).toBe('Proposed a tag for 41 companies');
+  });
+
+  it('says "company" for one, because a count is not a plural', () => {
+    expect(proposedMessage(1)).toBe('Proposed a tag for 1 company');
+  });
+
+  it('🔴 says nothing is tagged YET, and that approving is not built', () => {
+    // ⛔ Both halves. The first alone reads as a failure; the second alone
+    // reads as a delay.
+    expect(PROPOSED_DETAIL).toMatch(/Nothing is tagged yet/);
+    expect(PROPOSED_DETAIL).toMatch(/approving is not built yet/);
+  });
+});

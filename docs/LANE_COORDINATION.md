@@ -15763,3 +15763,67 @@ target-size fix reaches.
 **What is being asked:** 🔴 **which of the four gives way** — and if it is ①,
 whether `card.recents` becomes `auto` like every other context card in the
 registry.
+
+---
+
+### C-1554 · The bulk tag proposes a batch, and the screen that approves one does not exist
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-25, sweeping backend routes for absent frontend consumers |
+| **Module** | `action_batch` · `commercial_profile` — 📁 [`router.py:676`](../backend/modules/commercial_profile/interface/router.py) |
+| **Owner of the answer** | 🔴 **Product owner**, and it needs a backend row before a screen can be built |
+| **Status** | **`OPEN`** — ⚠️ **the silent half is fixed; the capability is not** |
+
+📁 **`propose_account_tag_batch` is explicit, and correct:**
+
+> ***"201, and it proposes rather than applies. Nothing is tagged by this
+> request."*** — **ADR-0405**: *an action is approved before it is effective,
+> and* ***approval is a human decision on a screen***.
+
+⛔ **That screen does not exist.** ⚡ **Measured**: `action-batches` appears in
+**zero** frontend files outside a capability-role list and two docstrings saying
+it is *not* the producer for Home's agent cards.
+
+| Route | Consumer |
+|---|---|
+| `GET /action-batches/{batch_id}` | ⛔ **none** |
+| `POST …/approve` | ⛔ **none** |
+| `POST …/apply` | ⛔ **none** |
+| `POST …/reverse` | ⛔ **none** |
+
+### 🔴 So a bulk tag can be proposed and can never take effect
+
+**A customer selects companies on Companies, chooses a tag, and the batch is
+recorded.** ⛔ **Nothing can approve it**, so the tags never land.
+
+✅ **The silent half is fixed** — the toast now states that nothing is tagged
+yet and that approving is not built. ⛔ **Before it, the selection cleared and
+the screen said nothing**, which is 📁 [B-255](BUGS.md)'s rule exactly.
+
+### ⛔ Why a lane cannot simply build the approval screen
+
+🔴 **There is no route that LISTS batches.** ⚡ **`GET /action-batches/{batch_id}`
+takes an id, and a screen has no way to discover one** — the propose response is
+the only place an id ever appears, and it is gone as soon as the toast is.
+
+⚠️ **So this is a backend row before it is a frontend one**, and the shape of the
+list — pending only? per actor? per workspace? — **is a product question, not an
+implementation detail.**
+
+### 📁 And the design assumes the write LANDS
+
+**Companies, twice:** *"every bulk action previews its effect and names the
+record count before it runs. **Writes are one reversible batch with undo in the
+toast**"* and *"every import is **reversible for 24 hours** as a single named
+batch."*
+
+⛔ **Undo is deliberately NOT offered on the toast today.** 📁 `toast.tsx`: *"a
+toast whose action does nothing is worse than a toast without one"* — and
+`/reverse` reverses an **applied** batch, so an Undo here would name a call that
+cannot succeed.
+
+**What is being asked:** 🔴 **is approval a screen Signora ships, and if so what
+lists the batches?** ⚡ **If approval is instead meant to be implicit for a
+caller who already holds `ACCOUNT_TAG:UPDATE`, that is a smaller answer and it
+changes `propose` rather than adding a screen.**
