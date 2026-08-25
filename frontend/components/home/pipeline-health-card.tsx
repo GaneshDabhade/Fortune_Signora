@@ -47,7 +47,30 @@ export function PipelineHealthCard() {
   const health = usePipelineHealth(activeWorkspace?.id ?? null);
 
   return (
-    <Card>
+    /**
+     * 🔴 **📁 Home `contract` 7: *"Each card skeleton uses the height declared
+     * in the registry for that card."*** ⛔ **This card declared none**, so its
+     * skeleton was three `SkeletonText` lines and its content a stage list of
+     * whatever length the pipeline has — **the card jumped when the data
+     * landed**, which is the reflow §09 rules out by name.
+     *
+     * 📁 The registry's own row: **`Pipeline health · card.pipeline · 1fr ×
+     * 320px`**.
+     *
+     * ⚠️ **`min-h`, not `h`, and the difference is a defect I already have
+     * open.** ⛔ **A fixed height with `overflow-hidden` is exactly
+     * [C-1553](../../../docs/LANE_COORDINATION.md)** — `card.recents` renders
+     * five rows into a box that fits two and clips three silently. ⚡ **The
+     * stage list here is unbounded**, so pinning the height would put the same
+     * unresolved conflict on a second card **while it is still unresolved on
+     * the first.**
+     *
+     * ✅ **`min-h` fixes what is actually broken** — the footprint is reserved,
+     * nothing reflows — **and declines to clip.** 📁 If C-1553 rules that a
+     * declared height wins over the content, this becomes `h-[320px]` in the
+     * same change as the recents card, and not before.
+     */
+    <Card className="min-h-[320px]">
       <CardHeader>
         <CardTitle>Pipeline health</CardTitle>
       </CardHeader>

@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 /**
  * **`card.risks` and `card.opps` partition one queue by a ratified posture** —
  * 📁 `Fortune Signora Home.dc.html` §05.
@@ -123,5 +126,43 @@ describe('📁 the population, and the ceiling', () => {
     render(<TopRisksCard />);
     expect(screen.getAllByRole('link', { name: 'Open the deal' })).toHaveLength(5);
     expect(screen.getByRole('link', { name: /See all 7 in Signals/ })).toBeInTheDocument();
+  });
+});
+
+describe('📁 Home contract 7 — a card skeleton reserves the height the registry declares', () => {
+  /**
+   * 📁 ***"Each card skeleton uses the height declared in the registry for that
+   * card."*** — and 📁 the registry's row for this one is **`Pipeline health ·
+   * card.pipeline · 1fr × 320px`**.
+   *
+   * ⛔ **The card declared no height**, so its skeleton was three
+   * `SkeletonText` lines and its content a stage list of whatever length the
+   * pipeline has. **The card jumped when the data landed** — the reflow §09
+   * rules out by name.
+   *
+   * ⚠️ **`min-h` rather than `h`, deliberately.** ⛔ A fixed height with
+   * `overflow-hidden` is [C-1553](../../../docs/LANE_COORDINATION.md) exactly:
+   * `card.recents` renders five rows into a box that fits two and clips three
+   * silently. ⚡ **This stage list is unbounded**, so pinning the height would
+   * put an unresolved conflict on a second card.
+   */
+  it('🔴 reserves the registry’s 320px in every state', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'components/home/pipeline-health-card.tsx'),
+      'utf8',
+    );
+
+    expect(source).toMatch(/min-h-\[320px\]/);
+  });
+
+  it('⛔ does not pin the height, which would clip an unbounded stage list', () => {
+    // ⚡ The positive control: `h-[320px]` would satisfy "reserves 320px" and
+    // reintroduce C-1553's silent clipping on a second card.
+    const source = readFileSync(
+      join(process.cwd(), 'components/home/pipeline-health-card.tsx'),
+      'utf8',
+    );
+
+    expect(source).not.toMatch(/className="h-\[320px\]/);
   });
 });
