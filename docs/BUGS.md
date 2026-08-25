@@ -8957,8 +8957,35 @@ SIGNORA_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@loca
 | **Module** | **`product_surface`** — [`app/(app)/page.tsx`](../frontend/app/(app)/page.tsx) |
 | **Current assignee** | **Lane A** — ⚡ **found and fixed on the run that found it** |
 | **Severity** | 🟠 **Wrong behaviour a customer would hit, and the wrong answer is the confident one.** ⛔ **The screen does not say *something went wrong* — it says *you are not part of an organization yet*, which is a statement about the customer's account rather than about the platform** |
-| **Status** | ✅ **`FIXED` — Lane A**, 2026-08-11. **QE verifies** |
+| **Status** | ⛔ **`OPEN` — REOPENED 2026-08-25 by QE.** **Verification FAILED: it reproduces on this row's OWN stated steps.** *(was `FIXED` — Lane A, 2026-08-11, awaiting QE)* |
+| ⚠️ **Severity, unchanged at 🟠** | ⛔ **QE considered raising it and did not.** **The second symptom — a permanent spinner — is arguably worse than the one filed**, but 🔴 means *blocks a milestone*, and **a 🔴 here would block promotion, which QE has an interest in and therefore should not reach for.** 📁 The [B-1075](#b-1075) discipline, applied to a row QE did not write |
 | **Commit found** | ⛔ **Found by using the product with a broken API tier**, not by a test — the attention screen was read while `/api/proxy/workspaces` was returning `500` |
+
+
+### 🔴 VERIFICATION FAILED — 2026-08-25, QE, on `6172091066aa`
+
+⛔ **QE ran THIS ROW'S OWN STEPS**, not a superset: **signed in as an organization member, `**/api/proxy/**/workspaces` fulfilled with `500`, every other call answering normally.**
+
+| route | workspace reads broken | what the customer sees |
+|---|---|---|
+| **`/accounts`** | **3** | 🔴 ***"You are not part of an organization yet"*** — **the exact sentence this row was filed for**, plus a **`Create an organization`** button |
+| **`/`** | ⛔ **20** | 🔴 **`Loading…`, still, after 20 seconds** |
+
+**A healthy control on the same tree, same browser, same session:** *"Companies — 15 total · 15 in view"*. ⚡ **So the screen can tell the two states apart; it just does not.**
+
+**And it is not scoped to one status code.** ⛔ **`500` · `503` · `401` · `403` — all four, on both routes, identically.**
+
+### ⚠️ The second symptom is arguably worse than the one that was filed
+
+⛔ **`/` does not render a wrong answer. It renders NO answer, indefinitely.** ⚡ **A false claim is at least a claim a customer can dispute; a permanent spinner offers nothing to act on and nothing to report.** 📁 **[P-A](DOMAIN_DISCOVERY_REGISTER.md) says *a failed read must never render as an empty result* — a loading state that never ends is the same defect with no text in it.**
+
+⚠️ **`role="alert"` IS present on the failing page and its text is EMPTY** — measured, `[""]`. **The announcement element exists and announces nothing**, which is [B-1057](#b-1057)'s shape one screen over.
+
+### 📁 And 20 workspace reads in 20 seconds at `/`
+
+⚡ **`/accounts` made exactly 3 — one plus the two retries `shouldRetry` allows for a 5xx, which is the policy behaving correctly.** ⛔ **`/` made 20.** **QE has NOT established why** — a remount loop and multiple independent consumers of the same read are both live candidates and neither is measured. **It is recorded because it is a measured difference between two routes on one policy, not because QE knows what it means.**
+
+> ⛔ **QE is not fixing this.** 📁 §20e — **QE reports, the module's current assignee fixes.** ⚡ **The probe lives OUTSIDE the repository, in QE's scratchpad, because a probe inside `frontend/tests/` would be a temporary spec.**
 
 **Steps.** Break the workspace read — any `500` will do — and open the attention screen while signed in as a member of an organization.
 
