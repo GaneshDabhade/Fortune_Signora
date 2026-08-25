@@ -18632,7 +18632,11 @@ Received: "http://localhost:3100/signin"
 
 📁 **`demo/golden-journey.spec.ts:84`** — `openFirstAccount()` then **`brief.waitForScore()`**.
 
-**Cycle 267's draw, stated before the run: 7 scored of 12, and the first company by id — `Sandgate Retail Systems` — UNSCORED.** ⛔ **The step timed out at `pages/brief.ts:93`.**
+**Cycle 267's draw, stated before the run: 7 scored of 12** — counted as `count(distinct e.id)`, because `identity_binding` holds up to **4** rows per entity and an ungrouped count reports more companies than exist.
+
+⛔ **The step timed out at `pages/brief.ts:93`, and THAT is what establishes the defect**: `waitForScore()` cannot time out against an account that has a score.
+
+> ⚠️ **QE also wrote that the first row was `Sandgate Retail Systems`. That was the first company by ID in QE's own query, and QE never established that the list renders in id order.** ⛔ **The account the spec actually opened was not identified.** ⚡ **It changes nothing about the defect or the fix — the timeout proves an unscored account was opened — but *"the first row is X"* was a claim about a `SELECT`, not about the product.**
 
 ✅ **FIXED — `openScoredAccount`, and `brief.title` for the narration so the demonstration still names a company rather than a path.** ⚡ **Verified on the SAME UNCHANGED HOSTILE DRAW: 4 passed, 33.9s.** **That is a before/after under identical conditions, not a re-run** — 📁 which is what [B-281](#b-281) says a targeted re-run can never be.
 
@@ -18646,9 +18650,18 @@ Received: "http://localhost:3100/signin"
 
 📁 **`workflow.spec.ts:38`** goes to `/` — **Home, not Companies** — and requires **all six** of the first account links to render `Account score \d+ out of 100`. ⚡ **Home's ranked card is scored; its RECENTS card is not**, so a recents row for an unscored account inside the first six would fail it.
 
-⛔ **QE tried to reproduce it and could not: `recently_viewed` holds 5 rows and NONE is unscored.** > ⚠️ **AMENDED — the `workflow.spec.ts` exposure depends on CLIPPING as well as on the draw.** 📁 **[C-1553](LANE_COORDINATION.md), Lane A, 2026-08-25: the recents card renders five rows into `h-[160px] overflow-hidden`, and five 37px rows with 8px separation need 217px.** ⛔ **So a `:visible` query sees two recents links where the DOM holds five, and *"the first six account links on Home"* is not the set QE assumed when it failed to reproduce this.** ⚡ **That makes the exposure RARER, not likelier — which is a reason to leave the spec alone, not a reason to change it.**
+⛔ **QE tried to reproduce it TWICE, by two routes, and could not.**
 
-✅ **8 of 8 green.** **The mechanism is stated and the change is not made** — 📁 *evidence over prediction*, and changing a test QE cannot demonstrate is the speculative move this register keeps catching.
+| attempt | result |
+|---|---|
+| **the seeded state** | **`recently_viewed` = 5 rows, NONE unscored.** ✅ **8 of 8 green** |
+| ⚡ **populating recents by USING the product** — running `accessibility.spec.ts`, whose `openScoredAccount` walks PAST unscored rows on its way to a scored one | ⛔ **2 rows arrived and BOTH are scored** — `Arvely Payments`, `Porterfield Health Systems` |
+
+⚠️ **And the two entry points use DIFFERENT DOORS, which may be the reason.** `openScoredAccount` walks `getByRole('table').getByRole('row')`; `accounts.accountLinks` is `main a[href^="/accounts/"]` — **any account link in `main`, table row or not.** ⛔ **QE did not establish that these resolve to the same first element**, and the difference is a live candidate for why one entry demonstrably failed and this one cannot be made to.
+
+> ⚠️ **AMENDED — the `workflow.spec.ts` exposure depends on CLIPPING as well as on the draw.** 📁 **[C-1553](LANE_COORDINATION.md), Lane A, 2026-08-25: the recents card renders five rows into `h-[160px] overflow-hidden`, and five 37px rows with 8px separation need 217px.** ⛔ **So a `:visible` query sees two recents links where the DOM holds five, and *"the first six account links on Home"* is not the set QE assumed when it failed to reproduce this.** ⚡ **That makes the exposure RARER, not likelier — which is a reason to leave the spec alone, not a reason to change it.**
+
+**The mechanism is stated and the change is not made** — 📁 *evidence over prediction*, and changing a test QE cannot demonstrate is the speculative move this register keeps catching.
 
 ### 🔴 THE SEVERITY IS NOT QE'S TO LOWER, AND QE IS NOT LOWERING IT
 
