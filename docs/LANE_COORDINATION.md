@@ -16165,6 +16165,24 @@ for a signed-out person so a client component can read `window.location`** trade
 a routing change for a flash of authenticated chrome. ⛔ **`document.referrer`**
 is not guaranteed same-origin and is stripped by common privacy settings.
 
+### ⚡ SHARPENED — the arithmetic, from the engine's own register
+
+📁 **`observed.ts` carries an `UNOBSERVED` structure whose `suppresses` field
+names, per missing fact, the rules it makes unreachable** — *"`suppresses` is
+not documentation. It is the cost of the absence."*
+
+| | |
+|---|---|
+| Rules in the engine | **24** |
+| **Recorded as suppressed** | **14** — `01`–`05`, `15`–`23`, each with a `because`: no account lifecycle, no step-up policy, no completion field, no workspace standing |
+| Reachable by the register's own reckoning | **10** |
+| 🔴 **Of those ten, unreachable in fact** | **4** — `06` `07` `08` `09`, **the intent rules**, because nothing writes `?next=` |
+
+⛔ **The intent rules are in NO `suppresses` list**, and correctly so by that
+structure's own definition: **the fact IS observable** — `use-entry.ts` reads the
+parameter — **it is simply never produced.** ⚡ **So this is a different absence
+from the fourteen, and the register has no way to express it.**
+
 **What is being asked:** 🔴 **may this repository have a `middleware.ts` whose
 only job is to attach the validated intent to the sign-in redirect?** ⚡ **If the
 answer is no, rules 06–09 and `intent.ts` are dead code and should be removed
