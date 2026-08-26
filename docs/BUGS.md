@@ -19532,3 +19532,52 @@ signora-prod-redis-1      — GONE —         no policy
 > 🔴 **② IS A SEMANTIC CHANGE TO THE PROMOTION CONTRACT and QE is NOT making it unilaterally.** **Promotions that would previously have succeeded would now fail.** ⚠️ **They *should* have failed — but *"the gate now means something it did not mean yesterday"* is a decision, and §20e puts a change to what a gate MEANS outside a repair.** **Prepared, demonstrated, and held for a ruling.**
 
 ⚡ **① alone would not have caught [B-1068](#b-1068)**, because the 🔴 check does not exist yet. **② alone would not have caught it either**, because QE would still have hand-merged past it. ⛔ **It takes both, which is why the row records both.**
+
+### B-1076 · 🟠 The utility panel is closed at every breakpoint, including the two where the design says it is open
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — 📁 [`components/shell/utility-panel.tsx`](../frontend/components/shell/utility-panel.tsx) |
+| **Current assignee** | **Lane A** — joined from [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 — **a designed surface a customer never sees on a first visit, at the viewport the design calls *Reference layout*.** ⚠️ **🟡 is defensible: one click opens it.** **QE picked 🟠 because the default is what every session starts from, and states the counter-argument rather than hiding it** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-26 by QE**, Home/App Shell conformance audit against the Design Snapshot |
+| **Commit found** | `61720910` — ⚡ **the CERTIFIED state, deliberately: the audit describes what is promotable** |
+
+📁 **`Fortune Signora App Shell.dc.html`, the design's own `breakpoints` array:**
+
+| range | design | measured |
+|---|---|---|
+| **≥ 1600** | *"Rail 232px, utility panel **360px, both open**"* · `panelDisplay: block` | 🔴 **28** |
+| **1280–1599** | *"**Reference layout.** Rail 232px, **panel 300px**"* · `panelDisplay: block` | 🔴 **28** |
+| **1024–1279** | *"Utility panel closes to a **28px tab rail**"* | ✅ **28** |
+| **< 1024** | `panelDisplay: none` | ✅ **absent** |
+
+⚡ **28px is the SMALL-LAPTOP collapsed rail, rendered at every breakpoint above it.**
+
+### ✅ What is right, and it is most of it
+
+⛔ **The widths are not wrong — the DEFAULT is.** **Clicking the panel's own affordance opens it to EXACTLY the design's number:**
+
+```
+1600×900   default 28   →  opened 360   (design 360)
+1440×900   default 28   →  opened 300   (design 300)
+```
+
+📁 **`utility-panel.tsx:164` — `const [openPreference, setOpenPreference] = useState(false);`** ⛔ **No comment in the file states a reason for defaulting closed**, and `grep` for one returns nothing.
+
+⚠️ **The one reading that would make this correct, stated because QE cannot rule on it:** the design also says *"Utility panel remembers per-module state"*, so **closed-until-opened-once** is a possible intent. ⛔ **But the breakpoint table says `block` and *"both open"* without qualification, and a fresh session has nothing to remember.**
+
+**Steps.** Sign in, open Home at 1440×900 in a context with no stored preference. **Expected:** the utility panel at 300px. **Actual:** a 28px tab rail.
+
+### 📁 Three candidates died on re-measurement before this one survived
+
+⛔ **QE files this one and NOT these, and the reason each died is the useful part:**
+
+| candidate | why it died |
+|---|---|
+| *"agent output renders above the fold, and the design says Context is always below it"* | 📁 **The design's own `viewports` array specifies `2 col · 1.45fr / 1fr` at 1440** — **a two-column layout, so the right column is beside the work by design** |
+| *"content never reaches the 1360px cap"* | 📁 **`[data-card="home"]` carries `max-width:1360px` and reaches EXACTLY 1360 at a 1920 viewport.** ⚡ **A cap that does not bind at 1440 is a cap working, not a cap missing** |
+| *"the rail is 231px against the design's 232"* — **off by one in BOTH bands** | ⛔ **QE was measuring the inner `<nav>`.** **The rail WRAPPER is 232 with `flex-shrink: 0` and a 1px right border inside `border-box`, leaving 231 of content.** 📁 **`RAIL_WIDTH = { expanded: 232, collapsed: 56 }` — the source already holds the design's numbers** |
+
+> ⚡ **A fourth died at 900px**: the rail measured 231 where the design says it becomes a sheet. **It is `visibility: hidden` at `left: -232`, off-screen — the sheet behaviour, correct.** ⛔ **QE had measured width without visibility.**
