@@ -18,6 +18,7 @@ function shell(props: Partial<Parameters<typeof AccountSectionShell>[0]> = {}) {
       id="score"
       heading="What contributed"
       severities={['none', 'watch', 'none']}
+      count={3}
       viewerId="u1"
       kind={null}
       {...props}
@@ -63,7 +64,7 @@ describe('🔴 collapsing cannot hide a risk', () => {
 
   it('⚠️ a section with no status shows a count and no dot', () => {
     // ⛔ *Nothing here has a status* must not render as *everything is fine*.
-    shell({ severities: ['none', 'none'] });
+    shell({ severities: ['none', 'none'], count: 2 });
     expect(screen.getByText('2')).toBeInTheDocument();
     expect(screen.queryByText('nothing of concern')).not.toBeInTheDocument();
     expect(screen.queryByText('a risk')).not.toBeInTheDocument();
@@ -123,14 +124,14 @@ describe('⛔ nothing is persisted under an owner or a type this page does not k
 
 describe('📁 "skeleton row count matches the expected result"', () => {
   it('renders as many skeleton rows as the section had last time', () => {
-    const { container } = shell({ isLoading: true, lastKnownCount: 6 });
+    const { container } = shell({ isLoading: true, count: 6 });
     // ⚡ The body is the skeleton, and the count comes from the law rather
     // than from a literal in the component.
     expect(container.querySelectorAll('[aria-hidden="true"] > *').length).toBeGreaterThanOrEqual(6);
   });
 
   it('⛔ and never paints an empty body while a read is pending', () => {
-    const { container } = shell({ isLoading: true, lastKnownCount: 0 });
+    const { container } = shell({ isLoading: true, count: 0 });
     // 📁 P-A one level up: a pending read must not render as an empty result.
     expect(container.querySelectorAll('[aria-hidden="true"] > *').length).toBeGreaterThan(0);
     expect(screen.queryByText('the body')).not.toBeInTheDocument();
@@ -155,7 +156,7 @@ describe('📁 "skeleton row count matches the expected result"', () => {
  */
 describe('🔴 a count is a measurement, so a failed read publishes none', () => {
   it('⛔ renders no count at all when the read failed — not `0`', () => {
-    shell({ isError: true, severities: [] });
+    shell({ isError: true, severities: [], count: null });
 
     const region = screen.getByRole('region', { name: 'What contributed' });
     // ⛔ **No zero, and no number of any kind** in the header's count slot.
@@ -164,7 +165,7 @@ describe('🔴 a count is a measurement, so a failed read publishes none', () =>
 
   it("⚡ and no STALE count either — the figure is this render's", () => {
     // 📁 The row: *"not `0`, and not a stale count from a previous render."*
-    const { rerender } = shell({ severities: ['none', 'none', 'watch'] });
+    const { rerender } = shell({ severities: ['none', 'none', 'watch'], count: 3 });
     expect(screen.getByRole('region', { name: 'What contributed' })).toHaveTextContent('3');
 
     rerender(
@@ -172,6 +173,7 @@ describe('🔴 a count is a measurement, so a failed read publishes none', () =>
         id="score"
         heading="What contributed"
         severities={['none', 'none', 'watch']}
+        count={3}
         viewerId="u1"
         kind={null}
         isError
@@ -193,7 +195,73 @@ describe('🔴 a count is a measurement, so a failed read publishes none', () =>
    * ([P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md)).
    */
   it('✅ a SUCCESSFUL read that found nothing still says `0`', () => {
-    shell({ severities: [] });
+    shell({ severities: [], count: 0 });
     expect(screen.getByRole('region', { name: 'What contributed' })).toHaveTextContent('0');
+  });
+});
+
+/**
+ * 🔴 **[B-299](../../../docs/BUGS.md) — a section that claims no status
+ * reported having no items.**
+ *
+ * ⛔ **The count was `severities.length`**, so the two sections that
+ * deliberately pass none — 📁 *Open opportunities* (*"an opportunity's stage is
+ * not a judgement about the account"*) and *Recent activity* (*"the timeline
+ * records rather than judges"*) — **rendered `0` above bodies holding
+ * content.**
+ *
+ * ⚠️ **Collapse either and the header reads *"Recent activity 0"* over a hidden
+ * timeline**, which is 📁 *"the header keeps the count and the worst status, so
+ * collapsing cannot hide a risk"* failing in exactly the state it was written
+ * for.
+ */
+describe('🔴 declining to judge is not the same as having nothing', () => {
+  it('a section with no severities still states how many it holds', () => {
+    shell({ severities: [], count: 14 });
+
+    const region = screen.getByRole('region', { name: 'What contributed' });
+    expect(region).toHaveTextContent('14');
+    // ⛔ **And no status dot**, because none was claimed — 📁 the header shows
+    // *"a count alone"*, which is what `none` exists for.
+    expect(region.querySelector('.bg-danger')).toBeNull();
+    expect(region.querySelector('.bg-warning')).toBeNull();
+  });
+
+  it('⛔ and it survives the collapse, which is the state the rule is about', () => {
+    shell({ severities: [], count: 14 });
+    fireEvent.click(screen.getByRole('button', { name: /What contributed/ }));
+
+    expect(screen.getByRole('region', { name: 'What contributed' })).toHaveTextContent('14');
+  });
+});
+
+/**
+ * 📁 ***"Header, title and counts paint from CACHE; only the body
+ * skeletons."***
+ *
+ * ⚡ **The cached count and the skeleton row count are one fact**, which is why
+ * they are one prop: a section that knows how tall it was knows what number to
+ * show while it reloads.
+ *
+ * ⛔ **And a FIRST visit knows neither** — so it states no number rather than
+ * `0`, [P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md) in the loading state
+ * exactly as [B-1054](../../../docs/BUGS.md) drew it in the error state.
+ */
+describe('📁 counts paint from cache while the body skeletons', () => {
+  it('a reload keeps the count it had, beside a skeleton body', () => {
+    const { container } = shell({ isLoading: true, count: 6 });
+
+    expect(screen.getByRole('region', { name: 'What contributed' })).toHaveTextContent('6');
+    expect(container.querySelectorAll('[aria-hidden="true"] > *').length).toBeGreaterThanOrEqual(6);
+    // ⛔ **The body is genuinely the skeleton**, not the content beside a
+    // stale number.
+    expect(screen.queryByText('the body')).not.toBeInTheDocument();
+  });
+
+  it('⛔ a FIRST visit states no count — it has nothing cached to paint', () => {
+    shell({ isLoading: true, count: null });
+
+    const region = screen.getByRole('region', { name: 'What contributed' });
+    expect(region.textContent).not.toMatch(/\b0\b/);
   });
 });

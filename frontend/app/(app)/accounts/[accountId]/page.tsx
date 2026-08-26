@@ -898,9 +898,11 @@ export default function AccountBriefPage() {
           nothing rendered. Reachable directly by URL, so it needs its own
           answer rather than relying on the list to have given one (D36). */}
       {!workspacesLoading && workspaceId === null ? <NoWorkspace /> : null}
-      {isLoading ? <Loading /> : null}
+      {/* ⚡ **404 is the one answer that IS the whole page** — the account has
+          never been scored, and it is deliberately what a caller sees for an
+          account in another workspace. ⛔ **Every other score outcome is one
+          section's**, and the block below is where that became true. */}
       {notScored ? <NeverScored /> : null}
-      {error && !notScored ? <Unavailable /> : null}
 
       {/* 📁 **The design's *"On this page"* rail** —
           [TASK-1415](../../../../docs/BACKLOG.md). ⚡ **Horizontal here rather
@@ -910,8 +912,39 @@ export default function AccountBriefPage() {
           ⛔ **It lists every section, including the seven nothing can fill** —
           a map that hides the empty rooms is one nobody can trust. */}
 
-      {score ? (
+      {/**
+        * 🔴 **[B-299](../../../../docs/BUGS.md) — the score read gated the
+        * whole record, and the design says the opposite twice.**
+        *
+        * 📁 ***"Always scoped to the smallest failing section; the rest of the
+        * record stays live."*** · 📁 ***"Sections load independently — a slow
+        * enrichment never delays the score or the deal."***
+        *
+        * ⛔ **`{score ? …}` wrapped all seven sections**, so one endpoint
+        * failing removed *Signals timeline*, *Recent activity*, *Research*,
+        * *Competitors* and *Open opportunities* — **five sections whose own
+        * reads had SUCCEEDED** — and replaced the page with a single
+        * `StatedAbsence as="page"`. ⚠️ **Slow rather than failing, the same
+        * gate hid them behind one page-level skeleton**, while every section
+        * already owns the skeleton the design asks for.
+        *
+        * ⚡ **`lib/system-states/ladder.ts` had already refused this in its own
+        * vocabulary**: a primary read failing is a `region-error`, and
+        * `region-error` at page scope is not a legal pairing. **The structure
+        * was making the pairing the ladder forbids.**
+        *
+        * ✅ **So the three score outcomes scope to the score's own box, and
+        * everything below it renders on its own read.**
+        */}
+      {notScored ? null : (
         <>
+          {isLoading ? (
+            <Loading />
+          ) : error ? (
+            <ScoreUnavailable {...(correlationOf(error) === undefined
+              ? {}
+              : { correlationId: correlationOf(error)! })} />
+          ) : score ? (
           <Card>
             <CardBody className="flex flex-col gap-4">
               <div className="flex flex-wrap items-end justify-between gap-4">
@@ -962,6 +995,7 @@ export default function AccountBriefPage() {
               <PostureSplit score={score} />
             </CardBody>
           </Card>
+          ) : null}
 
           {/* **Prose after the number, never before it.** Deterministic truth
               outranks generated language: a reader meets the score and its
@@ -978,8 +1012,12 @@ export default function AccountBriefPage() {
               : { correlationId: correlationOf(narrationError)! })}
           />
 
-          {score.contested ? <ContestedNote /> : null}
-          {opportunity ? (
+          {/* ⛔ **`score?.` throughout below this line.** ⚡ The score is now one
+              section's read among several, so everything that cites it says so
+              — **and a citation of a fact nobody obtained renders nothing,
+              never a default.** */}
+          {score?.contested ? <ContestedNote /> : null}
+          {opportunity && score ? (
             <ContestedSince opportunity={opportunity} contestedNow={score.contested} />
           ) : null}
 
@@ -1035,7 +1073,13 @@ export default function AccountBriefPage() {
                 scroll: false,
               });
             }}
-            {...(score === null
+            /* ⚠️ **`!score`, not `score === null`.** ⛔ `useQuery` publishes
+               `undefined` before it publishes anything, **so `=== null` was
+               never true** — harmless while this whole block was gated on
+               `score`, and wrong the moment it was not. 📁 The absence
+               [collapsed into a value](../../../../docs/BUGS.md) again, in a
+               comparison that had had no reachable false case. */
+            {...(!score
               ? {}
               : {
                   // 📁 The design's *"Open all evidence"*. ⚡ **It opens the
@@ -1073,10 +1117,22 @@ export default function AccountBriefPage() {
             // a summary mark, and inventing one here would put a verdict on a
             // section whose whole content is *where this stands*.
             severities={[]}
+            // 🔴 **[B-299](../../../../docs/BUGS.md) — this section read `0`
+            // above an opportunity it was displaying.** ⛔ **The count came
+            // from `severities`, and this section passes none on purpose**, so
+            // *"I make no judgement about these items"* rendered as *"I have no
+            // items."*
+            // ⚠️ **`null` while the read is in flight and when it failed** — 📁
+            // [P-A](../../../../docs/DOMAIN_DISCOVERY_REGISTER.md): a pending or
+            // failed read must never publish a measurement.
+            count={isLoading || workflowUnavailable ? null : opportunity ? 1 : 0}
             viewerId={viewerId}
             kind={accountKind}
             isLoading={isLoading}
-            lastKnownCount={opportunity ? 1 : 0}
+            // ⛔ **The read failing is not the same as nobody working the
+            // account**, and the body below has always drawn the split — 📁 the
+            // header had not.
+            isError={workflowUnavailable}
           >
             {workflowUnavailable ? (
               /* 🔴 **[P-A](../../../../docs/DOMAIN_DISCOVERY_REGISTER.md): a
@@ -1183,11 +1239,32 @@ export default function AccountBriefPage() {
             // is invented: the ledger already says whether a contribution
             // pushed the score up or down, and the header folds those.
             severities={contributionSeverities(score?.contributions)}
+            count={score?.contributions?.length ?? null}
             viewerId={viewerId}
             kind={accountKind}
             isLoading={isLoading}
-            lastKnownCount={score?.contributions?.length ?? null}
+            // ⛔ **The section that reads the score says so when the read
+            // failed** — 📁 *"always scoped to the smallest failing section"*,
+            // and this is the smallest one for THIS read.
+            isError={error !== null && !notScored}
           >
+            {/* ⚡ **The ledger needs the score, so it renders only with one.**
+                ⛔ **The shell above already draws the loading and the failed
+                header**; ✅ **this is the body's half of the same answer, and
+                it states the failure rather than leaving an empty box** —
+                📁 [P-A](../../../../docs/DOMAIN_DISCOVERY_REGISTER.md). */}
+            {score === undefined ? (
+              error !== null && !notScored ? (
+                <StatedAbsence
+                  as="card"
+                  subject="what contributed to this score"
+                  reassurance="The rest of this account's record is unaffected"
+                  {...(correlationOf(error) === undefined
+                    ? {}
+                    : { correlationId: correlationOf(error)! })}
+                />
+              ) : null
+            ) : (
             <Card>
               <CardBody className="flex flex-col gap-3 py-3">
                 {/* 🔴 **📁 The design draws ONE `#score` card and this page
@@ -1230,6 +1307,7 @@ export default function AccountBriefPage() {
                 <WhatMovedIt score={score} />
               </CardBody>
             </Card>
+            )}
           </AccountSectionShell>
 
           {/* **What has actually happened, under what we think about it.**
@@ -1346,6 +1424,7 @@ export default function AccountBriefPage() {
             // `buying_score_engine`'s judgement rather than this screen's — so
             // the header states the COUNT and no status, which `none` is for.
             severities={(observations.data ?? []).map(() => 'none' as const)}
+            count={observations.data?.length ?? null}
             viewerId={viewerId}
             kind={accountKind}
             isLoading={observations.isLoading}
@@ -1354,7 +1433,6 @@ export default function AccountBriefPage() {
             // saying the read failed. ⛔ **The prose was right and the number
             // was wrong.**
             isError={observations.isError}
-            lastKnownCount={observations.data?.length ?? null}
           >
             <ObservationList
               observations={observations.data}
@@ -1407,6 +1485,35 @@ export default function AccountBriefPage() {
               // timeline records rather than judges — so the header states a
               // count and no status, which `none` exists for.
               severities={[]}
+              /**
+               * 🔴 **[B-299](../../../../docs/BUGS.md) — this header read `0`
+               * above a timeline holding entries**, for the same reason
+               * *Open opportunities* did: the count came from `severities`, and
+               * this section claims none.
+               *
+               * ⛔ **And a LOADED count would be the other half of the same
+               * defect.** ⚡ **The timeline is paged** — `CursorPage` carries
+               * `items`, `next_cursor` and `has_more`, **and no total** — so
+               * while `hasNextPage` is true the only number this page can
+               * compute is *how far the reader has scrolled*, ⛔ **which a
+               * header states as though it were how much happened.**
+               * ⚠️ **`25` beside a *Load more* button is a wrong measurement,
+               * not a partial one.**
+               *
+               * ✅ **So the count is published exactly when the whole list is
+               * in hand**, and 📁 whether the endpoint should publish a total
+               * is [C-1561](../../../../docs/LANE_COORDINATION.md) rather than
+               * a number invented here.
+               */
+              count={
+                timeline.isLoading || timeline.isError || timeline.hasNextPage
+                  ? null
+                  : (timeline.data?.pages.flatMap((page) => page.items).length ?? null)
+              }
+              // ⛔ **The header states no count when the read failed** — the
+              // body already says so, and 📁 [B-1054](../../../../docs/BUGS.md)
+              // is the two disagreeing.
+              isError={timeline.isError}
               viewerId={viewerId}
               kind={accountKind}
             >
@@ -1424,7 +1531,7 @@ export default function AccountBriefPage() {
             onClose={evidence.close}
           />
         </>
-      ) : null}
+      )}
 
       {/* **Where the morning continues.** At the bottom because that is where
           a reader finishes, and the only other navigation on this page is at
@@ -1489,6 +1596,35 @@ function NeverScored() {
   );
 }
 
-function Unavailable() {
-  return <StatedAbsence as="page" icon={Scale} subject="this account" />;
+/**
+ * 🔴 **The score's own failure, in the score's own box** —
+ * [B-299](../../../../docs/BUGS.md).
+ *
+ * 📁 ***"States what is missing versus what is still TRUSTWORTHY, then retry
+ * plus a correlation ID."***
+ *
+ * ⛔ **This was `as="page"` and said *"this account"*, which claimed the whole
+ * record had failed** — and, because the page was gated on it, made that claim
+ * true. ✅ **`as="card"` is the shape for *"a section that owns its own
+ * box"***, and the subject narrows to the one read that failed.
+ *
+ * ⚡ **The reassurance is the design's second clause, and it is a sentence this
+ * page could not honestly have said before**: the rest of the record only
+ * stays live because the gate above it went.
+ *
+ * ⚠️ **This also retires the `as="page"` half of
+ * [C-1557](../../../../docs/LANE_COORDINATION.md) on THIS surface.** ⛔ The row
+ * stays open — it asks whether a page-scope absence should carry an `h1`, and
+ * other callers still pass `as="page"` — **but Account 360 no longer depends on
+ * the answer.**
+ */
+function ScoreUnavailable({ correlationId }: { correlationId?: string }) {
+  return (
+    <StatedAbsence
+      as="card"
+      subject="this account's score"
+      reassurance="The rest of this account's record is unaffected"
+      {...(correlationId === undefined ? {} : { correlationId })}
+    />
+  );
 }

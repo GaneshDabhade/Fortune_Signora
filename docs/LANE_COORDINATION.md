@@ -16191,6 +16191,56 @@ about a repository that tells the truth about itself.
 
 ---
 
+### C-1561 · A paged section cannot state its own count, so the design's collapsed-header rule has no subject on Recent activity
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-26, auditing 📁 `Fortune Signora Account 360.dc.html`'s `stateRules` while fixing [B-299](BUGS.md#b-299) |
+| **Module** | `timeline` — the producer. 📁 [`lib/query/hooks/timeline.ts`](../frontend/lib/query/hooks/timeline.ts) is the consumer |
+| **Owner of the answer** | **The `timeline` module's current assignee**, joined from [`modules.toml`](coordination/modules.toml) |
+| **Status** | **`OPEN`** — ⚠️ **nothing renders wrongly. The header states no number where the design draws one, which is honest and incomplete** |
+
+### 📁 What the design asks for
+
+> ***"Header keeps the count and the worst status, so collapsing cannot hide a
+> risk."***
+
+⚡ **And its own `stateCollapsed` examples are totals of fully-loaded sets** —
+*"Technology stack · 14 detected · 1 competitor present"*, *"Files · 18 · 1
+unopened share"*.
+
+### ⛔ Why *Recent activity* cannot answer it
+
+**`GET /workspaces/{id}/accounts/{id}/timeline` returns
+`CursorPage<TimelineEntry>`, and that is `items`, `next_cursor`, `has_more`
+— no total.**
+
+⛔ **So while `has_more` is true, the only number the page can compute is *how
+far the reader has scrolled*, which a header states as though it were *how much
+happened*.** ⚠️ **`25` beside a *Load more* button is a wrong measurement, not a
+partial one** — and a reader who collapses the section keeps the wrong number
+and loses the body that would have corrected it.
+
+### ✅ What was done instead
+
+**The count is published exactly when the whole list is in hand** — `!hasNextPage`
+— **and omitted otherwise.** ⛔ **No number was invented and no second read was
+added**: a `?limit=1` probe for a total would be a request whose only purpose is
+to make a header look complete.
+
+### The question
+
+> **Should the timeline endpoint publish a total alongside its page?**
+
+⚠️ **`CursorPage<T>` is shared** — 📁 [`lib/api/types.ts`](../frontend/lib/api/types.ts)
+— **so this is not a change to one route.** ⚡ **An optional `total` would be
+`null` for every producer that cannot afford the count**, which is the same
+three-valued shape [B-299](BUGS.md#b-299) was about, one layer down.
+
+⛔ **A *no* is equally actionable**: the collapsed header for a paged section
+states its worst status and no count, permanently, and the design's rule is
+recorded as unsatisfiable rather than unbuilt.
+
 ### C-1560 · The top-bar field is still a second search, and the condition its own comment named has been met
 
 | | |

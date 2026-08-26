@@ -64,6 +64,23 @@ export function AccountSectionShell({
    * collapsing cannot hide a risk."*
    */
   severities,
+  /**
+   * 🔴 **How many items this section holds, as far as this page knows** —
+   * [B-299](../../../docs/BUGS.md).
+   *
+   * ⛔ **`null` is *nobody counted*, and it is a THIRD answer** — not `0`.
+   * ⚡ A read in flight on a first visit, and a read that failed, both report
+   * `null`; ✅ **a read that succeeded and found nothing reports `0`.**
+   *
+   * ⚠️ **This replaced `lastKnownCount`, which was the same fact under a
+   * narrower name.** ⚡ **Every call site computed both from one expression**
+   * — `data?.length ?? null` — **so they were one prop wearing two.** 📁 And
+   * the design says why they must be: *"header, title and counts paint from
+   * CACHE; only the body skeletons"* — **the cached count IS the skeleton row
+   * count**, so a section that knows how tall it was also knows what number to
+   * show while it reloads.
+   */
+  count,
   /** ⚠️ **Whose preference this is.** `null` while the session is unknown, and
    * then nothing is persisted rather than persisted under a wrong owner. */
   viewerId,
@@ -82,17 +99,16 @@ export function AccountSectionShell({
    */
   kind,
   isLoading,
-  lastKnownCount,
   isError = false,
   children,
 }: {
   id: string;
   heading: string;
   severities: readonly SectionSeverity[];
+  count: number | null;
   viewerId: string | null;
   kind: string | null;
   isLoading?: boolean;
-  lastKnownCount?: number | null;
   /**
    * 🔴 **[B-1054](../../../docs/BUGS.md) — a failed read rendered its count as
    * `0` beside a body correctly saying the read failed.**
@@ -112,7 +128,9 @@ export function AccountSectionShell({
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(true);
-  const header = collapsedHeader(severities);
+  // ⛔ **A failed read publishes no count** — [B-1054](../../../docs/BUGS.md).
+  // ⚡ **The two absences meet here and become one**: nobody counted.
+  const header = collapsedHeader(isError ? null : count, severities);
 
   const key = viewerId === null || kind === null ? null : collapseKey(viewerId, kind, id);
 
@@ -205,7 +223,12 @@ export function AccountSectionShell({
             ⚠️ **And no stale count either**: the number comes from this
             render's `severities`, so a previous render's figure cannot survive
             into a failure. */}
-        {isError ? null : (
+        {/* ⛔ **`null` renders nothing at all** — 📁 [B-299](../../../docs/BUGS.md).
+            ⚡ **The header still keeps its heading, its chevron and its
+            position**, which is 📁 *"header, title and counts paint from
+            cache"*: what is missing is the one figure nobody measured, not the
+            row it sits in. */}
+        {header.count === null ? null : (
         <span className="flex items-center gap-1.5 text-2xs text-content-subtle">
           <span>{header.count}</span>
           {header.worst === 'none' ? null : (
@@ -226,7 +249,7 @@ export function AccountSectionShell({
           // 📁 ***"Skeleton row count matches the expected result so the page
           // height is stable."*** ⚡ The count is the law's, not a literal.
           <div className="flex flex-col gap-2" aria-hidden>
-            {Array.from({ length: skeletonRows(lastKnownCount ?? null) }, (_, row) => (
+            {Array.from({ length: skeletonRows(count) }, (_, row) => (
               <SkeletonText key={row} />
             ))}
           </div>

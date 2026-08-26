@@ -29,9 +29,28 @@ import { expect, type Page } from '@playwright/test';
  * threw *"seed the Playground"* against a workspace holding eleven named,
  * scored accounts.
  *
- * ✅ **The wait is for EITHER answer** — the section, or the page's own
- * *"Nothing has scored this account yet"* — so an account that genuinely has no
- * score moves the loop on rather than timing out.
+ * ✅ **The wait is for EITHER answer** — the score's own figure, or the page's
+ * own *"Nothing has scored this account yet"* — so an account that genuinely
+ * has no score moves the loop on rather than timing out.
+ *
+ * ## 🔴 The proxy is the score's CONTENT, never the section's existence
+ *
+ * ⚠️ **This waited for `#score` to exist, and that stopped meaning *the score
+ * loaded* on 2026-08-26.** 📁 [B-299](../../../../docs/BUGS.md) scoped the
+ * score's failure to its own box, **so every section now renders while the
+ * score read is still in flight** — which is the design's *"sections load
+ * independently"* working, and it silently turned this helper's question from
+ * *"did the score arrive?"* into *"did the page render?"*
+ *
+ * ⛔ **Nothing failed.** The seven journeys built on it went on passing against
+ * a page whose score had not arrived, asserting less than they read as
+ * asserting — 📁 exactly *an assertion that cannot tell a satisfied rule from
+ * an absent case*.
+ *
+ * ✅ **`/ 100` is the design's own denominator** — 📁 `Fortune Signora Account
+ * 360.dc.html`'s `#score` card — **and it renders only from a loaded
+ * `AccountScore`.** ⚡ **A marker the design mandates cannot be quietly deleted
+ * by a refactor the way a structural one can.**
  */
 export async function openScoredAccount(page: Page): Promise<string> {
   await page.goto('/accounts');
@@ -43,15 +62,22 @@ export async function openScoredAccount(page: Page): Promise<string> {
     await page.getByRole('table').getByRole('row').nth(row).getByRole('link').first().click();
     await expect(page).toHaveURL(/\/accounts\/[0-9a-f-]{8,}/);
 
+    // ⚡ **The figure, not the section** — see the note above.
+    // ⚠️ **Page-scoped rather than `#score`-scoped, and that is a finding
+    // about the page rather than about this helper**: 📁 the design draws ONE
+    // `#score` card and this page draws TWO blocks, the figure's carrying no
+    // `id` at all — [C-1542](../../../../docs/LANE_COORDINATION.md).
+    const scored = page.getByText('/ 100').first();
+
     await Promise.race([
-      page.locator('#score').waitFor({ timeout: 15_000 }).catch(() => undefined),
+      scored.waitFor({ timeout: 15_000 }).catch(() => undefined),
       page
         .getByText('Nothing has scored this account yet')
         .waitFor({ timeout: 15_000 })
         .catch(() => undefined),
     ]);
 
-    if (await page.locator('#score').count()) return new URL(page.url()).pathname;
+    if (await scored.count()) return new URL(page.url()).pathname;
   }
 
   throw new Error(

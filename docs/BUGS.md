@@ -487,6 +487,99 @@ may also be describing the gradient's three colour stops (`25% · 50% · 75%`)
 rather than an iteration count. **Guessing would be inventing a behaviour.**
 
 
+### B-299 · 🟠 Account 360 answered three of the design's own state rules with the opposite of what they say
+
+| | |
+|---|---|
+| **Module** | `product_surface` — [`frontend/app/(app)/accounts/[accountId]/page.tsx`](../frontend/app/(app)/accounts/[accountId]/page.tsx), [`frontend/components/accounts/section.tsx`](../frontend/components/accounts/section.tsx), [`frontend/lib/accounts/section-state.ts`](../frontend/lib/accounts/section-state.ts) |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** |
+| **Severity** | 🟠 — **two sections state a false count on every visit; a fourth of the page's reads can erase five working sections** |
+| **Status** | ✅ **FIXED, awaiting `VERIFIED`** — QE's |
+| **Found** | **2026-08-26 by Lane A**, auditing 📁 `Fortune Signora Account 360.dc.html`'s `stateRules` array against the implementation |
+
+⚡ **Found by asking whether the design is BUILT rather than whether the build
+is broken.** 📁 The screen has a law file, a shell component and 42 passing
+assertions dedicated to these rules — **and three of the eighteen were answered
+backwards.**
+
+## ① The count was `severities.length`, so declining to judge meant having nothing
+
+📁 ***"Header keeps the count and the worst status, so collapsing cannot hide a
+risk."***
+
+⛔ **`collapsedHeader(items)` derived both facts from one array.** ⚡ **Two
+sections pass no severities on purpose** — *Open opportunities* (*"an
+opportunity's stage is not a judgement about the account"*) and *Recent
+activity* (*"the timeline records rather than judges"*) — **and both therefore
+rendered `0` above bodies holding content.**
+
+⚠️ **Collapse *Recent activity* and the header reads *"Recent activity 0"* over
+a hidden timeline**, which is the design's failure case stated exactly, in the
+one state the rule was written for.
+
+🔴 **`worstSeverity`'s own note, two functions above, had already named the
+case**: *"a section that has no notion of status reports `none` and the header
+shows a COUNT ALONE"* — ⛔ **and there was no parameter through which a count
+alone could arrive.**
+
+## ② A first load published `0` before anything had been counted
+
+📁 ***"Header, title and counts paint from CACHE; only the body skeletons."***
+
+⛔ **On a first visit `severities` is empty, so every section's header stated
+`0` while its read was in flight** — 📁 the [B-1054](#b-1054) defect, in the
+loading state instead of the error state.
+
+✅ **`count` and `lastKnownCount` were the same fact under two names** — every
+call site computed both from `data?.length ?? null` — **so they are now one
+prop, and the cache that sizes the skeleton is the cache that paints the
+number.**
+
+## ③ One failing read removed six sections whose reads had SUCCEEDED
+
+📁 ***"Always scoped to the smallest failing section; the rest of the record
+stays live."*** · 📁 ***"Sections load independently — a slow enrichment never
+delays the score or the deal."***
+
+⛔ **The page was `{score ? <>…all seven sections…</> : null}`.** **A 500 on
+`…/accounts/{id}/score` replaced the record with one page-level absence saying
+*"Signora could not load this account"*** — while *Signals timeline*, *Recent
+activity*, *Research*, *Competitors* and *Open opportunities* had all answered.
+⚠️ **Slow rather than failing, the same gate hid them behind a single skeleton**,
+though every section already owns the skeleton the design asks for.
+
+⚡ **[`lib/system-states/ladder.ts`](../frontend/lib/system-states/ladder.ts)
+had already refused this in its own vocabulary**: a primary read failing is a
+`region-error`, and `region-error` at page scope is not a legal pairing.
+🔴 **The structure was producing the pairing the ladder throws on.**
+
+## ✅ Fixed
+
+| | |
+|---|---|
+| **①** | `collapsedHeader(count, severities)` — **two inputs, because the design states two facts.** `count: number \| null`, where `null` is *nobody counted* and `0` is *a read succeeded and found nothing* |
+| **②** | `lastKnownCount` retired into `count`; a first visit states no number rather than `0` |
+| **③** | The three score outcomes scope to the score's own box. `Unavailable` (`as="page"`, subject *"this account"*) became `ScoreUnavailable` (`as="card"`, subject *"this account's score"*, reassurance *"The rest of this account's record is unaffected"*) — 📁 the design's *"states what is missing versus what is still trustworthy"*, **a sentence this page could not honestly have said before the gate went** |
+| **③b** | The correlation id now reaches it. `correlationOf(error)` existed and was already used for narration and research; **the score's own failure passed none** |
+
+⚡ **And one latent defect surfaced by the fix**: `ResearchPanel` guarded on
+`score === null`, **which `useQuery` never publishes** — it publishes
+`undefined`. ⛔ **Unreachable while the whole block was gated on `score`, and
+wrong the moment it was not.** 📁 [`absence collapsed into a value`](#b-1076),
+in a comparison that had had no reachable false case.
+
+## Guards
+
+**Six, all fire-tested by reintroducing each defect:**
+
+- `account-section-state.test.ts` — *a section that claims no status still states how many it holds* · *an unmeasured section states nothing, which is not zero*
+- `account-section-shell.test.tsx` — *declining to judge is not the same as having nothing*, and its collapsed twin · *a reload keeps the count it had* · *a FIRST visit states no count*
+- `brief.test.tsx` — 🔴 **the page-level one, and the only kind that can see ③**: *the sections whose reads succeeded still render* · *the failure is stated in the score's own box, with its reference* · *a SLOW score does not hide them either*
+
+⚠️ **A component test structurally cannot see ③**: every section renders
+correctly on its own, and what was wrong was the page's decision about when to
+render them at all.
+
 ### B-298 · 🟠 The design's most-used breakpoint has no token, so 24 screens cannot reflow where they are drawn to
 
 | | |

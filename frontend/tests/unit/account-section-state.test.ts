@@ -46,8 +46,34 @@ describe('🔴 collapsing cannot hide a risk', () => {
   it('states the count even when it is zero', () => {
     // 📁 A collapsed header that omitted the number makes *nothing here* and
     // *not loaded* indistinguishable.
-    expect(collapsedHeader([])).toEqual({ count: 0, worst: 'none' });
-    expect(collapsedHeader(['good', 'risk', 'watch'])).toEqual({ count: 3, worst: 'risk' });
+    expect(collapsedHeader(0, [])).toEqual({ count: 0, worst: 'none' });
+    expect(collapsedHeader(3, ['good', 'risk', 'watch'])).toEqual({ count: 3, worst: 'risk' });
+  });
+
+  /**
+   * 🔴 **[B-299](../../../docs/BUGS.md) — the count used to BE
+   * `severities.length`**, so *"I make no judgement about these items"* and
+   * *"I have no items"* were one sentence.
+   *
+   * ⛔ **`worstSeverity`'s own note had already named the case** — *"a section
+   * that has no notion of status reports `none` and the header shows a COUNT
+   * ALONE"* — **and the signature made it unreachable.**
+   */
+  it('🔴 a section that claims no status still states how many it holds', () => {
+    expect(collapsedHeader(14, [])).toEqual({ count: 14, worst: 'none' });
+  });
+
+  /**
+   * ⛔ **`null` is *nobody counted*, and it must not be reachable by any number
+   * of items.** ⚠️ The two are different sentences —
+   * 📁 [P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md).
+   */
+  it('⛔ and an unmeasured section states nothing, which is not zero', () => {
+    expect(collapsedHeader(null, [])).toEqual({ count: null, worst: 'none' });
+    // ✅ **Severity survives an absent count.** A section can know that one of
+    // its items is a risk without knowing how many it has — 📁 *"collapsing
+    // cannot hide a risk"* does not depend on the number.
+    expect(collapsedHeader(null, ['risk'])).toEqual({ count: null, worst: 'risk' });
   });
 });
 

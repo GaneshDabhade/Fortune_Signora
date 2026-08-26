@@ -92,14 +92,39 @@ export function worstSeverity(items: readonly SectionSeverity[]): SectionSeverit
  * positive empty is good news, not a gap"* and a header that omitted the
  * number would make *nothing here* and *not loaded* look identical when
  * collapsed.
+ *
+ * ## 🔴 The count is its own measurement — [B-299](../../../docs/BUGS.md)
+ *
+ * ⛔ **This took `items.length` as the count, so *how many* and *how bad* came
+ * out of one array.** ⚡ **`worstSeverity`'s own note two functions up already
+ * said why that cannot hold** — *"a section that has no notion of status
+ * reports `none` and the header shows a COUNT ALONE"* — **and there was no
+ * parameter through which a count alone could arrive.**
+ *
+ * 🔴 **So a section declining to judge its items had to report having none.**
+ * 📁 *Open opportunities* and *Recent activity* both pass no severities on
+ * purpose — an opportunity's stage is not a verdict on the account, and a
+ * recorded event is not a judgement — **and both rendered `0` beside a body
+ * holding content.** ⚠️ **Collapse either one and the header reads *"Recent
+ * activity 0"* over a hidden timeline**, which is 📁 *"collapsing cannot hide a
+ * risk"* failing in the one place the rule was written for.
+ *
+ * ⚠️ **`null` is *nobody counted*, and it is a third answer** — 📁
+ * [P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md), and the same distinction
+ * [B-1054](../../../docs/BUGS.md) drew for a failed read. ✅ **A read that
+ * SUCCEEDED and found nothing still says `0`.**
  */
 export interface CollapsedHeader {
-  readonly count: number;
+  /** ⛔ **`null` means no measurement was obtained**, never *zero items*. */
+  readonly count: number | null;
   readonly worst: SectionSeverity;
 }
 
-export function collapsedHeader(items: readonly SectionSeverity[]): CollapsedHeader {
-  return { count: items.length, worst: worstSeverity(items) };
+export function collapsedHeader(
+  count: number | null,
+  severities: readonly SectionSeverity[],
+): CollapsedHeader {
+  return { count, worst: worstSeverity(severities) };
 }
 
 /**

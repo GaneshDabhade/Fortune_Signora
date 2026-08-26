@@ -1124,3 +1124,74 @@ describe('🔴 B-1045 — the crumb names the record the header names', () => {
     expect(heading).toContain(currentCrumb());
   });
 });
+
+/**
+ * 🔴 **[B-299](../../docs/BUGS.md) — one failing read removed six sections
+ * whose own reads had succeeded.**
+ *
+ * 📁 ***"Always scoped to the smallest failing section; the rest of the record
+ * stays live."*** · 📁 ***"Sections load independently — a slow enrichment
+ * never delays the score or the deal."***
+ *
+ * ⛔ **The page was `{score ? <>…all seven sections…</> : null}`**, so a 500 on
+ * `…/accounts/{id}/score` replaced *Signals timeline*, *Recent activity*,
+ * *Research*, *Open opportunities* and *Competitors* with a single page-level
+ * absence — **and the same gate hid them behind one skeleton while the score
+ * was merely slow.**
+ *
+ * ⚠️ **A component test cannot see this**, which is why it is here: every
+ * section renders correctly on its own, and what was wrong was the page's
+ * decision about when to render them at all.
+ */
+describe('🔴 a failing score does not take the record with it — B-299', () => {
+  it('the sections whose reads succeeded still render', () => {
+    score.mockReturnValue({
+      ...IDLE,
+      data: undefined,
+      error: new ApiError(500, {
+        code: 'internal_error',
+        message: 'nope',
+        correlation_id: 'cid-299',
+      }),
+    });
+
+    render(withQuery(<AccountBriefPage />));
+
+    // ⚡ **Named by their design headings**, not by test ids — 📁 the rail and
+    // the heading must agree, and asserting on the heading is what keeps that
+    // true.
+    expect(screen.getByRole('heading', { name: 'Signals timeline' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Recent activity' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Open opportunities' })).toBeInTheDocument();
+  });
+
+  it('⚡ and the failure is stated in the score\'s own box, with its reference', () => {
+    score.mockReturnValue({
+      ...IDLE,
+      data: undefined,
+      error: new ApiError(500, {
+        code: 'internal_error',
+        message: 'nope',
+        correlation_id: 'cid-299',
+      }),
+    });
+
+    render(withQuery(<AccountBriefPage />));
+
+    // 📁 *"States what is missing versus what is still trustworthy, then retry
+    // plus a correlation ID."* — ⛔ **all three clauses, and the third had
+    // never been passed on this surface.**
+    expect(screen.getAllByText(/could not load this account's score/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/rest of this account's record is unaffected/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/cid-299/).length).toBeGreaterThan(0);
+  });
+
+  it('⛔ and a SLOW score does not hide them either', () => {
+    score.mockReturnValue({ ...IDLE, data: undefined, isLoading: true });
+
+    render(withQuery(<AccountBriefPage />));
+
+    expect(screen.getByRole('heading', { name: 'Signals timeline' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Recent activity' })).toBeInTheDocument();
+  });
+});
