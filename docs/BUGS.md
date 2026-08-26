@@ -19554,6 +19554,16 @@ signora-prod-redis-1      — GONE —         no policy
 >
 > ⛔ **QE read that file today, while investigating something else.** **The observation was written down, in the repository, and QE had not read it.**
 
+### ⚠️ A SECOND RULE IN THE SAME POSITION, and QE nearly shipped past it today
+
+📁 **[B-150](#b-150) — *"QE promoted a conflict marker to `main`, and the check that names it was skipped rather than missing"*, 2026-08-08.** ⛔ **`conflict_markers()` lives in `state-check.py`, which is ADVISORY** — **the identical position the blocking-🔴 rule was in.**
+
+🔴 **2026-08-26, QE committed `<<<<<<< HEAD` into `docs/BUGS.md` and only caught it by looking.** ⚡ **The cause was QE's own command chaining, not the register:** a resolution script asserted `'<<<<<<< HEAD' not in text` — ⛔ **too strict, because the register legitimately QUOTES those markers as prose at two places, including [B-150](#b-150)'s own evidence line** — **so the assert threw BEFORE the write, and the chained `git add && git rebase --continue` ran anyway.**
+
+📁 **QE's own standing rule, broken by QE: *gate every step on the previous exit code*.** ✅ **Resolved by LINE INDEX rather than by string match on the second attempt, which is what a file that quotes its own markers requires.**
+
+⛔ **NOT filed as a new row — it is this row's finding one rule over, and a duplicate would split the fix.** ⚡ **The same one-line addition to `_promote` that now refuses an unresolved 🔴 would refuse a conflict marker**, and [B-150](#b-150) is the proof it reaches `main` otherwise. ⚠️ **Deliberately NOT built during a promotion: adding a gate mid-cycle is the scope creep that delays the thing it protects.**
+
 ### ✅ So the fix has two halves and only one of them is a change
 
 **① USE `--promote`. Free, immediate, and entirely QE's to adopt** — no code, no decision, no approval. ⛔ **QE was choosing the advisory path and hand-merging; that is a procedure defect, not a tooling gap.**
