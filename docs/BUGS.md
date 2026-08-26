@@ -19926,3 +19926,83 @@ role=null aria-live=polite  "Navigated to /w/4e158d14-ab29-4b23-b99d-a8b10986f8e
 | **1.4.10** — 320px CSS width, no horizontal scroll | ✅ **scrollWidth 305 vs clientWidth 320** |
 | **3.2.3** — card order stable across visits | ✅ **identical on two independent visits** |
 | **1.3.1's h1 clause** | 🔴 **this row** |
+
+---
+
+### B-1079 · 🟡 The team directory has column headers and no row headers — 1.3.1 asks for both
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — 📁 [`app/(app)/settings/team/page.tsx`](../frontend/app/(app)/settings/team/page.tsx):294 · [`components/ui/table.tsx`](../frontend/components/ui/table.tsx):211,234 |
+| **Current assignee** | **Lane A** |
+| **Severity** | 🟡 — **wrong but survivable.** The person's name is on screen and reachable; what a screen-reader user loses is the cell announcement pairing *"Role · Owner"* with *whose* role it is. On a six-row directory the row is inferable; it stops being inferable as a team grows |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-26 by QE**, Team Management conformance audit |
+| **Commit found** | `1d03cd33` |
+
+📁 **The design's own `a11y` array, 1.3.1, verbatim:**
+
+> *"The directory is a real table with **column headers and row headers**; the role matrix uses `scope="col"` and `scope="row"` so each cell is announced with both."*
+
+**Measured in a browser** — chromium, `/settings/team`, signed in as the owner persona against a seeded Playground:
+
+| | |
+|---|---|
+| `h1` | `"Your team"` |
+| tables in `<main>` | **1**, six body rows |
+| `th[scope="col"]` | **4** — `Person · Role · Limited to · ""` |
+| `th[scope="row"]` | **0** |
+| the identity cell | `{"tag":"td","scope":null,"text":"sam.okafor@northwind.example"}` |
+
+⚡ **`scope="row"` occurs nowhere in production code** — every `scope=` hit in `frontend/` is either `TH`'s hardcoded `scope="col"` or an unrelated prop (`SystemState`'s `scope="page"` / `"region"`, the error boundary's `scope="app"`).
+
+### ⚠️ Three things this row is careful NOT to claim
+
+**① The primitive is not incapable.** `TH` writes `scope="col"` *before* `{...props}`, so `<TH scope="row">` would win — 📁 [`table.tsx`](../frontend/components/ui/table.tsx):211. **The default is overridable; no caller overrides it.** ⛔ It is `TD` that cannot express one, and the identity column is a `<TD pin>` in all three places it appears — [`settings/page.tsx`](../frontend/app/(app)/settings/page.tsx):383, [`settings/team/page.tsx`](../frontend/app/(app)/settings/team/page.tsx):294 and :562.
+
+**② `pin` is visual, not semantic.** 📁 `CellProps`' own docstring calls it *"the identity column · at most one per row"* — **the concept the design's row header names is already declared in the primitive**; it simply renders as `<td>`.
+
+**③ The second half of 1.3.1 is NOT filed, because the role matrix does not exist.** `grep -i 'role.matrix|permission.matrix'` over `app/`, `components/` and `lib/` returns **zero**, and the design's `Full · Team · Own · Read · None` vocabulary has zero occurrences — 📁 the screen's own docblock says *"Nothing here decides what a role permits."* ⛔ **An unbuilt surface is not a defect**, and filing it would produce a row nobody can act on.
+
+---
+
+### B-1080 · 🟡 *Reduce motion* reads Off while motion is being reduced — 2.3.3 asks for it shown as pre-set
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — 📁 [`app/(app)/profile/accessibility-panel.tsx`](../frontend/app/(app)/profile/accessibility-panel.tsx):176 |
+| **Current assignee** | **Lane A** |
+| **Severity** | 🟡 — **wrong but survivable, and deliberately so.** ⚡ **The motion IS reduced** — `globals.css`:568 carries the media query and the shell uses `motion-reduce:` throughout. **Nothing is broken; the screen just cannot be used to find out** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-26 by QE**, User Profile conformance audit |
+| **Commit found** | `1d03cd33` |
+
+📁 **The design's own `a11y` array, 2.3.3, verbatim** — and the clause that matters is the last five words:
+
+> *"Reduce motion is honoured from the system on first load, **shown as pre-set rather than silently applied**."*
+
+📁 **And its control spec:** `control: this.toggle(true, 'On — from system')`.
+
+**Measured in a browser**, chromium, `/profile?section=accessibility`, the same signed-in owner, run **twice with only the media feature changed**:
+
+| `prefers-reduced-motion` | `matchMedia` reports | control `aria-checked` | page says *"from system"* |
+|---|---|---|---|
+| `reduce` | **`true`** | **`false`** | **no** |
+| `no-preference` | `false` | `false` | no |
+
+⚡ **The two rows are identical.** ⛔ **The screen cannot distinguish *"your device is reducing motion"* from *"nothing is reducing motion"*** — which is the state the design names *silently applied*, in those words.
+
+### ⚠️ This is a stated divergence, not an oversight, and the row says so
+
+📁 **The panel's docblock argues the case** and two thirds of it are right:
+
+> *"Storing what the browser already reports would be the hidden input §2 forbids — and a default of `true` would have forced reduced motion on everybody who has never opened this screen."*
+
+✅ **Correct about STORING** (§2, hidden inputs) **and correct about DEFAULTING.** ⛔ **The design asked for neither.** It asked the control to be *shown* as pre-set — a rendering concern, taking no dependency on the stored value and changing no default. **`checked={prefs?.reduce_motion ?? false}` is the whole of it** ([`:176`](../frontend/app/(app)/profile/accessibility-panel.tsx)); **no code path anywhere reads the media query into this control.** Repository-wide, `prefers-reduced-motion` appears in exactly three production places — `globals.css`:568, `workspace-strip.tsx`'s own local hook, and a comment in `lib/api/preferences.ts`. **None reaches this panel.**
+
+### ⛔ Why this is NOT a one-line fix, and the row must not imply otherwise
+
+⚠️ **`FieldOriginTag` is imported into this very file and used three times** — which makes *"the mechanism is already here"* the tempting claim. **It is wrong.** 📁 Its vocabulary is `yours | account | policy | directory`; **there is no `system` origin**, and adding one changes `components/ui` — 🟠 at least, and [§20c](../CLAUDE.md) territory for the assignee to decide, not for a defect row to prescribe.
+
+⚡ **What settles it in the design's favour is the panel's own standard**, quoted from `FieldOriginTag`: 📁 *"a state whose business rule is missing is not built at all"* ([D-156](DECISION_REGISTER.md) ④) — **the reason `directory` is deliberately unrendered.** ⛔ **Here the rule is not missing.** It exists, it is implemented, and it is in effect; **only its display is absent.**
+
