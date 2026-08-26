@@ -19571,7 +19571,7 @@ signora-prod-redis-1      — GONE —         no policy
 | **Module** | **`product_surface`** — 📁 [`components/shell/utility-panel.tsx`](../frontend/components/shell/utility-panel.tsx) |
 | **Current assignee** | **Lane A** — joined from [`modules.toml`](coordination/modules.toml) |
 | **Severity** | 🟠 — **a designed surface a customer never sees on a first visit, at the viewport the design calls *Reference layout*.** ⚠️ **🟡 is defensible: one click opens it.** **QE picked 🟠 because the default is what every session starts from, and states the counter-argument rather than hiding it** |
-| **Status** | ✅ **`FIXED` — Lane A, 2026-08-25.** ⛔ **`VERIFIED` is QE's** |
+| **Status** | ✅ **`VERIFIED` — QE, 2026-08-26** — ⚡ **in a browser, fresh context, no stored preference.** 📁 **Measured against `c3a8ebdb`, which rebased to `ea4dbd91`; the tree is identical and the pre-rebase SHA is named because that is what was actually run** |
 | **Found** | **2026-08-26 by QE**, Home/App Shell conformance audit against the Design Snapshot |
 | **Commit found** | `61720910` — ⚡ **the CERTIFIED state, deliberately: the audit describes what is promotable** |
 
@@ -19637,6 +19637,25 @@ fix** — 📁 `PANEL_WIDTH` already carries 360 and 300 from the same array.
 ⚠️ **The one reading that would make this correct, stated because QE cannot rule on it:** the design also says *"Utility panel remembers per-module state"*, so **closed-until-opened-once** is a possible intent. ⛔ **But the breakpoint table says `block` and *"both open"* without qualification, and a fresh session has nothing to remember.**
 
 **Steps.** Sign in, open Home at 1440×900 in a context with no stored preference. **Expected:** the utility panel at 300px. **Actual:** a 28px tab rail.
+
+### ✅ FIXED AND VERIFIED at `5270b136` — measured, not asserted
+
+📁 **Lane A's cause was ONE comparison:** `setOpenPreference(localStorage.getItem(key) === 'true')` — ⛔ **a missing key was indistinguishable from a stored `false`.** ✅ **`null` is now its own answer: no memory means the design's default; a memory in either direction wins.**
+
+| viewport | before | after | design |
+|---|---|---|---|
+| **1600** | 🔴 28 | ✅ **360** | 360 |
+| **1440** | 🔴 28 | ✅ **300** | 300 |
+| **1100** | 28 | ✅ **28** | 28 |
+| **900** | absent | ✅ **absent** | none |
+
+⚡ **The band guard held, and that is the half worth checking**: 📁 `panelStateFor` returns `absent` below 1024 and `tab-rail` at 1024–1279 **before** the preference is consulted, **so a default of `open` cannot force 360px onto a phone.** ✅ **Measured, not taken on trust.**
+
+### ⛔ QE'S COMPETING READING DID NOT SURVIVE, AND LANE A KILLED IT
+
+**QE wrote that *"remembers per-module state"* made closed-until-opened-once possible intent.** ⛔ **It does not survive the same array's third line — *"Utility panel **closes** to a 28px tab rail"* at 1024–1279.** ⚡ ***Closing* only means something if it was open above.**
+
+✅ ***"Remembers"* answers PERSISTENCE; *"both open"* answers the INITIAL VALUE — two questions, so the lines never conflicted.** ⚠️ **QE had them competing because QE did not separate the questions**, and the alternative was only killable because it was written down instead of quietly discarded.
 
 ### 📁 Three candidates died on re-measurement before this one survived
 
