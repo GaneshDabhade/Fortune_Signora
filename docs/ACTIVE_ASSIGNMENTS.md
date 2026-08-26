@@ -85,7 +85,6 @@
 >
 > ⚠️ **[C-1562](LANE_COORDINATION.md) is with the product owner and blocks nothing**: Lane A's `B-200`–`B-299` block is exhausted, **measured independently by QE — 100 distinct headings, zero gaps, none merely referenced.**
 
-## Current — as of 2026-08-21, `07f22c04`
 
 > ⚡ **Cycle 257 Closeout. 15 commits, QE, no migrations, EIGHT gates on the FIRST attempt.**
 >
