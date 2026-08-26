@@ -16254,6 +16254,67 @@ of them stating an absence the way the sections already do.**
 ⛔ **This lane will not choose between them.** ✅ **Nothing is blocked**: the
 sections and the rail carry every producer-backed destination today.
 
+### C-1567 · 🔴 The profile theme control saves, persists, and never paints anything
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-26, auditing 📁 `Executive Dashboard`'s `mechanics` — *"dark theme: resolved before first paint"* |
+| **Module** | `product_surface` — 🔴 **[`lib/state/theme-provider.tsx`](../frontend/lib/state/theme-provider.tsx) is RED tier** ([§20c](../CLAUDE.md)) |
+| **Owner of the answer** | 🔴 **Product owner + ADR** — ⛔ **the resolution moves where the theme is stored, and `lib/state` is not a lane's to change** |
+| **Status** | **`OPEN`** — 🔴 **a customer-visible setting that reports success and does nothing** |
+
+### Measured in a browser, Playground, signed in as the owner
+
+**`/profile` → Appearance → Dark:**
+
+| | |
+|---|---|
+| **The preference saves** | ✅ **`darkPersisted=true` after a full reload** — the server has it and the card shows selected |
+| **The page** | ⛔ **`data-theme=light`, before the click, after the click, and after the reload** |
+| **`localStorage['signora.theme']`** | ⛔ **`null` throughout** |
+
+🔴 **So the control works perfectly and changes nothing a customer can see.**
+
+### ⚡ Why — two representations of one fact, and they never meet
+
+| | writes | read by |
+|---|---|---|
+| **App Shell toggle** → `ThemeProvider` | `localStorage['signora.theme']` | ✅ `THEME_INIT_SCRIPT` paints from it before first paint |
+| **`/profile` → Appearance** | the **server** preference | ⛔ **nothing** |
+
+📁 **`THEME_INIT_SCRIPT` reads `localStorage` and only `localStorage`.**
+📁 **`appearance-panel.tsx` forbids `localStorage` in terms**: *"There is no
+`localStorage` in this file and there must not be."*
+
+⛔ **The panel's own docstring says *"It records the choice; the document reads
+it"*** — **and the document reads the other store.**
+
+### ⚠️ And the promise is exactly backwards
+
+📁 **The panel renders**: ***"Applies to this account on every device you sign
+in from — not just this browser."***
+
+⛔ **The store that works IS the browser-local one.** ⚡ **The control promising
+cross-device is the one with no reader**, and the one that actually paints is
+per-browser and never leaves the machine.
+
+### ⛔ Why this lane did not fix it
+
+**Every fix moves where the theme lives**, and 🔴 `lib/state` is product owner +
+ADR:
+
+- **① The panel writes `localStorage` too** — ⛔ contradicts its stated rule, and
+  a second writer does not make one representation.
+- **② `ThemeProvider` reads the server preference** — ⛔ **the flash returns**:
+  no fetch can complete before first paint, which is the whole reason the inline
+  script exists.
+- **③ A cookie** — ✅ server-persisted *and* readable before paint, which is the
+  only shape satisfying both constraints. 🔴 **And it is an architectural change
+  to where a preference is stored.**
+
+⚡ **③ is the answer this lane would recommend**, and 📁 [§20e](../CLAUDE.md) is
+explicit that recommending is not proceeding.
+
 ### C-1566 · The 300ms flicker floor is implemented once, for Home, and the design states it product-wide
 
 | | |
