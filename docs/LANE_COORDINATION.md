@@ -16254,7 +16254,7 @@ of them stating an absence the way the sections already do.**
 ⛔ **This lane will not choose between them.** ✅ **Nothing is blocked**: the
 sections and the rail carry every producer-backed destination today.
 
-### C-1567 · 🔴 The profile theme control saves, persists, and never paints anything
+### C-1567 · 🔴 The UI claims a cross-device preference; first paint is controlled by a browser-local store disconnected from it
 
 | | |
 |---|---|
@@ -16262,6 +16262,23 @@ sections and the rail carry every producer-backed destination today.
 | **Module** | `product_surface` — 🔴 **[`lib/state/theme-provider.tsx`](../frontend/lib/state/theme-provider.tsx) is RED tier** ([§20c](../CLAUDE.md)) |
 | **Owner of the answer** | 🔴 **Product owner + ADR** — ⛔ **the resolution moves where the theme is stored, and `lib/state` is not a lane's to change** |
 | **Status** | **`OPEN`** — 🔴 **a customer-visible setting that reports success and does nothing** |
+
+### 🔴 The finding, stated as the product owner framed it
+
+> **The Settings/Profile UI claims a cross-device preference, while the
+> mechanism that actually controls first paint is browser-local and
+> disconnected from that preference.**
+
+⛔ **Not merely *"dark mode does not work."*** ⚡ **The broken contract is
+precise and worth keeping precise**: *the server preference is persisted, and
+the pre-paint theme resolver does not consume it.* **Both halves function; they
+are wired to different stores.**
+
+⚠️ **Product owner, 2026-08-26**: *"a real product defect, and the browser
+evidence is sufficient"* — ✅ **kept as a decision item, and it does not stop
+implementation work.** **The current implementation is PRESERVED**: ⛔ no second
+`localStorage` writer · ⛔ no server fetch in `ThemeProvider` that reintroduces
+the first-paint flash · ⛔ no move to cookies without the ruling.
 
 ### Measured in a browser, Playground, signed in as the owner
 

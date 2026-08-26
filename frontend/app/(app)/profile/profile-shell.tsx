@@ -51,6 +51,29 @@ import { ShortcutsPanel } from './shortcuts-panel';
 export interface ProfileSection {
   readonly id: string;
   readonly label: string;
+  /**
+   * ⚡ **Whether the product can fill this section today** — the same contract
+   * [`SettingsSection`](../../../lib/settings/sections.ts) and
+   * [`AccountSection`](../../../lib/accounts/sections.ts) already carry.
+   *
+   * ⛔ **Added because a section was MISSING from this list entirely** —
+   * 📁 the design's `nav` declares **nine** and this declared **eight**, with
+   * *Notifications* absent from the register rather than marked absent in it.
+   * ⚠️ **Which is indistinguishable from a bug to the next reader**, and is the
+   * failure Account 360's registry states in its own words.
+   */
+  readonly supply: 'supplied' | 'absent';
+  /**
+   * 📁 **What a customer is told where the section cannot be filled.**
+   * ⛔ **Required when `absent`**, and it says what the section would show and
+   * what Signora cannot do yet — ⛔ **never what the READER has not set up**,
+   * 📁 [B-299](../../../../docs/BUGS.md) ⑦.
+   *
+   * ⚡ **One source.** ⛔ `SectionNotBuilt` held its own `WHAT` map, so the
+   * sentence lived here and there — **two representations of one string**
+   * ([§2](../../../../CLAUDE.md)).
+   */
+  readonly absence?: string;
 }
 
 /**
@@ -64,14 +87,39 @@ export interface ProfileSection {
  * without becoming two registries.
  */
 export const PROFILE_SECTIONS: readonly ProfileSection[] = [
-  { id: 'profile', label: 'Profile' },
-  { id: 'language', label: 'Language & region' },
-  { id: 'appearance', label: 'Appearance' },
-  { id: 'accessibility', label: 'Accessibility' },
-  { id: 'shortcuts', label: 'Keyboard shortcuts' },
-  { id: 'ai', label: 'AI preferences' },
-  { id: 'accounts', label: 'Connected accounts' },
-  { id: 'activity', label: 'Activity & security' },
+  { id: 'profile', label: 'Profile', supply: 'supplied' },
+  { id: 'language', label: 'Language & region', supply: 'supplied' },
+  { id: 'appearance', label: 'Appearance', supply: 'supplied' },
+  { id: 'accessibility', label: 'Accessibility', supply: 'supplied' },
+  { id: 'shortcuts', label: 'Keyboard shortcuts', supply: 'supplied' },
+  { id: 'ai', label: 'AI preferences', supply: 'supplied' },
+  /**
+   * 🔴 **📁 The design's `nav` declares this and the register did not** —
+   * seventh of nine, between *AI preferences* and *Connected accounts*.
+   *
+   * ⛔ **Measured, not assumed**: `workspace_tenancy`'s `Notifier` port
+   * publishes **one verb and no channel adapters** — *"a request for an
+   * unconfigured channel FAILS, and a default of `{IN_APP}` would be exactly
+   * the fallback that rule refuses."* ⚡ **Three notification routes exist —
+   * feed, read, unread — and all three are in-app.** ⛔ **No endpoint carries a
+   * channel choice, a digest or a quiet-hours window.**
+   */
+  {
+    id: 'notifications',
+    label: 'Notifications',
+    supply: 'absent',
+    absence:
+      'Which notifications reach you, where they go, and when they are held back. Signora notifies you in the app; it cannot yet send to email or Slack, or hold anything until you are ready to read it.',
+  },
+  { id: 'accounts', label: 'Connected accounts', supply: 'supplied' },
+  {
+    id: 'activity',
+    label: 'Activity & security',
+    // ⚡ **`supplied`, because one row of it IS built** — `DataRightsPanel`
+    // renders above the notice. ⛔ **The section is not absent; part of it is**,
+    // and the shell composes the two.
+    supply: 'supplied',
+  },
 ];
 
 /** ⚡ **The design's own parameter-free default** — the first section. */
@@ -211,6 +259,11 @@ export function ProfileShell({ name, email }: { name: string | null; email: stri
             conflict rule describes an editor, and no preference field or
             endpoint stores a binding. */}
         {current === 'shortcuts' ? <ShortcutsPanel /> : null}
+        {/* 🔴 **The design's seventh nav entry, stated rather than omitted.**
+            ⛔ **It was missing from `PROFILE_SECTIONS` entirely**, so the rail
+            had eight where the design draws nine — and an omitted section is
+            indistinguishable from a broken one. */}
+        {current === 'notifications' ? <SectionAbsence section="notifications" /> : null}
         {/* 🔴 **Activity is PART built now, and the split is the point.** 📁
             The design's Activity screen holds a timeline, a visibility table
             and the *"Your data"* block. ✅ **One row of that block is
@@ -221,7 +274,7 @@ export function ProfileShell({ name, email }: { name: string | null; email: stri
         {current === 'activity' ? (
           <div className="flex flex-col gap-6">
             <DataRightsPanel />
-            <SectionNotBuilt section="activity" />
+            <ActivityNotBuilt />
           </div>
         ) : null}
         {/* 🔴 **Was `SectionNotBuilt`, and the notice was untrue.** ⚡ It
@@ -242,19 +295,43 @@ export function ProfileShell({ name, email }: { name: string | null; email: stri
  * ✅ **It says what the section will hold**, so the rail describes the screen
  * honestly while the remaining slices land.
  */
-function SectionNotBuilt({ section }: { section: string }) {
-  const WHAT: Record<string, string> = {
-    // ⛔ **"your data rights" is GONE from this sentence.** ✅ One of them is
-    // built and rendered directly above this block, and a not-built notice
-    // that still claims it would be describing the screen it is sitting on.
-    activity:
-      'What you have done in Signora, and what is visible to others.',
-  };
+/**
+ * ⚡ **A whole section the product cannot fill, in the register's own words.**
+ *
+ * ⛔ **The sentence comes from `PROFILE_SECTIONS`, never from a map here** —
+ * this component previously held its own `WHAT` lookup, **which is one string
+ * in two places** ([§2](../../../../CLAUDE.md)) and the shape that lets a rail
+ * entry and its panel eventually disagree.
+ *
+ * ⛔ **And it does NOT say *"not built yet"***. 📁 The registry rule the rest of
+ * the product follows: *"an absent section states what it would show and what
+ * Signora cannot answer yet, in the customer's words"* — ⚠️ **never a status
+ * report about the engineering backlog**, which is what *"not built yet"* is.
+ */
+function SectionAbsence({ section }: { section: string }) {
+  const declared = PROFILE_SECTIONS.find((entry) => entry.id === section);
+  if (declared?.absence === undefined) return null;
   return (
     <div className="rounded-md border border-border-soft bg-surface-sunken p-5">
-      <p className="text-sm leading-6 text-content-muted">{WHAT[section]}</p>
+      <p className="text-sm leading-6 text-content-muted">{declared.absence}</p>
+    </div>
+  );
+}
+
+/**
+ * 🔴 **Activity's PARTIAL absence, and it is a different sentence from a whole
+ * one.** 📁 `DataRightsPanel` renders above this — **one row of the design's
+ * *"Your data"* block is producer-backed and shipped** — so the notice names
+ * what is still missing rather than claiming the section is empty.
+ */
+function ActivityNotBuilt() {
+  return (
+    <div className="rounded-md border border-border-soft bg-surface-sunken p-5">
+      <p className="text-sm leading-6 text-content-muted">
+        What you have done in Signora, and what is visible to others.
+      </p>
       <p className="mt-2 text-xs leading-5 text-content-subtle">
-        This section is not built yet.
+        Signora does not record a personal activity history yet.
       </p>
     </div>
   );
