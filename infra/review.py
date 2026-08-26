@@ -104,6 +104,30 @@ DEV_REDIS_PORT: Final = 6379
 # ── the repository, as it is right now ──────────────────────────────────────
 
 
+#: **The command a blocked reviewer is handed — and it names its environment.**
+#:
+#: ⛔ **This printed the compose command with NO `env` prefix.** ⚠️ **Unprefixed,
+#: Compose derives `COMPOSE_PROJECT_NAME` from the DIRECTORY NAME** rather than
+#: from the environment the branch selects, so
+#: the reviewer creates containers in a project nobody chose, binding whatever
+#: ports the file names.
+#:
+#: 📁 **[B-141](../docs/BUGS.md) records the consequence, dated 2026-08-07**: a
+#: lane ran exactly that form and *"recreated a container that was already
+#: running on port 5432"* instead of starting its own on 5732. ⚡ **The incident
+#: was filed as evidence for a contention hypothesis; the cause was never filed,
+#: so the command stayed in print for nineteen more days** ([B-1081](../docs/BUGS.md)).
+#:
+#: ✅ **`release-preflight.py` and `docs/RUNNING.md` already print the anchored
+#: form.** ⛔ **This file did not, and it is the one a reviewer reaches when
+#: something is already wrong** — the worst moment to hand somebody a command
+#: that quietly targets the wrong project.
+_BRING_THE_STACK_UP = (
+    "Bring it up with the environment NAMED, never derived:\n"
+    "      env $(python3 infra/environments.py --exports | grep -v '^#') \\\n"
+    "        docker compose -f infra/docker-compose.yml up -d --wait"
+)
+
 def _git(*args: str) -> str:
     return subprocess.run(
         ["git", *args], cwd=REPO_ROOT, capture_output=True, text=True, check=False
@@ -345,16 +369,9 @@ def _validate() -> list[str]:
         if subprocess.run(["which", tool], capture_output=True, check=False).returncode:
             problems.append(f"`{tool}` is not on PATH — docs/RUNNING.md lists what a workstation needs")
 
-    if not _listening(DEV_POSTGRES_PORT):
-        problems.append(
-            f"PostgreSQL is not reachable on {DEV_POSTGRES_PORT}. "
-            "`docker compose -f infra/docker-compose.yml up -d --wait`"
-        )
-    if not _listening(DEV_REDIS_PORT):
-        problems.append(
-            f"Redis is not reachable on {DEV_REDIS_PORT}. "
-            "`docker compose -f infra/docker-compose.yml up -d --wait`"
-        )
+    for service, port in (("PostgreSQL", DEV_POSTGRES_PORT), ("Redis", DEV_REDIS_PORT)):
+        if not _listening(port):
+            problems.append(f"{service} is not reachable on {port}. {_BRING_THE_STACK_UP}")
 
     holders = _holders()
     held = [

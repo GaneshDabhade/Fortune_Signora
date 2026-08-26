@@ -20244,7 +20244,7 @@ role=null aria-live=polite  "Navigated to /w/4e158d14-ab29-4b23-b99d-a8b10986f8e
 | **Module** | **Repository tooling and QE's own runbooks** — 📁 [`docs/REPOSITORY_RELEASE_CHECKLIST.md`](REPOSITORY_RELEASE_CHECKLIST.md):47 · [`docs/RUNNING.md`](RUNNING.md):95 · [`infra/review.py`](../infra/review.py):351,356 |
 | **Current assignee** | **QE** — all four sites are QE-owned files ([`CLAUDE.md`](../CLAUDE.md) §20e, *Shared files have one owner*) |
 | **Severity** | 🟠 — **wrong behaviour somebody would hit.** ⛔ **It already happened**: one lane recreated another's running container on a shared port |
-| **Status** | **`FIXING`** — the two documents in this cycle's Closeout; **`infra/review.py` is a GATE and needs its own slice** |
+| **Status** | ✅ **`FIXED` — QE, 2026-08-26.** The two documents in cycle 273's Closeout; **[`infra/review.py`](../infra/review.py) in a slice of its own, with [`backend/tests/test_compose_commands_are_anchored.py`](../backend/tests/test_compose_commands_are_anchored.py) enforcing it.** **`VERIFIED` is QE's at the next cycle** |
 | **Found** | **2026-08-26 by QE**, prompted by Lane A reporting the same class against itself |
 | **Commit found** | `eaecf496` |
 
@@ -20284,4 +20284,46 @@ role=null aria-live=polite  "Navigated to /w/4e158d14-ab29-4b23-b99d-a8b10986f8e
 ### 📁 The class, and it is the day's third instance
 
 **A bare `docker compose` is a machine-wide command wearing a project-local one's clothes.** ⛔ **It does not error — it reaches wider than the question did**, exactly as QE's own `pkill -f 'next-server'` reached out of its clone and killed Lane A's dev server the same afternoon, and exactly as `ldd` on the wrong binary and `#score exists` answered stale questions confidently. ⚡ **Anchoring is the fix in every case; the tool never signals that it overreached.**
+
+---
+
+### B-1082 · 🟠 The promotion gate's blocking-🔴 check reads one register of two, and two live 🔴 defects sit in the other
+
+| | |
+|---|---|
+| **Module** | **QE's own instruments** — 📁 [`infra/certification-guard.py`](../infra/certification-guard.py) `_promote` · [`infra/registers.py`](../infra/registers.py) · [`infra/state-check.py`](../infra/state-check.py) |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — ⛔ **the gate reports a guarantee it did not check.** ⚠️ **Not 🔴: the rows it cannot see are visible to every human reader, and the one that is ruled has already been ruled** |
+| **Status** | **`OPEN` — ⛔ deliberately NOT fixed by QE inside a cycle.** ⚡ **Widening what blocks a promotion is a contract change to a gate, and that is escalated rather than made** |
+| **Found** | **2026-08-26 by QE**, on Lane A reporting two 🔴 rows it had filed in the coordination register |
+| **Commit found** | `a7b172b6` |
+
+📁 **[`CLAUDE.md`](../CLAUDE.md) §20e states the guarantee: *"`integration` never fast-forwards to `main` with an open 🔴 bug. That is the one blocking rule."***
+
+**Measured, not assumed.** `certification-guard.py` imports `bug_rows` and calls it on **`docs/BUGS.md` and nothing else**; `registers.py` contains **no coordination-register parsing at all** — its only occurrence of the word is a comment about a conflict marker. **`state-check.py` reports *"No unresolved 🔴 across N bug row(s)"* from the same source.**
+
+### ⛔ The live instance, which is what turns this from a design note into a row
+
+**[C-1567](LANE_COORDINATION.md) and [C-1568](LANE_COORDINATION.md), both 🔴, both describing wrong behaviour today.** C-1567's own status cell: *"a customer-visible setting that reports success and does nothing"* — the profile theme control saves, persists across reload, and never paints.
+
+⚡ **By §20e's own test those are `B-` rows**: *"A defect is not a dependency. Something behaving wrongly today is a `B-` row; something not yet built or agreed is a `C-` row."*
+
+⛔ **So `PASS no unresolved 🔴` is true of the bug register and false of the repository**, and every dashboard figure QE publishes inherits that.
+
+### ⚠️ Why they are in the coordination register, and why that is not Lane A's mistake
+
+**Two reasons, and both are legitimate:**
+
+**①** They genuinely carry a coordination dimension — **C-1567's answer is 🔴 *Product owner + ADR*** because the fix moves where the theme is stored and `lib/state` is 🔴 tier.
+**②** ⛔ **Lane A's `B-200`–`B-299` block is exhausted** — 100 headings, zero gaps, **independently re-measured by QE** — which is [C-1562](LANE_COORDINATION.md).
+
+⚡ **That reclassifies C-1562.** It has read as bookkeeping: *my block is full, please extend it.* ⛔ **It is a correctness issue: an exhausted `B-` block is routing 🔴 defects out of the register the promotion gate reads.** ✅ **The short form of the argument is *"QE's blocking-🔴 check cannot see two live 🔴 defects"*, not *"a lane needs more numbers"*.**
+
+### ⛔ What QE is deliberately NOT doing
+
+**Teaching the guard to read [`LANE_COORDINATION.md`](LANE_COORDINATION.md).** ⚡ **It would change which promotions succeed** — a semantic change to a gate, escalated rather than made inside a cycle. ⚠️ **And it is not obviously right**: a coordination item awaiting a ruling is not the same object as a defect awaiting a fix, and a gate that conflated them would block on questions rather than on faults.
+
+**Three candidate resolutions, none chosen here:** ⓵ extend the block so defects land in `BUGS.md` where they belong ([C-1562](LANE_COORDINATION.md)) · ⓶ teach the guard both registers · ⓷ forbid a 🔴 severity marker in the coordination register outright, so the classification error is unrepresentable rather than merely discouraged.
+
+📁 **This is the second blind spot QE has found in its own promotion gate this week and kept rather than patched.** **The first: the guard reads `docs/BUGS.md` from the CANDIDATE TREE, so a 🔴 filed after a snapshot is pinned is invisible to that promotion.** ⚡ **Both share a shape — the gate answers confidently about a narrower question than the one it appears to answer**, which is the class this repository has now met four times in one day.
 
