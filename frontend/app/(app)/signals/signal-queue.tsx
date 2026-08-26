@@ -50,6 +50,29 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
  * building them would be inventing scope ([§21](../../../../CLAUDE.md)), and
  * the row already bounded itself for exactly this reason.
  *
+ * ## ⚠️ Two `mechanics` this screen does NOT satisfy, and neither is a defect
+ *
+ * 📁 ***"Dismissal is training data — every dismissal takes a reason from a
+ * closed list."*** ⛔ **The reason here is free text, and that is correct.**
+ * 📁 `domain/resolution.py` refuses the closed set in terms: *"Deliberately
+ * free text and not a closed set. A vocabulary of dismissal reasons is a
+ * product decision about what the platform believes can be wrong with its own
+ * judgement, and inventing one inside an implementation slice would be exactly
+ * the 'architecture arriving in a feature' §20e forbids."*
+ *
+ * ✅ **And the mechanic's stated PURPOSE is served anyway** — *"those reasons
+ * drive rule precision"*. 📁 `domain/precision.py` counts **outcomes**, not
+ * reason texts: `Actioned` as right, `Dismissed` as wrong, and neither
+ * `Assigned` nor `Snoozed` at all. **A closed list would change the
+ * vocabulary, not the measurement.**
+ *
+ * 📁 ***"Snooze is a commitment — a snooze needs a date and a reason."*** ⛔
+ * **`Snoozed` carries `until` and nothing else**, so a reason is
+ * **unrepresentable** rather than merely unasked. ⚡ **That is a domain change
+ * with a stored column behind it, and this row's `Delivers` bounds itself to
+ * *"snoozed signals returning at their stated time"*** — **the date, not the
+ * commitment.**
+ *
  * ## 🔴 Two fields the design draws are absent, and that is reported
  *
  * **The design's rows carry `title · type · summary · account · pips`.**
@@ -995,6 +1018,17 @@ export function SignalQueue() {
           </div>
         }
       >
+        {/* 🔴 **Free text, and the design asks for a closed list — read the
+            header before changing this.** 📁 `Signal Center` `mechanics`:
+            *"every dismissal takes a reason from a closed list."*
+
+            ⛔ **`domain/resolution.py` refuses to invent that list**, and a
+            `<Select>` here would be the same invention one layer up: *"a
+            vocabulary of dismissal reasons is a product decision about what the
+            platform believes can be wrong with its own judgement."*
+
+            ⚡ **The placeholder is an EXEMPLAR, not an option** — the design's
+            own history row shows *"Not a buying signal"* the same way. */}
         <Input
           label="Reason"
           value={reason}

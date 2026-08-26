@@ -527,3 +527,32 @@ describe('🔴 the summary is the signal’s own, never the type’s', () => {
     expect(node).toHaveAttribute('title', long);
   });
 });
+
+describe('📁 Signal Center mechanics — the dismissal reason stays free text', () => {
+  /**
+   * 📁 ***"Dismissal is training data — every dismissal takes a reason from a
+   * closed list."*** ⛔ **And it must NOT, here.**
+   *
+   * 📁 `domain/resolution.py` refuses the closed set in terms: *"Deliberately
+   * free text and not a closed set. A vocabulary of dismissal reasons is a
+   * product decision about what the platform believes can be wrong with its
+   * own judgement, and inventing one inside an implementation slice would be
+   * exactly the 'architecture arriving in a feature' §20e forbids."*
+   *
+   * ⚡ **A `<Select>` here would be that invention one layer up**, and it is
+   * the obvious "fix" for somebody reading the design without reading the
+   * domain. **This test is what makes that read the source first.**
+   *
+   * ✅ **The mechanic's stated purpose is served regardless**: `precision.py`
+   * counts OUTCOMES, not reason texts.
+   */
+  it('🔴 offers a free-text reason, not a list the design has not chosen', async () => {
+    render(<SignalQueue />);
+    await userEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+
+    // ⛔ A textbox, and deliberately NOT a combobox.
+    const field = screen.getByLabelText(/reason/i);
+    expect(field).toHaveProperty('tagName', 'INPUT');
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+  });
+});
