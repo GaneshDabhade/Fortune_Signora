@@ -11,10 +11,10 @@
  * written without anybody noticing — which is the part that makes this a
  * capability rather than a tidy-up.
  */
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { StatedAbsence } from '@/components/feedback/stated-absence';
 
@@ -230,5 +230,62 @@ describe('📁 §4.1.3 — a failed read announces, and announces politely', () 
     render(<StatedAbsence as="page" subject="your organizations" />);
 
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * 🔴 **[B-299](../../../docs/BUGS.md) ⑩ — the product's standard failure state
+ * offered *reload* as its only route out, in prose, with no control.**
+ *
+ * 📁 **System States `rules` ⑤**: ***"One primary action: a filled brand button
+ * doing the most useful thing available. 'Reload the page' is a last resort,
+ * never the first offer."***
+ *
+ * ⛔ **29 of the product's 31 failure surfaces are this component**, and every
+ * one of them ended *"— reload to try again"*. ⚡ **Both layers already had the
+ * capability**: `SystemState` takes a `primaryAction` and **its own docstring
+ * quotes the rule verbatim**, and `ErrorState` has offered `onRetry` since it
+ * shipped — **used by exactly one caller.**
+ *
+ * ⚠️ **And reload is not merely a worse button.** 📁 Rule ② is *"work is
+ * preserved: drafts, filters, selection and scroll are held through any
+ * recoverable failure"* — **and a page reload discards every one of them.**
+ * ⛔ **The prose was telling a customer to destroy their own state to recover a
+ * single failed read.**
+ */
+describe('🔴 a failure offers something better than reload — B-299 ⑩', () => {
+  it('renders a primary control that retries, and calls it', () => {
+    const retry = vi.fn();
+    render(<StatedAbsence subject="this account's score" onRetry={retry} />);
+
+    const button = screen.getByRole('button', { name: 'Try again' });
+    fireEvent.click(button);
+    expect(retry).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * ⛔ **Never both.** ⚡ A sentence saying *reload* above a button saying *Try
+   * again* puts the last resort first in reading order, which is the half of
+   * rule ⑤ a button alone would not satisfy.
+   */
+  it('⛔ and the sentence stops telling the reader to reload', () => {
+    const { container } = render(
+      <StatedAbsence subject="this account's score" onRetry={vi.fn()} />,
+    );
+
+    expect(container.textContent ?? '').not.toMatch(/reload/i);
+  });
+
+  /**
+   * ✅ **Absence is honest rather than lazy.** ⛔ **A failure with nothing to
+   * retry must not grow a button that does nothing** — so the old sentence is
+   * unchanged where no retry is offered, and this is the assertion that proves
+   * the change did not become unconditional.
+   */
+  it('✅ and a failure with nothing to retry keeps its sentence and grows no button', () => {
+    render(<StatedAbsence subject="this account's score" />);
+
+    expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument();
+    expect(screen.getByText(/reload to try again/i)).toBeInTheDocument();
   });
 });

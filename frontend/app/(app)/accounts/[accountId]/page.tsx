@@ -321,7 +321,20 @@ export default function AccountBriefPage() {
   // [B-261](../../../../docs/BUGS.md).
   const accountKind: string | null = null;
 
-  const { data: score, isLoading, error } = useAccountScore(workspaceId, accountId);
+  /**
+   * ⚡ **`refetch` is taken because 📁 System States `rules` ⑤ needs it** —
+   * *"one primary action… **'Reload the page' is a last resort, never the
+   * first offer**"* — and rule ② is *"work is preserved: drafts, filters,
+   * selection and scroll are held through any recoverable failure."*
+   * ⛔ **A page reload discards every one of those to recover one read.**
+   * 📁 [B-299](../../../../docs/BUGS.md) ⑩.
+   */
+  const {
+    data: score,
+    isLoading,
+    error,
+    refetch: refetchScore,
+  } = useAccountScore(workspaceId, accountId);
 
   /**
    * 📁 **Session Continuity tier 4** — *"recently viewed records"*, which is
@@ -351,10 +364,11 @@ export default function AccountBriefPage() {
     recorded.current = accountId;
     recordView({ entityId: accountId, kind: 'account' });
   }, [workspaceId, accountId, score, recordView]);
-  const { data: opportunity, error: opportunityError } = useAccountOpportunity(
-    workspaceId,
-    accountId,
-  );
+  const {
+    data: opportunity,
+    error: opportunityError,
+    refetch: refetchOpportunity,
+  } = useAccountOpportunity(workspaceId, accountId);
   // **404 is "nobody has taken this account on"; anything else is an outage.**
   // The third section on this page to need the split, after narration and
   // research. Without it the workflow controls simply vanish, and an account
@@ -865,6 +879,7 @@ export default function AccountBriefPage() {
                   <StatedAbsence
                     subject="where this account stands"
                     reassurance="Nothing has changed about the account"
+                    onRetry={() => void refetchOpportunity()}
                   />
                 ) : null}
                 {/* The workflow line rides with the meta rather than in the score
@@ -1019,9 +1034,12 @@ export default function AccountBriefPage() {
           {isLoading ? (
             <Loading />
           ) : error ? (
-            <ScoreUnavailable {...(correlationOf(error) === undefined
-              ? {}
-              : { correlationId: correlationOf(error)! })} />
+            <ScoreUnavailable
+              onRetry={() => void refetchScore()}
+              {...(correlationOf(error) === undefined
+                ? {}
+                : { correlationId: correlationOf(error)! })}
+            />
           ) : score ? (
           <Card>
             <CardBody className="flex flex-col gap-4">
@@ -1228,6 +1246,7 @@ export default function AccountBriefPage() {
                 as="card"
                 icon={Briefcase}
                 subject="this account's opportunity"
+                onRetry={() => void refetchOpportunity()}
               />
             ) : opportunity ? (
               <Card>
@@ -1338,6 +1357,7 @@ export default function AccountBriefPage() {
                   as="card"
                   subject="what contributed to this score"
                   reassurance="The rest of this account's record is unaffected"
+                  onRetry={() => void refetchScore()}
                   {...(correlationOf(error) === undefined
                     ? {}
                     : { correlationId: correlationOf(error)! })}
@@ -1698,12 +1718,19 @@ function NeverScored() {
  * other callers still pass `as="page"` — **but Account 360 no longer depends on
  * the answer.**
  */
-function ScoreUnavailable({ correlationId }: { correlationId?: string }) {
+function ScoreUnavailable({
+  correlationId,
+  onRetry,
+}: {
+  correlationId?: string;
+  onRetry: () => void;
+}) {
   return (
     <StatedAbsence
       as="card"
       subject="this account's score"
       reassurance="The rest of this account's record is unaffected"
+      onRetry={onRetry}
       {...(correlationId === undefined ? {} : { correlationId })}
     />
   );

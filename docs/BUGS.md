@@ -743,6 +743,64 @@ Buying* — **cannot be built on the observation feed**: the classification woul
 have to be authored here, which is the second vocabulary the catalog exists to
 prevent.
 
+## ⑩ 🔴 The product's standard failure state told the customer to destroy their own work
+
+📁 **System States `rules` ⑤**: ***"One primary action: a filled brand button
+doing the most useful thing available. **'Reload the page' is a last resort,
+never the first offer.**"***
+
+⛔ **`StatedAbsence` offered reload as its ONLY route out, in prose, with no
+control** — *"Signora could not load X. Nothing has changed — reload to try
+again."* ⚠️ **It is 29 of the product's 31 failure surfaces.**
+
+### ⚡ Both layers already had the capability
+
+| | |
+|---|---|
+| `SystemState` | takes a **`primaryAction`**, and **its own docstring quotes the rule verbatim** — *"④ One primary action — and it does the most likely useful thing rather than `reload`"* |
+| `ErrorState` | has offered **`onRetry`** since it shipped — *"§13's Retry — the first route out"* — **used by exactly one caller** |
+| `ladder.ts` | legalises **`retry`** at region scope with severity `positive`. ⛔ **Zero callers** — law without a surface, the tenth instance |
+
+🔴 **The rule was quoted in three places and implemented in one.** 📁 This is
+[a design quote is not an implementation claim](#b-299) at component scale.
+
+### ⛔ And reload is not merely a worse button
+
+📁 **The same document's rule ②**: ***"Work is preserved: drafts, filters,
+selection and scroll are held locally through any recoverable failure and
+restored on return."***
+
+⚠️ **A page reload discards every one of them.** ⛔ **So the sentence was
+instructing a customer to destroy their own state in order to recover one failed
+read** — and the two rules were being broken by the same eleven words.
+
+### ✅ Fixed
+
+**`StatedAbsence` gains an optional `onRetry`**, rendered through
+`SystemState`'s existing `primaryAction` as a filled brand button. ⛔ **The
+sentence drops the reload instruction where a retry is offered** — 📁 never
+both, because *reload* above *Try again* still puts the last resort first in
+reading order.
+
+⚡ **Optional on purpose**: ⛔ **a failure with nothing to retry must not grow a
+button that does nothing**, so the old sentence is unchanged there.
+
+**Wired on Account 360's four failure states** — `refetch` from the two reads
+whose failure the page states. ⚠️ **The other 25 callers are not swept**: each
+needs its own query's `refetch`, and a blind sweep would be 25 chances to wire
+the wrong one.
+
+### ⚠️ Verified in a browser, Playground, 1440
+
+**With the score forced to 500**: *"reload"* absent from the page, **two
+*Try again* controls present**, and clicking one **fired a real refetch** —
+request count 3 → 5.
+
+**Guards: three, all fire-tested** — the control retries · the sentence stops
+saying reload · **and the case with no retry keeps its sentence and grows no
+button**, which is the assertion that proves the change did not become
+unconditional.
+
 ## ✅ Fixed
 
 | | |
@@ -754,6 +812,7 @@ prevent.
 | **④** | Every id is `pageNav`'s `href` with its `#` removed, and `AccountSection.id`'s docstring says so |
 | **⑤** | `AccountSection.rail` — 📁 the design's `pageNav` label, **stated only where it differs from the heading**, because two copies of one string is what [§2](../CLAUDE.md) forbids |
 | **⑥** | The absent half of `anchored` is **derived** from `absent()`, so a seventh unfillable section cannot arrive unanchored. Order corrected. The rail ungated from `score` |
+| **⑩** | `StatedAbsence.onRetry` → `SystemState.primaryAction`. **The sentence and the control are mutually exclusive**, and the no-retry case is guarded so the change cannot become unconditional |
 | **⑨** | The invented `h2` removed and **guarded, with a vacuity half** — a component rendering nothing would satisfy *"no headings"*, so the rows are asserted too. The source note corrected |
 | **⑧** | The customer's label chip rendered on the record header. **Two false explanatory notes corrected** — a code comment the next lane would have believed ([§2](../CLAUDE.md)) |
 | **⑦** | Six sentences rewritten to state a capability rather than a setup, and **guarded**: no `absence` and no `source` may assert the state of the reader's connections. ⚡ **With a vacuity guard** — the oracle must still recognise all four sentences it was written for, and must NOT match *"once Signora can read a file store"* |

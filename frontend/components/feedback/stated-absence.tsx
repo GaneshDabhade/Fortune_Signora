@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 
-import { Card, CardBody, EmptyState, SystemState } from '@/components/ui';
+import { Button, Card, CardBody, EmptyState, SystemState } from '@/components/ui';
 
 /**
  * **A read failed, and the surface says so — one implementation, not nine.**
@@ -47,6 +47,7 @@ export function StatedAbsence({
   title,
   announce = 'polite',
   correlationId,
+  onRetry,
 }: {
   /** What could not be loaded, in the customer's words and lower case:
    * *"what changed at this account"*, *"your accounts"*. Completes the
@@ -77,6 +78,31 @@ export function StatedAbsence({
    * a defect rather than a trade-off. */
   announce?: 'polite' | 'assertive';
   /**
+   * 🔴 **📁 System States `rules` ⑤ — *"One primary action: a filled brand
+   * button doing the most useful thing available. **'Reload the page' is a
+   * last resort, never the first offer.**"***
+   *
+   * ⛔ **This component offered reload as the ONLY route out, in prose, with
+   * no control** — *"— reload to try again"* — **on 29 of the product's 31
+   * failure surfaces.** ⚡ **Both layers already had the capability**:
+   * [`SystemState`](../ui/system-state.tsx) takes a `primaryAction` and its
+   * own docstring quotes the rule verbatim, and
+   * [`ErrorState`](../ui/error-state.tsx) has offered `onRetry` all along —
+   * **used by exactly one caller.** 📁 [B-299](../../../docs/BUGS.md) ⑩.
+   *
+   * ⚠️ **And reload is not merely a worse button.** 📁 The same document's
+   * rule ② is *"work is preserved: drafts, filters, selection and scroll are
+   * held through any recoverable failure"* — ⛔ **and a page reload discards
+   * every one of them.** ⚡ **So the prose instruction was telling a customer
+   * to destroy their own state to recover a single failed read.**
+   *
+   * ✅ **Optional, and its absence is honest rather than lazy** — ⛔ **a
+   * failure with nothing to retry must not grow a button that does nothing.**
+   * ⚡ **Where it IS given, the sentence drops the reload instruction**, so
+   * the screen never offers both and never puts the last resort first.
+   */
+  onRetry?: () => void;
+  /**
    * 📁 **The grammar's rule ③** — *"identifiers are copyable: the single thing
    * that makes a support conversation short"* — ⚡ **and it reaches
    * `SystemState`, which owns how one is rendered.**
@@ -94,7 +120,16 @@ export function StatedAbsence({
    */
   correlationId?: string;
 }) {
-  const sentence = `Signora could not load ${subject}. ${reassurance} — reload to try again.`;
+  /**
+   * ⚡ **The sentence ends differently when there is a control to press.**
+   * ⛔ **Never both** — 📁 rule ⑤ makes reload *"a last resort, never the
+   * first offer"*, and a sentence saying *reload* above a button saying
+   * *Try again* puts the last resort first in reading order.
+   */
+  const sentence =
+    onRetry === undefined
+      ? `Signora could not load ${subject}. ${reassurance} — reload to try again.`
+      : `Signora could not load ${subject}. ${reassurance}.`;
 
   if (as === 'page') {
     return (
@@ -148,6 +183,19 @@ export function StatedAbsence({
       state="region-error"
       description={sentence}
       {...(correlationId === undefined ? {} : { correlationId })}
+      {...(onRetry === undefined
+        ? {}
+        : {
+            /* 📁 **Rule ⑤'s *"filled brand button"*** — `primary` is that, and
+               `SystemState` already lays a `primaryAction` out. ⛔ **Nothing
+               about the arrangement is decided here**; this passes the control
+               and the ladder places it. */
+            primaryAction: (
+              <Button variant="primary" size="sm" onClick={onRetry}>
+                Try again
+              </Button>
+            ),
+          })}
     />
   );
 
