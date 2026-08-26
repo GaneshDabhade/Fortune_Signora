@@ -16254,6 +16254,67 @@ of them stating an absence the way the sections already do.**
 ⛔ **This lane will not choose between them.** ✅ **Nothing is blocked**: the
 sections and the rail carry every producer-backed destination today.
 
+### C-1564 · Four Account 360 sections have provider data on the account and no read that publishes it
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-26, measuring [B-299](BUGS.md#b-299) ⑦ against the Playground |
+| **Module** | `knowledge_graph` · `observation_engine` — the producers. `product_surface` is the consumer |
+| **Owner of the answer** | **The producing modules' current assignee**, joined from [`modules.toml`](coordination/modules.toml) |
+| **Status** | **`OPEN`** — ⚠️ **nothing renders wrongly now.** ⛔ The copy defect is fixed; **this is the capability behind it** |
+
+### What is actually there
+
+**Measured on the Playground, not inferred** — five providers connected, twelve
+syncs each, and every observation below attached to a `company` entity:
+
+| Design section | Observations | Carries |
+|---|---|---|
+| **Buying intent** | **29** `intent_topic_surge` | `topic` · `score` · `trend` · `observed_week` |
+| **Organisation chart** | **36** `person_identity` | `title` · `seniority` · `reports_to {source: inferred\|confirmed}` · and `full_name` |
+| **Technology stack** | `technology_detected` · `technology_removed` | from `builtwith` |
+| **Market signals** | `funding_round` · `acquisition` | from `crunchbase` |
+| **Header fact — Employees** | `employee_count` · `headcount_change` | **per account, named**: *Larkspur Media Cloud 75*, *Brightmoor Industrial 12,000* |
+
+### ⚡ They already reach the customer — as a stream, not as a section
+
+**`useAccountObservations` reads exactly these**, so all four appear in the
+**Signals timeline** today. ⛔ **What the design draws is a CURRENT-STATE view
+of each** — *"14 detected · 1 competitor present"*, an *"intent index"* — **and
+a stream is not an inventory.** ⚡ **`GET /openapi.json` has 99 paths and not
+one publishes a grouping.**
+
+### The question
+
+> **Should these become reads, and at what grain?**
+
+⚠️ **Each is a different question, and the last one is not ours:**
+
+- **Technology stack** — a current inventory needs `detected` minus `removed`
+  over time. ⛔ **And the design's *"1 competitor present"* needs a join to the
+  workspace's declared competitors**, which `useCompetitors` already publishes.
+- **Buying intent** — the design's index is a normalised figure over topics.
+  ⛔ **Normalising is a judgement `observation_engine` would own, not this
+  screen.**
+- **Market signals** — 📁 the design's kinds include **regulatory**, which
+  nothing produces. **Two of three kinds have data.**
+- **Employees** — 🔴 **the header fact is the cheapest of the five**:
+  `AccountAttributes` already publishes `employee_count` as a module port, and
+  it has **no HTTP surface at all.** ⚠️ **The design's `+6% YoY` delta is a
+  second question** — `headcount_change` exists; a year-over-year figure does
+  not.
+- **Organisation chart** — ⛔ **NOT this one.** 📁 `people` refuses to publish a
+  name ([C-221](#c-221)), the claim carries `full_name`, and **that refusal is
+  the module's specification rather than a gap.** ⚡ **This lane will not route
+  around it**, and a chart of unnamed boxes is a different section from the one
+  the design draws.
+
+### ⛔ What this lane did NOT do
+
+**Build any of them.** ⚡ **Each needs a new route (🟠) in a module whose
+grain question is the producing module's to answer**, and 📁 [§20e](../CLAUDE.md)
+is explicit: *"never continue on an assumption — do not guess, do not infer."*
+
 ### C-1562 · Lane A's `B-` identifier block is exhausted, and the next defect this lane finds has no number
 
 | | |

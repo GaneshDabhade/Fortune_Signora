@@ -614,6 +614,53 @@ are absent and render identically.
 ⚡ **The rail itself was gated on `score`**, one level up from ③: a failing
 score removed the map as well as the record.
 
+## ⑦ 🔴 Four stated absences told the customer to connect something already connected
+
+⛔ **The most serious of the seven, and the only one a customer would act on.**
+
+| section | said | measured on the Playground |
+|---|---|---|
+| **Buying intent** | *"No intent source is connected to your organization yet."* | ⛔ **`bombora` connected and syncing** · **29** `intent_topic_surge` observations carrying `topic`, `score`, `trend` |
+| **Technology stack** | *"Detected technology comes from an enrichment source. None is connected to your organization yet."* | ⛔ **`builtwith` connected** · `technology_detected` and `technology_removed` observations |
+| **Market signals** | *"Signora is not reading those for this account yet."* | ⛔ **`crunchbase` connected** · `funding_round`, `acquisition` observations |
+| **Organisation chart** | *"nothing infers reporting lines"* | ⛔ **`person_identity` carries `reports_to` with `source: inferred \| confirmed`** · **36** observations |
+
+**Five enrichment providers are connected and syncing into the Playground** —
+`apollo`, `bombora`, `builtwith`, `coresignal`, `crunchbase` — **twelve syncs
+each.** ⚡ **Every observation above is attached to a `company` entity**, which
+is what `useAccountObservations` reads, **so all four already reach the customer
+in the signals timeline.**
+
+🔴 **So the product told a rep to go and connect a provider they had already
+connected, and pointed them away from the screen where their data was already
+showing.**
+
+### ⚡ The shape, and it is this screen's defect one more time
+
+> **A static declaration answered a question it had never read.**
+
+⛔ **`sections.ts` has no connection read** and never could — **a workspace's
+providers are per-workspace and this is one file for all of them.** ⚠️ **Any
+sentence it makes about them is a guess**, and the guess happened to be right
+in exactly one direction: **a fresh workspace.**
+
+### ✅ The rule, and it is checkable rather than remembered
+
+> **An absence says what SIGNORA does not do. It never says what the READER has
+> not done.**
+
+⚡ **A capability statement is this file's to make; a setup statement is not.**
+✅ **`Emails` and `Meetings` were rewritten too although their sentences were
+TRUE** — *"none is connected"* is only true because no mailbox provider exists
+at all. ⛔ **The day one ships, that sentence becomes false silently, and only
+for the customers who connected one.** ✅ ***"Signora does not read mailboxes
+yet"* becomes false loudly.**
+
+⚠️ **And one existing assertion was built on the false premise.** It asserted
+*"no intent source is connected"* with the rationale *"it names the missing
+SOURCE, which is something a customer can act on."* ⛔ **The source was not
+missing, and the action was one they had already taken.**
+
 ## ✅ Fixed
 
 | | |
@@ -625,6 +672,7 @@ score removed the map as well as the record.
 | **④** | Every id is `pageNav`'s `href` with its `#` removed, and `AccountSection.id`'s docstring says so |
 | **⑤** | `AccountSection.rail` — 📁 the design's `pageNav` label, **stated only where it differs from the heading**, because two copies of one string is what [§2](../CLAUDE.md) forbids |
 | **⑥** | The absent half of `anchored` is **derived** from `absent()`, so a seventh unfillable section cannot arrive unanchored. Order corrected. The rail ungated from `score` |
+| **⑦** | Six sentences rewritten to state a capability rather than a setup, and **guarded**: no `absence` and no `source` may assert the state of the reader's connections. ⚡ **With a vacuity guard** — the oracle must still recognise all four sentences it was written for, and must NOT match *"once Signora can read a file store"* |
 
 ⚡ **And one latent defect surfaced by the fix**: `ResearchPanel` guarded on
 `score === null`, **which `useQuery` never publishes** — it publishes

@@ -107,6 +107,39 @@ export interface AccountSection {
    * 📁 **What a customer is told where a section cannot be filled.** ⛔ **Only
    * on an absent section**, and never *"coming soon"*: it says what the section
    * would show and what Signora cannot answer yet.
+   *
+   * ## 🔴 It says what SIGNORA does not do, never what the READER has not done
+   *
+   * ⛔ **Four of these asserted that a provider was not connected** —
+   * [B-299](../../../docs/BUGS.md) ⑦ — ***"No intent source is connected to
+   * your organization yet"***, ***"None is connected"***, ***"Signora is not
+   * reading those for this account"***.
+   *
+   * ⚠️ **Measured on the Playground: five enrichment providers are connected
+   * and syncing** — `apollo`, `bombora`, `builtwith`, `coresignal`,
+   * `crunchbase` — **and every one of the four sections that claimed
+   * otherwise has observations on company entities**: 29 `intent_topic_surge`,
+   * 36 `person_identity` carrying `reports_to`, 2 `technology_detected`,
+   * `funding_round` and `acquisition`. ⛔ **The product told a customer to
+   * connect something they had already connected, and pointed them away from
+   * the timeline where it was already showing.**
+   *
+   * 🔴 **The shape, and it is this file's version of the defect the whole
+   * screen keeps producing**: ⚡ **a static declaration answered a question it
+   * had never read.** ⛔ **A workspace's connections are per-workspace and
+   * this module has no connection read** — so any sentence about them is a
+   * guess that happens to be right in one direction.
+   *
+   * ✅ **The rule that follows is checkable rather than remembered**, and
+   * `account-sections.test.tsx` checks it: **a capability statement is this
+   * file's to make; a setup statement is not.** ⚡ **What each of these
+   * sections would need in order to stop being absent is
+   * [C-1564](../../../docs/LANE_COORDINATION.md)** — the data is on the
+   * account, no route publishes a grouping, and the grain is the producing
+   * module's question. ⚡ **It also survives the
+   * product growing** — the day a mailbox provider ships, *"Signora does not
+   * read mailboxes yet"* becomes false loudly, where *"none is connected"*
+   * would have become false silently.
    */
   readonly absence?: string;
 }
@@ -149,12 +182,17 @@ export const ACCOUNT_SECTIONS: readonly AccountSection[] = [
     id: 'intent',
     label: 'Buying intent',
     supply: 'absent',
-    // 📁 *"Third-party intent data · last refreshed 06:00."* ⛔ There is no
-    // third-party intent provider, and inventing an index would be a number
-    // with no author.
-    source: 'no third-party intent provider is connected',
+    // 🔴 **This read *"no third-party intent provider is connected"*, and on
+    // the Playground that is FALSE** — [B-299](../../../docs/BUGS.md) ⑦.
+    // ⛔ **`bombora` is connected and syncing**, and 29 `intent_topic_surge`
+    // observations carry `topic`, `score` and `trend` on company entities.
+    // ⚡ **What is missing is the design's INDEX** — *"intent index"* over
+    // `intentRows` — **which needs a read that groups them, and no route
+    // publishes one.**
+    source:
+      'bombora delivers intent_topic_surge as observations on the account; nothing publishes the design’s intent index — no route groups them',
     absence:
-      'Buying intent comes from third-party research data. No intent source is connected to your organization yet.',
+      'Third-party intent — which topics this account is researching, and how strongly — reaches Signora as signals and appears in the timeline. Signora does not yet gather them into an index.',
   },
   {
     id: 'signals',
@@ -214,9 +252,16 @@ export const ACCOUNT_SECTIONS: readonly AccountSection[] = [
     label: 'Organisation chart',
     rail: 'Org chart',
     supply: 'absent',
-    source: 'nothing infers reporting lines; no email or calendar ingestion',
+    // 🔴 **This said *"nothing infers reporting lines"* and that is FALSE** —
+    // [B-299](../../../docs/BUGS.md) ⑦. ⛔ **`person_identity` carries
+    // `reports_to` with `source: 'inferred' | 'confirmed'`**, 36 observations
+    // on the Playground. ⚠️ **What `people` refuses to publish is the NAME**
+    // ([C-221](../../../docs/LANE_COORDINATION.md)), **and a chart of
+    // anonymous boxes is not this section.**
+    source:
+      'person_identity observations carry reports_to (inferred|confirmed); people publishes no name — C-221 — and a chart without names is a different section',
     absence:
-      'An organisation chart is inferred from email, calendar and public sources. Signora is not reading any of those yet.',
+      'Signora sees that this company has reporting lines and does not record who is in them. A chart of unnamed boxes would not tell you anything you could act on.',
   },
   {
     id: 'graph',
@@ -231,9 +276,18 @@ export const ACCOUNT_SECTIONS: readonly AccountSection[] = [
     label: 'Technology stack',
     rail: 'Tech stack',
     supply: 'absent',
-    source: 'no enrichment provider detects installed technology',
+    // 🔴 **This said *"no enrichment provider detects installed technology"*
+    // and told the customer none was connected — both FALSE** —
+    // [B-299](../../../docs/BUGS.md) ⑦. ⛔ **`builtwith` is connected and
+    // syncing**, and `technology_detected` / `technology_removed` arrive as
+    // observations on the account. ⚡ **The design's section is an
+    // INVENTORY** — *"14 detected · 1 competitor present"* — **which is a
+    // current-state read, not a stream of detections, and nothing publishes
+    // one.**
+    source:
+      'builtwith delivers technology_detected/technology_removed as observations; the design’s section is a current inventory with a competitor flag, and no route publishes one',
     absence:
-      'Detected technology comes from an enrichment source. None is connected to your organization yet.',
+      'Signora sees technology being detected and removed at this account and reports each as a signal. It does not yet keep a running list of what is installed today.',
   },
   {
     id: 'compete',
@@ -247,9 +301,14 @@ export const ACCOUNT_SECTIONS: readonly AccountSection[] = [
     id: 'market',
     label: 'Market signals',
     supply: 'absent',
-    source: 'no external news or filings source is ingested for this account',
+    // 🔴 **This said Signora *"is not reading those for this account"* and
+    // that is FALSE** — [B-299](../../../docs/BUGS.md) ⑦. ⛔ **`crunchbase` is
+    // connected**, and `funding_round` and `acquisition` arrive as
+    // observations on the account.
+    source:
+      'crunchbase delivers funding_round and acquisition as observations; the design’s section groups them with a regulatory kind nothing produces, and no route publishes the grouping',
     absence:
-      'Market signals come from news, filings and public sources. Signora is not reading those for this account yet.',
+      'Funding and acquisition news about this account reaches Signora and appears in the timeline as it happens. Signora does not yet collect it into a market view.',
   },
   {
     id: 'activity',
@@ -264,17 +323,21 @@ export const ACCOUNT_SECTIONS: readonly AccountSection[] = [
     supply: 'absent',
     // 📁 The design draws 38 threads with unanswered counts. ⛔ Nothing
     // ingests mail: `sales_engagement` records an approach, never a message.
-    source: 'no mailbox integration; sales_engagement records approaches, not messages',
+    // ⚡ **Restated to say what SIGNORA does not do** — [B-299](../../../docs/BUGS.md) ⑦.
+    // ⛔ **It told the reader no mailbox was connected**, which this file
+    // cannot know; ✅ **that no mailbox can be connected is a fact about the
+    // product**, and it is the one worth stating.
+    source: 'no mailbox integration exists; sales_engagement records an approach, never a message',
     absence:
-      'Email with this account appears here once a mailbox is connected. None is connected to your organization yet.',
+      'Signora does not read mailboxes yet, so the email exchanged with this account is not something it can show you.',
   },
   {
     id: 'meetings',
     label: 'Meetings',
     supply: 'absent',
-    source: 'no calendar or conversation-intelligence integration',
+    source: 'no calendar or conversation-intelligence integration exists',
     absence:
-      'Meetings appear here once a calendar is connected. None is connected to your organization yet.',
+      'Signora does not read calendars yet, so the meetings held with this account are not something it can show you.',
   },
   {
     id: 'files',

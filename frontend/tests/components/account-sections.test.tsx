@@ -39,8 +39,19 @@ describe('⛔ a section nothing can fill still says what it would show', () => {
     for (const wrong of ['No data', 'Nothing to show', 'coming soon', 'Empty']) {
       expect(text.toLowerCase()).not.toContain(wrong.toLowerCase());
     }
-    // ⚡ It names the missing SOURCE, which is something a customer can act on.
-    expect(screen.getByText(/no intent source is connected/i)).toBeVisible();
+    // 🔴 **This asserted *"no intent source is connected"*, and its own
+    // rationale was the mistake** — [B-299](../../../docs/BUGS.md) ⑦.
+    // ⛔ It read: *"it names the missing SOURCE, which is something a customer
+    // can act on."* ⚠️ **The source was not missing.** `bombora` is connected
+    // and syncing, and 29 `intent_topic_surge` observations sit on company
+    // entities — **so the action a customer could take was one they had
+    // already taken**, and the sentence pointed them away from the timeline
+    // where their intent data was already showing.
+    //
+    // ✅ **The assertion now asks for the CAPABILITY statement**, which is the
+    // thing this file can actually know and the thing that keeps an absent
+    // section from reading as an empty one.
+    expect(screen.getByText(/does not yet gather them into an index/i)).toBeVisible();
   });
 
   it('⛔ renders nothing at all for a section that IS supplied', () => {
@@ -253,5 +264,86 @@ describe('🔴 every section the design’s page navigation declares is declared
       expect(section.absence, `${section.id} is absent and says nothing`).toBeTruthy();
       expect(section.absence).not.toMatch(/coming soon/i);
     }
+  });
+});
+
+/**
+ * 🔴 **[B-299](../../../docs/BUGS.md) ⑦ — four stated absences asserted that a
+ * provider was not connected, and on the Playground all four were false.**
+ *
+ * ⚠️ **Measured, not assumed**: `apollo`, `bombora`, `builtwith`, `coresignal`
+ * and `crunchbase` are connected and syncing, and every section that claimed
+ * otherwise has observations on company entities — 29 `intent_topic_surge`,
+ * 36 `person_identity` carrying `reports_to`, `technology_detected`,
+ * `funding_round`, `acquisition`. ⛔ **The product told a customer to connect
+ * something they had already connected**, and pointed them away from the
+ * timeline where it was already showing.
+ *
+ * ⚡ **The rule this guards is narrow and load-bearing: a capability statement
+ * is this file's to make, a SETUP statement is not.** ⛔ `sections.ts` is a
+ * static declaration with no connection read, so any sentence about a
+ * workspace's providers is a guess.
+ *
+ * ⚠️ **It also survives the product growing.** The day a mailbox provider
+ * ships, *"Signora does not read mailboxes yet"* becomes false **loudly** —
+ * where *"none is connected"* would have become false silently, and only for
+ * the customers who had connected one.
+ */
+describe('🔴 an absence states what Signora cannot do, never what the reader has not connected', () => {
+  /**
+   * ⛔ **Assertions only.** ⚡ A sentence may still name a provider or a
+   * connection as the THING THAT WOULD FILL the section — *"once Signora can
+   * read a file store"* describes a capability. **What it may not do is tell
+   * the reader the state of their own setup**, which is the clause this
+   * matches.
+   */
+  const SETUP_CLAIM =
+    /\b(none|no|nothing)\b[^.]*\bis (?:currently )?connected\b|\bis not connected\b|\bconnected to your (?:organization|organisation)\b|\bis not reading (?:those|any of those|them) for this account\b/i;
+
+  it('⛔ no absence asserts the state of the reader’s connections', () => {
+    for (const section of ACCOUNT_SECTIONS) {
+      if (section.absence === undefined) continue;
+      expect(
+        section.absence,
+        `${section.id} tells the reader what they have connected, and this file has never read it`,
+      ).not.toMatch(SETUP_CLAIM);
+    }
+  });
+
+  /**
+   * ⛔ **The same rule on the engineering-facing string**, which is where the
+   * false claim was reasoned rather than merely printed: *"no third-party
+   * intent provider is connected"*, *"no enrichment provider detects installed
+   * technology"*. ⚡ **A wrong `source` is how a wrong `absence` gets
+   * justified**, so guarding one without the other leaves the cause in place.
+   */
+  it('⛔ nor does the source note it was reasoned from', () => {
+    for (const section of ACCOUNT_SECTIONS) {
+      expect(section.source, `${section.id}'s source note`).not.toMatch(SETUP_CLAIM);
+    }
+  });
+
+  /**
+   * ⚠️ **The vacuity guard, and this one has teeth.** ⛔ A regex that matched
+   * nothing would pass both assertions above on any file at all — 📁 the
+   * *instrument too narrow* failure, which fails silently.
+   */
+  it('⚠️ vacuity guard — the oracle recognises the sentences that were there', () => {
+    for (const sentence of [
+      'Buying intent comes from third-party research data. No intent source is connected to your organization yet.',
+      'Detected technology comes from an enrichment source. None is connected to your organization yet.',
+      'Email with this account appears here once a mailbox is connected. None is connected to your organization yet.',
+      'no third-party intent provider is connected',
+    ]) {
+      expect(sentence, 'the oracle no longer recognises a sentence it was written for').toMatch(
+        SETUP_CLAIM,
+      );
+    }
+
+    // ✅ **And it does NOT match a legitimate capability statement**, which is
+    // the half that stops this becoming a ban on the word *connected*.
+    expect('Documents shared with this account appear here once Signora can read a file store.').not.toMatch(
+      SETUP_CLAIM,
+    );
   });
 });
