@@ -16046,3 +16046,54 @@ state says region, the survival column says page?** 🔴 **② at page scope, do
 `StatedAbsence` stop using `EmptyState`** — 📁 `system-state.tsx` says the two
 *"must never merge"* because *"conflating them is how a broken widget renders as
 an empty one"*, **and the page branch is currently that conflation.**
+
+---
+
+### C-1558 · The switcher cannot announce a completion it has no way to observe
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-25, auditing `Workspace Chooser`'s `a11y` contract |
+| **Module** | `product_surface` — 📁 [`workspace-switcher.tsx`](../frontend/components/shell/workspace-switcher.tsx) |
+| **Owner of the answer** | 🔴 **Product owner** — ⚠️ **it may be that the second sentence simply does not apply to this implementation** |
+| **Status** | **`OPEN`** — ⚠️ **the first half is implemented; blocking nobody** |
+
+📁 **`Workspace Chooser` §4.1.3:**
+
+> ***"Switch start announces politely with the destination name. Completion
+> announces once with the workspace and the landing route. Failure …"***
+
+✅ **The first sentence is implemented** — the switcher announced **nothing at
+all** before, and a switch changes every scoped figure on screen without moving
+the page.
+
+### ⛔ The second sentence assumes a navigation this implementation does not make
+
+📁 **`choose()` sets the active organization and returns.** ⚡ **Its own comment
+explains why there is no navigation:** *"every route exists in every workspace,
+so staying put IS route preservation, and the provider re-reads scoped data from
+the new id."*
+
+⛔ **So there is no *landing route* to name — the route did not change** — and
+**no completion event this component can observe.** ⚠️ **Announcing at the
+moment of the request would claim an arrival that has not happened**, which is
+the class this lane has been closing all day.
+
+### ⚡ Two readings, and they need different work
+
+| Reading | What it costs |
+|---|---|
+| **The design assumes a navigation** | ⛔ Then route preservation is wrong, and that is a bigger change than an announcement |
+| **Completion means *the scoped re-reads settled*** | ⚡ **Implementable** — but the switcher would have to observe queries it does not own, and **which reads count as *the switch finishing* is a product question** |
+
+**What is being asked:** 🔴 **does *completion* mean the data settled, and if so
+which reads?** ⛔ **This lane will not pick a set and call it done** — a
+completion announced on an arbitrary subset is worse than none.
+
+### ⚠️ Checked in the same pass and NOT filed
+
+📁 §2.4.3 says *"WS-A returns focus to its trigger on close, **always**"*, and
+`close(returnFocus: boolean)` is conditional. ✅ **The conditional is correct**:
+the two `close(false)` sites are an outside click and a navigating link, where
+returning focus would **steal** it from where the person just clicked.
+**"Always" is about keyboard dismissal, and that path passes `true`.**

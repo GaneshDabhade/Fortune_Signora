@@ -281,3 +281,46 @@ describe('📁 §1.4.1 — the selected row carries three markers, not two', () 
     expect(labelled).toHaveLength(1);
   });
 });
+
+describe('📁 §4.1.3 — a switch announces politely, and it was silent', () => {
+  /**
+   * 📁 ***"Switch start announces politely with the destination name.
+   * Completion announces once with the workspace and the landing route."***
+   *
+   * ⛔ **Nothing announced at all.** ⚡ **A switch changes every scoped figure
+   * on the screen without moving the page** — a sighted reader watches the
+   * numbers change and a screen-reader user is told nothing.
+   *
+   * ⚠️ **Only the first sentence is implemented**, and the second is
+   * [C-1558](../../../docs/LANE_COORDINATION.md): this component sets the
+   * active organization and returns, so **it cannot observe when the re-read
+   * finished**, and announcing completion at the moment of the request would
+   * claim an arrival that has not happened.
+   */
+  it('🔴 names the destination when a switch starts', async () => {
+    switcher(THREE);
+    await userEvent.click(screen.getByRole('button', { name: /Active organization/ }));
+    await userEvent.click(screen.getByRole('menuitemradio', { name: /Northwind Americas/ }));
+
+    expect(screen.getByRole('status')).toHaveTextContent('Switching to Northwind Americas');
+  });
+
+  it('⛔ says nothing before a switch is chosen', () => {
+    /**
+     * ⚡ **The positive control.** ⛔ A live region rendering its message
+     * unconditionally would satisfy the test above and announce on every
+     * render — the [B-1057](../../../docs/BUGS.md) shape, where the
+     * announcement element exists and says the wrong thing.
+     */
+    switcher(THREE);
+
+    expect(screen.getByRole('status')).toHaveTextContent('');
+  });
+
+  it('⛔ announces politely, never assertively', () => {
+    // 📁 §4.1.3 reserves assertive for a state that ends the session.
+    switcher(THREE);
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+});

@@ -125,7 +125,29 @@ export function WorkspaceSwitcher({ collapsed = false }: { collapsed?: boolean }
     if (returnFocus) triggerRef.current?.focus();
   };
 
+  /**
+   * 🔴 **📁 `Workspace Chooser` §4.1.3: *"Switch start announces politely with
+   * the destination name."*** ⛔ **Nothing announced at all.**
+   *
+   * ⚡ **A switch changes every scoped figure on the screen without moving the
+   * page**, so a sighted reader sees the numbers change and a screen-reader
+   * user is told nothing whatsoever.
+   *
+   * ⚠️ **Held OUTSIDE the menu deliberately.** ⛔ The menu unmounts on close and
+   * `choose` closes it in the same tick — **a live region inside it would be
+   * removed before the announcement could be read.**
+   *
+   * ⛔ **The design's second sentence — *"completion announces once with the
+   * workspace and the landing route"* — is NOT implemented.** ⚡ This component
+   * sets the active organization and returns; **it cannot observe when the
+   * re-read finished**, and announcing completion at the moment of the request
+   * would be claiming an arrival that has not happened.
+   * 🔴 [C-1558](../../../docs/LANE_COORDINATION.md).
+   */
+  const [switchingTo, setSwitchingTo] = useState<string | null>(null);
+
   const choose = (id: string) => {
+    setSwitchingTo(workspaces.find((each) => each.id === id)?.name ?? null);
     // 📁 *"Switching keeps the current route when it exists in the
     // destination."* ⛔ **No navigation happens here** — every route exists in
     // every workspace, so staying put IS route preservation, and the provider
@@ -190,6 +212,12 @@ export function WorkspaceSwitcher({ collapsed = false }: { collapsed?: boolean }
 
   return (
     <div ref={containerRef} className="relative px-3 pt-3">
+      {/* ♿ **Polite, never assertive** — 📁 §4.1.3 reserves assertive for a
+          state that ends the session. ⚡ **`sr-only` rather than hidden**: an
+          `aria-live` region that is `display:none` announces nothing. */}
+      <p role="status" className="sr-only">
+        {switchingTo === null ? '' : `Switching to ${switchingTo}`}
+      </p>
       <button
         ref={triggerRef}
         type="button"
