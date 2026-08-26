@@ -10,6 +10,33 @@
 
 ---
 
+## Cycle 270 — promoted `5855e2a828d5`, 2026-08-26
+
+**The first candidate carrying two lanes.** **50 commits, ZERO merge commits, `promoted == certified`.**
+
+| | |
+|---|---|
+| **Promoted** | **`5855e2a828d5`** — identical to the certified SHA. `--audit-main` reports the guarantee holds across 2166 commits |
+| **Gates** | **5459 pytest · 95.03% coverage · 679 Security Invariants · mypy strict 957 files · import-linter 37/37 · tsc clean · frontend 4143 in 228 files · eslint clean · smoke 24 stages in 212s** |
+| **Disaster recovery** | ✅ **passed** — 679 invariants against the restarted stack |
+| **Migrations** | **none in the candidate** — reversibility **not applicable** rather than ticked (§19). Head unchanged at `0066` |
+| **Open defects** | **82 🟠 · 53 🟡 · 5 🟢 · ZERO 🔴** across 372 rows |
+
+### ⚖️ B-1068 was ruled 🟠 on product-owner delegation, and QE is the beneficiary
+
+⛔ **QE held it at 🔴 through three exchanges, saying twice it was not QE's to lower.** **The product owner delegated it in terms; QE acted and recorded it AS delegation.** **The row places the evidence above the conclusion, preserves the original 🔴 rationale verbatim, and states the conflict of interest plainly.** ⚠️ **Reversible by the same authority.**
+
+### 🔴 Three QE findings this cycle that are about the machinery, not the code
+
+- **[B-1075](docs/BUGS.md)** — **the promotion gate existed, ran blocking checks, and QE had never used it.** The advisory form **printed the command that bypasses itself.** ✅ **Now gated; its first act was to refuse QE's own candidate.**
+- ⛔ **The gate that runs is `main`'s, not the candidate's** — **a gate added in a candidate protects every promotion except the one that ships it.** **Observed at this promotion.**
+- ⛔ **QE committed conflict markers into `docs/BUGS.md`** and caught them by looking. 📁 **[B-150](docs/BUGS.md) is the same defect reaching `main` in 2026-08**, and its check is still only advisory.
+
+### ✅ Defects fixed and verified in a browser
+
+**[B-237](docs/BUGS.md)** — a failed workspace read told four screens the account was empty, and `/` looped 20–22 reads forever. **Took four Lane A commits; QE's browser was the test each time. `/` now makes 6 reads and stops.**
+**[B-1076](docs/BUGS.md)** — the utility panel opened at 28px where the design says 360 and 300. **Found by the conformance audit, verified at 360/300 with the band guard measured rather than trusted.**
+
 ## 1 · Repository — the one-minute view
 
 **Measured from the promoted commit `dce9e20e`, 2026-08-25.** Every figure is read from the repository, never carried forward.

@@ -1077,6 +1077,28 @@
 
 ---
 
+## 2026-08-26 — Repository Ready at `5855e2a828d5`
+
+**What a cold session needs and cannot get from the dashboard:**
+
+| | |
+|---|---|
+| **`main`** | **`5855e2a828d5`** — 50 commits promoted, zero merges, `promoted == certified` |
+| **Lane A** | **`cdd7795e`**, 3 ahead, ff-able, **pushed and idle across a machine restart.** Their `ea4dbd91` (B-1076) is VERIFIED; `77044dad` and `cdd7795e` are the Class A `DISC_NEVER` lint and **C-1560** |
+| ⚠️ **In flight, nothing** | **Every branch pushed, working tree clean.** A `make certify` was killed by a restart earlier and its candidate re-certified cleanly |
+
+### ⛔ The two things QE would want said out loud
+
+**① [B-1068](BUGS.md) is 🟠 by product-owner DELEGATION, not by QE's judgement, and QE benefits from it.** **If it is read as 🔴 again, the promotion it enabled is reversible by the same authority.**
+
+**② The blocking-🔴 gate in `--promote` is new and QE landed it while its own commit message said it had not.** ⚡ **Kept deliberately; the message is history and the correction lives in [B-1075](BUGS.md).**
+
+### 📋 Next, in order
+
+1. **Take Lane A's `cdd7795e`** — ff-able, three commits, one register row worth reading (**C-1560**: the top-bar field is *"a doorway, not a second search"* four times in the design, and `top-bar.tsx:218` already names the condition for changing it, which has now fired).
+2. **Resume the conformance audit.** **Home and App Shell are done against the Design Snapshot; 4 candidates died to 1 filed.** ⚡ **The specs live in JS DATA ARRAYS inside the `.dc.html` files, not in prose** — `hierarchy`, `viewports`, `loadingRules`, `breakpoints`. **Lane A reports ~150 of 160 `a11y` claims still unopened.**
+3. **The gate-protects-gates gap** and **the advisory conflict-marker check** are both recorded in [B-1075](BUGS.md) and both deliberately unbuilt.
+
 ## 1 · Current project position
 
 | | |
