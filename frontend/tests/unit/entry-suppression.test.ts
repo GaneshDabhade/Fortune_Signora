@@ -20,13 +20,41 @@
  * **Saying so is the point** — a guard that overstated its reach would be the
  * defect it is written against.
  */
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import { RULES } from '@/lib/entry/rules';
-import { UNOBSERVED } from '@/lib/entry/observed';
+import { UNOBSERVED, UNOBSERVED_MEMBERSHIP } from '@/lib/entry/observed';
 
 const ids = RULES.map((rule) => rule.n);
-const suppressed = Object.values(UNOBSERVED).flatMap((fact) => fact.suppresses);
+
+/**
+ * 🔴 **BOTH registers, and reading only one is the defect this file was
+ * written to prevent, occurring inside the file that prevents it.**
+ *
+ * ⛔ **`observed.ts` exports two**: `UNOBSERVED` suppresses ten rules and
+ * **`UNOBSERVED_MEMBERSHIP` suppresses four — `15`, `16`, `17` and `19`** —
+ * **and this file read only the first.**
+ *
+ * ⚠️ **Its own comment below says *"14 of 24 rules are suppressed"*, which is
+ * the total across both.** ⛔ **The prose counted fourteen and the assertion
+ * saw ten**, so four suppression claims were unguarded — including the one
+ * carrying the register's most consequential warning:
+ *
+ * > 📁 *"Rules 15, 16 and 17 route to `/w/:id/suspended`, `/archived` and
+ * > `/deleted`, and none of those routes exists… **whichever slice adds the
+ * > standing MUST add the three screens in the same change**, or it turns
+ * > three unreachable rules into three 404s on the same day."*
+ *
+ * ⚡ **A renumbering would have silently orphaned that warning**, which is
+ * exactly the stale-claim class the first assertion names.
+ */
+const REGISTERS = [UNOBSERVED, UNOBSERVED_MEMBERSHIP] as const;
+const suppressed = REGISTERS.flatMap((register) =>
+  Object.values(register).flatMap((fact) => fact.suppresses),
+);
 
 describe('🔴 every suppressed rule is a rule that exists', () => {
   it('names no rule number the engine does not have', () => {
@@ -64,5 +92,35 @@ describe('⚡ the cost of the absences is visible rather than derivable', () => 
      */
     expect(suppressed.length).toBeGreaterThan(0);
     expect(suppressed.length).toBeLessThan(ids.length);
+  });
+
+  /**
+   * ⚠️ **The guard that catches a THIRD register**, and it is the one this
+   * file needed and did not have.
+   *
+   * ⛔ **A new `UNOBSERVED_*` export would be invisible to `REGISTERS` above**,
+   * exactly as `UNOBSERVED_MEMBERSHIP` was — **and the failure is silent**: the
+   * suite stays green while a set of suppression claims goes unchecked.
+   *
+   * ⚡ **So the source is asked directly.** ✅ A register that exists and is not
+   * read is a register whose ids can drift, and this is the only assertion
+   * here that can see one.
+   */
+  it('🔴 reads EVERY suppression register the source declares', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'lib/entry/observed.ts'),
+      'utf8',
+    );
+    const declared = [...source.matchAll(/export const (UNOBSERVED[A-Z_]*)\b/g)].map(
+      (match) => match[1]!,
+    );
+
+    // ⚡ **Vacuity half** — a regex that matched nothing would pass the
+    // comparison below against an empty list.
+    expect(declared.length, 'the register scan found nothing').toBeGreaterThan(1);
+    expect(
+      declared.sort(),
+      'a suppression register exists that this test does not read',
+    ).toEqual(['UNOBSERVED', 'UNOBSERVED_MEMBERSHIP']);
   });
 });

@@ -16464,6 +16464,32 @@ is the worked example**: QE filed two findings as `B-200` and `B-201`,
 *"what is the highest in my old range?"* when the question was *"what is the
 next free number in MY block?"***
 
+### ⚠️ What the exhaustion has now actually cost — a second instance, 2026-08-26
+
+**A defect in the entry engine's suppression guard**, on a different screen from
+[B-299](BUGS.md#b-299) and therefore **not foldable into it.**
+
+⛔ **`tests/unit/entry-suppression.test.ts` read `UNOBSERVED` and not its
+sibling `UNOBSERVED_MEMBERSHIP`**, so **four suppression claims — rules `15`,
+`16`, `17`, `19` — were unguarded.** ⚠️ **The file's own comment says *"14 of 24
+rules are suppressed"*, which is the total across both registers: the prose
+counted fourteen and the assertion saw ten.**
+
+🔴 **And the unguarded four include the register's most consequential warning**:
+
+> 📁 *"Rules 15, 16 and 17 route to `/w/:id/suspended`, `/archived` and
+> `/deleted`, and none of those routes exists… **whichever slice adds the
+> standing MUST add the three screens in the same change**, or it turns three
+> unreachable rules into three 404s on the same day."*
+
+✅ **Fixed in the same pass, with the fix fire-tested**, and a third assertion
+added that reads the source directly so a **future** register cannot be missed
+the way this one was.
+
+⛔ **But it has no row.** ⚡ **It is recorded here rather than nowhere**, which
+is the workaround this item exists to end — **a defect described inside a
+governance request is a defect nothing tracks by severity, status or module.**
+
 ### The recommendation
 
 > **Allocate Lane A a second `B-` range at `B-1600`+.**
