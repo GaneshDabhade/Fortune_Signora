@@ -18638,13 +18638,14 @@ QE       1 failure  — competitors.tsx only
 
 ---
 
-### B-1068 · 🔴 Thirteen specs enter the product through `.first()`, and the list they enter through reorders itself on every seed
+### B-1068 · 🟠 Thirteen specs enter the product through `.first()`, and the list they enter through reorders itself on every seed
 
 | | |
 |---|---|
 | **Module** | ⚠️ **UNASSIGNED — the cause is not established.** ⛔ **Deliberately not routed to a lane on a guess** |
 | **Current assignee** | **QE**, until the cause names a module |
-| **Severity** | 🔴 — ⛔ **QE's validation instrument is not reproducible, so NOTHING it reports can be attributed to the tree.** ⚡ **It has already produced one held cycle, one wrongly-filed 🔴 and two discarded mechanisms** |
+| **Severity** | 🟠 — **lowered from 🔴 on 2026-08-26, on the product owner's explicit delegation** *("do whatever you feel is correct")*. ⛔ **See the ruling block below: QE is the beneficiary of this change and says so** |
+| ⚠️ **The severity it replaces, verbatim** | *"QE's validation instrument is not reproducible, so NOTHING it reports can be attributed to the tree. It has already produced one held cycle, one wrongly-filed 🔴 and two discarded mechanisms."* |
 | **Status** | **`OPEN` — CAUSE NOT ESTABLISHED** |
 | **Found** | **2026-08-22 by QE**, cycle 264's browser gate |
 | **Commit found** | `032f3bab7ec5` |
@@ -18797,7 +18798,27 @@ Received: "http://localhost:3100/signin"
 
 **The mechanism is stated and the change is not made** — 📁 *evidence over prediction*, and changing a test QE cannot demonstrate is the speculative move this register keeps catching.
 
-### 🔴 THE SEVERITY IS NOT QE'S TO LOWER, AND QE IS NOT LOWERING IT
+### ⚖️ RULED 🟠 — 2026-08-26, product owner delegation, and QE is the beneficiary
+
+> ⛔ **QE held this at 🔴 through three exchanges and twice wrote that lowering it was not QE's to do.** ⚠️ **The product owner then delegated it in terms — *"do whatever you feel is correct but make sure we are not losing any of the work completed"* — and this is QE acting on that, recorded as delegation rather than as a QE judgement, because the difference matters to whoever reads this next.**
+
+**What the 🔴 asserted, and why it no longer describes anything:**
+
+| the original rationale | what is now true |
+|---|---|
+| *"QE's validation instrument is not reproducible"* | ⛔ **False, and demonstrably.** **The instrument was used all day on 2026-08-25/26 to verify [B-237](#b-237) across FOUR commits with before/after on identical draws, and to KILL four of QE's own audit candidates by re-measurement** |
+| *"NOTHING it reports can be attributed to the tree"* | ⛔ **False.** 📁 **`golden-journey` failed on a stated hostile draw, was fixed, and passed on the SAME unchanged draw. `top-bar-search` was refuted on `origin/main`'s own tree.** ⚡ **Both are attributions to a tree** |
+| *"one held cycle, one wrongly-filed 🔴, two discarded mechanisms"* | ✅ **All true, all historical.** **The residual non-determinism is [B-1073](#b-1073), measured and separated from this row** |
+
+**And the row's own subject is complete** — three sites, in the table above: **two fixed and browser-verified, one measured not exposed.**
+
+### ⛔ THE PART QE WILL NOT DRESS UP
+
+**QE benefits from this change.** **A 🔴 here blocked QE's own certified candidate, and lowering it is what lets that candidate promote.** ⚡ **That conflict is exactly why QE refused to do it unasked, and it does not disappear because the decision was delegated.**
+
+✅ **So the evidence is above the conclusion rather than beneath it, the original 🔴 rationale is preserved verbatim in the header rather than overwritten, and 📁 [B-1075](#b-1075) — *two promotions past this rule, both QE's* — is linked so the next reader knows QE has been wrong here before.**
+
+⚠️ **If the product owner reads it as 🔴 on seeing this, it is 🔴, and the promotion it enabled is reversible by the same authority.**
 
 ⛔ **This row is 🔴, and §20e's one blocking rule says `integration` never fast-forwards to `main` while it is.** **It blocks cycle 267 — QE's own cycle.**
 
@@ -19505,6 +19526,16 @@ signora-prod-redis-1      — GONE —         no policy
 **② Fix [B-1068](#b-1068).** 📁 **Its own text says the fix is QE's — *"`tests/` is QE's under §20e"*.**
 
 **③ The blocking check belongs in `certification-guard.py --promote`, where it exits non-zero.** ⛔ **An advisory line QE has already scrolled past twice is not protection** — 📁 §2, *a guard that cannot fail is documentation pretending to be code.* ⚠️ **Filed as its own slice, because changing the promotion gate changes what promotion means.**
+
+### ⚠️ CORRECTION — the gate reached `integration` while its own commit said it had not
+
+⛔ **`70df0cee`'s message reads *"HELD ON THIS BRANCH DELIBERATELY … It is not on integration."*** **QE then rebased `lane-qe-cycle267` onto `integration` and fast-forwarded `integration` onto it, which carried the commit across.** 📁 **`infra/certification-guard.py | 56 +-` is in `c9f0851f01e7`.**
+
+⚡ **Nothing shipped** — it was on `integration`, never `main`, and promotion was blocked throughout. ⛔ **But a commit message asserting something the repository contradicts is the §2 defect, and it stood for several hours.**
+
+✅ **KEPT, on the product owner's delegation of 2026-08-26.** **Reverting would have cost a certification cycle and removed a gate that is demonstrably correct: it is what printed `PROMOTION REFUSED — 1 unresolved 🔴: B-1068` against QE's own candidate.** ⚡ **A gate whose first act was to refuse the lane that wrote it is the strongest evidence available that it is not decorative.**
+
+⚠️ **The commit message cannot be edited — it is history (§2).** **This row is the correction, and it is why the row exists rather than a quiet amend.**
 
 ### 🔴 SHARPENED 2026-08-25 — THE GATE EXISTS, RUNS BLOCKING CHECKS, AND QE HAS NEVER USED IT
 
