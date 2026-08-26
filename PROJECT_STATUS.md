@@ -10,6 +10,25 @@
 
 ---
 
+## Cycle 271 — promoted `5c1300a2a51d`, 2026-08-26
+
+| | |
+|---|---|
+| **Promoted** | **`5c1300a2a51d`** — `promoted == certified`, 4 commits, **zero merge commits** |
+| **Gates** | **5459 pytest · 95.03% · 679 Security Invariants · mypy 957 · import-linter 37/37 · tsc clean · frontend 4144 in 228 files · smoke 24 stages in 216s** |
+| **DR** | ✅ passed |
+| **Migrations** | none — reversibility **not applicable** rather than ticked |
+
+**Lane A**: Signal Center mechanics, and **C-1560** — the top-bar field is a second search and `top-bar.tsx:218` already named the condition for changing it, which has now fired.
+
+**QE**: **[B-1077](docs/BUGS.md)** — the route announcer reads `Navigated to /w/<uuid>/home` **to a screen reader**, a route and a UUID spoken aloud to the only users who cannot see the screen instead. **[B-1078](docs/BUGS.md)** — Home's `h1` names the person where the design says the workspace, four times, and its own mock renders the greeting as `<h2>`.
+
+### ⚡ The conformance audit's main finding is about the corpus, not a screen
+
+**The design describes a much later product than the one shipped.** ⛔ **Three screens' claims were correctly NOT filed because the surfaces are deliberately unbuilt** — **Reports** ships a designed empty state; **Team's** `Full · Team · Own · Read · None` vocabulary has zero occurrences and `capability-roles.tsx` says *"Nothing here decides what a role permits"*; **Help Center's** eight claims describe a documentation viewer, a product tour and uptime bars that do not exist.
+
+✅ **So the audit's yield is concentrated in Home, the App Shell, Companies, Account 360, Signal Center, Settings, Team Management and User Profile.** ⚡ **Auditing the rest produces rows nobody can act on, which is worse than no rows.**
+
 ## Cycle 270 — promoted `5855e2a828d5`, 2026-08-26
 
 **The first candidate carrying two lanes.** **50 commits, ZERO merge commits, `promoted == certified`.**

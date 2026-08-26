@@ -1077,6 +1077,27 @@
 
 ---
 
+## 2026-08-26 — Repository Ready at `5c1300a2a51d`
+
+| ref | at |
+|---|---|
+| **`main`** | **`5c1300a2a51d`** — `promoted == certified`, zero merges |
+| `integration` | `e7dae71d` — `main` + the certification record |
+| **Lane A** | **`3625096c`** and still pushing — rebase needed, `integration` moved |
+
+### 📋 Where the conformance audit stands
+
+✅ **Home and the App Shell audited against the Design Snapshot.** **Home's four browser-settleable `a11y` claims: three PASS** — structure, 320px reflow, order stability — **one filed as [B-1078](BUGS.md).**
+
+⛔ **THREE screens correctly NOT audited: Reports, Team's permission vocabulary, Help Center — all deliberately unbuilt, and each says so in its own source.** ⚡ **Check whether a surface is BUILT before comparing it to a design; that one step prevented three unactionable rows.**
+
+**Two targets pre-screened in source and NOT yet filed** — ⚠️ **pre-screening is targeting, not evidence:**
+
+- 🔴 **The team directory has no ROW headers.** 📁 `settings/team/page.tsx:294` uses `<TD pin>` for the person column, `table.tsx:211` **hardcodes `scope="col"` on `TH`**, and **`scope="row"` occurs nowhere in production code** — **the shared primitive cannot express one.** **Design 1.3.1 asks for *"column headers AND row headers"*.**
+- ⚠️ **Whether *Reduce motion* is shown as pre-set.** 📁 The panel's docblock says the design shows *"On — from system"*; **the UI's behaviour under `prefers-reduced-motion: reduce` is unverified.**
+
+**Both need a browser pass, which needs 3100/8100 free — i.e. no certify running.**
+
 ## 2026-08-26 — Repository Ready at `5855e2a828d5`
 
 **What a cold session needs and cannot get from the dashboard:**
