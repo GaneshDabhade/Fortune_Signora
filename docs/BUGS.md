@@ -661,6 +661,50 @@ yet"* becomes false loudly.**
 SOURCE, which is something a customer can act on."* ⛔ **The source was not
 missing, and the action was one they had already taken.**
 
+## ⑧ The record header's chips and facts, and two notes that were false about them
+
+📁 **§08 `headerTags` draws FOUR chips** — `Enterprise · EMEA · Denmark ·
+Logistics · Strategic` — **and the header rendered one.**
+
+| chip | producer | was |
+|---|---|---|
+| **Enterprise** | ✅ segments | ✅ rendered |
+| **Strategic** | 🔴 **the customer's own label** — `useAccountTags`, `useAccountTagAssignments` and `AccountTags` **all ship**, and the Companies list and the context drawer have consumed them since they landed | ⛔ **never called here** |
+| **EMEA · Denmark** · **Logistics** | ⚠️ `AccountAttributes` publishes `country` and `industry` as a module port, **no HTTP surface** — [C-1564](LANE_COORDINATION.md) | ⛔ absent for want of a route |
+
+⛔ **The note beside the existing assertion called *Strategic* a *"firmographic
+nothing publishes"*.** ⚡ **It is a customer label, and the customer publishes
+it** — this screen was simply the one surface that never asked.
+
+### 📁 §08 `headerFacts` — six drawn, two rendered, and the note explaining it named five
+
+⛔ **It read *"Total contract value, Seats and Employees have no provider behind
+them"*, and it was wrong twice**: it **omitted *Last touch* entirely**, and it
+was **false about *Employees*.**
+
+| fact | producer | here |
+|---|---|---|
+| **Open ACV** · **Renewal** | ✅ `AccountCommercial` | ✅ |
+| **Total contract value** | ⛔ no contract lifecycle | ⛔ |
+| **Seats** | ⛔ no product-usage telemetry | ⛔ |
+| **Last touch** | ⛔ **nothing records a contact.** ⚠️ `/approach` is *who to approach and why* — a recommendation, **not a record of who was** | ⛔ **and unmentioned** |
+| **Employees** | 🔴 **`AccountAttributes.employee_count` IS a published module port**, and the Playground holds it per account and named — *Larkspur Media Cloud 75*, *Brightmoor Industrial 12,000* | ⛔ no HTTP surface |
+
+⚡ **The distinction the old note collapsed**: ***no provider*** **and** ***no
+route to the provider*** **are different findings with different owners, and
+only the second is buildable.**
+
+### ✅ Fixed
+
+**The tag chip is rendered** — two shipped hooks, a shipped component, one
+existing slot, **no new contract.** ⛔ **Nothing was rendered for a fact without
+a route**; those notes were made true rather than filled in.
+
+⚡ **Verified in a browser at 1440**: *"Porterfield Health Systems · Board
+reporting set · Strategic"* on the title line, **and the band carries no
+placeholder at all when the account is unlabelled** — 📁 `AccountTags`' own law,
+*"a placeholder would make it look like a gap the product should fill."*
+
 ## ✅ Fixed
 
 | | |
@@ -672,6 +716,7 @@ missing, and the action was one they had already taken.**
 | **④** | Every id is `pageNav`'s `href` with its `#` removed, and `AccountSection.id`'s docstring says so |
 | **⑤** | `AccountSection.rail` — 📁 the design's `pageNav` label, **stated only where it differs from the heading**, because two copies of one string is what [§2](../CLAUDE.md) forbids |
 | **⑥** | The absent half of `anchored` is **derived** from `absent()`, so a seventh unfillable section cannot arrive unanchored. Order corrected. The rail ungated from `score` |
+| **⑧** | The customer's label chip rendered on the record header. **Two false explanatory notes corrected** — a code comment the next lane would have believed ([§2](../CLAUDE.md)) |
 | **⑦** | Six sentences rewritten to state a capability rather than a setup, and **guarded**: no `absence` and no `source` may assert the state of the reader's connections. ⚡ **With a vacuity guard** — the oracle must still recognise all four sentences it was written for, and must NOT match *"once Signora can read a file store"* |
 
 ⚡ **And one latent defect surfaced by the fix**: `ResearchPanel` guarded on

@@ -40,6 +40,10 @@ const decision = vi.hoisted(() => vi.fn());
  *  shell renders, so it never reaches this tree's DOM. **Capturing the call is
  *  the only way to assert the label** rather than assert around it. */
 const publishCrumb = vi.hoisted(() => vi.fn());
+/** ⚡ **Hoisted so a test can vary them** — the empty case is the one that
+ *  proves the chip is genuinely conditional. */
+const tagVocabulary = vi.hoisted(() => vi.fn());
+const tagAssignments = vi.hoisted(() => vi.fn());
 
 vi.mock('next/navigation', () => ({
   // The attention list and the brief read `?owner=` so a seller's view
@@ -81,6 +85,22 @@ vi.mock('@/lib/query/hooks/scoring', () => ({ useAccountCommercials: commercials
  * the record it describes** — producer-backed and unsurfaced, the same class as
  * the Decision Package and ICP Performance.
  */
+/**
+ * 🔴 **📁 §08's fourth chip — *"Strategic"*, the customer's own label** —
+ * [B-299](../../docs/BUGS.md) ⑧.
+ *
+ * ⛔ **`useAccountTags`, `useAccountTagAssignments` and `AccountTags` all
+ * ship**, and the Companies list and the context drawer have consumed them
+ * since they landed. ⚠️ **The record page was the only surface that never
+ * called them**, and the note beside the assertion below called this chip a
+ * *"firmographic nothing publishes"* — **it is a customer label, and the
+ * customer publishes it.**
+ */
+vi.mock('@/lib/query/hooks/account-tags', () => ({
+  useAccountTags: tagVocabulary,
+  useAccountTagAssignments: tagAssignments,
+}));
+
 vi.mock('@/lib/query/hooks/account-segments', () => ({
   useAccountSegments: () => ({
     data: { segments: [{ segment_id: 'seg-1', name: 'Enterprise' }] },
@@ -185,6 +205,10 @@ beforeEach(() => {
   accounts.mockReturnValue({ ...IDLE, data: { items: [] } });
   identities.mockReturnValue(IDLE);
   publishCrumb.mockClear();
+  tagVocabulary.mockReturnValue({
+    data: { tags: [{ id: 'tag-1', name: 'Strategic', tone: 'neutral' }] },
+  });
+  tagAssignments.mockReturnValue({ data: { assignments: { [ACCOUNT]: ['tag-1'] } } });
   observations.mockReturnValue(IDLE);
   commercials.mockReturnValue(IDLE);
   // ⛔ **404 is the ordinary state** — Signora has concluded nothing yet, which
@@ -335,14 +359,57 @@ describe("the record's secondary column carries what the product can produce", (
    * 🔴 **📁 §08's `headerTags`** — *Enterprise · EMEA · Denmark · Logistics ·
    * Strategic*, neutral chips on the title's line.
    *
-   * ⚡ **Only the SEGMENT has a producer**, and it rendered on the Companies
-   * list and the context drawer **and nowhere on this record.** ⛔ **Region,
-   * industry and tier are firmographics nothing publishes** and stay absent
-   * rather than becoming placeholders.
+   * ⚠️ **This note said *"only the SEGMENT has a producer"* and that
+   * *"region, industry and TIER are firmographics nothing publishes."***
+   * ⛔ **Two of the three were wrong** — [B-299](../../docs/BUGS.md) ⑧.
+   *
+   * | 📁 chip | producer |
+   * |---|---|
+   * | **Enterprise** | ✅ segments |
+   * | **Strategic** | 🔴 **NOT a firmographic — the customer's own label**, and `useAccountTags` has shipped all along |
+   * | **EMEA · Denmark** · **Logistics** | ⚠️ `AccountAttributes` publishes `country` and `industry` as a module port with **no HTTP surface** — [C-1564](../../docs/LANE_COORDINATION.md). **Absent for want of a route, not for want of data** |
    */
   it("🔴 carries the design's segment chip in the header band", () => {
     render(withQuery(<AccountBriefPage />));
     expect(screen.getByText('Enterprise')).toBeInTheDocument();
+  });
+
+  /**
+   * ⛔ **The customer's label rendered on the Companies list and the context
+   * drawer and NOWHERE on the record it describes** — producer-backed and
+   * unsurfaced, the same class as the Decision Package and ICP Performance,
+   * **and found by counting the design's chips rather than by anything
+   * failing.**
+   */
+  it("🔴 and the customer's own label, which shipped and was never called here", () => {
+    render(withQuery(<AccountBriefPage />));
+    expect(screen.getByText('Strategic')).toBeInTheDocument();
+  });
+
+  /**
+   * ⚡ **The half that keeps this honest.** 📁 `AccountTags`' own law: *"the
+   * truth is that the customer has not labelled this account, which is a fact
+   * about them rather than about Signora — and a placeholder would make it
+   * look like a gap the product should fill."*
+   *
+   * ⛔ **So an unlabelled account renders NOTHING**, not an em dash and not an
+   * absence sentence. ⚠️ **A section states its absence; a chip does not**, and
+   * conflating the two would put *"no tags"* on the title line of every record
+   * a customer has not got round to labelling.
+   */
+  it('⛔ and renders no chip at all when the customer has labelled nothing', () => {
+    // ✅ **The vocabulary still exists** — the workspace has the label and this
+    // account does not wear it. ⛔ **Which is the case a placeholder would get
+    // wrong**, and the only case that can distinguish a conditional chip from
+    // an unconditional one.
+    tagAssignments.mockReturnValue({ data: { assignments: {} } });
+
+    render(withQuery(<AccountBriefPage />));
+
+    expect(screen.queryByText('Strategic')).not.toBeInTheDocument();
+    // ⛔ **And no placeholder in its place** — not an em dash, not *"None"*.
+    const band = screen.getByRole('heading', { level: 1 }).closest('div');
+    expect(band?.textContent ?? '').not.toMatch(/—|None|No tags/i);
   });
 
   it('renders the AI reasoning the design draws, from the shipped contract', () => {

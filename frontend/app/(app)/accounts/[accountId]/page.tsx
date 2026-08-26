@@ -23,6 +23,7 @@ import {
 import { usePublishBreadcrumb } from '@/components/shell/breadcrumb-trail';
 import { useUtilityPanel } from '@/components/shell/utility-panel';
 import { AccountSegments, membershipFor } from '@/components/accounts/account-segments';
+import { AccountTags, tagsFor } from '@/components/accounts/account-tags';
 import { AbsentSection, OnThisPage } from '@/components/accounts/sections';
 import { ReasoningCard } from '@/components/accounts/reasoning';
 import { AccountSectionShell } from '@/components/accounts/section';
@@ -91,6 +92,10 @@ import {
   useAccountSegmentMemberships,
   useAccountSegments,
 } from '@/lib/query/hooks/account-segments';
+import {
+  useAccountTagAssignments,
+  useAccountTags,
+} from '@/lib/query/hooks/account-tags';
 import { useWorkspaceMembers } from '@/lib/query/hooks/team';
 import { useAccountCommercials } from '@/lib/query/hooks/scoring';
 import { scopeFrom } from '@/lib/state/owner-scope';
@@ -588,6 +593,30 @@ export default function AccountBriefPage() {
    */
   const segmentMemberships = useAccountSegmentMemberships(workspaceId, [accountId]);
   const segments = useAccountSegments(workspaceId);
+  /**
+   * 🔴 **📁 §08's `headerTags` draws FOUR chips and this header rendered
+   * ONE** — [B-299](../../../../docs/BUGS.md) ⑧.
+   *
+   * 📁 `['Enterprise', 'EMEA · Denmark', 'Logistics', 'Strategic']` — **a
+   * segment, a region, an industry and a customer label.** ⚡ **The customer
+   * label is the one with a complete producer**: `useAccountTags` and
+   * `useAccountTagAssignments` ship, `AccountTags` ships, **and the Companies
+   * list and the context drawer have both consumed them since they landed.**
+   * ⛔ **The record page was the only surface that did not** — 📁 the
+   * [shipped-backend-with-no-consumer](../../../../../docs/LANE_COORDINATION.md)
+   * shape, except the consumer existed and this screen never called it.
+   *
+   * ⚠️ **The other two are [C-1564](../../../../../docs/LANE_COORDINATION.md)**:
+   * `AccountAttributes` publishes `industry` and `country` as a module port
+   * with **no HTTP surface at all**, so they are absent for want of a route
+   * rather than for want of data.
+   *
+   * ⚡ **Two reads and no new contract** — the same pair the list already
+   * makes, with a one-element list, so the hook's *"disabled on an empty
+   * list"* rule holds unchanged.
+   */
+  const tagVocabulary = useAccountTags(workspaceId);
+  const tagAssignments = useAccountTagAssignments(workspaceId, [accountId]);
   const commercial = commercials.data?.get(accountId);
   const facts: RecordFact[] = [];
   if (commercial?.open_acv) {
@@ -715,11 +744,34 @@ export default function AccountBriefPage() {
               deliberate.** 📁 [ADR-0409](../../../../../docs/architecture/adr/0409-commercial-account-facts.md)
               — *"absence is never inferred, defaulted or zero-filled"* — and
               [§20c](../../../../../CLAUDE.md): **an absent fact is better than a
-              column of `—`.** *Total contract value*, *Seats* and *Employees* have
-              no provider behind them, so they are absent rather than empty; *Open
-              ACV* and *Renewal* are read from the same commercial contract the
-              Companies table reads, and each appears only where a source actually
-              said something. */}
+              column of `—`.**
+
+              🔴 **This note said *"Total contract value, Seats and Employees
+              have no provider behind them"*, and it was wrong twice** —
+              [B-299](../../../../docs/BUGS.md) ⑧. ⛔ **It named five of the
+              design's six**, omitting *Last touch* entirely, **and it was
+              false about *Employees*.**
+
+              | 📁 §08 fact | producer | here |
+              |---|---|---|
+              | **Open ACV** | ✅ `AccountCommercial.open_acv` | ✅ |
+              | **Renewal** | ✅ `AccountCommercial.renewal_date` | ✅ |
+              | **Total contract value** | ⛔ no contract lifecycle | ⛔ |
+              | **Seats** | ⛔ no product-usage telemetry | ⛔ |
+              | **Last touch** | ⛔ **nothing records a contact.** ⚠️ `/approach`
+                is *who to approach and why*, a recommendation — **not a record
+                of who was** | ⛔ |
+              | **Employees** | 🔴 **`AccountAttributes.employee_count` IS
+                published as a module port**, and the Playground holds it per
+                account and named — *Larkspur Media Cloud 75*, *Brightmoor
+                Industrial 12,000*. ⛔ **It has no HTTP surface**, which is
+                [C-1564](../../../../../docs/LANE_COORDINATION.md) | ⛔ |
+
+              ⚡ **The distinction the old note collapsed**: *no provider* and
+              *no route to the provider* are different findings with different
+              owners, **and only the second is buildable.** ⛔ **Nothing is
+              rendered for either** — the fix is the truth of the note, not a
+              new fact. */}
           <RecordHeader
             // 📁 §08's 46px tile. ⚡ **Derived from the name Signora already
             // holds**, by the library's own helper — ⛔ never a fabricated logo.
@@ -750,6 +802,20 @@ export default function AccountBriefPage() {
                     segmentMemberships.data?.memberships,
                   )}
                   segments={segments.data?.segments ?? []}
+                />
+                {/* 📁 **§08's customer label** — *"Strategic"* in the design's
+                    own row. ⛔ **`AccountTags` renders NOTHING when an account
+                    has none** — its own law: *"the truth is that the customer
+                    has not labelled this account, which is a fact about them
+                    rather than about Signora, and a placeholder would make it
+                    look like a gap the product should fill."* ✅ **So no
+                    absence statement belongs here**, unlike a section. */}
+                <AccountTags
+                  tags={tagsFor(
+                    accountId,
+                    tagAssignments.data?.assignments,
+                    tagVocabulary.data?.tags,
+                  )}
                 />
               </>
             }
