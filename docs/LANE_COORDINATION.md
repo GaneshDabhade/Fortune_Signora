@@ -16254,6 +16254,75 @@ of them stating an absence the way the sections already do.**
 ⛔ **This lane will not choose between them.** ✅ **Nothing is blocked**: the
 sections and the rail carry every producer-backed destination today.
 
+### C-1566 · The 300ms flicker floor is implemented once, for Home, and the design states it product-wide
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-26, auditing 📁 `Fortune Signora System States.dc.html`'s `loadingTiers` |
+| **Module** | `product_surface` — 📁 [`lib/home/loading.ts`](../frontend/lib/home/loading.ts) |
+| **Owner of the answer** | 🔴 **Product owner** on the threshold conflict · **this lane** on the placement, once ruled |
+| **Status** | **`OPEN`** — ⚠️ **nothing renders wrongly. Five surfaces flicker where the design says show nothing** |
+
+### 📁 The rule, and both documents agree on its first tier
+
+> **System States `loadingTiers`**: `< 300ms` → ***"Nothing. No indicator at
+> all. Anything shown and removed inside 300ms reads as a flicker, not as
+> feedback."***
+>
+> **Home §09**: ***"No skeleton at all. A placeholder shown and removed inside
+> 300ms reads as a flicker."***
+
+✅ **`useCardPhase` implements it exactly** — `SKELETON_AFTER_MS = 300`, a
+per-card timer, and a well-argued note on why the timeout is *"a state, not a
+cancellation."* ⚡ **Six consumers, every one of them a Home card.**
+
+### ⛔ Five surfaces render a skeleton the instant a read starts
+
+| |
+|---|
+| `components/accounts/section.tsx` — **every Account 360 section** |
+| `components/intelligence/observations.tsx` |
+| `components/intelligence/evidence.tsx` |
+| `app/(app)/business/page.tsx` |
+| `app/(app)/settings/products/page.tsx` |
+
+⚡ **A warm cache answers most of these in well under 300ms**, so the reader
+gets a shimmer that appears and vanishes — **which is the exact effect both
+documents name.**
+
+### 🔴 And the two documents give different UPPER tiers for one axis
+
+| | `< 300ms` | then | then |
+|---|---|---|---|
+| **System States** | nothing | **`0.3–2s`** skeleton | **`> 2s`** ***"named progress — steps in words, a duration estimate from measurement, and a way to cancel"*** |
+| **Home §09** | nothing | skeleton | **`> 8s`** ***"converts to its error state with a retry"*** |
+
+⛔ **Neither is a superset of the other.** **System States has no give-up tier;
+Home has no named-progress tier**, and a surface that is neither Home nor a
+System State has no stated answer at all.
+
+⚠️ **`> 2s named progress` is unbuilt everywhere**, and 📁 its *"duration
+estimate from measurement"* is rule ⑧ — ***"every duration shown comes from
+real p75 telemetry"*** — **which nothing publishes.**
+
+### The two questions
+
+**①** ⚡ **The 300ms floor is unambiguous and shared, and the hook exists.**
+⛔ **What is not settled is where it lives**: `lib/home/loading.ts` is named for
+one screen, and the rule is System States'. **Moving it beside
+[`ladder.ts`](../frontend/lib/system-states/ladder.ts) is 🟠 and touches six
+Home imports** — a placement decision rather than a fix.
+
+**②** 🔴 **Which upper tier governs a screen that is neither?** ⛔ **Not this
+lane's to pick**, and picking one silently would be governance by
+implementation.
+
+### ⛔ What this lane did not do
+
+**Apply the hook by importing `lib/home/` from `components/accounts/`.** ⚡ That
+would work and would encode the placement answer as a side effect, **which is
+the shape [§2](../CLAUDE.md) calls a decision wearing a document's clothes.**
+
 ### C-1565 · Three of Home's design-mandated copy states are declared and rendered nowhere
 
 | | |
