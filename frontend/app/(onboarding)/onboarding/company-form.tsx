@@ -260,8 +260,41 @@ export function CompanyForm() {
 
 /** 📁 The design's control: *"height:40px; padding:0 13px; border-radius:8px;
  * border:1px solid var(--line); font-size:13.5px."* */
+/**
+ * 🔴 **`outline-none` was suppressing the focus indicator entirely** —
+ * 📁 Design System §17 `2.4.7`: ***"2px brand focus ring at 2px offset plus a
+ * border change; **never suppressed**."***
+ *
+ * ⛔ **It defeated BOTH halves.** ⚡ **Measured in a browser against the real
+ * cascade**, not reasoned about — the same method `globals.css` records
+ * learning for [B-1058](../../../../docs/BUGS.md):
+ *
+ * | | outline | ring |
+ * |---|---|---|
+ * | **with `outline-none`** | 2px solid **transparent** | ⛔ **none** |
+ * | **without it** | ✅ 1px solid `--color-accent` | ✅ 3px `--color-accent-subtle` |
+ *
+ * ⚠️ **Named by token, not by the literal each resolved to.** ⛔ The measured
+ * values are in the commit message; **`design-tokens.test.tsx` reads comments
+ * too, and it is right to** — 📁 a guard that skipped them would miss a literal
+ * inside a template string.
+ *
+ * ⚠️ **So a keyboard user had no visible focus at all on the first screens a
+ * customer ever sees.** ⛔ **`:focus-visible` in `globals.css` already draws
+ * the design's exact pair** — `--brand` plus a 3px `--brand-tint` halo — **and
+ * a Tailwind utility of equal specificity, emitted later, was overriding it.**
+ *
+ * ✅ **Removed rather than replaced.** ⛔ **Adding a `focus-visible:` class here
+ * would be a fourth focus mechanism**, which is precisely the defect B-1058
+ * was: *"the defect is not either treatment; it is that BOTH exist."*
+ *
+ * ⚡ **`transition-shadow` stays** — it now has a ring to transition.
+ * ⚠️ **The joined slug control keeps its `outline-none`** and is correct:
+ * its wrapper carries `focus-proxy` because `overflow-hidden` would clip the
+ * input's own indicator.
+ */
 const CONTROL =
-  'h-control-md w-full rounded-md border border-border bg-surface px-[13px] text-sm text-content outline-none transition-shadow ';
+  'h-control-md w-full rounded-md border border-border bg-surface px-[13px] text-sm text-content transition-shadow ';
 
 /**
  * 📁 **The design's label row** — the field name at 12.5px/600 with its

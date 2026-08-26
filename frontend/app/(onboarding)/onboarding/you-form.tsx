@@ -204,7 +204,11 @@ export function YouForm() {
           aria-invalid={teamSizeError !== null}
           aria-describedby={teamSizeError === null ? undefined : 'team-size-error'}
           className={cn(
-            'h-control-md w-full rounded-md border bg-surface px-[13px] text-sm text-content outline-none transition-shadow',
+            // 🔴 **`outline-none` removed** — 📁 §17 `2.4.7`, *"never
+            // suppressed"*. **Measured: it defeated the outline AND the 3px
+            // ring `globals.css` draws.** ⚠️ **The `ring-danger-subtle` below is
+            // a VALIDATION state and is unaffected.**
+            'h-control-md w-full rounded-md border bg-surface px-[13px] text-sm text-content transition-shadow',
             teamSizeError === null
               ? 'border-border '
               : // 📁 *"border:1px solid var(--risk); box-shadow:0 0 0 3px var(--risk-tint)"*.

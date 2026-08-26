@@ -206,7 +206,11 @@ export function WorkspaceForm() {
           }}
           // 📁 *"height:42px; font-size:14px"* — taller than a step control,
           // because this field is the screen.
-          className="h-[42px] w-full rounded-md border border-border bg-surface px-[13px] text-sm text-content outline-none transition-shadow "
+          // 🔴 **`outline-none` removed** — 📁 §17 `2.4.7`, *"never
+          // suppressed"*. ⛔ **Measured in a browser: it suppressed both the
+          // outline and the ring.** ⚠️ **The slug control below keeps its own
+          // `outline-none` and is correct — its wrapper carries `focus-proxy`.**
+          className="h-[42px] w-full rounded-md border border-border bg-surface px-[13px] text-sm text-content transition-shadow "
         />
         {domain === null ? null : (
           // 📁 *"Filled from northwind.com — edit if it's wrong"*, in `--ai-ink`
