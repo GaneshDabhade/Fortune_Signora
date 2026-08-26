@@ -176,3 +176,38 @@ describe('a failed fetch is not an empty account', () => {
     expect(screen.queryByText('Headcount')).not.toBeInTheDocument();
   });
 });
+
+/**
+ * 🔴 **[B-299](../../../docs/BUGS.md) ⑨ — the eighth invented heading on this
+ * surface, and the only one that was a PEER of the heading above it.**
+ *
+ * ⛔ **The card carried `<CardTitle>What changed, and who says so</CardTitle>`,
+ * which `card.tsx` renders as an `h2`** — the same level as the *Signals
+ * timeline* section heading two lines up. ⚠️ **So the design's section
+ * announced itself twice, in two vocabularies, at one outline level**, and a
+ * reader navigating by heading met an invented one immediately after the
+ * design's.
+ *
+ * 📁 **Measured across all 35 design documents**: *"What changed, and who says
+ * so"* appears **zero** times, and *"What changed"* appears **zero** times in
+ * Account 360.
+ */
+describe('🔴 the list carries no heading of its own — B-299 ⑨', () => {
+  it('⛔ renders no heading at all, invented or otherwise', () => {
+    render(<ObservationList observations={[observation()]} isLoading={false} />);
+
+    expect(screen.queryAllByRole('heading')).toHaveLength(0);
+  });
+
+  /**
+   * ⚠️ **The vacuity half.** ⛔ A component rendering nothing would satisfy the
+   * assertion above — 📁 the *instrument too narrow* failure, which passes
+   * silently. ✅ **The rows are still there; only the title went.**
+   */
+  it('⚠️ vacuity guard — the observation itself still renders', () => {
+    render(<ObservationList observations={[observation()]} isLoading={false} />);
+
+    expect(screen.getByRole('list')).toBeInTheDocument();
+    expect(screen.getAllByRole('listitem').length).toBeGreaterThan(0);
+  });
+});

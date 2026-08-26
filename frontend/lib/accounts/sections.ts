@@ -198,7 +198,23 @@ export const ACCOUNT_SECTIONS: readonly AccountSection[] = [
     id: 'signals',
     label: 'Signals timeline',
     supply: 'supplied',
-    source: 'useAccountObservations — what changed, and what Signora made of it',
+    // 🔴 **This said *"what changed, and what Signora made of it"* and the
+    // second half is not true** — [B-299](../../../docs/BUGS.md) ⑨.
+    // ⛔ **`AccountObservation` carries `attribute`, `provider`, `kind`,
+    // `direction` and `magnitude` — a change and its provenance, and no
+    // interpretation at all.**
+    //
+    // ⚠️ **📁 The design's `signalEvents` are one layer up**: each has a
+    // `tag` (*Risk*), an `action` (*Open call*) and a rationale. **Those are
+    // SIGNALS**, and the posture that tags them is published — `GET
+    // /scoring-model` returns `TypePosture[]` precisely so no client builds a
+    // second vocabulary. ⛔ **What does not exist is a per-account signal
+    // read**: `/triage` is workspace-wide with no account filter.
+    // ⚡ **So the section renders the nearest producer that exists, and
+    // 📁 [C-1564](../../../docs/LANE_COORDINATION.md) carries what the
+    // design's version would need.**
+    source:
+      'useAccountObservations — what changed and who reported it. NOT what Signora made of it: the design draws postured signals, and no per-account signal read exists',
   },
   {
     id: 'research',

@@ -705,6 +705,44 @@ reporting set · Strategic"* on the title line, **and the band carries no
 placeholder at all when the account is unlabelled** — 📁 `AccountTags`' own law,
 *"a placeholder would make it look like a gap the product should fill."*
 
+## ⑨ The eighth invented heading, and the only one that was a PEER of the design's
+
+⛔ **`ObservationList` carried `<CardTitle>What changed, and who says so</CardTitle>`**,
+and 📁 `card.tsx` renders `CardTitle` as an **`h2`** — **the same level as the
+*Signals timeline* section heading two lines above it.**
+
+⚠️ **So the design's section announced itself twice, in two vocabularies, at one
+outline level.** A reader navigating by heading met an invented one immediately
+after the design's.
+
+📁 **Measured across all 35 documents**: *"What changed, and who says so"*
+appears **zero** times, and *"What changed"* appears **zero** times in Account
+360.
+
+✅ **Removed rather than renamed** — the design draws a section heading and then
+the events; there is no inner title, and **inventing a quieter one is the same
+defect in a smaller font.** ⚡ **The section's `aria-labelledby` already names
+the region**, so nothing lost its name. **Verified in a browser: one heading in
+`#signals`, and it is *Signals timeline*.**
+
+### 📁 And the source note claimed an interpretation that is not there
+
+⛔ ***"useAccountObservations — what changed, and what Signora made of it."***
+**`AccountObservation` carries `attribute`, `provider`, `kind`, `direction` and
+`magnitude`** — a change and its provenance, **and no interpretation at all.**
+
+⚡ **📁 The design's `signalEvents` are one layer up**: each carries a `tag`
+(*Risk*), an `action` (*Open call*) and a rationale. **Those are SIGNALS**, and
+the posture that tags them **is published** — `GET /scoring-model` returns
+`TypePosture[]` *"precisely so no client builds a second vocabulary."*
+
+⛔ **What does not exist is a per-account signal read** — `/triage` is
+workspace-wide with no account filter. ⚡ **So the section renders the nearest
+producer that exists**, and 📁 the design's `signalFilters` — *All · Risk ·
+Buying* — **cannot be built on the observation feed**: the classification would
+have to be authored here, which is the second vocabulary the catalog exists to
+prevent.
+
 ## ✅ Fixed
 
 | | |
@@ -716,6 +754,7 @@ placeholder at all when the account is unlabelled** — 📁 `AccountTags`' own 
 | **④** | Every id is `pageNav`'s `href` with its `#` removed, and `AccountSection.id`'s docstring says so |
 | **⑤** | `AccountSection.rail` — 📁 the design's `pageNav` label, **stated only where it differs from the heading**, because two copies of one string is what [§2](../CLAUDE.md) forbids |
 | **⑥** | The absent half of `anchored` is **derived** from `absent()`, so a seventh unfillable section cannot arrive unanchored. Order corrected. The rail ungated from `score` |
+| **⑨** | The invented `h2` removed and **guarded, with a vacuity half** — a component rendering nothing would satisfy *"no headings"*, so the rows are asserted too. The source note corrected |
 | **⑧** | The customer's label chip rendered on the record header. **Two false explanatory notes corrected** — a code comment the next lane would have believed ([§2](../CLAUDE.md)) |
 | **⑦** | Six sentences rewritten to state a capability rather than a setup, and **guarded**: no `absence` and no `source` may assert the state of the reader's connections. ⚡ **With a vacuity guard** — the oracle must still recognise all four sentences it was written for, and must NOT match *"once Signora can read a file store"* |
 

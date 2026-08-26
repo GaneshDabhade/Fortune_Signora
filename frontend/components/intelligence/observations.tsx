@@ -2,7 +2,7 @@ import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react';
 
 import { howLongAgo } from '@/components/intelligence/dates';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
-import { Card, CardBody, CardHeader, CardTitle, EmptyState, SkeletonText } from '@/components/ui';
+import { Card, CardBody, EmptyState, SkeletonText } from '@/components/ui';
 import type { AccountObservation } from '@/lib/api/types';
 
 /**
@@ -171,9 +171,24 @@ export function ObservationList({
 }) {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>What changed, and who says so</CardTitle>
-      </CardHeader>
+      {/* 🔴 **The eighth invented heading on this surface** —
+          [B-299](../../../docs/BUGS.md) ⑨.
+          ⛔ **This card carried `<CardTitle>What changed, and who says so</CardTitle>`,
+          which `card.tsx` renders as an `h2`** — **a PEER of the section
+          heading two lines above it**, and 📁 the phrase appears in **zero of
+          the 35 design documents.** *"What changed"* appears **zero times in
+          Account 360.**
+
+          ⚠️ **So the design's *Signals timeline* section announced itself
+          twice, in two vocabularies, at the same outline level** — and a
+          reader navigating by heading met an invented one immediately after
+          the design's.
+
+          ✅ **Removed rather than renamed.** 📁 The design draws a section
+          heading and then the events; **there is no inner title in the
+          document**, and inventing a quieter one is the same defect in a
+          smaller font. ⚡ **The section's `aria-labelledby` already names this
+          region** — nothing loses its name. */}
       <CardBody>
         {isLoading && <SkeletonText lines={3} />}
         {!isLoading && isError && <Unavailable />}
