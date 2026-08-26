@@ -16188,3 +16188,69 @@ only job is to attach the validated intent to the sign-in redirect?** ⚡ **If t
 answer is no, rules 06–09 and `intent.ts` are dead code and should be removed
 rather than left looking implemented** — 📁 which is [§2](../CLAUDE.md)'s rule
 about a repository that tells the truth about itself.
+
+---
+
+### C-1560 · The top-bar field is still a second search, and the condition its own comment named has been met
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-25, auditing `Global Search`'s `rules` |
+| **Module** | `product_surface` — 📁 [`top-bar.tsx`](../frontend/components/shell/top-bar.tsx) · [`account-search.tsx`](../frontend/components/intelligence/account-search.tsx) |
+| **Owner of the answer** | 🔴 **Product owner / Lane C** — ⛔ **it needs a backlog row; `components/shell` is 🔴 and this lane's queue has none** |
+| **Status** | **`OPEN`** — ⚠️ **nothing is broken; the product has two search surfaces where the design has one** |
+
+### 📁 The design says it four times, and never ambiguously
+
+> ***"There is exactly one global search and it is the palette. The top-bar
+> field is a doorway, not a second search: clicking it or pressing ⌘K opens the
+> same surface with the same behaviour."***
+
+| Source | Words |
+|---|---|
+| **App Shell §08** | the sentence above |
+| **App Shell `topBarSlots`** | *"Search — 224 × 32. **Opens the palette on click or ⌘K.**"* |
+| **App Shell `landmarks`** | *"`search` — the top-bar field… **Opens the palette as a dialog.**"* |
+| **App Shell `Rationale`** | *"**Two search boxes create two mental models and two sets of expectations.**"* |
+| **Global Search `rules` 01** | *"One search surface. The top-bar field is a doorway to it, **never a second implementation**."* |
+
+⛔ **`account-search.tsx` opens its own `role="listbox"` on `onFocus`.** **The
+field is a surface, not a doorway.**
+
+### 🔴 Its own comment named the condition, and the condition has been met
+
+📁 **`top-bar.tsx:218`, verbatim:**
+
+> ***"…leaves the working control in it **until the row that replaces the
+> occupant runs**."***
+> ***"`AccountSearch` is not decoration — it finds accounts today, which is why
+> it stays rather than being swapped for a palette opener **that would open
+> nothing**."***
+
+⚡ **That was true and careful when written.** ⛔ **The palette was *"complete,
+tested, and mounted by nothing"* — 📁 [C-259](#c-259), closed by TASK-1442.
+**It is mounted now**, `⌘K` reaches it, and a palette opener would open
+something.
+
+⚠️ **This is the stale-precondition shape**: a comment true when written, whose
+trigger has since fired, and nothing retired it.
+
+### ✅ And no capability would be lost — measured
+
+| | |
+|---|---|
+| **`AccountSearch` consumers** | **exactly one** — `top-bar.tsx:263` |
+| **The palette's record group** | 📁 `shell-palette.tsx:190` — **`useAccountSearch`, the same hook** |
+| **`single-search.test.tsx`** | ✅ **passes and is right**: one request path, one cache identity, one mount |
+
+🔴 **The guard forbids a second *implementation* and there is only one.** ⛔ **It
+does not reach a second *surface*, and its own docstring says so deliberately** —
+the literal reading was rejected because it would refuse Companies' approved
+`Search by name`. ⚡ **That reasoning is about a SCREEN's search and does not
+bear on the shell's own field**, so this is not the deferral being re-litigated.
+
+**What is being asked:** 🔴 **a row to swap the occupant for the doorway.** ⚡
+**The work**: the slot renders a control that opens the palette, `ShellPalette`
+publishes an opener the way 📁 `Copilot` already publishes `useCopilot()`, and
+`account-search.tsx` and its tests are deleted. ⛔ **`useAccountSearch` stays —
+the palette is its consumer.**
