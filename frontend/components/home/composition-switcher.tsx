@@ -97,6 +97,26 @@ export function CompositionSwitcher({
      * the design draws it as a segmented control — 📁 the same treatment the App
      * Shell's theme control gets, for the same reason: the options are visible.
      */
+    /**
+     * 🔴 **A failed switch was silent** — [C-1562](../../../docs/LANE_COORDINATION.md)'s
+     * third instance, filed there because Lane A's `B-` block is exhausted.
+     *
+     * 📁 **Notification Center's `deliveryRules` ⑧**: ***"A failed write
+     * reverts the control and says so — a preference that silently did not
+     * save is worse than one that refused."***
+     *
+     * ⛔ **This had no error path at all.** ⚡ **The control DID revert** — it
+     * renders `current`, which only moves when the server confirms — **so the
+     * first half held and the second did not**: a reader clicked *Executive*,
+     * the button re-enabled, the selection stayed where it was, and **nothing
+     * said why.**
+     *
+     * ✅ **The wording is the product's own**, from the four profile panels
+     * that already implement this rule — ⛔ **a third phrasing of *it did not
+     * save* would be the two-representations defect
+     * ([§2](../../../CLAUDE.md)) in copy.**
+     */
+    <div className="flex flex-none flex-col items-end gap-1">
     <div
       role="radiogroup"
       aria-label="Home composition"
@@ -127,6 +147,14 @@ export function CompositionSwitcher({
           </button>
         );
       })}
+    </div>
+      {/* ⛔ **Outside the `radiogroup`**, because a paragraph is not a radio and
+          a group that contains one is a group a screen reader mis-counts. */}
+      {change.isError ? (
+        <p role="alert" className="text-2xs text-danger">
+          That did not save. Check your connection and try again.
+        </p>
+      ) : null}
     </div>
   );
 }

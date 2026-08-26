@@ -16490,6 +16490,30 @@ the way this one was.
 is the workaround this item exists to end — **a defect described inside a
 governance request is a defect nothing tracks by severity, status or module.**
 
+### ⚠️ A third instance, same day — a silent failed save on Home
+
+⛔ **`components/home/composition-switcher.tsx` had no error path at all.**
+📁 **Notification Center's `deliveryRules` ⑧**: ***"A failed write reverts the
+control and says so — a preference that silently did not save is worse than one
+that refused."***
+
+⚡ **The control DID revert** — it renders `current`, which only moves when the
+server confirms — **so the rule's first half held and the second did not.** A
+reader clicked *Executive*, the button re-enabled, the selection stayed put, and
+**nothing said why.**
+
+⚠️ **And the product already had the answer.** **Four profile panels implement
+this exact rule** with `role="alert"` and *"That did not save. Check your
+connection and try again."* ⛔ **The switcher was the one preference control
+that did not** — the same *shipped pattern, one surface missing* shape as
+[B-299](BUGS.md#b-299) ⑧.
+
+✅ **Fixed and guarded, reusing the product's own wording** — a third phrasing
+of *it did not save* would be the two-representations defect in copy.
+
+⛔ **Also no row.** ⚡ **Three defects on three different screens in one session,
+none of them foldable into [B-299](BUGS.md#b-299)**, all recorded here.
+
 ### The recommendation
 
 > **Allocate Lane A a second `B-` range at `B-1600`+.**
