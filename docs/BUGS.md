@@ -19445,6 +19445,25 @@ poll(width) === 320          ✗  polling a width nothing will move again
 
 > ⚠️ **This is a change to what certification runs against, so it is a SLICE and not a Closeout** — 📁 §20e. ⛔ **QE must not fold it into a cycle it is also certifying.**
 
+### 🔴 OBSERVED LIVE, 2026-08-26 — and this is the third occurrence
+
+**The machine rebooted at 03:23:37. `journalctl -u docker` puts the daemon stop at 03:22:21.** ⚡ **Two minutes later:**
+
+```
+signora-prod-api-1     Up  (unhealthy)     restart: unless-stopped
+signora-prod-relay-1   Up                  restart: unless-stopped
+signora-prod-worker-1  Up                  restart: unless-stopped
+signora-prod-frontend-1   — GONE —         no policy
+signora-prod-postgres-1   — GONE —         no policy
+signora-prod-redis-1      — GONE —         no policy
+```
+
+⛔ **Exactly the split this row describes, on a stack nobody was using.** ⚡ **`curl 3100` returned `000` while `8100` returned `200`** — **an API answering against a database that is not there, which is the worst of the three states available.**
+
+✅ **[B-1071](#b-1071)'s mechanism confirmed a THIRD time, and found in the two commands that row records** — `journalctl -u docker` plus the log's `stat`. ⚡ **It took under a minute, against the hour it cost twice before.**
+
+⚠️ **A separate event the same check separated cleanly:** **a full browser suite died at 373 of 460 at 18:22:01 the previous evening — NINE HOURS before the daemon stop — so that was session teardown, not this.** ⛔ **Two failures with one signature and different causes; the timestamps are what told them apart.**
+
 ### B-1075 · 🟠 Two promotions reached `main` with an open 🔴 row, against §20e's one blocking rule
 
 | | |
