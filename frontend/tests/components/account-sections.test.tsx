@@ -87,7 +87,10 @@ describe('📁 the "On this page" rail maps the WHOLE record', () => {
 
     const rail = screen.getByRole('navigation', { name: 'On this page' });
     for (const section of ACCOUNT_SECTIONS) {
-      expect(within(rail).getByRole('link', { name: section.label }), section.id).toBeVisible();
+      // ⚡ **The rail's own string, not the heading** — 📁
+      // [B-299](../../../docs/BUGS.md) ⑤, and the fallback is the majority.
+      const name = section.rail ?? section.label;
+      expect(within(rail).getByRole('link', { name }), section.id).toBeVisible();
     }
   });
 
@@ -96,7 +99,9 @@ describe('📁 the "On this page" rail maps the WHOLE record', () => {
 
     const rail = screen.getByRole('navigation', { name: 'On this page' });
     const dimmed = within(rail).getByRole('link', { name: 'Buying intent' });
-    const live = within(rail).getByRole('link', { name: 'Account score' });
+    // 📁 **`Score & health` is the design's RAIL label**; *Account score* is
+    // its section heading, and the rail does not use it.
+    const live = within(rail).getByRole('link', { name: 'Score & health' });
 
     expect(dimmed.className).not.toBe(live.className);
   });
@@ -106,7 +111,8 @@ describe('📁 the "On this page" rail maps the WHOLE record', () => {
 
     const rail = screen.getByRole('navigation', { name: 'On this page' });
     for (const section of ACCOUNT_SECTIONS) {
-      expect(within(rail).getByRole('link', { name: section.label })).toHaveAttribute(
+      const name = section.rail ?? section.label;
+      expect(within(rail).getByRole('link', { name })).toHaveAttribute(
         'href',
         `#${section.id}`,
       );
@@ -141,18 +147,97 @@ describe('🔴 every section the design’s page navigation declares is declared
    * *"Renewal · 3 years"* — **commercial milestones**, where the timeline
    * carries activity.
    */
-  it('declares a section for every anchor in the design’s rail', () => {
-    const declared = new Set(ACCOUNT_SECTIONS.map((section) => section.id));
-
-    for (const id of [
-      'emails',
+  /**
+   * 🔴 **The ids are the design's `href`s with the `#` removed, and this list
+   * is where that stopped being a convention and became a guard** —
+   * [B-299](../../../docs/BUGS.md) ④.
+   *
+   * ⛔ **Seven were the descriptive long form instead**: `#opportunities` for
+   * `#opps`, `#org-chart` for `#org`, `#relationships` for `#graph`,
+   * `#tech-stack` for `#tech`, `#competitors` for `#compete`, `#emails` for
+   * `#email`, `#custom-fields` for `#fields`.
+   *
+   * ⚠️ **And the FIRST version of this very assertion asked for `emails` and
+   * `custom-fields`** — the implementation's names, not the design's — **so
+   * the guard written to prove the rail matches the design was itself checking
+   * against the product.** ⚡ **The list below is transcribed from `pageNav`,
+   * in `pageNav`'s order**, so a reader can diff it against the document.
+   *
+   * ⛔ **The order is asserted too.** 📁 The design puts *Emails* before
+   * *Meetings* and this registry had them the other way round — an ordering
+   * nothing else on the page could reveal, because both sections are absent
+   * and render identically.
+   */
+  it('declares the design’s anchors, in the design’s order', () => {
+    // 📁 `Fortune Signora Account 360.dc.html` → `pageNav`, verbatim.
+    const PAGE_NAV = [
+      'score',
+      'signals',
+      'research',
+      'opps',
+      'contacts',
+      'org',
+      'graph',
+      'tech',
+      'compete',
+      'market',
+      'activity',
+      'email',
+      'meetings',
       'files',
       'notes',
       'tasks',
-      'custom-fields',
+      'fields',
       'history',
-    ]) {
-      expect(declared, `the design's rail names ${id} and this file does not`).toContain(id);
+    ];
+
+    const declared = ACCOUNT_SECTIONS.map((section) => section.id);
+    for (const id of PAGE_NAV) {
+      expect(declared, `the design's rail names #${id} and this file does not`).toContain(id);
+    }
+
+    // ⚡ **Order, asserted as the design's own subsequence** — ⛔ the registry
+    // holds three sections `pageNav` does not name (`summary`, `health`,
+    // `intent`), **so equality would be the wrong question**; what must hold
+    // is that the eighteen it does name appear in its order.
+    expect(declared.filter((id) => PAGE_NAV.includes(id))).toEqual(PAGE_NAV);
+  });
+
+  /**
+   * 📁 **The rail's label and the section's heading are two strings on seven
+   * sections, and both are the design's** — [B-299](../../../docs/BUGS.md) ⑤.
+   *
+   * ⛔ **The rail rendered the heading**, so *"Contacts & committee"*,
+   * *"Tech stack"*, *"Org chart"*, *"Research"*, *"Opportunities"*,
+   * *"Activity"*, *"Score & health"* and *"History"* reached no screen.
+   */
+  it('📁 carries the design’s rail vocabulary where it differs from the heading', () => {
+    const byId = new Map(ACCOUNT_SECTIONS.map((section) => [section.id, section]));
+
+    for (const [id, rail, heading] of [
+      ['score', 'Score & health', 'Account score'],
+      ['research', 'Research', 'Research summary'],
+      ['opps', 'Opportunities', 'Open opportunities'],
+      ['contacts', 'Contacts & committee', 'Contacts & decision makers'],
+      ['org', 'Org chart', 'Organisation chart'],
+      ['tech', 'Tech stack', 'Technology stack'],
+      ['activity', 'Activity', 'Recent activity'],
+      ['history', 'History', 'Historical timeline'],
+    ] as const) {
+      expect(byId.get(id)?.rail, `${id}'s rail entry`).toBe(rail);
+      expect(byId.get(id)?.label, `${id}'s heading`).toBe(heading);
+    }
+  });
+
+  /**
+   * ⛔ **`rail` is stated ONLY where the two differ.** ⚡ Repeating the heading
+   * into `rail` would be two copies of one string with nothing keeping them
+   * equal ([§2](../../../CLAUDE.md)) — **and the seven divergences would stop
+   * being visible in the file.**
+   */
+  it('⛔ and states nothing where the design uses one word for both', () => {
+    for (const section of ACCOUNT_SECTIONS) {
+      expect(section.rail, `${section.id} repeats its own heading`).not.toBe(section.label);
     }
   });
 

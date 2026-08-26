@@ -58,9 +58,44 @@ export type SectionSupply =
   | 'absent';
 
 export interface AccountSection {
+  /**
+   * 📁 **The design's own anchor, verbatim** — `pageNav`'s `href` with its
+   * `#` removed.
+   *
+   * 🔴 **Not a slug this file chose.** ⚡ **The anchor is a CONTRACT**, and the
+   * design's own `stateRules` say so twice: *"anchor links from the page nav
+   * auto-expand the target section"* and *"the URL updates so an expanded
+   * section is shareable."* ⛔ **A shareable URL that does not match the design
+   * is a different URL.**
+   *
+   * ⚠️ **Seven were the descriptive long form rather than the design's** —
+   * `#opportunities` for `#opps`, `#org-chart` for `#org`, `#relationships`
+   * for `#graph`, `#tech-stack` for `#tech`, `#competitors` for `#compete`,
+   * `#emails` for `#email`, `#custom-fields` for `#fields`.
+   * 📁 [B-299](../../../docs/BUGS.md) ④.
+   */
   readonly id: string;
-  /** 📁 The design's own heading, verbatim. */
+  /**
+   * 📁 **The design's own SECTION HEADING, verbatim** — the `14.5px/600` title
+   * the mockup draws above the section's content.
+   */
   readonly label: string;
+  /**
+   * 📁 **The design's own RAIL entry, verbatim** — `pageNav`'s label, **which
+   * is a different string from the heading on seven sections.**
+   *
+   * ⚡ **Two vocabularies, both the design's**, and the divergence is the
+   * point rather than an inconsistency: *Contacts & committee* in a 184px rail,
+   * ***Contacts & decision makers*** over the section itself. ⛔ **The rail
+   * rendered the heading**, so the design's compact vocabulary reached no
+   * screen at all.
+   *
+   * ⚠️ **Omitted where the design uses ONE string for both**, which is most of
+   * them — ⛔ **stating it twice would invite the two copies to disagree**
+   * ([§2](../../../CLAUDE.md)), and the seven that differ are then the only
+   * seven this field appears on.
+   */
+  readonly rail?: string;
   readonly supply: SectionSupply;
   /**
    * ⚡ **What fills it, or what would.** ✅ **A hook name when supplied** — so a
@@ -96,6 +131,7 @@ export const ACCOUNT_SECTIONS: readonly AccountSection[] = [
   {
     id: 'score',
     label: 'Account score',
+    rail: 'Score & health',
     supply: 'supplied',
     source: 'useAccountScore — the score, its delta and every contribution',
   },
@@ -129,18 +165,21 @@ export const ACCOUNT_SECTIONS: readonly AccountSection[] = [
   {
     id: 'research',
     label: 'Research summary',
+    rail: 'Research',
     supply: 'supplied',
     source: 'useAccountResearch — company, market and relationship research',
   },
   {
-    id: 'opportunities',
+    id: 'opps',
     label: 'Open opportunities',
+    rail: 'Opportunities',
     supply: 'supplied',
     source: 'useAccountOpportunity — the opportunity and its stage',
   },
   {
     id: 'contacts',
     label: 'Contacts & decision makers',
+    rail: 'Contacts & committee',
     // 🔴 **Corrected from `supplied` — [TASK-1476](../../../docs/BACKLOG.md),
     // 2026-08-12.** ⚠️ **The old cell hedged with *"partially"* and named
     // `useBuyingCommittee` as the source, and that read is a DIFFERENT
@@ -171,15 +210,16 @@ export const ACCOUNT_SECTIONS: readonly AccountSection[] = [
       'Signora records that a role was held at this company and for how long, but not who holds it. Named contacts, their part in the decision and how warm each relationship is are not something Signora can see yet.',
   },
   {
-    id: 'org-chart',
+    id: 'org',
     label: 'Organisation chart',
+    rail: 'Org chart',
     supply: 'absent',
     source: 'nothing infers reporting lines; no email or calendar ingestion',
     absence:
       'An organisation chart is inferred from email, calendar and public sources. Signora is not reading any of those yet.',
   },
   {
-    id: 'relationships',
+    id: 'graph',
     label: 'Relationship graph',
     supply: 'absent',
     source: 'nothing measures relationship strength between people',
@@ -187,15 +227,16 @@ export const ACCOUNT_SECTIONS: readonly AccountSection[] = [
       'Signora cannot yet tell you who on your side knows whom on theirs, or how well.',
   },
   {
-    id: 'tech-stack',
+    id: 'tech',
     label: 'Technology stack',
+    rail: 'Tech stack',
     supply: 'absent',
     source: 'no enrichment provider detects installed technology',
     absence:
       'Detected technology comes from an enrichment source. None is connected to your organization yet.',
   },
   {
-    id: 'competitors',
+    id: 'compete',
     label: 'Competitors',
     supply: 'supplied',
     // ⚠️ The declared competitor list, not *"mentioned in the last 90 days"* —
@@ -213,8 +254,19 @@ export const ACCOUNT_SECTIONS: readonly AccountSection[] = [
   {
     id: 'activity',
     label: 'Recent activity',
+    rail: 'Activity',
     supply: 'supplied',
     source: 'useAccountTimeline (hooks/timeline) — everything recorded about this account',
+  },
+  {
+    id: 'email',
+    label: 'Emails',
+    supply: 'absent',
+    // 📁 The design draws 38 threads with unanswered counts. ⛔ Nothing
+    // ingests mail: `sales_engagement` records an approach, never a message.
+    source: 'no mailbox integration; sales_engagement records approaches, not messages',
+    absence:
+      'Email with this account appears here once a mailbox is connected. None is connected to your organization yet.',
   },
   {
     id: 'meetings',
@@ -223,16 +275,6 @@ export const ACCOUNT_SECTIONS: readonly AccountSection[] = [
     source: 'no calendar or conversation-intelligence integration',
     absence:
       'Meetings appear here once a calendar is connected. None is connected to your organization yet.',
-  },
-  {
-    id: 'emails',
-    label: 'Emails',
-    supply: 'absent',
-    // 📁 The design draws 38 threads with unanswered counts. ⛔ Nothing
-    // ingests mail: `sales_engagement` records an approach, never a message.
-    source: 'no mailbox integration; sales_engagement records approaches, not messages',
-    absence:
-      'Email with this account appears here once a mailbox is connected. None is connected to your organization yet.',
   },
   {
     id: 'files',
@@ -267,7 +309,7 @@ export const ACCOUNT_SECTIONS: readonly AccountSection[] = [
       'Work somebody owes on this account appears here. Signora does not keep a task list yet.',
   },
   {
-    id: 'custom-fields',
+    id: 'fields',
     label: 'Custom fields',
     supply: 'absent',
     // 📁 *"12 fields."* ⛔ The account record's shape is fixed; nothing lets a
@@ -278,7 +320,11 @@ export const ACCOUNT_SECTIONS: readonly AccountSection[] = [
   },
   {
     id: 'history',
-    label: 'History',
+    // 📁 **The design's heading is *"Historical timeline"*** — the
+    // `14.5px/600` title above the section — **and its rail entry is
+    // *"History"***. ⚡ Two strings, both `pageNav` and the mockup's own.
+    label: 'Historical timeline',
+    rail: 'History',
     supply: 'absent',
     /**
      * ⚠️ **This is NOT the timeline, and the difference is why it is absent

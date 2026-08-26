@@ -16191,6 +16191,58 @@ about a repository that tells the truth about itself.
 
 ---
 
+### C-1562 · Lane A's `B-` identifier block is exhausted, and the next defect this lane finds has no number
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-26, on allocating [B-299](BUGS.md#b-299) |
+| **Module** | — **repository governance.** 📁 [`CLAUDE.md`](../CLAUDE.md) §20e, *Identifiers are allocated from a block* |
+| **Owner of the answer** | 🔴 **Product owner** — ⛔ **an allocation table lives in `CLAUDE.md`, which is 🔴 and is the product owner's alone** |
+| **Status** | **`OPEN`** — ⚠️ **not yet blocking. It blocks the next defect this lane finds** |
+
+### The measurement
+
+**`B-200`–`B-299` is fully allocated — 100 of 100**, counted rather than
+assumed:
+
+```
+grep -oE "^### B-2[0-9]{2}" docs/BUGS.md | sort -u | wc -l   →   100
+```
+
+⛔ **`B-300` is Lane B's**, and 📁 §20e is explicit: *"a lane allocates only
+from its own block."*
+
+### ⚡ Why this is filed rather than worked around
+
+⚠️ **Two findings today would each have opened a row and did not.** **The rail's
+anchors, vocabulary and ordering were folded into [B-299](BUGS.md#b-299) as ④⑤⑥**
+— **the same screen, the same design document, the same pass, so a single row is
+honest** — ⛔ **but that reasoning does not extend to the next unrelated
+defect**, and 📁 [§20e](../CLAUDE.md) names the failure precisely: *"no defect
+disappears because the lane that found it could not fix it."*
+
+⛔ **And borrowing a number is worse than waiting.** 📁 **[B-1000](BUGS.md#b-1000)
+is the worked example**: QE filed two findings as `B-200` and `B-201`,
+**both Lane A's range and both colliding with existing rows**, and
+`infra/state-check.py` reported it. ⚠️ **The cause was a search that answered
+*"what is the highest in my old range?"* when the question was *"what is the
+next free number in MY block?"***
+
+### The recommendation
+
+> **Allocate Lane A a second `B-` range at `B-1600`+.**
+
+⚡ **`1600` and not `1000`, `1400` or `1500`, and the reasoning is the
+precedent's**: `1000`+ is QE's, `1400`+ is Lane C's, `1500`+ is Lane A's `C-`
+range. ✅ **`500`–`900` stay untouched for Lanes D and E and the product
+owner**, which is the argument every prior extension made.
+
+⛔ **Nothing is renumbered and nothing migrates** — `B-200`–`B-299` keep their
+ids, their references and their history, and `200`–`299` is not used further.
+
+⚠️ **Measured before proposing**: no `B-`, `C-`, `TASK-` or ADR identifier in
+`1600`–`1699` is in use.
+
 ### C-1561 · A paged section cannot state its own count, so the design's collapsed-header rule has no subject on Recent activity
 
 | | |

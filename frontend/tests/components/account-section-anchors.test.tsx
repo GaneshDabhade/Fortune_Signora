@@ -125,10 +125,11 @@ describe("📁 the rail carries the design's counts", () => {
    * rather than a zero, exactly as the failed-read rule requires one level up.
    */
   it('renders NO count for a section that measured nothing — not a zero', () => {
-    render(<OnThisPage anchored={['score', 'tech-stack']} counts={{ score: 7 }} />);
+    render(<OnThisPage anchored={['score', 'tech']} counts={{ score: 7 }} />);
 
     const rail = screen.getByRole('navigation', { name: 'On this page' });
-    const tech = within(rail).getByRole('link', { name: /Technology stack/ });
+    // 📁 **`Tech stack` is the design's rail label** — B-299 ⑤.
+    const tech = within(rail).getByRole('link', { name: /Tech stack/ });
     expect(tech.textContent).not.toMatch(/\d/);
   });
 

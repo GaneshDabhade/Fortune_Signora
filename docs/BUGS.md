@@ -487,7 +487,7 @@ may also be describing the gradient's three colour stops (`25% · 50% · 75%`)
 rather than an iteration count. **Guessing would be inventing a behaviour.**
 
 
-### B-299 · 🟠 Account 360 answered three of the design's own state rules with the opposite of what they say
+### B-299 · 🟠 Account 360 answered six of the design's own declarations with the opposite of what they say
 
 | | |
 |---|---|
@@ -553,6 +553,67 @@ had already refused this in its own vocabulary**: a primary read failing is a
 `region-error`, and `region-error` at page scope is not a legal pairing.
 🔴 **The structure was producing the pairing the ladder throws on.**
 
+## ④ Seven anchors were the descriptive long form, not the design's
+
+📁 **`pageNav` names every anchor**, and the design's own `stateRules` make them
+a contract twice: *"anchor links from the page nav auto-expand the target
+section"* and *"the URL updates so an expanded section is shareable."*
+
+⛔ **A shareable URL that does not match the design is a different URL.**
+
+| design | was |
+|---|---|
+| `#opps` | `#opportunities` |
+| `#org` | `#org-chart` |
+| `#graph` | `#relationships` |
+| `#tech` | `#tech-stack` |
+| `#compete` | `#competitors` |
+| `#email` | `#emails` |
+| `#fields` | `#custom-fields` |
+
+⚠️ **And the guard written for this on 2026-08-26 asked for `emails` and
+`custom-fields`** — **the implementation's names, not the design's** — so the
+assertion written to prove the rail matches the design was checking it against
+the product.
+
+## ⑤ The rail rendered section headings, and the design gives it its own words
+
+📁 **Two vocabularies, both the design's**: `pageNav`'s label for a 184px rail,
+and the `14.5px/600` heading over the section. **They differ on eight
+sections**, and the rail rendered the heading, so the design's compact
+vocabulary reached no screen at all.
+
+| anchor | rail | heading |
+|---|---|---|
+| `#score` | **Score & health** | Account score |
+| `#research` | **Research** | Research summary |
+| `#opps` | **Opportunities** | Open opportunities |
+| `#contacts` | **Contacts & committee** | Contacts & decision makers |
+| `#org` | **Org chart** | Organisation chart |
+| `#tech` | **Tech stack** | Technology stack |
+| `#activity` | **Activity** | Recent activity |
+| `#history` | **History** | 🔴 **Historical timeline** |
+
+⛔ **`#history`'s HEADING was wrong too** — the registry said *"History"*, which
+is the rail's word. 📁 **The mockup's title is *"Historical timeline"***.
+
+## ⑥ Six sections rendered and the rail could not reach any of them
+
+⛔ **`anchored` was a hand-written list, and it went stale the same day
+`sections.ts` gained the design's *Emails · Files · Notes · Tasks · Custom
+fields · History*** — six sections that render unconditionally from `absent()`
+and that the rail did not name.
+
+⚠️ **Which is the failure the rail's own docstring is about**, pointed the other
+way: *"the section existing and the anchor not."*
+
+🔴 **And `pageNav` puts *Emails* BEFORE *Meetings*; the registry had them the
+other way round** — an ordering nothing on the page could reveal, because both
+are absent and render identically.
+
+⚡ **The rail itself was gated on `score`**, one level up from ③: a failing
+score removed the map as well as the record.
+
 ## ✅ Fixed
 
 | | |
@@ -561,6 +622,9 @@ had already refused this in its own vocabulary**: a primary read failing is a
 | **②** | `lastKnownCount` retired into `count`; a first visit states no number rather than `0` |
 | **③** | The three score outcomes scope to the score's own box. `Unavailable` (`as="page"`, subject *"this account"*) became `ScoreUnavailable` (`as="card"`, subject *"this account's score"*, reassurance *"The rest of this account's record is unaffected"*) — 📁 the design's *"states what is missing versus what is still trustworthy"*, **a sentence this page could not honestly have said before the gate went** |
 | **③b** | The correlation id now reaches it. `correlationOf(error)` existed and was already used for narration and research; **the score's own failure passed none** |
+| **④** | Every id is `pageNav`'s `href` with its `#` removed, and `AccountSection.id`'s docstring says so |
+| **⑤** | `AccountSection.rail` — 📁 the design's `pageNav` label, **stated only where it differs from the heading**, because two copies of one string is what [§2](../CLAUDE.md) forbids |
+| **⑥** | The absent half of `anchored` is **derived** from `absent()`, so a seventh unfillable section cannot arrive unanchored. Order corrected. The rail ungated from `score` |
 
 ⚡ **And one latent defect surfaced by the fix**: `ResearchPanel` guarded on
 `score === null`, **which `useQuery` never publishes** — it publishes

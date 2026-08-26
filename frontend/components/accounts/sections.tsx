@@ -168,7 +168,14 @@ export function OnThisPage({
               : 'text-content-subtle hover:text-content-muted',
           )}
         >
-          <span>{section.label}</span>
+          {/* 🔴 **The rail's own label, which is a DIFFERENT string from the
+              heading on seven sections** — 📁 [B-299](../../../docs/BUGS.md) ⑤.
+              ⛔ **This rendered `label`**, so the design's compact rail
+              vocabulary — *"Contacts & committee"*, *"Tech stack"*,
+              *"History"* — **reached no screen.** ⚡ `rail` is stated only
+              where the design's two strings differ, so the fallback is the
+              majority case rather than a guess. */}
+          <span>{section.rail ?? section.label}</span>
           {/* ⚡ **`margin-left:auto` and tabular numerals**, the design's own
               treatment. ⛔ **Absent rather than zero** where nothing counted.
               ⚠️ **`text-2xs` (11px) where the design draws 10px** — 📁 ruling ②,

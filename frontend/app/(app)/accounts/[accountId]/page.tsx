@@ -812,7 +812,20 @@ export default function AccountBriefPage() {
       }
       aside={<ReasoningCard accountId={accountId} workspaceId={workspaceId} />}
       rail={
-        score ? (
+        /**
+         * 🔴 **The rail was gated on the score too** —
+         * [B-299](../../../../docs/BUGS.md) ③, one level up from the sections.
+         *
+         * ⛔ **A failing score read removed the map as well as the record**, so
+         * a reader could neither see the sections that had answered nor learn
+         * that they existed. 📁 *"Always scoped to the smallest failing
+         * section; the rest of the record stays live."*
+         *
+         * ⚡ **`notScored` still removes it, and correctly**: that is the whole
+         * page saying this account has never been scored, and there are no
+         * sections beneath it to map.
+         */
+        !notScored ? (
           <OnThisPage
             // 🔴 **📁 The design gives every rail entry a count and this rail
             //    dropped them all** — `pageNav` carries `['Signals timeline',
@@ -835,59 +848,52 @@ export default function AccountBriefPage() {
                 ? {}
                 : { signals: observations.data.length }),
               ...(rendersCompetitors && competitors.data !== undefined
-                ? { competitors: competitors.data.competitors.length }
+                ? { compete: competitors.data.competitors.length }
                 : {}),
-              ...(opportunity === undefined ? {} : { opportunities: 1 }),
+              ...(opportunity === undefined ? {} : { opps: 1 }),
             }}
-            // ⚡ **What this page actually renders**, in the design's order.
-            // ⛔ **`score`, `signals` and `activity` are the supplied sections
-            // that have a section here**; the seven absent ones all carry an id.
-            // ⚠️ **`activity` only when the utility panel is not carrying it**,
-            // which is why `history.carrying` decides it.
+            /**
+             * ⚡ **What this page actually renders, in the design's order.**
+             *
+             * 🔴 **The absent half is DERIVED — [B-299](../../../../docs/BUGS.md) ⑥.**
+             * ⛔ **It was a hand-written list, and it went stale the moment
+             * `sections.ts` gained the design's *Emails · Files · Notes ·
+             * Tasks · Custom fields · History*** — **six sections that render
+             * unconditionally from `absent()` twelve hundred lines below, and
+             * that the rail could not reach.**
+             *
+             * ⚠️ **Which is the failure this rail's own docstring is about**,
+             * pointed the other way: *"the section existing and the anchor
+             * not."* ✅ **One source now**: whatever `absent()` renders is
+             * whatever the rail names, and a seventh absent section cannot
+             * arrive unanchored.
+             *
+             * ⚡ **The supplied ones stay listed, because they are the ones
+             * that are CONDITIONAL** — `compete` on a declaration existing,
+             * `activity` on the utility panel not carrying it — **and a
+             * condition is exactly what a derivation cannot see.**
+             */
             anchored={[
-              // ⚡ **`summary`, `research` and `competitors` join the rail** —
-              // [TASK-1476](../../../../docs/BACKLOG.md). ⛔ **They rendered on
-              // this page all along and carried no `id`**, so the rail could not
-              // link to them and its docstring recorded that as a limitation.
-              // ✅ **The limitation is closed rather than restated.**
-              // ⚡ **`summary` is unconditional now.** 📁 *"Header, title and
-              // counts paint from cache; only the body skeletons"* — **the
-              // section renders in all four of its states**, so the rail entry
-              // is stable and nothing below it moves when the read lands.
+              // ⚡ **`summary` is unconditional.** 📁 *"Header, title and counts
+              // paint from cache; only the body skeletons"* — **the section
+              // renders in all four of its states**, so the rail entry is
+              // stable and nothing below it moves when the read lands.
               'summary',
               'score',
-              'health',
-              'intent',
               'signals',
-              // 🔴 **`contacts` joins the rail — TASK-1476.** ⚠️ It was
-              // classified `supplied` and had no section here, so the rail could
-              // never anchor it. **It is `absent` now and states why**, which is
-              // the treatment §20c requires and the one every other unfillable
-              // section already gets.
-              'contacts',
               // ⚡ **`research` is unconditional** — `ResearchPanel` always
-              // renders its section, because the invitation to start research is
-              // itself the content when there is none.
+              // renders its section, because the invitation to start research
+              // is itself the content when there is none.
               'research',
-              // 🔴 **`opportunities` was missing from this list and the section
-              // renders unconditionally** — so *Open opportunities* existed
-              // on the page and **On this page could not reach it.**
-              // ⚠️ **The exact INVERSE of [TASK-1483](../../../../docs/BACKLOG.md)'s
-              // defect**, which was *"the anchor existed and the section did
-              // not"*. **This is the section existing and the anchor not** —
-              // the same class, pointed the other way, and invisible for the
-              // same reason: nothing fails, the entry is simply absent.
-              // ⚡ **Unconditional, because `AccountSectionShell` renders in all
-              // of its states** — loading, empty, error and populated — so
+              // ⚡ **Unconditional, because `AccountSectionShell` renders in
+              // all of its states** — loading, empty, error and populated — so
               // the entry never points at something that is not there.
-              'opportunities',
-              ...(rendersCompetitors ? ['competitors'] : []),
-              'org-chart',
-              'relationships',
-              'tech-stack',
-              'market',
+              'opps',
+              ...(rendersCompetitors ? ['compete'] : []),
               ...(history.carrying ? [] : ['activity']),
-              'meetings',
+              // ⛔ **Every section nothing can fill, without exception** — the
+              // page renders all of them and the rail names all of them.
+              ...absent().map((section) => section.id),
             ]}
             className="phone:flex-row phone:flex-wrap phone:items-center phone:gap-1"
           />
@@ -1093,7 +1099,8 @@ export default function AccountBriefPage() {
                 })}
           />
 
-          {/* ⚡ **`id="opportunities"`** — [TASK-1483](../../../../docs/BACKLOG.md).
+          {/* ⚡ **`id="opps"`, which is 📁 the design's own `pageNav` href** —
+              [TASK-1483](../../../../docs/BACKLOG.md), [B-299](../../../../docs/BUGS.md) ④.
               📁 `lib/accounts/sections.ts` has marked this section `supplied`
               since [TASK-1476](../../../../docs/BACKLOG.md), and *On this page*
               has linked to it — ⛔ **at nothing.** 🔴 **The anchor existed and
@@ -1110,7 +1117,7 @@ export default function AccountBriefPage() {
               is a different screen and is `SEQUENCED` on a `Deals` route that
               does not exist. */}
           <AccountSectionShell
-            id="opportunities"
+            id="opps"
             heading="Open opportunities"
             // ⛔ **No severity.** ⚡ **An opportunity's stage is not a
             // judgement about the account** — the header folds severities into
@@ -1374,7 +1381,8 @@ export default function AccountBriefPage() {
             isError={catalog.isError || committee.isError}
           />
 
-          {/* ⚡ **`id="competitors"`** — [TASK-1476](../../../../docs/BACKLOG.md).
+          {/* ⚡ **`id="compete"`, 📁 the design's own `pageNav` href** —
+              [TASK-1476](../../../../docs/BACKLOG.md), [B-299](../../../../docs/BUGS.md) ④.
               ⛔ **The component renders no `section` of its own**, so the page
               contributes one rather than the component growing an opinion
               about being a whole section of a screen. ⚠️ **This closes half of
@@ -1386,7 +1394,7 @@ export default function AccountBriefPage() {
               blank space**, which is the same defect as a link to a missing
               id and harder to notice. */}
           {rendersCompetitors ? (
-            <section id="competitors" aria-label="Competitors">
+            <section id="compete" aria-label="Competitors">
               <CompetitorContext
                 competitors={competitors.data}
                 isError={competitors.isError}

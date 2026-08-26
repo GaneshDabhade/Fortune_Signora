@@ -235,7 +235,7 @@ export function withExpanded(params: URLSearchParams, sectionId: string | null):
  * 📁 ***"Anchor links from the page nav auto-expand the target section."***
  *
  * ⚡ **A fragment and the expansion parameter are the same intent expressed
- * twice**, so the rail's `#tech-stack` resolves here rather than the rail
+ * twice**, so the rail's `#tech` resolves here rather than the rail
  * learning about expansion.
  */
 export function expansionFromAnchor(
