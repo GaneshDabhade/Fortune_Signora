@@ -71,7 +71,18 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-26, `8326617f`
+## Current — as of 2026-08-26, `eaecf496`
+
+> ⚡ **Cycle 273 Closeout. 5 commits, Lane A, no migrations, EIGHT gates on the FIRST attempt.**
+>
+> ✅ **No board rows removed** — **this cycle promoted no `TASK-nnn`.** Lane A's five commits close [B-299](BUGS.md) ⑦–⑩, the Account 360 design-conformance pass; **its live board rows all name `lane-a-2b` or `lane-a-product-surface`, not `r4`.**
+>
+> 🔴 **[B-1081](BUGS.md) opened against QE itself**: the repository prints `docker compose -f infra/docker-compose.yml up -d` **with no environment prefix**, which derives `COMPOSE_PROJECT_NAME` from the **directory name**. 📁 **[B-141](BUGS.md) records the consequence from 2026-08-07** — a lane recreated another's container on 5432. ⛔ **The incident was filed; the cause was not.** ✅ **Two documents fixed here; [`infra/review.py`](../infra/review.py) is a GATE and needs its own slice** (§20e).
+>
+> ⛔ **QE killed Lane A's dev server on 3300** with an unanchored `pkill -f 'next-server'`. ✅ **Told immediately; they were between runs and lost nothing.** ⚡ **Every QE process pattern is now anchored to its own clone path.**
+>
+> ✅ **The cycle-272 board defect did NOT recur**: this Closeout **re-dates the single `## Current` heading** rather than adding a second, which is what put Lane A's three live rows outside the section `state-check` reads.
+
 
 > ⚡ **Cycle 272 Closeout. 5 commits, Lane A + QE, no migrations, EIGHT gates on the FIRST attempt.**
 >

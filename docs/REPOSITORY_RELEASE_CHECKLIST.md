@@ -44,7 +44,12 @@
 
 - [ ] **Every dev server is down**, including the human-review stack. `make smoke` binds ports 3000 and 8000 ([B-002](BUGS.md))
 - [ ] **The documented prerequisites are installed** — `make`, Docker, Docker Compose, `uv`, Node ([RUNNING.md](RUNNING.md)). **If one is missing and installing it is within your authority, install it** (`CLAUDE.md` §20e, *QE removes its own blockers*); escalate only if the OS or policy refuses
-- [ ] **The stack is up** — `docker compose -f infra/docker-compose.yml up -d`
+- [ ] **The stack is up** — and **the environment is named, never derived** ([B-1081](BUGS.md)). ⛔ **Without the prefix `COMPOSE_PROJECT_NAME` comes from the DIRECTORY NAME**, which is how one lane recreated another's running container on port 5432 ([B-141](BUGS.md), 2026-08-07):
+
+  ```bash
+  env $(python3 infra/environments.py --exports | grep -v '^#') \
+    docker compose -f infra/docker-compose.yml up -d --wait
+  ```
 - [ ] **The lane's branch is rebased onto `integration` and pushed**, and the lane has said it is ready. A push is backup, not a trigger
 
 ```bash

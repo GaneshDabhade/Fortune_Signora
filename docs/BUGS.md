@@ -20234,3 +20234,54 @@ role=null aria-live=polite  "Navigated to /w/4e158d14-ab29-4b23-b99d-a8b10986f8e
 
 ⚡ **What settles it in the design's favour is the panel's own standard**, quoted from `FieldOriginTag`: 📁 *"a state whose business rule is missing is not built at all"* ([D-156](DECISION_REGISTER.md) ④) — **the reason `directory` is deliberately unrendered.** ⛔ **Here the rule is not missing.** It exists, it is implemented, and it is in effect; **only its display is absent.**
 
+
+---
+
+### B-1081 · 🟠 The repository prints the `docker compose` command that caused a recorded contention incident
+
+| | |
+|---|---|
+| **Module** | **Repository tooling and QE's own runbooks** — 📁 [`docs/REPOSITORY_RELEASE_CHECKLIST.md`](REPOSITORY_RELEASE_CHECKLIST.md):47 · [`docs/RUNNING.md`](RUNNING.md):95 · [`infra/review.py`](../infra/review.py):351,356 |
+| **Current assignee** | **QE** — all four sites are QE-owned files ([`CLAUDE.md`](../CLAUDE.md) §20e, *Shared files have one owner*) |
+| **Severity** | 🟠 — **wrong behaviour somebody would hit.** ⛔ **It already happened**: one lane recreated another's running container on a shared port |
+| **Status** | **`FIXING`** — the two documents in this cycle's Closeout; **`infra/review.py` is a GATE and needs its own slice** |
+| **Found** | **2026-08-26 by QE**, prompted by Lane A reporting the same class against itself |
+| **Commit found** | `eaecf496` |
+
+**Steps to reproduce.** Ask `make review` for a session with the slot-0 backing services down. It refuses and hands you: *"PostgreSQL is not reachable on 5432. `docker compose -f infra/docker-compose.yml up -d --wait`"*. **Run exactly that.**
+
+**Expected.** The environment named by the current branch comes up, in its own compose project.
+
+**Actual.** `COMPOSE_PROJECT_NAME` is unset, so Compose derives it **from the directory name** rather than from the environment. Containers are created in a project nobody chose, binding whatever ports the file names.
+
+### ⛔ This is not hypothetical. It is recorded, and only as a symptom
+
+📁 **[B-141](BUGS.md)** carries it as *evidence for a contention hypothesis*, reported by Lane A on **2026-08-07**:
+
+> *"`docker compose -f infra/docker-compose.yml up -d postgres` was run **without the lane environment**, so the project name defaulted to `signora-v2` and **recreated a container that was already running on port 5432**."*
+
+⚡ **The incident was recorded. The cause was never filed** — so the repository went on printing the command for another nineteen days. **A defect known only as somebody else's symptom is a defect nobody owns.**
+
+### ✅ Three of the seven candidate sites are CORRECT, and the row says so
+
+⚠️ **A first sweep reported seven and was wrong about three.** ⛔ **`grep -v` is line-based and the safe form spans two lines** — the `env $(python3 infra/environments.py --exports …)` prefix sits **above** the compose call, so an exclusion pattern cannot see it from the matched line.
+
+| site | verdict |
+|---|---|
+| [`infra/release-preflight.py`](../infra/release-preflight.py):304 | ✅ **ANCHORED** — prints the `--exports` prefix |
+| [`docs/QUALITY_ENGINEERING.md`](QUALITY_ENGINEERING.md):164 | ✅ **ANCHORED** |
+| [`docs/RUNNING.md`](RUNNING.md):356 | ✅ **ANCHORED** |
+| [`docs/REPOSITORY_RELEASE_CHECKLIST.md`](REPOSITORY_RELEASE_CHECKLIST.md):47 | ⛔ **UNANCHORED** — and it is **QE's own Stage 0** |
+| [`docs/RUNNING.md`](RUNNING.md):95 | ⛔ **UNANCHORED** — the `down` form |
+| [`infra/review.py`](../infra/review.py):351,356 | ⛔ **UNANCHORED** — the message a blocked reviewer is handed |
+
+⚡ **Re-measured with the preceding line in scope before anything was claimed.** ⛔ **Reporting seven when three are correct is how a real finding gets dismissed.**
+
+### ⚠️ The fix is split, and the split is not administrative
+
+**The two documents are corrected in this cycle's Closeout.** ⛔ **`infra/review.py` is NOT**, and cannot be: 📁 [`CLAUDE.md`](../CLAUDE.md) §20e — ***"`infra/` is deliberately not in that set… fixing a gate is a slice, not a Closeout"*** — and **`certification-guard.py --audit-main` refuses a Closeout commit touching `infra/`.** ⚡ **That is [B-014](BUGS.md)'s lesson, found the hard way by running the audit against two commits QE had just written.**
+
+### 📁 The class, and it is the day's third instance
+
+**A bare `docker compose` is a machine-wide command wearing a project-local one's clothes.** ⛔ **It does not error — it reaches wider than the question did**, exactly as QE's own `pkill -f 'next-server'` reached out of its clone and killed Lane A's dev server the same afternoon, and exactly as `ldd` on the wrong binary and `#score exists` answered stale questions confidently. ⚡ **Anchoring is the fix in every case; the tool never signals that it overreached.**
+

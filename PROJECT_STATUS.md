@@ -2,13 +2,49 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `8326617f`, 2026-08-26.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `eaecf496`, 2026-08-26.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
 > **It is a dashboard, not an engineering journal.** [`SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) answers a different question — *"what should the next session know?"* — and does not repeat what is here. Historical implementation detail belongs in ADRs and module documentation; **the appendices below are dated records and are never rewritten to match the present.**
 
 ---
+
+## Cycle 273 — promoted `eaecf496e3c4`, 2026-08-26
+
+| | |
+|---|---|
+| **Promoted** | **`eaecf496e3c4`** — `promoted == certified`, 5 commits, **zero merge commits**. `--audit-main` holds across 2431 |
+| **Gates** | **5459 pytest · 95.03% · 679 Security Invariants · mypy strict 957 · import-linter 37/37 · tsc clean · frontend 4167 in 228 files · eslint clean · smoke 24 stages in 215s · scenario 208 assertions** |
+| **DR** | ✅ passed — 679 invariants against the restarted stack |
+| **Migrations** | none — reversibility **not applicable** rather than ticked. Head unchanged at `0066` |
+| **Open defects** | **237 🟠 · 102 🟡 · 10 🟢** across 378 rows — **zero unresolved 🔴** |
+
+**Lane A closed [B-299](docs/BUGS.md) ⑦–⑩** — the four false absences, the record header's chips and two false explanatory notes, the duplicated timeline announcement, and the standard failure state.
+
+### ✅ Two things QE verified itself, because certification would not have caught either
+
+⛔ **Neither is a member of `REQUIRED_GATES`.**
+
+**① The journey Lane A disclosed as red.** `account-360.spec.ts` asserted two sentences ⑦ had deleted for being false, and had been red since the first commit of the batch. **QE ran the Account 360 journeys against the candidate: `14 passed`, zero failed**, read from the summary block rather than by counting glyphs. ⚡ **The disclosure was unprompted and arrived before the snapshot was opened.**
+
+**② The larger risk, and it was not the journey.** ⑩ changed `StatedAbsence`, which **29 of the product's 31 failure surfaces** render, while wiring a real retry on **four**. ⛔ **That is the shape that leaves 25 screens with nothing to press.** ✅ **It does not**: `onRetry` is optional, the no-retry branch keeps its original sentence verbatim, and `stated-absence.test.tsx` asserts exactly that — *"a failure with nothing to retry keeps its sentence and grows no button"*. ⚡ **Declining to sweep the other 25 was correct: each needs its own query's `refetch`, and a blind sweep is 25 chances to wire the wrong one.**
+
+### 🔴 [B-1081](docs/BUGS.md) — the repository prints the command that caused a recorded incident
+
+**`docker compose -f infra/docker-compose.yml up -d` with no environment prefix derives `COMPOSE_PROJECT_NAME` from the DIRECTORY NAME.** 📁 **[B-141](docs/BUGS.md) records the consequence, dated 2026-08-07**: one lane *"recreated a container that was already running on port 5432"* instead of starting its own.
+
+⛔ **The incident was recorded; the cause was never filed** — so the repository went on printing the command for another nineteen days. ⚠️ **A defect known only as somebody else's symptom is a defect nobody owns.**
+
+✅ **Two of the four sites are corrected in this Closeout** — `REPOSITORY_RELEASE_CHECKLIST.md` (QE's own Stage 0) and `RUNNING.md`. ⛔ **`infra/review.py` is a GATE and is deliberately NOT corrected here**: §20e — *"fixing a gate is a slice, not a Closeout"* — and `--audit-main` refuses a Closeout commit touching `infra/`. **It carries its own slice.**
+
+⚠️ **A first sweep reported seven sites and was wrong about three.** `grep -v` is line-based and the safe `env $(… --exports)` prefix sits on the **preceding** line. ✅ **Re-measured with that line in scope before anything was claimed** — **reporting seven when three are correct is how a real finding gets dismissed.**
+
+### ⛔ QE killed Lane A's dev server, and it is recorded rather than quietly repaired
+
+**Stopping its own servers before certification, QE ran `pkill -f 'next-server'` UNANCHORED across the machine.** Next renames its process to `next-server (v15…)`, **so it matched Lane A's `next dev -p 3300` in a different clone.** ⚡ **Found by checking their port; Lane A was told immediately rather than after the run** — they were between runs and nothing needed re-doing.
+
+📁 **This is the day's third instance of one class, and the first to reach outside the process that made the mistake.** ⛔ **A bare process name is a machine-wide pattern wearing a local one's clothes; a bare `docker compose` is the same thing.** ⚠️ **Neither errors — each simply reaches wider than the question did, and the tool never signals that it overreached.** ✅ **Every QE process pattern is now anchored to its own clone path, with the other lanes' ports checked afterwards.**
 
 ## Cycle 272 — promoted `8326617f7a8e`, 2026-08-26
 

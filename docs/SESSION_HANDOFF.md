@@ -1,5 +1,23 @@
 # Session Handoff
 
+> ## Cycle 273 — promoted `eaecf496e3c4`, 2026-08-26 · **the two gates that are not gates, and a command the repository kept printing**
+>
+> **`main` = `eaecf496e3c4` = the certified commit**, verified from the remote. **ZERO merge commits**, `--audit-main` holds across 2431. `pytest` **5459** · **95.03%** · **679 invariants** · `mypy` **957** · `import-linter` **37/37** · `tsc` · frontend **4167/228** · `eslint` · smoke **24/215s** · scenario **208** · DR ✅. **No migration — reversibility NOT APPLICABLE rather than ticked.**
+>
+> 🔴 **TWO THINGS CERTIFICATION WOULD NOT HAVE CAUGHT, AND QE RAN BOTH BY HAND.** ⛔ **Neither is in `REQUIRED_GATES`.** ① **Lane A disclosed, unprompted and before the snapshot opened, that `account-360.spec.ts` had been RED since the first commit of its batch** — it asserted two sentences ⑦ deleted for being false. ✅ **QE ran the journeys itself: `14 passed`, zero failed**, from the summary block rather than by counting glyphs. ② **⑩ changed `StatedAbsence`, which 29 of the product's 31 failure surfaces render, wiring retry on FOUR.** ⚠️ **That is the shape that leaves 25 screens mute.** ✅ **It does not — `onRetry` is optional, the no-retry branch keeps its sentence verbatim, and the test asserts that branch explicitly.**
+>
+> ⚠️ **[B-1081](BUGS.md) — THE REPOSITORY PRINTS THE COMMAND THAT CAUSED A RECORDED INCIDENT.** **`docker compose -f infra/docker-compose.yml up -d` with no prefix derives `COMPOSE_PROJECT_NAME` from the DIRECTORY NAME.** 📁 **[B-141](BUGS.md), 2026-08-07: a lane *"recreated a container that was already running on port 5432"*.** ⛔ **The incident was recorded and the cause never filed, so the command stayed in print for nineteen more days.** ✅ **`REPOSITORY_RELEASE_CHECKLIST.md` and `RUNNING.md` fixed in this Closeout.** ⛔ **`infra/review.py`:351,356 deliberately NOT** — **fixing a gate is a SLICE, not a Closeout** (§20e), and `--audit-main` refuses a Closeout touching `infra/`. **It needs its own certified cycle: that is the next executable work QE owes.**
+>
+> ⛔ **QE KILLED LANE A'S DEV SERVER.** **`pkill -f 'next-server'` run UNANCHORED across the machine matched their `next dev -p 3300` in a different clone.** ✅ **Found by checking their port; told immediately; they were between runs and lost nothing.** ⚡ **ALWAYS anchor to the clone path — `pkill -f '/home/ganesh/Projects/Signora-QE/.*next dev'` — and check 3300 · 3400 · 3000 afterwards.**
+>
+> 📁 **ONE CLASS, THREE INSTANCES IN ONE DAY, AND THE THIRD REACHED OUTSIDE ITS OWN PROCESS.** **A bare process name is a machine-wide pattern wearing a local one's clothes; a bare `docker compose` is the same; `ldd` on a launcher whose real dependency loads through `libxul.so` is the same; `#score exists` is the same.** ⛔ **None errors. Each reaches wider, or further back in time, than the question did — and the tool never signals that it overreached.**
+>
+> ⚠️ **A SWEEP THAT REPORTED SEVEN SITES WAS WRONG ABOUT THREE.** **`grep -v` is line-based and the safe `env $(… --exports)` prefix sits on the PRECEDING line.** ✅ **Re-measured with that line in scope before claiming anything** — **reporting seven when three are correct is how a real finding gets dismissed.**
+>
+> ✅ **Lane A's `r4` is now EMPTY of unpromoted work** — everything it held is on `main`. **Next input is whatever it claims next; it went to Home and [C-1565](LANE_COORDINATION.md).**
+
+> ---
+>
 > ## Cycle 272 — promoted `8326617f7a8e`, 2026-08-26 · **Account 360 conformance, and a gate blind spot worth keeping**
 >
 > **`main` = `8326617f7a8e` = the certified commit**, verified from the remote. **ZERO merge commits**, `--audit-main` holds across 2423 commits. `pytest` **5459** · coverage **95.03%** · **679 invariants** · `mypy` **957** · `import-linter` **37/37** · `tsc` · frontend **4157/228** · `eslint` · smoke **24/223s** · scenario **208 assertions** · DR ✅. **No migration — reversibility NOT APPLICABLE rather than ticked.**

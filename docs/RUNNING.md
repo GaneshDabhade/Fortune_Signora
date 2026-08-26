@@ -92,7 +92,11 @@ make review-end
 
 **It waits until the ports are actually free before saying so**, and prints which state it left the workstation in. That matters more than it sounds: the first version signalled the processes and returned immediately, so it announced *"ports are released"* while the sockets were still bound — and the reviewer's next command would have failed on a claim that was false when it was printed.
 
-The backing services (`signora-v2-postgres-1`, `-redis-1`, `-minio-1`) are deliberately left running. **Release Engineering needs them** — the QE database lives in that PostgreSQL and the worker tests use that Redis — so stopping them turns a clean handover into a broken suite. `docker compose -f infra/docker-compose.yml down` if you really want them gone.
+The backing services (`signora-v2-postgres-1`, `-redis-1`, `-minio-1`) are deliberately left running. **Release Engineering needs them** — the QE database lives in that PostgreSQL and the worker tests use that Redis — so stopping them turns a clean handover into a broken suite. ⛔ **If you really want them gone, NAME the project** — `docker compose -f infra/docker-compose.yml down` with no prefix derives `COMPOSE_PROJECT_NAME` from the directory and tears down whichever project that happens to be, not `signora-v2` ([B-1081](BUGS.md)):
+
+```bash
+COMPOSE_PROJECT_NAME=signora-v2 docker compose -f infra/docker-compose.yml down
+```
 
 > **This section used to open *"three things are running, and there is no single command, which is exactly why this section exists."*** That was true, and it was the friction that made a review feel like an operations task. **The commands it described still work** — nothing about starting the two processes by hand has been withdrawn, and [§ Starting the two processes yourself](#starting-the-two-processes-yourself) keeps them for anyone who wants a foreground log.
 
