@@ -19699,3 +19699,73 @@ fix** — 📁 `PANEL_WIDTH` already carries 360 and 300 from the same array.
 | *"the rail is 231px against the design's 232"* — **off by one in BOTH bands** | ⛔ **QE was measuring the inner `<nav>`.** **The rail WRAPPER is 232 with `flex-shrink: 0` and a 1px right border inside `border-box`, leaving 231 of content.** 📁 **`RAIL_WIDTH = { expanded: 232, collapsed: 56 }` — the source already holds the design's numbers** |
 
 > ⚡ **A fourth died at 900px**: the rail measured 231 where the design says it becomes a sheet. **It is `visibility: hidden` at `left: -232`, off-screen — the sheet behaviour, correct.** ⛔ **QE had measured width without visibility.**
+
+### B-1077 · 🟠 The route announcer reads a raw URL — UUID and all — to a screen reader
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — 📁 [`components/shell/route-announcer.tsx`](../frontend/components/shell/route-announcer.tsx):39 |
+| **Current assignee** | **Lane A** — joined from [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 — **a screen-reader user is the ONLY user who hears this, and what they hear is a route** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-26 by QE**, Home conformance audit against the design's own `a11y` array |
+| **Commit found** | `c6860a48` — ⚡ **the PROMOTED state** |
+
+📁 **`route-announcer.tsx:39`:**
+
+```ts
+setMessage(`Navigated to ${pathname}`);
+```
+
+**Measured on Home, entering at `/`:**
+
+```
+role=null aria-live=polite  "Navigated to /w/4e158d14-ab29-4b23-b99d-a8b10986f8e5/home"
+```
+
+⛔ **A thirty-six character UUID and a route, spoken aloud.** 📁 **[ADR-0034](architecture/adr/0034-ubiquitous-language.md) — the customer says *Organization*; `/w/<uuid>/home` is platform vocabulary, and the translation is supposed to live at the frontend edge.**
+
+⚡ **This is [B-1060](#b-1060)'s family on a different surface** — *"the command palette shows a customer the literal Next.js route template"* — **except this one is not shown, it is READ OUT, and only to the users who cannot see the screen instead.**
+
+### ✅ What is right, and it is why the fix is small
+
+⛔ **The announcer itself is correct and its docblock reasons well**: 📁 *"`aria-live="assertive"` would interrupt"* · **first mount is deliberately silent** · **an unchanged path announces nothing.** ⚡ **The mechanism is sound. Only the STRING is wrong.**
+
+⚠️ **QE is not prescribing the replacement** — the screen's own name, the breadcrumb trail and the design's *"workspace, composition, attention count"* are all candidates and QE has not weighed them.
+
+### 📁 And a second announcement, recorded as an observation rather than a finding
+
+**The design's `a11y` array says *"Entry announces once… a screen-reader user hears one sentence, not six."*** **Two live regions carry text on entry: this one, and the scope line *"Wednesday, August 26 · Playground · Seller · 13 things need you today"*.**
+
+⛔ **QE has NOT established that the scope line ANNOUNCES.** ⚡ **A live region rendered WITH content at mount does not usually fire — it announces on change** — **so *"two regions carry text"* is not the same claim as *"two things were spoken"*, and QE is not making the second one.**
+
+### B-1078 · 🟡 Home's `h1` names the person, not the workspace — the design says the opposite four times
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — 📁 [`app/(app)/w/[workspace]/home/home.tsx`](../frontend/app/(app)/w/[workspace]/home/home.tsx):433 |
+| **Current assignee** | **Lane A** |
+| **Severity** | 🟡 — **wrong but survivable**: the workspace IS on screen, in the scope line beside the heading. ⚠️ **What a screen-reader user loses is the h1 as the page's name** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-26 by QE**, Home conformance audit |
+| **Commit found** | `c6860a48` |
+
+📁 **The design says it FOUR times, in its own words:**
+
+> *"Home is one `<main>` with **an h1 naming the workspace**."*
+> *"Focus lands on the h1, not the search field."* · *"Provided by the shell; lands on the Home h1."* · *"Focus after entry is on the h1."*
+
+⚡ **And the design's own Home mock renders the greeting as `<h2>`** — `<h2>Good morning, Aurélie</h2>` — **corroborating that the h1 was meant to be something else.**
+
+**Measured:** `main h1` = **`["Good morning, Dana"]`**, and it is the only h1 on the screen.
+
+📁 **`home.tsx:433` — `<HomeGreeting ref={heading} … workspace={activeWorkspace?.name} …>`.** ⚡ **The workspace IS passed in and reaches the scope line; it just does not reach the heading.**
+
+### ✅ Three of Home's four checkable a11y claims PASS, and the row says so
+
+| claim | result |
+|---|---|
+| **1.3.1** — one `<main>`, every card a `<section>` with its own `h2`, DOM order == visual order | ✅ **1 main · 4 sections · 0 without an h2 · orders match at 1440** |
+| **1.4.10** — 320px CSS width, no horizontal scroll | ✅ **scrollWidth 305 vs clientWidth 320** |
+| **3.2.3** — card order stable across visits | ✅ **identical on two independent visits** |
+| **1.3.1's h1 clause** | 🔴 **this row** |
