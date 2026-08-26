@@ -10,10 +10,25 @@
  * > composition of intelligence the platform ALREADY produces."***
  *
  * ⚠️ **That claim is half true, and this file is the measurement rather than
- * the assumption.** ✅ **Eight of the design's fifteen sections have a read
- * behind them today.** ⛔ **Seven do not** — and 📁 [§20c](../../../CLAUDE.md)
+ * the assumption.** ✅ **Seven of the design's twenty-one sections have a read
+ * behind them today.** ⛔ **Fourteen do not** — and 📁 [§20c](../../../CLAUDE.md)
  * decides what happens to those: *"screens without a shipped module behind them
  * ship a designed empty state"*, **never invented figures.**
+ *
+ * ## 🔴 The count said FIFTEEN and the design's own page navigation says EIGHTEEN
+ *
+ * ⛔ **Six sections the design declares were missing from this file entirely** —
+ * not marked `absent`, **absent from the declaration**: 📁 `pageNav`'s
+ * *Emails · Files · Notes · Tasks · Custom fields · History*.
+ *
+ * ⚠️ **Which is the one failure this file exists to prevent.** Its own words,
+ * below: *"a page that omits a section nobody built is indistinguishable from a
+ * page with a bug, and the next lane cannot tell which."* **Six of them were
+ * exactly that, inside the register written to stop it.**
+ *
+ * ⚡ **Twenty-one rather than eighteen** because the design splits *"Score &
+ * health"* across `scoreDrivers` and `healthRows`, and draws `intentRows` and
+ * the narration as their own blocks — **four sections the rail names as two.**
  *
  * ## ⚡ Why a declaration rather than the page just rendering what it has
  *
@@ -208,6 +223,77 @@ export const ACCOUNT_SECTIONS: readonly AccountSection[] = [
     source: 'no calendar or conversation-intelligence integration',
     absence:
       'Meetings appear here once a calendar is connected. None is connected to your organization yet.',
+  },
+  {
+    id: 'emails',
+    label: 'Emails',
+    supply: 'absent',
+    // 📁 The design draws 38 threads with unanswered counts. ⛔ Nothing
+    // ingests mail: `sales_engagement` records an approach, never a message.
+    source: 'no mailbox integration; sales_engagement records approaches, not messages',
+    absence:
+      'Email with this account appears here once a mailbox is connected. None is connected to your organization yet.',
+  },
+  {
+    id: 'files',
+    label: 'Files',
+    supply: 'absent',
+    // 📁 *"18 files."* ⛔ No module stores a document, and object storage is
+    // behind a port nothing implements for customer files.
+    source: 'no document store; nothing in backend/modules/ holds a file',
+    absence:
+      'Documents shared with this account appear here once Signora can read a file store. It cannot yet.',
+  },
+  {
+    id: 'notes',
+    label: 'Notes',
+    supply: 'absent',
+    // ⚠️ **Not the same as a decision's reason**, which IS recorded — 📁
+    // `decision-history.tsx`. A note is unattached prose about an account and
+    // nothing holds one.
+    source: 'no note entity; decision reasons are recorded, free notes are not',
+    absence:
+      'Notes your team writes about this account appear here. Signora records the reasoning behind decisions, but has nowhere to keep a free note yet.',
+  },
+  {
+    id: 'tasks',
+    label: 'Tasks',
+    supply: 'absent',
+    // ⛔ **`action_batch` is not this**, and the same mistake was made once on
+    // Home: its `proposed_by` is a person's bulk edit awaiting approval, not
+    // somebody's to-do against an account.
+    source: 'no task entity; action_batch holds approvals, not assignments',
+    absence:
+      'Work somebody owes on this account appears here. Signora does not keep a task list yet.',
+  },
+  {
+    id: 'custom-fields',
+    label: 'Custom fields',
+    supply: 'absent',
+    // 📁 *"12 fields."* ⛔ The account record's shape is fixed; nothing lets a
+    // customer declare a field, so there is no schema to render.
+    source: 'no customer-defined field schema exists on the account record',
+    absence:
+      'Fields your organization has added to an account appear here. Signora does not let you define one yet.',
+  },
+  {
+    id: 'history',
+    label: 'History',
+    supply: 'absent',
+    /**
+     * ⚠️ **This is NOT the timeline, and the difference is why it is absent
+     * rather than a second view of `activity`.**
+     *
+     * 📁 The design's own points are **commercial milestones** — *"First
+     * contract"*, *"Expansion +420 seats"*, *"Renewal · 3 years"*, *"Renewal
+     * due"* — with a zoom of `Milestones · Quarters · All`. ⛔ **The timeline
+     * carries observation and business-event kinds**, and nothing records a
+     * contract lifecycle. **Rendering activity under this heading would answer
+     * a different question with the data to hand.**
+     */
+    source: 'no contract lifecycle; the timeline carries activity, not milestones',
+    absence:
+      'The commercial history of this account — first contract, expansions, renewals — appears here. Signora does not read contract records yet.',
   },
 ] as const;
 

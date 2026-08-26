@@ -122,3 +122,51 @@ describe('📁 the "On this page" rail maps the WHOLE record', () => {
     expect(absent().length).toBeGreaterThan(0);
   });
 });
+
+describe('🔴 every section the design’s page navigation declares is declared here', () => {
+  /**
+   * 📁 **`Account 360`'s `pageNav` names eighteen sections.** ⛔ **Six were
+   * missing from this registry entirely** — *Emails · Files · Notes · Tasks ·
+   * Custom fields · History* — **not marked `absent`, absent from the
+   * declaration.**
+   *
+   * ⚠️ **Which is the one failure the file exists to prevent.** Its own
+   * docstring: *"a page that omits a section nobody built is indistinguishable
+   * from a page with a bug, and the next lane cannot tell which."*
+   *
+   * ⛔ **None of the six has a producer** — measured, not assumed: no mailbox,
+   * no document store, no note entity, no task entity, no customer-defined
+   * field schema, and no contract lifecycle. ⚡ **History is NOT the timeline**:
+   * the design's points are *"First contract"*, *"Expansion +420 seats"*,
+   * *"Renewal · 3 years"* — **commercial milestones**, where the timeline
+   * carries activity.
+   */
+  it('declares a section for every anchor in the design’s rail', () => {
+    const declared = new Set(ACCOUNT_SECTIONS.map((section) => section.id));
+
+    for (const id of [
+      'emails',
+      'files',
+      'notes',
+      'tasks',
+      'custom-fields',
+      'history',
+    ]) {
+      expect(declared, `the design's rail names ${id} and this file does not`).toContain(id);
+    }
+  });
+
+  it('⛔ says what each cannot answer, and never “coming soon”', () => {
+    /**
+     * ⚡ **The positive control.** ⛔ Adding six bare `absent` entries would
+     * satisfy the test above and reintroduce what the rail *"already paid for
+     * once — at M12.3, three of six said `coming soon` on the screen a
+     * customer sees first."*
+     */
+    for (const section of ACCOUNT_SECTIONS) {
+      if (section.supply !== 'absent') continue;
+      expect(section.absence, `${section.id} is absent and says nothing`).toBeTruthy();
+      expect(section.absence).not.toMatch(/coming soon/i);
+    }
+  });
+});
