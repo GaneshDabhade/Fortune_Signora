@@ -49,6 +49,7 @@ import type {
 
 import { cn } from '@/lib/design/cn';
 import {
+  PANEL_OPEN_BY_DEFAULT,
   PANEL_TABS,
   PANEL_WIDTH,
   panelKey,
@@ -161,7 +162,16 @@ export function UtilityPanelProvider({
   module: string;
   children: ReactNode;
 }) {
-  const [openPreference, setOpenPreference] = useState(false);
+  /**
+   * 🔴 **[B-1076](../../../docs/BUGS.md) — this was `false` with no reason
+   * given, and the design says the opposite.**
+   *
+   * ⚡ **The server has no viewport, so this is also the value the SSR markup
+   * carries** — 📁 and the design's reference layout draws the panel open, so
+   * rendering it open is rendering what the design draws. **A stored
+   * preference corrects it in the effect below, once.**
+   */
+  const [openPreference, setOpenPreference] = useState(PANEL_OPEN_BY_DEFAULT);
   const [width, setWidth] = useState(1440);
   const [activeTab, setActiveTab] = useState<PanelTab>('Insights');
   const [published, setPublished] = useState<Partial<Record<PanelTab, ReactNode>>>({});
@@ -201,7 +211,16 @@ export function UtilityPanelProvider({
     if (settled.current === key) return;
     settled.current = key;
     try {
-      setOpenPreference(window.localStorage.getItem(key) === 'true');
+      /**
+       * 🔴 **`=== 'true'` made a MISSING key indistinguishable from a stored
+       * `false`**, so every first visit was closed — at every band, including
+       * the one where 📁 the design says *"both open"*.
+       *
+       * ✅ **`null` is now its own answer**: no memory means the design's
+       * default, and a memory in either direction wins.
+       */
+      const stored = window.localStorage.getItem(key);
+      setOpenPreference(stored === null ? PANEL_OPEN_BY_DEFAULT : stored === 'true');
     } catch {
       // ⚡ **A cosmetic preference must never cost the panel** — the same
       // reasoning the rail's collapse memory records.

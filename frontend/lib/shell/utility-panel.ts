@@ -65,6 +65,28 @@ export const PANEL_WIDTH: Readonly<Record<Band, number | null>> = {
  * open the panel. **A boolean would have made that width either a full panel
  * that does not fit or nothing at all.**
  */
+/**
+ * 🔴 **The design's default, and [B-1076](../../../docs/BUGS.md) is that it was
+ * not honoured.**
+ *
+ * 📁 **`App Shell`'s `breakpoints` array leaves no room**: at ≥1600 the line is
+ * ***"Rail 232px, utility panel 360px, **both open**"***, and at 1280–1599 it is
+ * ***"Reference layout. Rail 232px, panel 300px"*** with `panelDisplay: 'block'`.
+ * ⚡ **The band below says the panel *"closes to a 28px tab rail"*** — **which
+ * only means anything if it was open above it.**
+ *
+ * ⚠️ **QE recorded a competing reading and could not rule on it** — the same
+ * table says *"utility panel remembers per-module state"*, so
+ * closed-until-opened-once was possible intent. ⛔ **It does not survive the
+ * other two lines**: *"remembers"* describes **persistence**, and *"both open"*
+ * describes the **initial value**. **They answer different questions.**
+ *
+ * ⛔ **This is the DEFAULT, never an override.** ⚡ A stored preference — in
+ * either direction — wins, which is what *"remembers per-module state"* asks
+ * for.
+ */
+export const PANEL_OPEN_BY_DEFAULT = true;
+
 export type PanelState = 'open' | 'tab-rail' | 'absent';
 
 export function panelStateFor(viewportWidth: number, openPreference: boolean): PanelState {

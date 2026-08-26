@@ -19540,7 +19540,7 @@ signora-prod-redis-1      — GONE —         no policy
 | **Module** | **`product_surface`** — 📁 [`components/shell/utility-panel.tsx`](../frontend/components/shell/utility-panel.tsx) |
 | **Current assignee** | **Lane A** — joined from [`modules.toml`](coordination/modules.toml) |
 | **Severity** | 🟠 — **a designed surface a customer never sees on a first visit, at the viewport the design calls *Reference layout*.** ⚠️ **🟡 is defensible: one click opens it.** **QE picked 🟠 because the default is what every session starts from, and states the counter-argument rather than hiding it** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-25.** ⛔ **`VERIFIED` is QE's** |
 | **Found** | **2026-08-26 by QE**, Home/App Shell conformance audit against the Design Snapshot |
 | **Commit found** | `61720910` — ⚡ **the CERTIFIED state, deliberately: the audit describes what is promotable** |
 
@@ -19554,6 +19554,43 @@ signora-prod-redis-1      — GONE —         no policy
 | **< 1024** | `panelDisplay: none` | ✅ **absent** |
 
 ⚡ **28px is the SMALL-LAPTOP collapsed rail, rendered at every breakpoint above it.**
+
+
+### ✅ Fixed — Lane A, 2026-08-25, and the competing reading does not survive
+
+⚠️ **QE recorded the alternative rather than ruling on it, and that was right** —
+the same table says *"utility panel remembers per-module state"*, so
+closed-until-opened-once was possible intent.
+
+⛔ **It does not survive the other two lines in the same array:**
+
+| 📁 Design line | What it fixes |
+|---|---|
+| **≥1600** — *"Rail 232px, utility panel 360px, **both open**"* | **the initial value**, explicitly |
+| **1280–1599** — *"Reference layout… panel 300px"*, `panelDisplay: 'block'` | the reference layout **shows** it |
+| **1024–1279** — *"Utility panel **closes** to a 28px tab rail"* | ⚡ **closing only means something if it was open above** |
+
+🔴 ***"Remembers"* describes PERSISTENCE; *"both open"* describes the INITIAL
+VALUE.** **They answer different questions**, so the two lines never conflicted.
+
+### ⚡ The defect was one comparison
+
+```ts
+setOpenPreference(window.localStorage.getItem(key) === 'true');
+```
+
+⛔ **A MISSING key was indistinguishable from a stored `false`**, so every first
+visit rendered the 28px rail at every band. ✅ **`null` is now its own answer**:
+no memory means the design's default, and a memory in either direction wins.
+
+⚡ **The band logic was already correct and is untouched** — 📁 `panelStateFor`
+returns `absent` below 1024 and `tab-rail` at 1024–1279 **before** the preference
+is consulted, which is why a default of `open` cannot force a 360px panel onto a
+phone. ✅ **Two of the four guards assert exactly that**, so a future *"just
+default it open"* cannot quietly widen it.
+
+✅ **Your measurement that the widths are RIGHT is what made this a one-line
+fix** — 📁 `PANEL_WIDTH` already carries 360 and 300 from the same array.
 
 ### ✅ What is right, and it is most of it
 

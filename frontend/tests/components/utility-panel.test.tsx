@@ -16,7 +16,11 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import { UtilityPanel } from '@/components/shell/utility-panel';
-import { PANEL_WIDTH } from '@/lib/shell/utility-panel';
+import {
+  PANEL_OPEN_BY_DEFAULT,
+  PANEL_WIDTH,
+  panelStateFor,
+} from '@/lib/shell/utility-panel';
 
 describe("🔴 the panel carries a MODULE's content, and owns none of it", () => {
   it('renders what a module published into the active tab', () => {
@@ -309,5 +313,48 @@ describe('♿ the landmark, and what a screen reader is told about it', () => {
     );
 
     expect(screen.getByRole('complementary')).toHaveStyle({ width: '360px' });
+  });
+});
+
+describe('🔴 B-1076 — the panel is open where the design says both are open', () => {
+  /**
+   * 📁 **`App Shell`'s `breakpoints` array**, at ≥1600: ***"Rail 232px,
+   * utility panel 360px, **both open**."*** At 1280–1599: ***"Reference
+   * layout. Rail 232px, panel 300px"***, `panelDisplay: 'block'`. ⚡ **And the
+   * band below says the panel *"closes to a 28px tab rail"*** — which only
+   * means anything if it was open above it.
+   *
+   * ⛔ **`localStorage.getItem(key) === 'true'` made a MISSING key
+   * indistinguishable from a stored `false`**, so every first visit rendered
+   * the 28px rail at every band.
+   *
+   * ⚠️ **QE found this and recorded a competing reading rather than ruling**:
+   * the same table says *"remembers per-module state"*, so
+   * closed-until-opened-once was possible intent. ⛔ **It does not survive the
+   * other two lines** — *"remembers"* describes persistence, *"both open"*
+   * describes the initial value, and they answer different questions.
+   */
+  it('opens at the reference layout when nothing is remembered', () => {
+    expect(panelStateFor(1440, PANEL_OPEN_BY_DEFAULT)).toBe('open');
+  });
+
+  it('opens at the desktop band, where the design says “both open”', () => {
+    expect(panelStateFor(1600, PANEL_OPEN_BY_DEFAULT)).toBe('open');
+  });
+
+  it('⛔ but the band still decides, so a stored “open” cannot force it wide', () => {
+    /**
+     * ⚡ **The positive control for the default.** ⛔ If the default were
+     * simply forcing `open` everywhere, these two would break — 📁 the design
+     * closes the panel to a 28px tab rail at 1024–1279 and removes it below.
+     */
+    expect(panelStateFor(1100, PANEL_OPEN_BY_DEFAULT)).toBe('tab-rail');
+    expect(panelStateFor(800, PANEL_OPEN_BY_DEFAULT)).toBe('absent');
+  });
+
+  it('⛔ and a remembered “closed” still wins, because it remembers per module', () => {
+    // 📁 *"Utility panel remembers per-module state."* ⚡ The default is a
+    // default, not an override.
+    expect(panelStateFor(1600, false)).toBe('tab-rail');
   });
 });
