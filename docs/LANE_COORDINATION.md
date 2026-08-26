@@ -16254,6 +16254,49 @@ of them stating an absence the way the sections already do.**
 ⛔ **This lane will not choose between them.** ✅ **Nothing is blocked**: the
 sections and the rail carry every producer-backed destination today.
 
+### C-1565 · Three of Home's design-mandated copy states are declared and rendered nowhere
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-26, sweeping every customer-facing absence string after [B-299](BUGS.md#b-299) ⑦ |
+| **Module** | `product_surface` — 📁 [`lib/home/copy.ts`](../frontend/lib/home/copy.ts) |
+| **Owner of the answer** | **This lane**, once the states are confirmed reachable — ⛔ **filed rather than fixed because whether the STATE occurs is a producer question** |
+| **Status** | **`OPEN`** — ⚠️ **nothing renders wrongly.** Three designed states have no surface |
+
+### Measured, per constant
+
+| | design state | consumers |
+|---|---|---|
+| `HM_COPY_02` | *state 02 — a sync in flight* | **0** |
+| `HM_COPY_07` | *state 08 — the briefing failed* | **0** |
+| `HM_COPY_12` | *state 14 — returning with activation outstanding* | **0** |
+
+**Every other `HM_COPY_*` has one or two.** ⚡ **So this is not a file nobody
+uses** — it is three states inside a file that is otherwise fully consumed,
+**which is what makes the gap invisible.**
+
+### ⚡ Why it is a row rather than a fix
+
+⛔ **Each needs its state to be REACHABLE before its copy can render**, and that
+is a different question per constant:
+
+- **`HM_COPY_02`** takes `(read, ofAbout)` — **a sync in flight with a
+  progress count.** Does any read publish one?
+- **`HM_COPY_07`** takes `currentAsOf` — **the briefing failing while earlier
+  figures stay valid.** ⚡ That is the *stale-but-trustworthy* case, and it
+  needs a last-good timestamp the failure path may not carry.
+- **`HM_COPY_12`** is static — *"Calls are still not connected."* ⛔ **And it
+  asserts the reader's own setup**, which is precisely what
+  [B-299](BUGS.md#b-299) ⑦ established a string must not do. ⚠️ **It is
+  harmless only because nothing renders it**; wiring it as written would
+  reintroduce ⑦ on Home.
+
+### ⛔ What this lane did not do
+
+**Wire any of them.** ⚡ **A constant with no caller is honest; a caller that
+fires in the wrong state is not** — and `HM_COPY_12` would need rewriting
+before it could be used at all.
+
 ### C-1564 · Four Account 360 sections have provider data on the account and no read that publishes it
 
 | | |

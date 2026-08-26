@@ -43,8 +43,24 @@ test('@journey the record page states what Signora cannot answer, rather than om
 
   // ⛔ **And each says what is missing.** 🔴 A heading over nothing would be
   // worse than the omission — it would look like a section that failed to load.
-  await expect(main.getByText(/no intent source is connected/i)).toBeVisible();
-  await expect(main.getByText(/inferred from email, calendar and public sources/i)).toBeVisible();
+  //
+  // 🔴 **These asserted the sentences [B-299](../../../docs/BUGS.md) ⑦ removed
+  // for being FALSE** — *"no intent source is connected"* while `bombora` is
+  // connected and syncing, and *"inferred from email, calendar and public
+  // sources… Signora is not reading any of those"* while 36 `person_identity`
+  // observations carry `reports_to`.
+  //
+  // ⚠️ **And this spec is how the fix should have been caught before it
+  // shipped.** ⛔ **I verified ⑦ with a targeted browser probe and did not
+  // re-run this suite** — the probe proved the NEW copy rendered and could not
+  // see that something else still asserted the OLD copy. **The vitest suite
+  // was green throughout, because this assertion lives in Playwright.**
+  //
+  // ✅ **Rewritten to the capability statement**, which is what the rule ⑦
+  // established now permits: an absence says what Signora does not do, never
+  // what the reader has not connected.
+  await expect(main.getByText(/does not yet gather them into an index/i)).toBeVisible();
+  await expect(main.getByText(/does not record who is in them/i)).toBeVisible();
 });
 
 test('@journey no absent section says "coming soon"', async ({ page }) => {

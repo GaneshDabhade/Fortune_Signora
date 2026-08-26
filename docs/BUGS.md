@@ -644,6 +644,22 @@ providers are per-workspace and this is one file for all of them.** ⚠️ **Any
 sentence it makes about them is a guess**, and the guess happened to be right
 in exactly one direction: **a fresh workspace.**
 
+### ⚠️ The repository already knew, and the knowledge never reached the copy
+
+⛔ **This was not new information.** 📁 [B-1022](#b-1022) established that the
+Playground has a connected CRM, and `tests/e2e/connections.spec.ts` was
+**renamed for exactly this reason** — its own note:
+
+> *"Renamed from **what a customer sees before anything is connected**. B-1022
+> gave the Playground the CRM its twelve accounts arrived through, so **before
+> anything is connected stopped describing this environment** — and a describe
+> block that misnames its own fixture is the defect §2 warns about."*
+
+⚡ **A spec one directory over had already corrected the same false premise, in
+writing, and the customer-facing copy went on asserting it.** ⛔ **The
+correction did not travel**, because nothing connected a test's premise to a
+declaration file's sentence.
+
 ### ✅ The rule, and it is checkable rather than remembered
 
 > **An absence says what SIGNORA does not do. It never says what the READER has
@@ -660,6 +676,27 @@ yet"* becomes false loudly.**
 *"no intent source is connected"* with the rationale *"it names the missing
 SOURCE, which is something a customer can act on."* ⛔ **The source was not
 missing, and the action was one they had already taken.**
+
+## ⑦b 🔴 A journey asserted the sentences ⑦ removed, and my own verification could not see it
+
+⛔ **`account-360.spec.ts` asserted *"no intent source is connected"* and
+*"inferred from email, calendar and public sources"*** — **both of them
+sentences ⑦ deleted for being false.** ⚠️ **Red from `d9b9fb1e` until this
+commit.**
+
+### ⚡ Why it survived, and it is a verification defect rather than a copy one
+
+**I verified ⑦ with a targeted browser probe**: it opened the page, checked the
+three false sentences were gone and the five rewritten ones rendered, and
+passed. ⛔ **A probe that asks *"is the new copy there?"* structurally cannot
+see that something else still asserts the old copy.**
+
+⛔ **And the vitest suite was green throughout**, because this assertion lives
+in Playwright. **Two green instruments, one red fact.**
+
+✅ **The rule that follows: when a customer-facing string changes, the sweep is
+`grep`, not a render.** ⚡ **A render proves the new state; only a search over
+the repository proves nothing still expects the old one.**
 
 ## ⑧ The record header's chips and facts, and two notes that were false about them
 
