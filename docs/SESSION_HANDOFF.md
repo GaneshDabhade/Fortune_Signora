@@ -1,5 +1,25 @@
 # Session Handoff
 
+> ## Cycle 272 — promoted `8326617f7a8e`, 2026-08-26 · **Account 360 conformance, and a gate blind spot worth keeping**
+>
+> **`main` = `8326617f7a8e` = the certified commit**, verified from the remote. **ZERO merge commits**, `--audit-main` holds across 2423 commits. `pytest` **5459** · coverage **95.03%** · **679 invariants** · `mypy` **957** · `import-linter` **37/37** · `tsc` · frontend **4157/228** · `eslint` · smoke **24/223s** · scenario **208 assertions** · DR ✅. **No migration — reversibility NOT APPLICABLE rather than ticked.**
+>
+> ⚠️ **THE FOUR CYCLES ABOVE THIS ONE ARE MISSING FROM THIS LIST, AND THAT IS QE'S DEFECT, NOT A GAP IN THE HISTORY.** ⛔ **Cycles 267–271 were promoted and closed out; their entries were appended to the BOTTOM of this file (lines ~1080+) against its newest-first convention, so a session reading the head saw `266` while `main` was five cycles past it.** ✅ **The misplaced entries are left where they are — a dated record is not rewritten (§2) — and this line is how a reader finds them.** 📁 **Cycles 270 and 271 are also in [`PROJECT_STATUS.md`](../PROJECT_STATUS.md), measured.**
+>
+> 🔴 **A GATE BLIND SPOT QE FOUND AND IS DELIBERATELY KEEPING.** ⛔ **The promotion guard reads `docs/BUGS.md` FROM THE CANDIDATE TREE**, so **a 🔴 filed after a snapshot is pinned is invisible to that snapshot's promotion.** ⚡ **Inherent to certifying an immutable commit rather than a branch; the alternative — a gate whose verdict depends on WHEN it ran — is worse.** ✅ **The mitigation is a channel, not a check: a lane finding a genuine unresolved 🔴 mid-certification MESSAGES QE DIRECTLY, because a register row cannot reach the tree the guard reads.** **Lane A has confirmed it will.**
+>
+> ⚠️ **A KNOWN LIMITATION SHIPS WITH THIS PROMOTION.** 📁 **[B-299](BUGS.md) ⑦ — four `absent` sections on Account 360 tell a salesperson NO PROVIDER IS CONNECTED while `bombora`, `builtwith`, `crunchbase` and `apollo` ARE connected and their observations already appear in the same page's signals timeline.** ⛔ **They are told to buy a source they already have, and pointed away from the screen showing their own data.** **🟠, already on `main`, and blocking would not have repaired it.** ✅ **Lane A fixed it after the pin; it lands in cycle 273.**
+>
+> 📁 **A DEFECT CLASS BOTH LANES HIT ON THE SAME DAY AND NO GATE CAUGHT: a probe that was correct when written, invalidated by a change elsewhere, with no failure to mark the moment.** ⛔ **The distinguishing property is that THE PROBE NEVER STOPS ANSWERING** — no error, no silence, a confident correct-looking result about a fact that has moved. **Lane A: `#score exists` meant *the score loaded* until independent section rendering made it mean *the page rendered* — seven journeys passed against a page whose score had not arrived. QE: `ldd` on the `firefox` launcher reported ZERO missing libraries while no browser could start, because the missing one is a dependency of `libxul.so` loaded through XPCOMGlueLoad — the right tool on the wrong binary.** ✅ **Only defence found so far is the vacuity form: assert what the oracle must still RECOGNISE, not only what it must reject, and fire-test it with a dead oracle.**
+>
+> ⚠️ **BEFORE ANY BROWSER RUN ON THIS WORKSTATION**, the engines need `LD_LIBRARY_PATH=~/.cache/ms-playwright-deps/lib`. ✅ **`tests/e2e/fixtures/environment.ts::browserEnvironment()` supplies it and the repository already documented this hidden input — an ad-hoc `node` invocation does NOT get it, and the failure reads as a broken suite.** ⛔ **`apt-cache policy` reports the packages absent; they are unpacked under that directory and were never installed system-wide. Do not escalate a blocked workstation on that evidence.**
+>
+> ⚠️ **NEXT CYCLE'S INPUT IS ALREADY PUSHED: `origin/lane-a-product-surface-r4` = `ca3e32c4`, 6 ahead of `integration`, zero merges, ff-able.** **B-299 ⑦ and ⑧ — the four false absences, and the record header's chips plus two false explanatory notes.**
+>
+> ⛔ **[C-1562](LANE_COORDINATION.md) IS WITH THE PRODUCT OWNER AND BLOCKS NOTHING: Lane A's `B-200`–`B-299` block is exhausted — 100 distinct headings, zero gaps, and none of the gaps merely referenced.** **`B-1600`+ is recommended and measured unused.** ⚠️ **The allocation table is in `CLAUDE.md` and is the product owner's alone; all three prior extensions were directed rather than drafted.** ✅ **Until then Lane A folds findings into an existing row, which is correct behaviour rather than a workaround.**
+
+> ---
+>
 > ## Cycle 266 — promoted `dce9e20e`, 2026-08-25 · **leaving an organization, and a blocker that closed 18 days ago**
 >
 > **`main` = `integration` = `dce9e20e` = the certified commit**, verified from the remote. **ZERO merge commits.** `pytest` **5452** · coverage **95.03%** · **679 invariants** · `mypy` **956** · `import-linter` **37/37** · `tsc` · frontend **4060/218** · `eslint` · smoke **24/571s** · DR · reversibility **7s**.

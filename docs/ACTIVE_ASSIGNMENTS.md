@@ -71,6 +71,20 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
+## Current — as of 2026-08-26, `8326617f`
+
+> ⚡ **Cycle 272 Closeout. 5 commits, Lane A + QE, no migrations, EIGHT gates on the FIRST attempt.**
+>
+> ✅ **No board rows removed** — **this cycle promoted no `TASK-nnn`.** Lane A's four commits are the Account 360 design-conformance pass and QE's is two audit rows; **neither is claimed work, and the board's live Lane A rows all name `lane-a-2b` or `lane-a-product-surface`, not `r4`.** ⛔ **A row is not removed because a cycle happened near it.**
+>
+> ⚠️ **[B-299](BUGS.md) ⑦ ships on `main` with this promotion and is named rather than discovered** — four `absent` sections on Account 360 tell a salesperson no provider is connected while four are. **🟠, already on `main`, fixed on the branch after the pin, landing cycle 273.**
+>
+> 🔴 **QE defect in its own Closeout practice, found by reading the document it writes**: **cycles 267–271's handoff entries were appended to the BOTTOM of [`SESSION_HANDOFF.md`](SESSION_HANDOFF.md) against its newest-first convention**, so a session reading the head saw cycle **266** while `main` was five cycles past it. ✅ **The misplaced entries are LEFT WHERE THEY ARE** — a dated record is not rewritten ([§2](../CLAUDE.md)) — **and the new head entry points at them.**
+>
+> ⛔ **Lane A untouched and never asked to wait.** ⚡ **It pushed twice more during the cycle and correctly did not expect either to be included** — the snapshot is pinned to a commit, not to a branch. **Its `r4` is already 6 ahead of `integration` and is cycle 273's input.**
+>
+> ⚠️ **[C-1562](LANE_COORDINATION.md) is with the product owner and blocks nothing**: Lane A's `B-200`–`B-299` block is exhausted, **measured independently by QE — 100 distinct headings, zero gaps, none merely referenced.**
+
 ## Current — as of 2026-08-21, `07f22c04`
 
 > ⚡ **Cycle 257 Closeout. 15 commits, QE, no migrations, EIGHT gates on the FIRST attempt.**

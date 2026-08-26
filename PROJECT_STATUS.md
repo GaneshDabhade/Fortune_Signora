@@ -2,13 +2,54 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `dce9e20e`, 2026-08-25.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `8326617f`, 2026-08-26.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
 > **It is a dashboard, not an engineering journal.** [`SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) answers a different question — *"what should the next session know?"* — and does not repeat what is here. Historical implementation detail belongs in ADRs and module documentation; **the appendices below are dated records and are never rewritten to match the present.**
 
 ---
+
+## Cycle 272 — promoted `8326617f7a8e`, 2026-08-26
+
+| | |
+|---|---|
+| **Promoted** | **`8326617f7a8e`** — `promoted == certified`, 5 commits, **zero merge commits**. `--audit-main` holds across 2423 commits |
+| **Gates** | **5459 pytest · 95.03% · 679 Security Invariants · mypy strict 957 files · import-linter 37/37 · tsc clean · frontend 4157 in 228 files · eslint clean · smoke 24 stages in 223s · scenario baseline@1, 208 assertions** |
+| **DR** | ✅ passed — PostgreSQL, Redis, API, workers and relay restarted; nothing lost; 679 invariants against the restarted stack |
+| **Migrations** | none in the candidate — reversibility **not applicable** rather than ticked. Head unchanged at `0066` |
+| **Open defects** | **237 🟠 · 102 🟡 · 10 🟢 · 24 🔴, all resolved** across 377 rows — **zero unresolved 🔴** |
+
+**Lane A**: the Account 360 conformance pass — six section declarations the design's rail names and the page never declared, three `stateRules` answered backwards, and the rail's seven anchors moved to the design's own vocabulary.
+
+**QE**: **[B-1079](docs/BUGS.md)** — the team directory has four `th[scope="col"]` and **zero** `th[scope="row"]`; the identity cell is a `<td>`. **[B-1080](docs/BUGS.md)** — *Reduce motion* reads Off while motion is being reduced, identical to the run where nothing reduces it.
+
+### ⚠️ A known limitation ships with this promotion, stated rather than discovered
+
+**[B-299](docs/BUGS.md) ⑦** — four `absent` sections on Account 360 tell a salesperson **no provider is connected** while `bombora`, `builtwith`, `crunchbase` and `apollo` **are connected and their observations already appear in the same page's signals timeline.** ⛔ **They are told to buy a source they already have, and pointed away from the screen showing their own data.**
+
+**It is 🟠, it was already on `main`, and blocking this promotion would not have repaired it.** Lane A fixed it on the branch after the snapshot was pinned; **it lands in cycle 273.** ✅ **Published here because a promotion that quietly ships a known customer-visible falsehood is worse than one that names it.**
+
+### 🔴 A gate blind spot QE found and is deliberately keeping
+
+⛔ **The promotion guard reads `docs/BUGS.md` from the candidate tree**, so **a 🔴 filed after a snapshot is pinned is invisible to that snapshot's promotion.**
+
+⚡ **Inherent to certifying an immutable commit rather than a branch, and the alternative is worse** — a gate whose verdict depends on *when* it ran. ✅ **The mitigation is a channel, not a check: a lane finding a genuine unresolved 🔴 mid-certification tells QE directly, because a register row cannot reach the tree the guard reads.** Lane A has confirmed it will.
+
+### ⚠️ Four planned gates were reported unrecorded, and two were run by hand anyway
+
+**The validation plan reported `accessibility`, `doc-drift`, `reachability` and `state-check` as NOT recorded** — *nothing skipped, nothing refused* ([B-131](docs/BUGS.md)); none is a member of `REQUIRED_GATES`. ✅ **`doc-drift` and `state-check` were run by hand regardless: 0 modules touched with documentation moving with them, and `state-check` clean of anything this cycle introduced.** ⛔ **A gate reported as unrecorded is not a gate that ran.**
+
+### 📁 A defect class both lanes hit on the same day, and neither gate caught
+
+**A probe that was correct when written, invalidated by a change elsewhere, with no failure to mark the moment.** ⛔ **The distinguishing property is that the probe never stops answering** — it does not error and does not go quiet; it returns a confident, correct-looking result about a fact that has moved out from under it.
+
+| | |
+|---|---|
+| **Lane A** | `#score exists` genuinely meant *the score loaded* — until independent section rendering made it mean *the page rendered*. **Seven journeys went on passing against a page whose score had not arrived** |
+| **QE** | `ldd` on the `firefox` launcher reported **zero** missing libraries while no browser could start. The missing one is a dependency of `libxul.so`, loaded through XPCOMGlueLoad — **the right tool on the wrong binary** |
+
+✅ **The only defence found so far is the vacuity form**: assert what the oracle must still **recognise**, not only what it must reject — and fire-test it with a dead oracle. **Not yet demonstrated to generalise past these two cases.**
 
 ## Cycle 271 — promoted `5c1300a2a51d`, 2026-08-26
 
