@@ -16254,6 +16254,75 @@ of them stating an absence the way the sections already do.**
 ⛔ **This lane will not choose between them.** ✅ **Nothing is blocked**: the
 sections and the rail carry every producer-backed destination today.
 
+### C-1568 · 🔴 Fifteen profile preferences are written, persisted, and read by nothing — C-1567 is one of them
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-26, sweeping every Settings/Profile control on the product owner's instruction — *"don't accept 'the value saves' as proof that the feature works"* |
+| **Module** | `product_surface` — 📁 [`lib/api/preferences.ts`](../frontend/lib/api/preferences.ts) and the four panels that write it |
+| **Owner of the answer** | 🔴 **Blocked on [C-1567](#c-1567)'s ruling** — **the question is the same one**: *where is a server-persisted preference applied?* |
+| **Status** | **`OPEN`** — 🔴 **two whole panels of controls that save correctly and change nothing** |
+
+### The measurement
+
+**Every field on `Preferences`, checked for a reader outside the panel that
+writes it. Comments excluded.**
+
+| ⛔ No consumer anywhere | |
+|---|---|
+| **Accessibility — all six** | `reduce_motion` · `increase_contrast` · `always_show_focus_ring` · `underline_links` · `text_size` · `screen_reader_verbosity` |
+| **Language & region — all four** | `date_format` · `number_format` · `week_starts_on` · `time_format` |
+| **AI — four of five** | `always_show_citations` · `answer_style` · `confidence_floor` |
+| **Profile** | `pronouns` · `display_name` |
+
+⚠️ **Four apparent consumers were checked and every one is a coincidental
+word match**: `density` in `chart-picker.ts` is prose about *data* density,
+`timezone` in `onboarding.ts` is a different field on a different type, and
+`language` in `copilot.tsx` is the phrase *"In plain language"*.
+
+🔴 **`ai_insights` and `ai_drafts` have TWO WRITERS and no reader** — the AI
+panel and onboarding's `connect-form.tsx` both render a toggle for them.
+
+### ✅ Two proved in a browser rather than inferred
+
+| | |
+|---|---|
+| **`theme`** | 📁 [C-1567](#c-1567) — saves, persists, `data-theme` never moves |
+| **`text_size`** | **125% selected, persists across a full reload** — ⛔ **`getComputedStyle(document.documentElement).fontSize` is `16px` before, after and after reload**, and **no attribute or class appears on `<html>` or `<body>`** |
+
+⚠️ **The other thirteen are a static measurement, not a browser one**, and the
+row says so rather than implying otherwise.
+
+### ⛔ And the panels state the division that does not exist
+
+📁 **`AppearancePanel`**: *"It records the choice; **the document reads it**… a
+panel that painted the page would be the second place a theme is decided."*
+📁 **`AccessibilityPanel`**: *"**Apply any of it.** It records the choice; the
+document reads it — the same division `AppearancePanel` states for the theme."*
+
+⛔ **Both delegate application to a layer that does not consume them.** ⚡ **The
+reasoning is sound and the other half was never built**, which is why nothing
+reads as broken from inside either file.
+
+### How this differs from C-1567, and why they share a ruling
+
+⚡ **[C-1567](#c-1567) is a WRONG reader** — theme has a consumer and it reads
+the browser-local store instead of the server one. ⛔ **This is NO reader** —
+fifteen fields nothing consumes at all.
+
+✅ **One decision settles both**: *where is a server-persisted preference read,
+and when?* **A cookie answers C-1567 because it is available before first paint;
+these thirteen need only a provider that stamps them after hydration** — ⛔ **but
+both change where preference state lives, and 🔴 `lib/state` is product owner +
+ADR.**
+
+### ⛔ What this lane did not do
+
+**Stamp attributes on `<html>` from a new provider.** ⚡ It would work, it is
+perhaps twenty lines — **and it answers C-1567's architectural question as a
+side effect**, which is 📁 [§2](../CLAUDE.md)'s *decision wearing a document's
+clothes*.
+
 ### C-1567 · 🔴 The UI claims a cross-device preference; first paint is controlled by a browser-local store disconnected from it
 
 | | |
