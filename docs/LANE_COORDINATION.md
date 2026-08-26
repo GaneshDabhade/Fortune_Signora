@@ -16574,7 +16574,7 @@ one publishes a grouping.**
 grain question is the producing module's to answer**, and 📁 [§20e](../CLAUDE.md)
 is explicit: *"never continue on an assumption — do not guess, do not infer."*
 
-### C-1562 · Lane A's `B-` identifier block is exhausted, and the next defect this lane finds has no number
+### C-1562 · 🔴 An exhausted `B-` block is routing live 🔴 defects out of the register QE's promotion gate reads
 
 | | |
 |---|---|
@@ -16582,6 +16582,36 @@ is explicit: *"never continue on an assumption — do not guess, do not infer."*
 | **Module** | — **repository governance.** 📁 [`CLAUDE.md`](../CLAUDE.md) §20e, *Identifiers are allocated from a block* |
 | **Owner of the answer** | 🔴 **Product owner** — ⛔ **an allocation table lives in `CLAUDE.md`, which is 🔴 and is the product owner's alone** |
 | **Status** | **`OPEN`** — ⚠️ **not yet blocking. It blocks the next defect this lane finds** |
+
+### 🔴 This stopped being bookkeeping on 2026-08-26 — QE's finding
+
+⛔ **`infra/certification-guard.py --promote` calls `bug_rows()` on
+`docs/BUGS.md` and nothing else**, and `infra/registers.py` has no
+coordination-register parsing at all.
+
+> 🔴 **Two 🔴 rows describing wrong behaviour TODAY — [C-1567](#c-1567) and
+> [C-1568](#c-1568) — sit on the current candidate, and both the promotion gate
+> and `state-check` report *"no unresolved 🔴"*.**
+
+⚡ **And by the constitution's own test they are `B-` rows.** 📁
+[§20e](../CLAUDE.md): *"A defect is not a dependency. **Something behaving
+wrongly today is a `B-` row**; something not yet built or agreed is a `C-`
+row."* ⚠️ **C-1567's own status cell reads *"a customer-visible setting that
+reports success and does nothing"*.**
+
+⛔ **They are not misfiled** — both genuinely carry a coordination dimension, and
+C-1567's answer is 🔴 product owner + ADR because the fix moves where a
+preference is stored. ⚡ **A row can be both, and the register with the free
+numbers is the one that got it.**
+
+🔴 **So the argument is no longer *"I need more numbers"*. It is *"QE's
+blocking-🔴 check cannot see two live 🔴 defects."*** **Raised by QE, not by the
+lane that benefits from the extension.**
+
+⚠️ **QE is not widening the gate to compensate** — *"teaching it to read
+`LANE_COORDINATION.md` would change which promotions succeed, a contract change
+to a gate, which is not mine to make inside a cycle."* ✅ **Filed against QE's own
+instrument and escalated instead.**
 
 ### The measurement
 

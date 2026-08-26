@@ -154,6 +154,33 @@ export default function OrganizationSetupPage() {
               <div>
                 <dt className="text-sm font-medium text-content">Name</dt>
                 <dd className="text-sm text-content-muted">{activeWorkspace.name}</dd>
+                {/**
+                 * 🔴 **The one field 📁 the design marks EDITABLE was the one
+                 * shown bare.**
+                 *
+                 * 📁 `Settings.dc.html` → `workspaceFields`:
+                 * `{ label: 'Workspace name', action: 'Edit', locked: false }`.
+                 * ⛔ **There is no `PATCH /workspaces/{id}`** — the API offers
+                 * `POST` and `GET` and nothing else, measured against
+                 * `openapi.json` — **so the name cannot be changed.**
+                 *
+                 * ⚠️ **Five fields below this card already say why they are
+                 * locked**, each through `LockedField`. **This one said
+                 * nothing**, so a reader looking for the rename the design
+                 * promises could not tell a missing control from a missing
+                 * feature.
+                 *
+                 * ⚡ **A second `<dd>`, not a `LockedField`.** ⛔ A `<div>`
+                 * inside a `<dl>` between `<dt>` and `<dd>` is invalid, and
+                 * 📁 `LockedField`'s own comment says the glyph is decorative
+                 * and *"the reason below carries the meaning"* — **so the
+                 * sentence is the load-bearing half and it is what arrives.**
+                 */}
+                <dd className="text-sm text-content-subtle">
+                  Not yet changeable. Signora can create an organization and read
+                  it back, but nothing can rename one — so the name you chose is
+                  the name it keeps.
+                </dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-content">Created</dt>
@@ -194,7 +221,11 @@ export default function OrganizationSetupPage() {
               behind it and a populated control would be a promise. */}
           <LockedField
             label="Organization URL"
-            reason="Not yet configurable. Every organization is reached through the application today; a custom URL needs the change procedure the design specifies, which is not built."
+            /* ⛔ ***"the change procedure the design specifies"*** — the same
+               internal-artefact leak as the brand colour below. ✅ **What a
+               customer needs to know is that their links would break and
+               nothing yet handles that.** */
+            reason="Not yet configurable. Every organization is reached through the application today, and changing that address would break every link anybody has already saved — so it stays fixed until Signora can move them safely."
           />
           <LockedField
             label="Data region"
@@ -249,7 +280,21 @@ export default function OrganizationSetupPage() {
           />
           <LockedField
             label="Brand colour"
-            reason="Not yet selectable. The design requires every choice to clear a 4.5:1 contrast check against three surfaces, and that check is not built."
+            /**
+             * 🔴 ***"The design requires…"* is internal vocabulary in
+             * customer copy.**
+             *
+             * ⛔ **A customer has no design document.** ⚡ Told that *the
+             * design* requires something, a reader learns that Signora has an
+             * internal artefact and not what the product will do for them —
+             * 📁 the same class as [ADR-0034](../../../../../docs/architecture/adr/0034-ubiquitous-language.md)'s
+             * *workspace* reaching a screen.
+             *
+             * ✅ **The constraint is real and worth stating** — a brand colour
+             * that fails contrast makes text unreadable — **so it is stated as
+             * the promise it is, in the customer's terms.**
+             */
+            reason="Not yet selectable. A brand colour has to stay readable everywhere Signora draws it, and the check that would prove that does not exist yet — so the palette is fixed for now."
           />
         </CardBody>
       </Card>

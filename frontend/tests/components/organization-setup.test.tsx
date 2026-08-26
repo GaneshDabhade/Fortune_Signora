@@ -191,3 +191,66 @@ describe('Organization setup', () => {
     expect(container.textContent).not.toMatch(/workspace/i);
   });
 });
+
+/**
+ * 🔴 **The one field 📁 the design marks EDITABLE was the one shown bare.**
+ *
+ * 📁 `Fortune Signora Settings.dc.html` → `workspaceFields`:
+ * `{ label: 'Workspace name', note: 'Shown in the rail and on exports',
+ * action: 'Edit', locked: false }`.
+ *
+ * ⛔ **There is no `PATCH /workspaces/{id}`** — measured against
+ * `openapi.json`, the API offers `POST` and `GET` and nothing else. **So the
+ * name cannot be changed.**
+ *
+ * ⚠️ **Five fields on this page already say why they are locked.** **This one
+ * said nothing**, so a reader looking for the rename the design promises could
+ * not tell a missing control from a missing feature — ⛔ **which is the
+ * distinction every other absence on this screen is careful to draw.**
+ */
+describe('🔴 the organization name says why it cannot be renamed', () => {
+  it('states the absence beside the value, not instead of it', () => {
+    render(<OrganizationSetupPage />);
+
+    // ✅ **The value is still there** — this is a locked fact, not a missing one.
+    expect(screen.getByText(workspace.name)).toBeInTheDocument();
+    expect(screen.getByText(/nothing can rename one/i)).toBeInTheDocument();
+  });
+
+  /**
+   * ⛔ **No internal vocabulary in customer copy.**
+   *
+   * ⚠️ **The first draft of this banned the substring *"not built"* and fired
+   * on three sentences, two of which are fine** — *"a custom URL needs the
+   * change procedure… which is not built"* explains WHICH mechanism is
+   * missing, after saying what the product does. ⛔ **That is the
+   * instrument-too-wide failure**: it fails loudly on things that are not
+   * defects, which is the fastest way to get an assertion deleted.
+   *
+   * ✅ **What it caught was real**: *"**The design requires** every choice to
+   * clear a 4.5:1 contrast check"* — **a customer has no design document**, and
+   * told that *the design* requires something they learn that Signora has an
+   * internal artefact rather than what the product will do for them. 📁 The
+   * same class as [ADR-0034](../../../CLAUDE.md)'s *workspace* reaching a
+   * screen.
+   *
+   * ⚡ **So the oracle names the vocabulary rather than the phrasing.**
+   */
+  it('⛔ and never explains itself with an internal artefact', () => {
+    const { container } = render(<OrganizationSetupPage />);
+    const text = container.textContent ?? '';
+
+    for (const leak of [
+      /\bthe design (requires|says|specifies|draws)\b/i,
+      /\bcoming soon\b/i,
+      /\bthe backlog\b/i,
+      /\bnot implemented\b/i,
+      /\bTODO\b/,
+    ]) {
+      expect(text, `customer copy leaks internal vocabulary: ${leak}`).not.toMatch(leak);
+    }
+
+    // ⚠️ **Vacuity half** — the page rendered something to check.
+    expect(text.length).toBeGreaterThan(200);
+  });
+});
