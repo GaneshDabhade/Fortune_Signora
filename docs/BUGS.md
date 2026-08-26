@@ -19554,6 +19554,27 @@ signora-prod-redis-1      — GONE —         no policy
 >
 > ⛔ **QE read that file today, while investigating something else.** **The observation was written down, in the repository, and QE had not read it.**
 
+### 🔴 THE GATE THAT RUNS IS `main`'s, NOT THE CANDIDATE'S — observed at the promotion that introduced it
+
+⛔ **`--promote` executes `infra/certification-guard.py` FROM THE WORKING TREE, and promotion requires `HEAD` to be on `main`.** ⚡ **So the guard that gates a promotion is the one already on `main` — the OLD one.**
+
+**Observed 2026-08-26, promoting `5855e2a828d5`:**
+
+```
+on main @ 303920f3 (pre-gate)     on main @ 5855e2a8 (post-gate)
+  PASS certified                   PASS certified
+  PASS no VERIFIED undone          PASS no VERIFIED undone
+  PASS no VERIFIED reopened        PASS no VERIFIED reopened
+  ─ nothing ─                      PASS no unresolved 🔴   ← the new gate
+  PROMOTED                         PROMOTED
+```
+
+⛔ **The promotion that introduced the blocking-🔴 check was NOT gated by it.** ✅ **Immaterial here — [B-1068](#b-1068) was 🟠 and `state-check` read *no unresolved 🔴*, and re-running the guard from the promoted tree confirms all four pass.** ⚠️ **But the general property is not immaterial: a gate added in a candidate protects every promotion EXCEPT the one that ships it.**
+
+⚡ **It also means a candidate could WEAKEN the guard and the weakening would not be caught by the guard** — the old one runs, passes, and the new weaker one lands. 📁 **`--audit-main` does not check this either; it asks *"is every commit inside a certified snapshot?"*.**
+
+⛔ **Not filed as a new row and not fixed here** — **QE is mid-promotion and adding a gate to protect gates is the scope creep this row already declined once.** **Recorded because it is a property of the mechanism rather than a defect in a commit.**
+
 ### ⚠️ A SECOND RULE IN THE SAME POSITION, and QE nearly shipped past it today
 
 📁 **[B-150](#b-150) — *"QE promoted a conflict marker to `main`, and the check that names it was skipped rather than missing"*, 2026-08-08.** ⛔ **`conflict_markers()` lives in `state-check.py`, which is ADVISORY** — **the identical position the blocking-🔴 rule was in.**
