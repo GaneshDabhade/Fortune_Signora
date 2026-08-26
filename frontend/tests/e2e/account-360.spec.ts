@@ -74,7 +74,10 @@ test('@journey the "On this page" rail maps every section, including the empty r
 
   // ⛔ **A map that hides the rooms you cannot enter is one nobody can trust** —
   // 📁 the reasoning `rail.ts` already records for a restricted destination.
-  await expect(rail.getByRole('link', { name: 'Account score' })).toBeVisible();
+  // 🔴 **`pageNav`'s label, not the section heading** — 📁
+  // [B-299](../../../docs/BUGS.md) ⑤: the rail says *"Score & health"* and
+  // the section says *"Account score"*, and both are the design's.
+  await expect(rail.getByRole('link', { name: 'Score & health' })).toBeVisible();
   await expect(rail.getByRole('link', { name: 'Buying intent' })).toBeVisible();
 
   // ⚡ **And the rail actually reaches the section it names.**

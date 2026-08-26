@@ -80,7 +80,15 @@ test.describe('Account 360 — a section changes state and stays honest', () => 
 
     // ⚡ **The rail's own link**, not a synthesised hash change.
     await page.getByRole('navigation', { name: 'On this page' })
-      .getByRole('link', { name: 'Account score' })
+      // 🔴 **The rail's own label, which is NOT the section's heading** —
+      // 📁 [B-299](../../../docs/BUGS.md) ⑤. ⚡ `pageNav` says
+      // ***"Score & health"***; the `14.5px/600` title over the section
+      // says ***"Account score"***. ⛔ **This spec asserted the rail using
+      // the heading**, which is the same conflation the product had — and
+      // the comment forty lines down already recorded a half-migration of
+      // exactly this shape. ⚠️ **The heading assertions above are
+      // unchanged and correct.**
+      .getByRole('link', { name: 'Score & health' })
       .click();
 
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');

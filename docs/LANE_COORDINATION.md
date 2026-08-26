@@ -16191,6 +16191,69 @@ about a repository that tells the truth about itself.
 
 ---
 
+### C-1563 · Account 360's seven-tab record navigation is a product decision recorded only in a code comment
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-26, auditing 📁 `Fortune Signora Account 360.dc.html` for completeness |
+| **Module** | `product_surface` — 📁 [`app/(app)/accounts/[accountId]/page.tsx`](../frontend/app/(app)/accounts/[accountId]/page.tsx) |
+| **Owner of the answer** | 🔴 **Product owner** — ⛔ **it is a scope decision, not an implementation one** |
+| **Status** | **`OPEN`** — ⚠️ **the decision was already reached and reasoned; it was never filed** |
+
+### 📁 What the design draws
+
+`tabs` — **a record-level tab bar with counts**:
+
+```
+Overview | Opportunities 3 | Contacts 24 | Conversations 96 | Activity 412 | Files 18 | Settings
+```
+
+### ⛔ What exists
+
+**Nothing.** ⚠️ **And the reasoning for that is sound and already written** —
+verbatim, from the page's own docstring:
+
+> *"Four of the seven have no producer of any kind, and building a tab bar where
+> four destinations lead nowhere is the same false-affordance class. This needs
+> a product decision, not an implementation one."*
+
+⛔ **A product decision living in a code comment is a decision nothing tracks**
+— 📁 [§20e](../CLAUDE.md): *"no defect disappears because the lane that found it
+could not fix it… in a comment, in a commit message, in an intention to come
+back."* **This row is that sentence applied to itself.**
+
+### ⚡ The measurement, which the comment did not carry
+
+| Tab | Producer |
+|---|---|
+| **Overview** | ✅ **This page** |
+| **Opportunities** | ✅ `useAccountOpportunity` — already the `#opps` section |
+| **Activity** | ✅ `useAccountTimeline` — already the `#activity` section |
+| **Contacts** | ⛔ `people` publishes a title and never a name — 📁 [C-221](#c-221) |
+| **Conversations** | ⛔ **no producer of any kind.** The word appears nowhere in `backend/modules/` |
+| **Files** | ⛔ no document store |
+| **Settings** | ⛔ **no per-account settings exist**; the account has no configurable field |
+
+### ⚠️ And the three that DO have producers are already reachable
+
+📁 **`pageNav` names *Opportunities*, *Contacts*, *Activity* and *Files* as
+SECTIONS**, and the rail links to all four. ⛔ **So a tab bar would be a second
+navigation to destinations the rail already reaches** — and the design's tabs
+carry counts, which reads as separate views rather than as anchors.
+
+### The question
+
+> **Does Signora ship a record-level tab bar on Account 360, and if so, what do
+> its four producerless tabs do?**
+
+⚡ **Three answers are all defensible and they are not the same product**:
+**① no tab bar — the rail is the record's navigation** · **② a tab bar over the
+three that exist, and the design's seven becomes three** · **③ seven tabs, four
+of them stating an absence the way the sections already do.**
+
+⛔ **This lane will not choose between them.** ✅ **Nothing is blocked**: the
+sections and the rail carry every producer-backed destination today.
+
 ### C-1562 · Lane A's `B-` identifier block is exhausted, and the next defect this lane finds has no number
 
 | | |

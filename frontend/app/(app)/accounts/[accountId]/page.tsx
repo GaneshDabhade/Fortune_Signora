@@ -264,7 +264,13 @@ function RecordLayout({
  * Files · Settings` — **four of the seven have no producer of any kind**, and
  * building a tab bar where four destinations lead nowhere is the same
  * false-affordance class. **This needs a product decision, not an
- * implementation one.**
+ * implementation one** — 🔴 **and it is now
+ * [C-1563](../../../../../docs/LANE_COORDINATION.md) rather than only this
+ * sentence.** ⛔ **A product decision recorded in a code comment is a decision
+ * nothing tracks** ([§20e](../../../../../CLAUDE.md)), **and the three tabs that
+ * DO have producers — Overview, Opportunities, Activity — are already
+ * destinations the rail reaches**, which is the measurement the row carries and
+ * this comment did not.
  */
 export default function AccountBriefPage() {
   const { accountId } = useParams<{ accountId: string }>();
