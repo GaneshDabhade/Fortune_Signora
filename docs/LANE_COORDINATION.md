@@ -16097,3 +16097,76 @@ completion announced on an arbitrary subset is worse than none.
 the two `close(false)` sites are an outside click and a navigating link, where
 returning focus would **steal** it from where the person just clicked.
 **"Always" is about keyboard dismissal, and that path passes `true`.**
+
+---
+
+### C-1559 · Deep-link intent is fully built on the reading side and nothing ever writes it
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-25, auditing `Session Continuity`'s `contract` array |
+| **Module** | `product_surface` — 📁 [`lib/entry/`](../frontend/lib/entry/) · the three authenticated layouts |
+| **Owner of the answer** | 🔴 **Product owner** — **the fix needs a 🔴 routing change** |
+| **Status** | **`OPEN`** — ⛔ **a shipped capability that cannot fire** |
+
+📁 **`Session Continuity` `contract`:**
+
+> ***"Deep-link intent is captured before the first redirect, stored in
+> sessionStorage, replayed once, then deleted."***
+> ***"Intent is deleted after replay even when the destination returns 403 or
+> 404."***
+
+### ✅ The reading side is complete, and it is careful work
+
+| | |
+|---|---|
+| **`rules.ts` 06 `INTENT_HONOURED`** | 📁 *"Go there. Do not pass Home."* |
+| **07 `INTENT_FORBIDDEN`** | → `${path}?error=403` — 📁 *"the 403 page for that object… not a silent redirect"* |
+| **08 `INTENT_MISSING`** | → `${path}?error=404` |
+| **09 `INTENT_NOT_MEMBER`** | → the chooser — 📁 *"never a bare 403 — they had access yesterday"* |
+| **`captureIntent()`** | **Open-redirect validation**: rejects `//`, `/\`, any scheme, control characters |
+| **`classifyIntent()`** | Cross-checks the path's workspace against the person's memberships |
+
+⚡ **The second contract line is satisfied too** — 07 and 08 route to the
+destination **without** re-attaching the parameter, so the intent is consumed
+rather than replayed.
+
+### 🔴 And nothing produces the input
+
+⛔ **`encodeIntent` is exported from `lib/entry/index.ts` and called by ZERO
+files.** ⚡ **Measured**: no code path anywhere writes `?next=`.
+
+**The break is precise, and it is the moment the contract names:**
+
+```
+app/(app)/layout.tsx:35        if (!session?.user) redirect('/signin');
+app/workspaces/layout.tsx:44   if (!session?.user) redirect('/signin');
+app/(onboarding)/layout.tsx:35 if (!session?.user) redirect('/signin');
+```
+
+📁 ***"captured before the first redirect"*** — ⛔ **and the first redirect is
+exactly these three, which capture nothing.** **A signed-out person opening a
+shared link to an account signs in and lands on Home**, and every rule above is
+unreachable.
+
+### ⛔ Why this lane is not implementing it
+
+**Those layouts are server components. Next.js does not expose the request path
+to a server component**, so the capture point has to be **`middleware.ts`,
+which does not exist in this repository.**
+
+🔴 **Routing is named in [§20c](../CLAUDE.md)'s frozen foundation** — *"Design
+System, Shared Components, Application Shell, Query Layer, Authentication
+integration, and Routing"* — **so adding request middleware is a product-owner
+decision, not a lane's.**
+
+⚠️ **The alternatives are worse and I checked them.** ⛔ **Rendering the shell
+for a signed-out person so a client component can read `window.location`** trades
+a routing change for a flash of authenticated chrome. ⛔ **`document.referrer`**
+is not guaranteed same-origin and is stripped by common privacy settings.
+
+**What is being asked:** 🔴 **may this repository have a `middleware.ts` whose
+only job is to attach the validated intent to the sign-in redirect?** ⚡ **If the
+answer is no, rules 06–09 and `intent.ts` are dead code and should be removed
+rather than left looking implemented** — 📁 which is [§2](../CLAUDE.md)'s rule
+about a repository that tells the truth about itself.

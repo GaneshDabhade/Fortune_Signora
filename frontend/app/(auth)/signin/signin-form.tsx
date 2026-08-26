@@ -1,10 +1,11 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useId, useRef, useState } from 'react';
 
 import { Button, Input, PasswordField } from '@/components/ui';
 import { signIn, signInWithPassword } from '@/lib/auth/client';
+import { INTENT_PARAM, decodeIntent, encodeIntent } from '@/lib/entry';
 
 import { AuthLink } from '../auth-shell';
 import { Authenticating, type AuthStage } from './authenticating';
@@ -54,6 +55,7 @@ export function SignInForm({
   oauthMethods: string[];
 }) {
   const router = useRouter();
+  const params = useSearchParams();
   const summaryId = useId();
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
@@ -145,7 +147,32 @@ export function SignInForm({
       // Auth navigates to its own `callbackURL` and beats this push, so it
       // was fixed at its source in `lib/auth/client.ts`; kept here because it
       // is still the right destination when the vendor does not navigate.
-      router.push('/');
+      /**
+       * 🔴 **A deep link that reaches this form was thrown away here** —
+       * [C-1559](../../../../docs/LANE_COORDINATION.md).
+       *
+       * ⚡ **`/?next=…` already works**: 📁 `use-entry.ts:144` reads the
+       * parameter and `rules.ts` 06–09 route it four different ways, with
+       * open-redirect validation in `captureIntent`. ⛔ **This form dropped it
+       * on the floor**, so the whole chain ended one step before the resolver
+       * that was built for it.
+       *
+       * ⛔ **`decodeIntent` and not the raw parameter.** ⚡ It rejects `//`,
+       * `/\`, any scheme and control characters — **the value arrives in a URL
+       * a stranger can write**, and forwarding it unchecked is the open
+       * redirect the resolver's own validator exists to refuse.
+       *
+       * ⚠️ **This does NOT close C-1559.** 📁 The three authenticated layouts
+       * still `redirect('/signin')` with no parameter at all, so a deep link
+       * is discarded **before** it can reach this form. **The capture needs
+       * `middleware.ts`, which is 🔴 routing.** ✅ **What this fixes is the
+       * half that is a lane's**: a `?next=` that DOES arrive is now honoured
+       * instead of ignored.
+       */
+      const intended = decodeIntent(params.get(INTENT_PARAM));
+      router.push(
+        intended === null ? '/' : `/?${INTENT_PARAM}=${encodeIntent(intended)}`,
+      );
       return;
     }
     // **The throttle is answered before the credential is**, because the
