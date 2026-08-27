@@ -17,6 +17,7 @@ export {
   type ResendTimer,
 } from './resend-timer';
 export { Select, type SelectOption, type SelectProps } from './select';
+export { Toggle, type ToggleProps } from './toggle';
 export { Badge, type BadgeProps, type BadgeTone } from './badge';
 export { Confidence, type ConfidenceProps } from './confidence';
 export {

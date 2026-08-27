@@ -2,12 +2,18 @@
 
 import { useEffect, useState } from 'react';
 
-import { FieldOriginTag, SegmentedControl } from '@/components/ui';
+import {
+  FieldOriginTag,
+  SegmentedControl,
+  Toggle as UiToggle,
+  type ToggleProps,
+} from '@/components/ui';
 import {
   changePreferences,
   getPreferences,
   type Preferences,
 } from '@/lib/api/preferences';
+import { useReducedMotion } from '@/lib/design/reduced-motion';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -58,6 +64,15 @@ export function AccessibilityPanel() {
   const workspaceId = activeWorkspace?.id ?? null;
   const [prefs, setPrefs] = useState<Preferences | null>(null);
   const [loading, setLoading] = useState(true);
+  /**
+   * ⛔ **The DEVICE's setting, not the preference** — 📁
+   * [`preferences.ts`](../../../lib/api/preferences.ts): *"`false` leaves the
+   * media query in charge."* ⚡ **Read, never stored**: 📁 the panel's own rule
+   * below is that storing what the browser already reports would be the hidden
+   * input [§2](../../../../CLAUDE.md) forbids, and **it stays true — this
+   * value reaches a sentence and nothing else.**
+   */
+  const deviceReducesMotion = useReducedMotion();
   /**
    * 🔴 **`unavailable` is a member rather than a silent return** —
    * 📁 [B-255](../../../../docs/BUGS.md), which this lane fixed in
@@ -176,6 +191,34 @@ export function AccessibilityPanel() {
             checked={prefs?.reduce_motion ?? false}
             disabled={prefs === null}
             onChange={(value) => change({ reduce_motion: value })}
+            /**
+             * 🔴 **[B-1080](../../../../docs/BUGS.md)** — 📁 `2.3.3`: *"Reduce
+             * motion is honoured from the system on first load, **shown as
+             * pre-set rather than silently applied**."*
+             *
+             * ⛔ **The screen could not distinguish *your device is reducing
+             * motion* from *nothing is reducing motion*** — QE measured both
+             * states and got identical output. ⚡ **Motion WAS being reduced
+             * the whole time**, by `globals.css`'s media query; the screen
+             * simply could not be used to find that out, **which is the state
+             * the design names *silently applied*, in those words.**
+             *
+             * ⚠️ **The design also draws the toggle itself ON — `toggle(true,
+             * 'On — from system')` — and that half is NOT built here**, on
+             * evidence rather than preference: 📁 [C-1573](../../../../docs/LANE_COORDINATION.md).
+             * ⛔ **`reduce_motion` is a non-nullable boolean, so *never chosen*
+             * and *chosen off* are the same stored value.** A toggle shown on
+             * from the system would write `false` when clicked — **the value
+             * already there** — and the control would move nothing and snap
+             * back. ⚡ **That is [B-255](../../../../docs/BUGS.md)'s shape and
+             * this lane's own rule**: *a control that silently does nothing is
+             * worse than one that is absent.*
+             */
+            {...(deviceReducesMotion
+              ? {
+                  note: 'Your device is set to reduce motion, and Signora is already following it. This switch adds it on every device you use Signora from.',
+                }
+              : {})}
           />
 
           <Toggle
@@ -264,55 +307,19 @@ export function AccessibilityPanel() {
 }
 
 /**
- * ⚡ **A real checkbox**, not a `role="switch"` div.
+ * ⚡ **A thin composition, and the only thing local about it is the origin
+ * tag** — 📁 which IS page semantics: *"Yours"* is a statement about who owns
+ * this field on the Profile screen, not a property of a switch.
  *
- * ⛔ **The native control carries its own label association, focus, keyboard
- * and announcement** — and this is the one panel where reimplementing any of
- * that would be self-defeating.
+ * ✅ **Everything else moved to [`components/ui/toggle.tsx`](../../../components/ui/toggle.tsx)**
+ * — 📁 [§20c](../../../../CLAUDE.md), *"add to the library rather than around
+ * it"*. ⛔ **Two page-local copies had already drifted**, and the accessible-name
+ * defect had to be fixed in both or in neither.
  */
-function Toggle({
-  label,
-  description,
-  checked,
-  disabled,
-  onChange,
-}: {
-  label: string;
-  description: string;
-  checked: boolean;
-  /**
-   * 🔴 **Disabled only while the read is in flight**, and it is the honest
-   * answer rather than a convenience.
-   *
-   * ⛔ **The first version left the controls live before `prefs` resolved**, so
-   * a click did nothing at all: the optimistic update bails when there is no
-   * current value to spread over. ⚡ **The headed journey reported *"clicking
-   * the checkbox did not change its state"*** — **an interactive control that
-   * does nothing, which is [B-255](../../../../docs/BUGS.md)'s shape and this
-   * lane's own rule**: *a control that silently does nothing is worse than one
-   * that is absent.*
-   *
-   * ✅ **The loading line above says why**, so this is a stated wait rather
-   * than a dead control.
-   */
-  disabled: boolean;
-  onChange: (value: boolean) => void;
-}) {
+function Toggle(props: ToggleProps) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="flex items-start gap-3">
-        <input
-          type="checkbox"
-          checked={checked}
-          disabled={disabled}
-          onChange={(event) => onChange(event.target.checked)}
-          className="mt-0.5 h-4 w-4 shrink-0 rounded border-border text-accent disabled:cursor-not-allowed disabled:opacity-60"
-        />
-        <span className="flex flex-col gap-0.5">
-          <span className="text-sm font-medium text-content">{label}</span>
-          <span className="text-xs leading-5 text-content-muted">{description}</span>
-        </span>
-      </label>
+      <UiToggle {...props} />
       <FieldOriginTag origin="yours" className="self-start" />
     </div>
   );

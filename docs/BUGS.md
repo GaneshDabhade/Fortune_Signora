@@ -20219,9 +20219,29 @@ role=null aria-live=polite  "Navigated to /w/4e158d14-ab29-4b23-b99d-a8b10986f8e
 | **Module** | **`product_surface`** — 📁 [`app/(app)/profile/accessibility-panel.tsx`](../frontend/app/(app)/profile/accessibility-panel.tsx):176 |
 | **Current assignee** | **Lane A** |
 | **Severity** | 🟡 — **wrong but survivable, and deliberately so.** ⚡ **The motion IS reduced** — `globals.css`:568 carries the media query and the shell uses `motion-reduce:` throughout. **Nothing is broken; the screen just cannot be used to find out** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-27**, for the measured harm. ⚠️ **The design's *toggle drawn ON* half is 📁 [C-1573](LANE_COORDINATION.md)** and is deliberately not built — see below. ⛔ **`VERIFIED` is QE's** |
 | **Found** | **2026-08-26 by QE**, User Profile conformance audit |
 | **Commit found** | `1d03cd33` |
+
+### ✅ Fixed 2026-08-27 — the screen can now be used to find out
+
+⚡ **The row's own measurement is what defines the fix.** 📁 *"The two rows are identical — the screen cannot distinguish *your device is reducing motion* from *nothing is reducing motion*."* ✅ **It can now**: the panel reads the media query and states the fact beneath the control, announced with it through `aria-describedby`.
+
+⛔ **Nothing is stored, so the row's ✅ half stands untouched.** 📁 The panel's argument — *"storing what the browser already reports would be the hidden input §2 forbids"* — is still true: **the value reaches a sentence and nothing else.**
+
+⚡ **The hook already existed and was already right.** 📁 [`workspace-strip.tsx`](../frontend/components/home/workspace-strip.tsx) had written `useReducedMotion` for the half CSS cannot do, with the correct reasoning about why the *preference* is not the *device*. ✅ **Lifted to [`lib/design/reduced-motion.ts`](../frontend/lib/design/reduced-motion.ts) unchanged** rather than copied — 📁 [§20c](../CLAUDE.md).
+
+### ⛔ What was NOT built, and it is evidence rather than preference
+
+📁 **The design also draws the control itself ON — `toggle(true, 'On — from system')`.** ⛔ **`reduce_motion` is a non-nullable boolean, so *never chosen* and *chosen off* are one stored value.** A toggle drawn on from the system would write `false` when clicked — **the value already there** — so the control would move nothing and snap back. ⚡ **That is [B-255](#b-255)'s shape and this row's own neighbour.** 📁 **[C-1573](LANE_COORDINATION.md)** asks the one question that unblocks it: *may the field become tri-state, and what does it then mean on a second device?*
+
+### ⚡ And a second defect found while in there, from QE's own pre-screen
+
+📁 **QE's note**: *"the local `Toggle` wraps label and description inside one `<label>`, so the help text lands in the accessible name"* — ✅ **confirmed, and it was in BOTH copies.** 📁 `User Profile` `1.3.1` asks for *"a programmatic label **and its help text via `aria-describedby`**."*
+
+⛔ **A screen reader announced the entire explanation as the control's name.** ⚡ **Everything was said and nothing was distinguishable** — a name is what a form is scanned by, and a paragraph cannot be scanned. ✅ **Both copies are now one [`components/ui/toggle.tsx`](../frontend/components/ui/toggle.tsx)** with its own test, fire-tested by restoring the wrapping `<label>`.
+
+⚠️ **One of the divergences between the two copies was inert**: the accessibility copy tinted the box with `text-accent`, which does nothing to a native checkbox without `@tailwindcss/forms` — **and that plugin is not installed.** ✅ `accent-accent` sets the property that actually tints it.
 
 📁 **The design's own `a11y` array, 2.3.3, verbatim** — and the clause that matters is the last five words:
 

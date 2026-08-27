@@ -16323,6 +16323,49 @@ perhaps twenty lines — **and it answers C-1567's architectural question as a
 side effect**, which is 📁 [§2](../CLAUDE.md)'s *decision wearing a document's
 clothes*.
 
+### C-1573 · Reduce motion cannot be *pre-set* while `reduce_motion` cannot say *never chosen*
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-27, fixing 📁 [B-1080](BUGS.md) |
+| **Module** | `product_surface` — 📁 [`accessibility-panel.tsx`](../frontend/app/(app)/profile/accessibility-panel.tsx) · the contract is [`preferences.ts`](../frontend/lib/api/preferences.ts):54 |
+| **Owner of the answer** | 🟠 **Product owner**, and it is one question: **may `reduce_motion` become tri-state?** ⚡ **The field is a server preference, so this is a contract change rather than a screen decision** |
+| **Status** | **`OPEN`** — ✅ **B-1080's measured harm is FIXED without it**; this is the half that cannot be built on the current contract |
+
+### 📁 What the design asks for
+
+> **`2.3.3`**: *"Reduce motion is honoured from the system on first load, **shown as pre-set rather than silently applied**."*
+>
+> **The row's body**: *"Removes every transform. Transitions drop to 80ms opacity fades. **Detected from your system and pre-set here**."* — **and its control is drawn `toggle(true, 'On — from system')`.**
+
+### ✅ The half that is built, 2026-08-27
+
+⚡ **The measured defect was that the screen could not distinguish *your device is reducing motion* from *nothing is reducing motion*** — 📁 QE ran both and got identical output. **Motion was being reduced the whole time by `globals.css`'s media query; the screen simply could not be used to find that out**, which is precisely the state the design names *silently applied*.
+
+✅ **The panel now reads the media query and states the fact**, announced with the control through `aria-describedby`. ⛔ **Nothing is stored** — 📁 the panel's own standing argument holds: *"storing what the browser already reports would be the hidden input [§2](../CLAUDE.md) forbids"*, and this value reaches a sentence and nothing else.
+
+### ⛔ The half that cannot be built, and why it is evidence rather than preference
+
+📁 **`reduce_motion` is a non-nullable `boolean`**, and its contract is explicit: *"this is **on regardless of what the device says**, and `false` leaves the media query in charge."*
+
+⛔ **So *never chosen* and *chosen off* are the same stored value.** Trace a toggle shown on from the system:
+
+| | |
+|---|---|
+| stored | `false` — because nobody has ever touched it |
+| device | reducing |
+| drawn | **on**, per the design |
+| the reader clicks it off | writes `reduce_motion: false` — ⛔ **the value already there** |
+| the screen | **does not move**, and snaps back to on |
+
+⚡ **That is [B-255](BUGS.md)'s shape and this lane's own rule** — *a control that silently does nothing is worse than one that is absent* — **and it is the defect B-1080 was filed next to, not a new one.**
+
+### ⚠️ Two things this row is careful not to claim
+
+**① The current semantic is not wrong, it is different.** ⚡ **The preference is a CROSS-DEVICE server value**, so *"always reduce, whatever this machine says"* is a genuinely useful thing to store and *"what this machine is doing right now"* is not. ⛔ **A ruling that makes the toggle effective-state must say what the stored value then means on a second device.**
+
+**② No fourth `FieldOriginTag` was invented.** 📁 The tag's own docstring: *"the design draws exactly three kinds"*, and 📁 [C-248](#c-248) already holds one variant unrendered because its rule does not exist. ⛔ **A *From system* tag would have been a fourth the design does not draw**, so the fact is a sentence instead.
+
 ### C-1572 · Two design documents give opposite answers for how a failed code announces
 
 | | |

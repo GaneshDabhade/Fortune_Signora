@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { cn } from '@/lib/design/cn';
+import { useReducedMotion } from '@/lib/design/reduced-motion';
 import { RoleChangeNotice } from '@/components/home/role-change-notice';
 import type { WorkspaceEntry } from '@/lib/api/types';
 import { useRecordEntry } from '@/lib/query/hooks/preferences';
@@ -65,35 +66,6 @@ export interface WorkspaceStripProps {
 const HOLD_MS = 4000;
 /** ⚡ **Matches the `160ms` DEFAULT step below**, so the unmount waits for the fade. */
 const FADE_MS = 150;
-
-/**
- * 🔴 **Whether reduced motion is in effect** — 📁 Entry: *"all cross-fades become
- * instant swaps. **The confirmation strip persists until dismissed rather than
- * timing out.**"*
- *
- * ⚡ **The device's setting, read at runtime.** ⛔ **Not the `reduce_motion`
- * preference**, whose own contract says it is *"the OVERRIDE, not the device's
- * setting"* and that `false` *"leaves the media query in charge"* — so a
- * preference alone would miss every person who set it in their operating system.
- *
- * ⚠️ **The CSS half is already handled** by `motion-reduce:transition-none`
- * below; **this is the half CSS cannot do** — cancelling a timer rather than
- * shortening an animation. 📁 *"Persists until dismissed"* is a behaviour, not a
- * duration.
- */
-function useReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(false);
-
-  useEffect(() => {
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReduced(media.matches);
-    const listen = (event: MediaQueryListEvent) => setReduced(event.matches);
-    media.addEventListener('change', listen);
-    return () => media.removeEventListener('change', listen);
-  }, []);
-
-  return reduced;
-}
 
 export function WorkspaceStrip({
   workspaceId,

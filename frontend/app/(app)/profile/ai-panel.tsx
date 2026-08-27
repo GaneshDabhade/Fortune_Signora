@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from 'react';
 
-import { FieldOriginTag, SegmentedControl } from '@/components/ui';
+import {
+  FieldOriginTag,
+  SegmentedControl,
+  Toggle as UiToggle,
+  type ToggleProps,
+} from '@/components/ui';
 import { changePreferences, getPreferences, type Preferences } from '@/lib/api/preferences';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
@@ -239,37 +244,19 @@ export function AiPanel() {
 }
 
 /**
- * A labelled switch.
+ * ⚡ **A thin composition, and the only thing local about it is the origin
+ * tag** — 📁 which IS page semantics: *"Yours"* is a statement about who owns
+ * this field on the Profile screen, not a property of a switch.
  *
- * ⛔ **A checkbox rather than a styled `div`**, for the reason the choice grids
- * are radios: the role, the state and the keyboard all arrive with the native
- * control, and none of them has to be remembered.
+ * ✅ **Everything else moved to [`components/ui/toggle.tsx`](../../../components/ui/toggle.tsx)**
+ * — 📁 [§20c](../../../../CLAUDE.md), *"add to the library rather than around
+ * it"*. ⛔ **Two page-local copies had already drifted**, and the accessible-name
+ * defect had to be fixed in both or in neither.
  */
-function Toggle({
-  label,
-  description,
-  checked,
-  onChange,
-}: {
-  label: string;
-  description: string;
-  checked: boolean;
-  onChange: (value: boolean) => void;
-}) {
+function Toggle(props: ToggleProps) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="flex items-start gap-3">
-        <input
-          type="checkbox"
-          checked={checked}
-          onChange={(event) => onChange(event.target.checked)}
-          className="mt-0.5 h-4 w-4 shrink-0 accent-accent"
-        />
-        <span className="flex flex-col gap-0.5">
-          <span className="text-sm font-medium text-content">{label}</span>
-          <span className="text-xs leading-5 text-content-muted">{description}</span>
-        </span>
-      </label>
+      <UiToggle {...props} />
       <FieldOriginTag origin="yours" className="self-start" />
     </div>
   );
