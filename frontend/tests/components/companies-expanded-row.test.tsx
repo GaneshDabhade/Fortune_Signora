@@ -41,6 +41,7 @@ vi.mock('@/lib/state/workspace-provider', () => ({
 
 import { ToastProvider } from '@/components/ui/toast';
 import CompaniesPage from '@/app/(app)/accounts/page';
+import { expandedRowId } from '@/app/(app)/accounts/expanded-row';
 import { ApiError } from '@/lib/api/client';
 import type { AccountOpportunity, DecisionPackage, ListedAccount } from '@/lib/api/types';
 
@@ -136,6 +137,23 @@ function serve(options: { opportunity?: unknown; conclusion?: unknown } = {}): v
         ? Promise.reject(notFound())
         : Promise.resolve(options.conclusion);
     }
+    /**
+     * 🔴 **Saved views are routed explicitly, and this is a repair rather than
+     * a tidy-up.**
+     *
+     * ⛔ **The catch-all below answered `/saved-views` with a page of
+     * ACCOUNTS**, which have no `id`, so the tab strip rendered two children
+     * keyed `undefined` — **a React key warning on every run of this file, for
+     * a defect that does not exist in the product.**
+     *
+     * ⚡ **Proved by rendering `ViewTabs` alone with real ids: no warning.**
+     * ⚠️ **A mock that answers every path is the too-wide-and-silent
+     * instrument** — it never errors, and it manufactures findings that look
+     * like the subject's.
+     */
+    if (at.includes('/saved-views')) {
+      return Promise.resolve({ items: [], next_cursor: null, has_more: false });
+    }
     return Promise.resolve({
       items: [listed('a1', 'Vantage Logistics'), listed('a2', 'Calderwood Analytics')],
       next_cursor: null,
@@ -230,5 +248,39 @@ describe('🔴 what the screenshot caught and the gates did not', () => {
     const read = apiRequest.mock.calls.map(([path]) => String(path));
     expect(read.filter((p) => p.includes('/decision-package'))).toHaveLength(1);
     expect(read.some((p) => p.includes('/accounts/a2/decision-package'))).toBe(false);
+  });
+
+  it('♿ the expander names the row it opens, and only while it is open', async () => {
+    /**
+     * ⚡ **The repository's own convention for a disclosure** — the utility
+     * panel and the organization switcher both name the surface they open, so
+     * a screen-reader user can move to it rather than hunting for what changed.
+     *
+     * ⛔ **The id is DERIVED from the account rather than held anywhere** —
+     * 📁 [§2](../../../CLAUDE.md), one authoritative representation: **two
+     * places computing one id is how `aria-controls` comes to point at
+     * nothing.**
+     */
+    serve({ opportunity: OPPORTUNITY, conclusion: CONCLUSION });
+    renderPage();
+    await screen.findByText('Vantage Logistics');
+
+    const expander = screen.getByRole('button', { name: 'Expand Vantage Logistics' });
+    // ⛔ **Closed, it names nothing** — a reference to a row that is not
+    // rendered is a dangling one, the same rule `CodeInput`'s `errorId`
+    // follows.
+    expect(expander).not.toHaveAttribute('aria-controls');
+    expect(expander).toHaveAttribute('aria-expanded', 'false');
+
+    await userEvent.setup().click(expander);
+    await screen.findByText(/Expanded · Vantage Logistics/);
+
+    const controls = screen
+      .getByRole('button', { name: 'Expand Vantage Logistics' })
+      .getAttribute('aria-controls');
+    expect(controls).toBe(expandedRowId('a1'));
+    // ⚡ **And the row it names is actually there**, which is the half a
+    // `toHaveAttribute` assertion alone never checks.
+    expect(document.getElementById(controls as string)).not.toBeNull();
   });
 });

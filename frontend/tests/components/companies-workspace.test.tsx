@@ -95,6 +95,23 @@ function servePages(...pages: readonly unknown[]): void {
     if (typeof path === 'string' && path.includes('/account-tags')) {
       return Promise.resolve({ tags: [], assignments: {} });
     }
+    /**
+     * 🔴 **Saved views are routed BEFORE the page queue, and that is a repair.**
+     *
+     * ⛔ **The catch-all below answered `/saved-views` with a page of
+     * ACCOUNTS** — which have no `id`, so the tab strip rendered children keyed
+     * `undefined` and React warned on every run. ⚠️ **And it is worse than
+     * noise**: the queue is positional, so the saved-views call **consumed one
+     * of the paginated account pages**, silently shifting which page an
+     * assertion below was looking at.
+     *
+     * ⚡ **A mock that answers every path is the too-wide-and-silent
+     * instrument** — it never errors, and it manufactures findings that look
+     * like the subject's.
+     */
+    if (typeof path === 'string' && path.includes('/saved-views')) {
+      return Promise.resolve({ items: [], next_cursor: null, has_more: false });
+    }
     const next = pages[Math.min(served, pages.length - 1)];
     served += 1;
     return Promise.resolve(next);

@@ -103,9 +103,49 @@ function servePages(...pages: readonly unknown[]): void {
     if (typeof path === 'string' && path.includes('/account-tags')) {
       return Promise.resolve({ tags: [], assignments: {} });
     }
+    /**
+     * 🔴 **Saved views are routed BEFORE the page queue, and that is a repair.**
+     *
+     * ⛔ **The catch-all below answered `/saved-views` with a page of
+     * ACCOUNTS** — which have no `id`, so the tab strip rendered children keyed
+     * `undefined` and React warned on every run. ⚠️ **And it is worse than
+     * noise**: the queue is positional, so the saved-views call **consumed one
+     * of the paginated account pages**, silently shifting which page an
+     * assertion below was looking at.
+     *
+     * ⚡ **A mock that answers every path is the too-wide-and-silent
+     * instrument** — it never errors, and it manufactures findings that look
+     * like the subject's.
+     */
+    if (typeof path === 'string' && path.includes('/saved-views')) {
+      return Promise.resolve({ items: [], next_cursor: null, has_more: false });
+    }
     const next = pages[Math.min(served, pages.length - 1)];
     served += 1;
     return Promise.resolve(next);
+  });
+}
+
+/**
+ * 🔴 **Answer ONE page, and route the calls that are not the list.**
+ *
+ * ⛔ **A bare `mockResolvedValue` answers EVERY path with a page of
+ * accounts** — including `/saved-views`, whose items then have no `id`, so
+ * the tab strip renders children keyed `undefined` and React warns.
+ *
+ * ⚡ **A mock that answers every path is the too-wide-and-silent instrument**:
+ * it never errors, and it manufactures findings that look like the subject's.
+ */
+function serveOne(rows: ListedAccount[], hasMore = false): void {
+  apiRequest.mockImplementation((path: unknown) => {
+    const at = typeof path === 'string' ? path : '';
+    if (at.includes('/account-tags')) {
+      return Promise.resolve({ tags: [], assignments: {} });
+    }
+    if (at.includes('/saved-views')) {
+      return Promise.resolve({ items: [], next_cursor: null, has_more: false });
+    }
+    return Promise.resolve(page(rows, hasMore));
   });
 }
 
@@ -113,7 +153,7 @@ beforeEach(() => apiRequest.mockReset());
 
 describe('⛔ an empty book is a designed state, not a blank', () => {
   it('✅ it names the one thing that puts a company here', async () => {
-    apiRequest.mockResolvedValue(page([]));
+    serveOne([]);
 
     renderPage();
 
@@ -133,7 +173,7 @@ describe('⛔ an empty book is a designed state, not a blank', () => {
 
 describe('✅ the list renders what the contract publishes', () => {
   it('📁 the name, through the shared renderer', async () => {
-    apiRequest.mockResolvedValue(page([listed('a1', 'Databricks'), listed('a2', 'Vantage')]));
+    serveOne([listed('a1', 'Databricks'), listed('a2', 'Vantage')]);
 
     renderPage();
 
@@ -147,7 +187,7 @@ describe('✅ the list renders what the contract publishes', () => {
     // hard-codes the word is wrong the first time the graph lists anything
     // else, and wrong silently.**
     const person: ListedAccount = { ...listed('a3', 'Acme'), kind: 'person' };
-    apiRequest.mockResolvedValue(page([listed('a1', 'Databricks'), person]));
+    serveOne([listed('a1', 'Databricks'), person]);
 
     renderPage();
 
@@ -170,7 +210,7 @@ describe('✅ the list renders what the contract publishes', () => {
     // ⛔ **The design prints *"8,412 total · 312 in view"* and the read
     // publishes no total.** ⚠️ **Printing one would be inventing the number a
     // seller trusts most.**
-    apiRequest.mockResolvedValue(page([listed('a1', 'Databricks')]));
+    serveOne([listed('a1', 'Databricks')]);
 
     renderPage();
 
@@ -181,7 +221,7 @@ describe('✅ the list renders what the contract publishes', () => {
   });
 
   it('⛔ and it draws no column the contract does not publish', async () => {
-    apiRequest.mockResolvedValue(page([listed('a1', 'Databricks')]));
+    serveOne([listed('a1', 'Databricks')]);
 
     renderPage();
 
@@ -202,7 +242,7 @@ describe('✅ the list renders what the contract publishes', () => {
   });
 
   it('✅ and it tells the reader those columns are absent rather than broken', async () => {
-    apiRequest.mockResolvedValue(page([listed('a1', 'Databricks')]));
+    serveOne([listed('a1', 'Databricks')]);
 
     renderPage();
 
@@ -216,7 +256,7 @@ describe('✅ the list renders what the contract publishes', () => {
 
 describe('⚡ paging walks the server’s cursor and never computes one', () => {
   it('✅ Load more appears only while the server says there is more', async () => {
-    apiRequest.mockResolvedValue(page([listed('a1', 'Databricks')], false));
+    serveOne([listed('a1', 'Databricks')], false);
 
     renderPage();
 

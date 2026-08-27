@@ -74,6 +74,15 @@ import { peopleFrom } from '@/components/team/people';
  * and why them; **nothing in the repository drafts a message**, and a link that
  * went nowhere is B-255 again.
  */
+/**
+ * ♿ **The id the expander names**, derived from the account rather than held in
+ * state — ⛔ **two places computing one id is how `aria-controls` comes to point
+ * at nothing** ([§2](../../../../CLAUDE.md), one authoritative representation).
+ */
+export function expandedRowId(accountId: string): string {
+  return `account-expanded-${accountId}`;
+}
+
 export function ExpandedRow({
   row,
   span,
@@ -92,7 +101,7 @@ export function ExpandedRow({
   members: AccountOwnerProps['members'];
 }) {
   return (
-    <TR>
+    <TR id={expandedRowId(row.account.account_id)}>
       <TD
         colSpan={span}
         /* 📁 **The design's plane** — `background:var(--sunken)`, and the row's

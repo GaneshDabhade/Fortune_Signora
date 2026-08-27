@@ -44,7 +44,7 @@ import {
 } from '@/lib/query/hooks/account-segments';
 import { useWorkspaceMembers } from '@/lib/query/hooks/team';
 import { useSession } from '@/lib/auth/client';
-import { ExpandedRow } from './expanded-row';
+import { ExpandedRow, expandedRowId } from './expanded-row';
 import { Building2 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -983,6 +983,22 @@ export default function CompaniesPage() {
                                             expanded={
                                               previewing === row.account.account_id
                                             }
+                                            /* ♿ **Names what it expands**, which
+                                               is the repository's own convention
+                                               for a disclosure — the utility
+                                               panel and the organization
+                                               switcher both do it. ⛔ **Only
+                                               while open**: a reference to a row
+                                               that is not rendered is a dangling
+                                               one, the same rule `CodeInput`'s
+                                               `errorId` follows. */
+                                            {...(previewing === row.account.account_id
+                                              ? {
+                                                  'aria-controls': expandedRowId(
+                                                    row.account.account_id,
+                                                  ),
+                                                }
+                                              : {})}
                                             onClick={() => {
                                               const collapsing =
                                                 previewing === row.account.account_id;
