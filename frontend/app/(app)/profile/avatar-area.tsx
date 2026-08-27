@@ -35,6 +35,27 @@ import { Avatar } from '@/components/ui';
  *
  * **The missing capability, exactly:** image upload with square-crop, plus
  * storage and a URL on the person's record. **Nothing here fabricates one.**
+ *
+ * ## 🔴 The *Cropping* panel was REMOVED, and that is a correction to this file
+ *
+ * ⛔ **It described an interaction nobody can start** — *"uploads open a square
+ * crop with pinch, drag and a zoom slider"* — **directly beneath a sentence
+ * saying uploading is not available.** ⚠️ **One screen making both statements
+ * is the screen contradicting itself**, and the reader who believes the second
+ * one goes looking for a control that is not there.
+ *
+ * 📁 **It is the design's own copy, and that is not sufficient.** ⚡ **In the
+ * design it sits immediately below *Upload photo* and *Choose colour* — lines
+ * 79, 80, 85 and 86 of the document, in that order — so it exists to explain
+ * those two buttons.** ⛔ **Shipped without them it is a fragment that explains
+ * nothing reachable**, which is the same false-affordance class as a disabled
+ * button, wearing prose instead of a control.
+ *
+ * ✅ **The format guidance stays**, because it constrains what the avatar
+ * accepts rather than describing an interaction: **one clause attached to the
+ * sentence that already says *until you upload one*.**
+ *
+ * ⚡ **It comes back with the capability, from the design, unchanged.**
  */
 export function AvatarArea({ name, email }: { name: string | null; email: string }) {
   return (
@@ -71,15 +92,6 @@ export function AvatarArea({ name, email }: { name: string | null; email: string
         </div>
       </div>
 
-      {/* 📁 The design's `--sunken` cropping panel, kept because it states the
-          behaviour an upload will have — ⚡ and it is the design's own copy. */}
-      <div className="min-w-[230px] flex-1 rounded-md bg-surface-sunken px-4 py-3.5">
-        <p className="text-xs font-semibold text-content-muted">Cropping</p>
-        <p className="mt-1.5 text-xs leading-5 text-content-muted">
-          Uploads open a square crop with pinch, drag and a zoom slider. The circle mask is
-          shown during cropping, never applied to the stored file.
-        </p>
-      </div>
     </div>
   );
 }
