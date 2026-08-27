@@ -64,6 +64,21 @@ export interface CodeInputProps {
   disabled?: boolean;
   /** Set when the code was wrong. ⛔ **The digits are NOT cleared** — retyping six characters to fix one is the design's named complaint. */
   invalid?: boolean;
+  /**
+   * 🔴 **The id of the element carrying the reason** — 📁 `Security Center`'s
+   * `2.4.7`: *"in the error state the ring is risk-coloured **and the message is
+   * programmatically associated**."*
+   *
+   * ⛔ **`aria-invalid` alone tells a screen-reader user that something is
+   * wrong and never what.** ⚡ Both callers already render the sentence
+   * adjacently; **nothing connected it to the control**, so the announcement
+   * and the field were two facts a reader had to join themselves.
+   *
+   * ⚠️ **Applied only while `invalid`** — 📁 an `aria-describedby` pointing at
+   * an element that is not rendered is a dangling reference, and the callers
+   * render the message conditionally.
+   */
+  errorId?: string;
   className?: string;
 }
 
@@ -74,6 +89,7 @@ export function CodeInput({
   label,
   disabled = false,
   invalid = false,
+  errorId,
   className,
 }: CodeInputProps) {
   const boxes = useRef<(HTMLInputElement | null)[]>([]);
@@ -146,6 +162,10 @@ export function CodeInput({
       // ♿ The group carries the error, so a screen reader hears it once rather
       // than once per box.
       aria-invalid={invalid || undefined}
+      // 📁 **`2.4.7` — *"the message is programmatically associated."***
+      // ⛔ **Only while invalid**: the callers render the sentence
+      // conditionally, and a reference to an absent element is worse than none.
+      aria-describedby={invalid && errorId !== undefined ? errorId : undefined}
       className={cn('flex gap-2', className)}
     >
       {characters.map((character, index) => (

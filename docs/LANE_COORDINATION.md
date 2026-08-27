@@ -16323,6 +16323,60 @@ perhaps twenty lines — **and it answers C-1567's architectural question as a
 side effect**, which is 📁 [§2](../CLAUDE.md)'s *decision wearing a document's
 clothes*.
 
+### C-1572 · Two design documents give opposite answers for how a failed code announces
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-26, auditing 📁 `Security Center`'s twelve `a11y` claims |
+| **Module** | `product_surface` — 📁 [`enrolment.tsx`](../frontend/app/(app)/profile/security/enrolment.tsx) · [`step-up-dialog.tsx`](../frontend/components/auth/step-up-dialog.tsx) |
+| **Owner of the answer** | 🔴 **Product owner** — ⛔ **two authoritative documents disagree; a lane picking one settles it by implementation** |
+| **Status** | **`OPEN`** — ⚠️ **nothing is broken. The product is inconsistent with itself, and that inconsistency is the evidence** |
+
+### 📁 The conflict, verbatim
+
+> **`Security Center` `4.1.3`**: *"Revocation progress announces per step as a
+> status; **only failures interrupt with an alert role**."*
+>
+> **`System States` `4.1.3`**: *"Region errors and retries announce politely.
+> **Only a state that ends the session** — 500, maintenance — **announces
+> assertively**, once."*
+
+⛔ **A wrong one-time code IS a failure** — Security Center says `alert`.
+⛔ **A wrong one-time code ends NOTHING** — System States says polite.
+
+### ⚡ The product already disagrees with itself, on the same event
+
+| | |
+|---|---|
+| `enrolment.tsx` — wrong verification code | **`role="alert"`** |
+| `step-up-dialog.tsx` — wrong step-up code | **`role="status"`**, with a comment: *"the person is looking at the field they just used, so an assertive interruption buys nothing"* |
+
+✅ **Both were left as they are.** ⛔ **Aligning them would answer the product
+question as a side effect**, and the divergence is the cleanest statement of it
+anybody will get.
+
+### ⚠️ What WAS fixed, because it is unambiguous
+
+📁 **`Security Center` `2.4.7`**: *"in the error state the ring is risk-coloured
+**and the message is programmatically associated**."*
+
+⛔ **`CodeInput` set `aria-invalid` on its group with no `aria-describedby`** —
+**a screen-reader user heard that something was wrong and never what.** ✅ Both
+callers now pass an `errorId`. ⚡ **Both documents want association; only the
+politeness is contested.**
+
+⚠️ **And the password step's refusal was a loose paragraph beside the field.**
+✅ **`Input.error` already does `aria-invalid`, `aria-describedby` and the
+message** — 📁 rendering a second paragraph was building *around* the library
+rather than using it ([§20c](../CLAUDE.md)).
+
+### 🔴 A test was the thing that caught the conflict
+
+⛔ **`enrolment.test.tsx` asserts `role="alert"`**, and it failed the moment this
+lane changed the role. ⚡ **The assertion was not stale — it encodes Security
+Center's reading**, and the failure is the two documents meeting. **It stands
+unchanged.**
+
 ### C-1571 · Registration announced the same error twice, and the second was an interruption
 
 | | |

@@ -126,12 +126,19 @@ export function Enrolment({ canEnrol, onFinished, onCancel }: EnrolmentProps) {
             onChange={(event) => setPassword(event.target.value)}
             autoComplete="current-password"
             required
+            /**
+             * 🔴 **The refusal was a loose paragraph beside the field** —
+             * 📁 `Security Center` `2.4.7`: *"the message is programmatically
+             * associated."* ⛔ **Nothing connected the two**, so a
+             * screen-reader user heard a sentence with no owner.
+             *
+             * ✅ **`Input.error` already does all of it** — `aria-invalid`,
+             * `aria-describedby` and the message itself. ⛔ **Rendering a
+             * second paragraph was building around the library rather than
+             * using it** ([§20c](../../../../../CLAUDE.md)).
+             */
+            {...(failed === null ? {} : { error: failed })}
           />
-          {failed === null ? null : (
-            <p role="alert" className="text-sm text-danger">
-              {failed}
-            </p>
-          )}
           <div className="flex flex-wrap gap-2">
             <Button type="submit" loading={busy}>
               Continue
@@ -153,9 +160,28 @@ export function Enrolment({ canEnrol, onFinished, onCancel }: EnrolmentProps) {
             value={code}
             onChange={setCode}
             invalid={wrong}
+            // 📁 `Security Center` `2.4.7` — *"the message is programmatically
+            // associated."* ⛔ **The sentence was adjacent and unconnected.**
+            errorId="enrolment-code-error"
           />
+          {/**
+            * ⚠️ **`role="alert"` KEPT, and the politeness is a conflict this
+            * lane will not settle by editing** — 📁
+            * [C-1572](../../../../../docs/LANE_COORDINATION.md).
+            *
+            * 📁 **`Security Center` `4.1.3`**: *"only failures interrupt with
+            * an **alert** role"* — **a wrong code is a failure.**
+            * 📁 **`System States` `4.1.3`**: *"only a state that **ends the
+            * session** announces assertively"* — **a wrong code ends nothing.**
+            *
+            * ⛔ **Two authoritative documents, opposite answers, one control.**
+            * ⚡ **The product already disagrees with itself**:
+            * `step-up-dialog.tsx` uses `role="status"` for the same event, with
+            * a comment explaining why. **That inconsistency IS the evidence, so
+            * it is preserved rather than tidied away.**
+            */}
           {wrong ? (
-            <p role="alert" className="text-sm text-danger">
+            <p id="enrolment-code-error" role="alert" className="text-sm text-danger">
               That code is not valid. Codes rotate every 30 seconds — a code from the
               previous window is still accepted.
             </p>

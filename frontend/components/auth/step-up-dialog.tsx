@@ -126,12 +126,14 @@ export function StepUpDialog({
           label="6-digit code"
           disabled={checking || expired}
           invalid={wrong}
+          // 📁 `2.4.7` — the sentence below is now connected to this group.
+          errorId="step-up-code-error"
         />
 
         {wrong ? (
           // ♿ Announced politely: the person is looking at the field they just
           // used, so an assertive interruption buys nothing.
-          <p role="status" className="text-sm text-danger">
+          <p id="step-up-code-error" role="status" className="text-sm text-danger">
             That code did not match. Check it and try again.
           </p>
         ) : (

@@ -131,6 +131,46 @@ describe('🔴 enrolment', () => {
   });
 
   /**
+   * 🔴 **📁 `Security Center` `2.4.7`** — ***"in the error state the ring is
+   * risk-coloured **and the message is programmatically associated**."***
+   *
+   * ⛔ **`CodeInput` set `aria-invalid` on its group with no
+   * `aria-describedby`**, so a screen-reader user heard that something was
+   * wrong and **never what.** ⚡ **The sentence was rendered adjacently and
+   * connected to nothing** — two facts a reader had to join themselves.
+   *
+   * ⚠️ **The POLITENESS of that message is contested and is not asserted here**
+   * — 📁 [C-1572](../../../docs/LANE_COORDINATION.md): `Security Center` says a
+   * failure interrupts with an alert, `System States` says only a
+   * session-ending state does. ⛔ **The association is the half both documents
+   * agree on.**
+   */
+  it('🔴 and the message is named by the code group — 2.4.7', async () => {
+    verifyTotp.mockResolvedValue({ error: { message: 'invalid' } });
+    render(<FactorsPanel twoFactorEnabled={false} hasPassword />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add a method' }));
+    await userEvent.type(screen.getByLabelText('Your password'), 'hunter-two');
+    await userEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'I have added it' }));
+
+    const group = screen.getByRole('group', { name: 'Verification code' });
+    // ⚠️ **Vacuity half** — before the failure there is nothing to name, and a
+    // dangling `aria-describedby` is worse than none.
+    expect(group.getAttribute('aria-describedby')).toBeNull();
+
+    await userEvent.type(screen.getByLabelText('Verification code, character 1 of 6'), '000000');
+    await userEvent.click(screen.getByRole('button', { name: 'Verify and continue' }));
+
+    await screen.findByRole('alert');
+    const describedBy = group.getAttribute('aria-describedby');
+    expect(describedBy, 'the code group names no message').toBeTruthy();
+    expect(document.getElementById(describedBy!)?.textContent ?? '').toMatch(
+      /rotate every 30 seconds/i,
+    );
+  });
+
+  /**
    * 🔴 **Shown once, and this is the assertion for it.**
    *
    * ⚡ **The codes arrive in the `enable` response and are never asked for
