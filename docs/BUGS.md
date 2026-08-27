@@ -20157,9 +20157,17 @@ role=null aria-live=polite  "Navigated to /w/4e158d14-ab29-4b23-b99d-a8b10986f8e
 
 ---
 
-### B-1084-A · 🟠 An engineering docstring rendered on Home as visible text
+### B-1085 · 🟠 An engineering docstring rendered on Home as visible text
 
-> ⚠️ **This row has a PROVISIONAL identifier.** ⛔ **Lane A's `B-200`–`B-299` block is exhausted** — 📁 [C-1562](LANE_COORDINATION.md), awaiting the product owner. **`B-1084-A` is a suffix on QE's own `B-1084` rather than a number taken from a block this lane does not hold**, and it is renumbered the moment a range is allocated. ✅ **Filed here rather than in the coordination register on purpose**: 📁 C-1562's whole finding is that the promotion gate reads **this** file, and a defect filed elsewhere is invisible to it.
+> ⚠️ **Found by Lane A; the identifier is QE's, and the correction is worth keeping.** ⛔ **Lane A's `B-200`–`B-299` block is exhausted** — 📁 [C-1562](LANE_COORDINATION.md), awaiting the product owner — **so this was first written `B-1084-A`, a suffix rather than a number from a block this lane does not hold.**
+>
+> 🔴 **QE measured that the suffix does not survive the parser**: `registers.py` truncates it, so `### B-1084-A` parses as `B-1084` and **collides with QE's own `B-1084` the moment both land** — two rows, one identifier, different states. ⛔ **`state-check.py` refuses a duplicate in any class**, and worse than the red: **the gate reads *a* `B-1084` and cannot tell which.** ⚡ **Today both are 🟠 and neither blocks; the day one is an unresolved 🔴 the gate's answer depends on which row it reached first.**
+>
+> ⚠️ **That is C-1562's own failure mode one level down** — reproduced by the workaround chosen to avoid it. ✅ **`B-1085` is allocated from QE's `B-1000`–`B-1099`**, which is the clean route: 📁 §20e — *"any lane opens a bug"*, and **the identifier comes from the opener's block.**
+>
+> ⛔ **This routes around C-1562 once; it does not resolve it.** **Lane A still holds no range, and the next defect this lane finds has the same problem.**
+>
+> ✅ **Filed in this register rather than the coordination one on purpose**: 📁 C-1562's whole finding is that the promotion gate reads **this** file, and a defect filed elsewhere is invisible to it.
 
 | | |
 |---|---|
@@ -20167,7 +20175,7 @@ role=null aria-live=polite  "Navigated to /w/4e158d14-ab29-4b23-b99d-a8b10986f8e
 | **Current assignee** | **Lane A** |
 | **Severity** | 🟠 — **wrong behaviour a customer would hit.** ⛔ Not 🔴: nothing is unusable and no data is wrong. ⚡ **But it is on Home, above the fold, for every person with more than one organization on their first entry of the day** |
 | **Status** | ✅ **`FIXED` — Lane A, 2026-08-27**, with a rendering test and a permanent lint rule. ⛔ **`VERIFIED` is QE's** |
-| **Found** | **2026-08-27 by Lane A**, auditing `Workspace Chooser`'s `a11y` claims and reading the strip on the way past |
+| **Found** | **2026-08-27 by Lane A**, auditing `Workspace Chooser`'s `a11y` claims and reading the strip on the way past. ⚡ **Identifier allocated by QE** from its own block |
 | **Commit found** | `9d602b07` — ⚠️ **and it is older than that.** The block is mangled in a way only a reflow produces, so it has shipped through several promotions |
 
 ### 🔴 What a customer saw

@@ -68,6 +68,30 @@ export function ForbiddenCard({ card, permission, workspaceId, testId }: Forbidd
     <div data-testid={testId} className="h-full">
       <SystemState
         scope="region"
+        /**
+         * 🔴 **`region-error`, and its severity is `risk` — so this panel is
+         * danger-tinted, and it should not be.** 📁
+         * [C-1576](../../../docs/LANE_COORDINATION.md).
+         *
+         * ⛔ **The grammar's rule is unambiguous**: *"warn for permission and
+         * interruption, risk for genuine failure. **The colour is never
+         * decorative.**"* ⚠️ **And this file argues the same thing two comments
+         * down and then contradicts it.**
+         *
+         * ⛔ **It is NOT changed, because there is nothing legal to change it
+         * to.** ⚡ **The design's scope table gives region exactly four
+         * states** — retry, skeleton, region error, empty result — **and
+         * assigns `permission required` to Page**, while §05 names *"Permission
+         * required — **in place**"* as a distinct thing that happens on a page
+         * you can see. **The two halves of one document disagree.**
+         *
+         * ⚠️ **Adding the state was tried and reverted.** 📁
+         * [`scope-ladder.test.ts`](../../tests/unit/scope-ladder.test.ts) reads
+         * the design document at test time and refused it — **correctly**: *"the
+         * ladder is the design's, not a transcription of it."* ⛔ **Weakening
+         * that guard to fit a tint would trade the one mechanism that keeps
+         * this file honest for a colour.**
+         */
         state="region-error"
         glyph={Lock}
         title={`${card} needs the ${permission} permission`}

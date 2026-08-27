@@ -16323,6 +16323,52 @@ perhaps twenty lines — **and it answers C-1567's architectural question as a
 side effect**, which is 📁 [§2](../CLAUDE.md)'s *decision wearing a document's
 clothes*.
 
+### C-1576 · A permission on Home is drawn as a failure, because the scope ladder has no region-scope permission state
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-27, testing 📁 [`forbidden-card.tsx`](../frontend/components/home/forbidden-card.tsx), which had no test |
+| **Module** | `product_surface` — 📁 [`lib/system-states/ladder.ts`](../frontend/lib/system-states/ladder.ts) · [`forbidden-card.tsx`](../frontend/app/../frontend/components/home/forbidden-card.tsx) |
+| **Owner of the answer** | 🔴 **Product owner** — ⛔ **two halves of `System States` disagree, and the ladder is generated from one of them** |
+| **Status** | **`OPEN`** — 🟠 **customer-visible on Home today.** ⚠️ **Pinned by a test so it cannot be fixed silently** |
+
+### 🔴 What a customer sees
+
+**An analyst whose role excludes a card gets the in-place panel — and it is DANGER-tinted.** ⛔ Measured, not inferred: `data-severity="risk"`.
+
+📁 **The grammar's own rule, verbatim**: ***"Neutral for absence, warn for permission and interruption, risk for genuine failure, brand for planned events, positive for recovery. The colour is never decorative."***
+
+⚠️ **`forbidden-card.tsx` argues the point itself and then contradicts it**: *"this is not a failure, and drawing it as one would tell somebody something is broken when nothing is."*
+
+### ⛔ The cause is a missing state, not a wrong choice
+
+**The ladder's region scope owns exactly four states** — `retry` · `skeleton` · `region-error` · `empty-result` — **and none of them is a permission.** ⚡ **So the only legal region state for this panel is the error one, and its severity is `risk` by the grammar's own map.**
+
+### 📁 And the design gives two answers
+
+| | |
+|---|---|
+| **The scope table** | `Page` — *"the primary record or query failed, **or the person may not see it at all**"* — `states: '404, 403, feature not enabled, permission required'` |
+| **§05, its own section** | ***"Permission required — in place. Distinct from 403. The person is on a page they can see, and one control needs a permission they lack. Hiding it would be tidier and worse."*** |
+
+⛔ **A state that happens *on a page you can see* is region scope by §01's own test** — *"a failure claims the smallest surface it can"* — **and the scope table puts the only permission state on Page.**
+
+### ⚠️ The fix was attempted, and a guard refused it — correctly
+
+**Adding `permission-in-place` to region with `warn` severity was implemented and reverted.** 📁 [`scope-ladder.test.ts`](../frontend/tests/unit/scope-ladder.test.ts) **reads the design document at test time** and compares the ladder to the design's scope table, and it fired.
+
+✅ **That guard is right and must not be weakened.** ⚡ Its own sentence is the reason: ***"the ladder is the design's, not a transcription of it."*** ⛔ **Trading the one mechanism that keeps that file honest for a tint would be the worst kind of local fix.**
+
+### 🔴 What a ruling has to say
+
+**Either** the scope table gains a region-scope permission state — **the design's own §05 already names it, *"Permission required — in place"*** — **or** §05's panel is Page scope after all and 📁 `AC-H11`'s *"the same footprint as the card it replaces"* means something else.
+
+⚡ **This is the mirror of [C-1557](#c-1557)**, which is the same ladder with the same shape pointed the other way: **a page-scope read failure whose only legal state lives at region.** ⛔ **Two rows, one gap** — the scope×state matrix has holes in both directions, and a ruling that fixes one should look at the other.
+
+### ✅ Pinned rather than left silent
+
+📁 [`home-forbidden-card.test.tsx`](../frontend/tests/components/home-forbidden-card.test.tsx) **asserts the wrong severity on purpose**, naming this row. ⚡ **The day the ruling lands and the state changes, that test fails and points here** — ⛔ **which is the opposite of a defect that quietly becomes correct with nobody noticing it ever existed.**
+
 ### C-1575 · Two documents give the switcher's filter two different thresholds — six and eight
 
 | | |
