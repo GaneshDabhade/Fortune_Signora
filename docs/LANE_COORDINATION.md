@@ -16323,6 +16323,54 @@ perhaps twenty lines — **and it answers C-1567's architectural question as a
 side effect**, which is 📁 [§2](../CLAUDE.md)'s *decision wearing a document's
 clothes*.
 
+### C-1570 · SUSPECTED — the tooltip may fail `1.4.13`'s *hoverable*, and this lane could not reproduce it
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-26, auditing 📁 §17's eleven `a11y` claims |
+| **Module** | `product_surface` — 🔴 [`components/ui/tooltip.tsx`](../frontend/components/ui/tooltip.tsx) is RED tier, **though [§20c](../CLAUDE.md) permits an accessibility fix there** |
+| **Owner of the answer** | **This lane, once it is reproduced** |
+| **Status** | **`OPEN` — ⚠️ SUSPECTED, NOT DEMONSTRATED** |
+
+### 📁 The claim
+
+> **§17 `1.4.13`**: ***"Hover content is dismissible, hoverable and persistent —
+> including AI explain popovers."***
+
+### The reasoning, which is inference and not measurement
+
+✅ **Dismissible holds** — `Escape` hides it, and the component's own note says the
+design does not state it and every implementation owes it.
+
+⚠️ **Hoverable is the doubt.** The tooltip carries **`pointer-events-none`** and
+is positioned outside its trigger's box. ⛔ **So a pointer moved toward it passes
+through to whatever is beneath** — which is outside the wrapper — **and the
+wrapper's `onMouseLeave` fires.** ⚡ **`mouseleave` follows DOM containment, and
+the tooltip IS a DOM descendant** — so removing `pointer-events-none` would
+likely make it hoverable with no other change.
+
+### ⛔ Why this lane did not make that one-token change
+
+🔴 **It could not reproduce the defect.** **The only `<Tooltip>` caller is
+`navigation.tsx`'s collapsed rail**, and the collapsed state is keyed
+`signora.rail.collapsed.${userId}.${device}` — **an invented key is not read, and
+no rail key existed in the probe's context.**
+
+⛔ **Changing a shared primitive on an inferred defect is the thing this session
+has repeatedly established not to do.** ⚡ **`pointer-events-none` is also load-
+bearing**: without it the tooltip can intercept clicks on the rail item beneath,
+which is a real regression on a navigation surface.
+
+### ✅ What the next session needs
+
+**Reach the collapsed rail through its own control** (or read the real
+`localStorage` key from a signed-in session), **hover a rail item, then move the
+pointer onto the tooltip and observe whether it survives.** ⚡ **If it does, the
+claim holds and this row closes with a measurement.**
+
+⚠️ **AI explain popovers — the other half of the claim — have no subject**: no
+such component exists.
+
 ### C-1569 · §17's `1.4.11` claim contradicts the palette the same document ships
 
 | | |
