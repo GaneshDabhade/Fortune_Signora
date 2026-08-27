@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui';
 import { CodeInput } from '@/components/ui/code-input';
@@ -82,6 +82,12 @@ export function StepUpDialog({
   const [code, setCode] = useState('');
   const [wrong, setWrong] = useState(false);
   const [checking, setChecking] = useState(false);
+  /**
+   * 📁 **`Security Gates` `2.1.1`** — *"paste fills all six boxes and **moves
+   * focus to the primary action**."* ⚡ **The dialog owns its own primary
+   * action**, so the field reports the paste and this decides where focus goes.
+   */
+  const confirmRef = useRef<HTMLButtonElement>(null);
   const [left, setLeft] = useState(expiresInSeconds);
 
   useEffect(() => {
@@ -128,6 +134,7 @@ export function StepUpDialog({
           invalid={wrong}
           // 📁 `2.4.7` — the sentence below is now connected to this group.
           errorId="step-up-code-error"
+          onPasteComplete={() => confirmRef.current?.focus()}
         />
 
         {wrong ? (
@@ -169,6 +176,7 @@ export function StepUpDialog({
 
         <div className="flex items-center gap-3">
           <Button
+            ref={confirmRef}
             type="button"
             onClick={() => void confirm()}
             loading={checking}

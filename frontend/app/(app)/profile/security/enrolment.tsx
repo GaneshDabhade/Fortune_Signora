@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { Button, CodeInput, PasswordField, StepRail } from '@/components/ui';
 import { authClient } from '@/lib/auth/client';
@@ -60,6 +60,13 @@ export function Enrolment({ canEnrol, onFinished, onCancel }: EnrolmentProps) {
   const [wrong, setWrong] = useState(false);
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState<string | null>(null);
+  /**
+   * 📁 **`Security Gates` `2.1.1`** — *"paste fills all six boxes and **moves
+   * focus to the primary action**."* ⚡ **A complete code has nothing left to
+   * type**, and the design's sentence applies wherever a one-time code is
+   * entered rather than only on the gate that states it.
+   */
+  const verifyRef = useRef<HTMLButtonElement>(null);
 
   if (!canEnrol) {
     return (
@@ -163,6 +170,7 @@ export function Enrolment({ canEnrol, onFinished, onCancel }: EnrolmentProps) {
             // 📁 `Security Center` `2.4.7` — *"the message is programmatically
             // associated."* ⛔ **The sentence was adjacent and unconnected.**
             errorId="enrolment-code-error"
+            onPasteComplete={() => verifyRef.current?.focus()}
           />
           {/**
             * ⚠️ **`role="alert"` KEPT, and the politeness is a conflict this
@@ -187,7 +195,12 @@ export function Enrolment({ canEnrol, onFinished, onCancel }: EnrolmentProps) {
             </p>
           ) : null}
           <div>
-            <Button onClick={verify} loading={busy} disabled={code.length < 6}>
+            <Button
+              ref={verifyRef}
+              onClick={verify}
+              loading={busy}
+              disabled={code.length < 6}
+            >
               Verify and continue
             </Button>
           </div>

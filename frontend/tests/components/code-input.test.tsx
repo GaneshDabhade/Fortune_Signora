@@ -7,10 +7,10 @@
  * the browser keeps the first character and drops the rest, so the field looks
  * filled and holds one digit.
  */
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { CodeInput } from '@/components/ui/code-input';
 
@@ -208,5 +208,73 @@ describe('♿ one field with a name, not six anonymous boxes', () => {
       <CodeInput value="123456" onChange={() => {}} label="Verification code" invalid />,
     );
     expect(boxes().map((b) => (b as HTMLInputElement).value).join('')).toBe('123456');
+  });
+
+  it('📁 a full paste moves focus to the primary action, not to the last box', async () => {
+    /**
+     * 📁 **`Security Gates` `2.1.1`**: *"Paste fills all six boxes **and moves
+     * focus to the primary action**."*
+     *
+     * ⛔ **A complete code has nothing left to type**, so leaving focus in the
+     * last box makes a person Tab past five filled boxes to reach the button
+     * they were always going to press.
+     *
+     * 🔴 **The callback fires from an EFFECT, and that is the whole subtlety.**
+     * Both callers gate their primary action on the code's length, so at the
+     * moment the paste handler runs the button is **still disabled** —
+     * ⛔ **and `.focus()` on a disabled element is a silent no-op.** ⚡ **This
+     * test uses a button that is disabled until the value arrives**, so a
+     * version that called back inline would fail here.
+     */
+    function Host() {
+      const [code, setCode] = useState('');
+      return (
+        <>
+          <CodeInput
+            value={code}
+            onChange={setCode}
+            label="Verification code"
+            onPasteComplete={() => document.getElementById('go')?.focus()}
+          />
+          <button id="go" type="button" disabled={code.length < 6}>
+            Verify
+          </button>
+        </>
+      );
+    }
+
+    render(<Host />);
+    const first = boxes()[0] as HTMLInputElement;
+    first.focus();
+    await userEvent.paste('123456');
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Verify' })).toHaveFocus(),
+    );
+    expect(boxes().map((b) => (b as HTMLInputElement).value).join('')).toBe('123456');
+  });
+
+  it('⛔ a SHORT paste stays in the field, because the code is not finished', async () => {
+    // ⚡ **The next thing that happens is typing, not submitting**, so focus
+    // lands on the next empty box exactly as it does mid-entry.
+    const onPasteComplete = vi.fn();
+    function Host() {
+      const [code, setCode] = useState('');
+      return (
+        <CodeInput
+          value={code}
+          onChange={setCode}
+          label="Verification code"
+          onPasteComplete={onPasteComplete}
+        />
+      );
+    }
+
+    render(<Host />);
+    (boxes()[0] as HTMLInputElement).focus();
+    await userEvent.paste('123');
+
+    expect(onPasteComplete).not.toHaveBeenCalled();
+    await waitFor(() => expect(boxes()[3]).toHaveFocus());
   });
 });

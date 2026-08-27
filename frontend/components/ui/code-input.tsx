@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, type ClipboardEvent, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type ClipboardEvent, type KeyboardEvent } from 'react';
 
 import { cn } from '@/lib/design/cn';
 
@@ -79,6 +79,22 @@ export interface CodeInputProps {
    * render the message conditionally.
    */
   errorId?: string;
+  /**
+   * 🔴 **Called when a PASTE fills the whole field** — 📁 `Security Gates`
+   * `2.1.1`: *"Paste fills all six boxes **and moves focus to the primary
+   * action**."*
+   *
+   * ⚡ **The caller owns its own primary action**, so this reports the event
+   * rather than reaching for a button it cannot know about. ⛔ **A
+   * `primaryActionRef` prop would couple the library to one caller's layout**,
+   * which is the shape [§20c](../../CLAUDE.md) forbids.
+   *
+   * ⛔ **Paste only, and never the sixth keystroke.** ⚡ Somebody typing has
+   * just as likely mistyped, and moving focus off the field the moment they
+   * finish would take the correction away from them. **The design's sentence
+   * is about paste, and so is this.**
+   */
+  onPasteComplete?: () => void;
   className?: string;
 }
 
@@ -90,10 +106,43 @@ export function CodeInput({
   disabled = false,
   invalid = false,
   errorId,
+  onPasteComplete,
   className,
 }: CodeInputProps) {
   const boxes = useRef<(HTMLInputElement | null)[]>([]);
   const characters = Array.from({ length }, (_, i) => value[i] ?? '');
+
+  /**
+   * 🔴 **A COUNTER, and it fires from an effect rather than from the handler.**
+   *
+   * ⛔ **Calling `onPasteComplete()` inline would focus a DISABLED button.**
+   * ⚡ Both callers gate their primary action on `code.length`, and at the
+   * moment the paste handler runs, `onChange` has been called but nothing has
+   * re-rendered — **so the button is still disabled and `.focus()` on a
+   * disabled element is a silent no-op.** ✅ **An effect runs after the commit
+   * that enabled it.**
+   *
+   * ⚠️ **A counter rather than a boolean**, so pasting a second code fires
+   * again instead of latching on the first.
+   */
+  const [pasteFilled, setPasteFilled] = useState(0);
+
+  /**
+   * ⛔ **The callback is held in a ref rather than listed as a dependency.**
+   * ⚡ Both callers pass an inline arrow, so a dependency on it would re-run
+   * the effect on every render of the parent — **a focus steal rather than a
+   * courtesy.** ⚠️ **And a `// eslint-disable` naming `exhaustive-deps` would
+   * be a directive for a rule this repository does not register**, which is an
+   * error in its own right and the trap the note further down already warns
+   * about. ✅ **A ref makes the question not arise.**
+   */
+  const completeRef = useRef(onPasteComplete);
+  completeRef.current = onPasteComplete;
+
+  useEffect(() => {
+    if (pasteFilled === 0) return;
+    completeRef.current?.();
+  }, [pasteFilled]);
 
   /** ⛔ Digits only, and never longer than the code. */
   const clean = (raw: string): string => raw.replace(/\D/g, '').slice(0, length);
@@ -152,6 +201,16 @@ export function CodeInput({
     const digits = clean(event.clipboardData.getData('text'));
     if (digits === '') return;
     onChange(digits);
+    // 📁 **`Security Gates` `2.1.1`** — *"paste fills all six boxes and moves
+    // focus to the primary action."* ⚡ **A complete code has nothing left to
+    // type**, so leaving focus in the last box makes a person Tab past five
+    // filled boxes to reach the button they were always going to press.
+    if (digits.length >= length) {
+      setPasteFilled((n) => n + 1);
+      return;
+    }
+    // ⛔ **A SHORT paste stays in the field** — the code is incomplete and the
+    // next thing that happens is typing, not submitting.
     focusBox(digits.length);
   };
 
