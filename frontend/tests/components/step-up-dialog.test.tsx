@@ -8,7 +8,7 @@
  * because 📁 *"'confirm your identity' with no object is how people approve
  * things they did not intend."*
  */
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -150,5 +150,54 @@ describe('📁 the backup path, and the time-box the person is told about', () =
     // this tells the person.
     open();
     expect(screen.getByText(/lasts 10 minutes/)).toBeInTheDocument();
+  });
+
+  it('🔴 the ticking clock is NOT a live region, and the expiry still is', () => {
+    /**
+     * ⛔ **A polite live region whose text changes every second announces every
+     * second** — the countdown was re-read aloud sixty times a minute, which
+     * does not convey the time remaining, it buries everything else including
+     * the error directly above it.
+     *
+     * ✅ **The shape was already in this repository**: 📁
+     * [`throttled.tsx`](../../app/(auth)/signin/throttled.tsx) puts a static
+     * heading in the live region and leaves its digits outside one.
+     */
+    render(
+      <StepUpDialog
+        open
+        action="revoke a session"
+        expiresInSeconds={292}
+        onConfirm={async () => true}
+        onDismiss={() => {}}
+      />,
+    );
+    const clock = screen.getByText('Expires in 4:52');
+    expect(clock.getAttribute('role')).toBeNull();
+    // ⚡ **NOT hidden either** — `aria-hidden` would remove the information
+    // rather than the interruption. A screen-reader user reads it on demand.
+    expect(clock.closest('[aria-hidden]')).toBeNull();
+  });
+
+  it('✅ but expiry announces, because that one IS a state change', () => {
+    vi.useFakeTimers();
+    try {
+      render(
+        <StepUpDialog
+          open
+          action="revoke a session"
+          expiresInSeconds={1}
+          onConfirm={async () => true}
+          onDismiss={() => {}}
+        />,
+      );
+      act(() => {
+        vi.advanceTimersByTime(1200);
+      });
+      const gone = screen.getByText('That code has expired — ask for another.');
+      expect(gone).toHaveAttribute('role', 'status');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

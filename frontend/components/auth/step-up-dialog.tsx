@@ -136,12 +136,35 @@ export function StepUpDialog({
           <p id="step-up-code-error" role="status" className="text-sm text-danger">
             That code did not match. Check it and try again.
           </p>
-        ) : (
+        ) : expired ? (
+          /**
+           * ✅ **Expiry IS a state change, so it announces once.**
+           */
           <p role="status" className="text-xs text-content-subtle">
-            {expired
-              ? 'That code has expired — ask for another.'
-              : `Expires in ${clock(left)}`}
+            That code has expired — ask for another.
           </p>
+        ) : (
+          /**
+           * 🔴 **`role="status"` REMOVED from the ticking clock, and this is a
+           * defect rather than a tidy-up.**
+           *
+           * ⛔ **A polite live region whose text changes every second announces
+           * every second.** ⚡ **The countdown was `Expires in 4:52`, re-read
+           * aloud sixty times a minute** — **which does not tell somebody the
+           * time remaining, it prevents them hearing anything else, including
+           * the error message directly above it.**
+           *
+           * ✅ **The right shape was already in this repository**: 📁
+           * [`throttled.tsx`](../../app/(auth)/signin/throttled.tsx) puts a
+           * **static** heading in the live region and leaves its ticking digits
+           * outside one. **This now matches it.**
+           *
+           * ⚠️ **The seconds are still visible and still `aria-hidden`-free** —
+           * a screen-reader user can read them on demand; they are simply not
+           * shouted. ⛔ **`aria-hidden` would have been the wrong repair**: it
+           * removes the information instead of the interruption.
+           */
+          <p className="text-xs text-content-subtle">{`Expires in ${clock(left)}`}</p>
         )}
 
         <div className="flex items-center gap-3">
