@@ -237,7 +237,30 @@ export function AccountSectionShell({
                 aria-hidden
                 className={cn('h-1.5 w-1.5 rounded-full', SEVERITY_DOT[header.worst])}
               />
-              <span className="sr-only">{SEVERITY_LABEL[header.worst]}</span>
+              {/**
+                * 🔴 **This was `sr-only`, and that is 📁 §17 `1.4.1` failing** —
+                * ***"Status keeps its dot AND its word. Tint alone never
+                * carries meaning."***
+                *
+                * ⛔ **A screen-reader user heard *"a risk"*; a sighted user got
+                * a coloured dot and nothing else.** ⚡ **`1.4.1` is about the
+                * VISUAL channel** — an `sr-only` word does not satisfy it, and
+                * this is the one criterion an `aria-` attribute cannot answer.
+                *
+                * ⚠️ **And the design carries this status as WORDS, not
+                * colour.** 📁 Its collapsed header is `{name} {summary} ▸` with
+                * **no dot at all**, and `stateCollapsed`'s summaries are
+                * *"14 detected · 1 competitor present"*, *"6 · all healthy"*.
+                *
+                * ⛔ **Not replaced with the design's phrasing**, because those
+                * summaries are per-section prose derived from each section's
+                * own content — **a shell cannot compute them**, and inventing
+                * one per section is the thing this file refuses everywhere
+                * else. ✅ **Making the existing word visible moves toward the
+                * design without authoring new copy**, and it is the same word
+                * a screen reader already heard.
+                */}
+              <span>{SEVERITY_LABEL[header.worst]}</span>
             </>
           )}
         </span>

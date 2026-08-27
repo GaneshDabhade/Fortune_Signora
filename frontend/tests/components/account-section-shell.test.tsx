@@ -7,7 +7,7 @@
  * FOLD to; only a render says whether the header is still there once the
  * section is shut.
  */
-import { fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { AccountSectionShell } from '@/components/accounts/section';
@@ -263,5 +263,76 @@ describe('📁 counts paint from cache while the body skeletons', () => {
 
     const region = screen.getByRole('region', { name: 'What contributed' });
     expect(region.textContent).not.toMatch(/\b0\b/);
+  });
+});
+
+/**
+ * 🔴 **📁 Design System §17 `1.4.1`** — ***"Status keeps its dot AND its word.
+ * Tint alone never carries meaning."***
+ *
+ * ⛔ **The word was `sr-only`**, so a screen-reader user heard *"a risk"* and a
+ * **sighted user got a coloured dot and nothing else.** ⚡ **`1.4.1` is about
+ * the VISUAL channel** — it is the one criterion an `aria-` attribute cannot
+ * answer, and an `sr-only` span reads as compliance while providing none.
+ *
+ * ⚠️ **The design does not draw a dot here at all.** 📁 Its collapsed header is
+ * `{name} {summary} ▸`, and `stateCollapsed` carries the status as prose —
+ * *"14 detected · 1 competitor present"*, *"6 · all healthy"*. **The design's
+ * channel for worst-status is words.**
+ */
+describe('🔴 §17 1.4.1 — the worst status is a word, not only a colour', () => {
+  it('renders the word visibly, not sr-only', () => {
+    shell({ severities: ['none', 'risk'], count: 2 });
+
+    const word = screen.getByText('a risk');
+    // ⛔ **`sr-only` is the class that hides it from sight** — the assertion is
+    // about what a sighted reader gets, which is what 1.4.1 protects.
+    expect(word.className).not.toMatch(/\bsr-only\b/);
+  });
+
+  /**
+   * ✅ **A section with nothing of concern still says so.** ⚡ The dot is
+   * suppressed for `none` and always was; **what changed is that the other
+   * three states now carry their word in both channels.**
+   */
+  it('⚡ and every non-none severity carries one', () => {
+    for (const [severity, word] of [
+      ['good', 'nothing of concern'],
+      ['watch', 'worth watching'],
+      ['risk', 'a risk'],
+    ] as const) {
+      cleanup();
+      shell({ severities: [severity], count: 1 });
+      expect(screen.getByText(word).className, severity).not.toMatch(/\bsr-only\b/);
+    }
+  });
+
+  /**
+   * ⚠️ **Vacuity guard.** ⛔ A component that rendered every word unconditionally
+   * would satisfy both assertions above — **`none` must still render no status
+   * at all**, which is the case the header's own docstring is about: *"a section
+   * that has no notion of status shows a count alone."*
+   */
+  it('⚠️ vacuity guard — a section claiming no status shows no dot and no word', () => {
+    const { container } = shell({ severities: ['none', 'none'], count: 2 });
+
+    for (const word of ['a risk', 'worth watching', 'nothing of concern']) {
+      expect(screen.queryByText(word)).not.toBeInTheDocument();
+    }
+
+    /**
+     * 🔴 **The DOT is the half that made the first draft of this guard
+     * vacuous**, and only a fire-test found it.
+     *
+     * ⛔ **Rendering the block unconditionally left every word assertion above
+     * green** — `SEVERITY_LABEL.none` is the empty string, so *"no word"* was
+     * true either way. ⚡ **What actually appears is a grey dot on a section
+     * that claims no status**, which is 📁 the header's own rule: *"a section
+     * that has no notion of status shows a COUNT ALONE."*
+     */
+    expect(
+      container.querySelector('.bg-border-strong'),
+      'a section with no status rendered a status dot',
+    ).toBeNull();
   });
 });
