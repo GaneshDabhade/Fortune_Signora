@@ -1,5 +1,35 @@
 # Session Handoff
 
+> ## Cycle 274 — promoted `761f371598c2`, 2026-08-27 · **the first full browser suite since 266, run twice**
+>
+> **`main` = `761f371598c2` = the certified commit**, verified from the remote. **ZERO merge commits**, `--audit-main` holds across 2441. `pytest` **5465** · **95.03%** · **679 invariants** · `mypy` **958** · `import-linter` **37/37** · `tsc` · frontend **4178/230** · `eslint` · smoke **24/222s** · scenario **208** · DR ✅. **No migration — reversibility NOT APPLICABLE rather than ticked.**
+>
+> 🔴 **THE REPOSITORY CARRIES ~21 PERSISTENTLY RED BROWSER TESTS, AND THIS IS THE FIRST CYCLE TO MEASURE IT SINCE 266.** **Baseline `integration` 24 failed / 433 passed · candidate 21 failed / 436 passed**, both full runs, conditions verified identical. ✅ **ZERO attributable to the candidate.** ⛔ **NOT NEW — but nothing had measured them for eight cycles.**
+>
+> ⚠️ **DO NOT DIFF TWO FULL RUNS AND BELIEVE IT.** **A title-based diff showed 7 candidate-only failures.** ⛔ **FOUR of the seven reproduced ON THE BASELINE when re-run, and TWO baseline-only failures reproduced on the candidate.** ⚡ **`layout-invariants` subjects swap freely between runs regardless of tree.** ✅ **Always re-run the suspects on BOTH trees before calling anything a regression.**
+>
+> ⛔ **AND COMPARE BY TEST TITLE, NEVER `file:line`** — `interaction-boundaries` failed at `:184` in one run and `:258` in the other; `home-viewports` at `:144` versus `:128`/`:288`. **Same tests, different lines.**
+>
+> 🔴 **[B-1083](BUGS.md) — `layout-invariants` fails on its PRECONDITION.** *"The page never settled at its bottom, so clearance cannot be judged"* — **the overlap assertion never executes**, so **3–6 screens per full run are UNMEASURED while showing red.** ⛔ **Do NOT just raise the 20 × 150ms budget** — that converts an honest red into a green that proves nothing. **Make *slow render* and *never settles* distinguishable first.**
+>
+> ⚠️ **BEFORE ANY BROWSER RUN — two preconditions that cost 48 minutes and a whole run when skipped:**
+> ```bash
+> export SIGNORA_AUTH_EMAIL_TRANSPORT=mailbox        # .env.local sets 'console' — 12 false failures
+> curl -s -o /dev/null -w '%{http_code}\n' http://localhost:3200/dev/mailbox   # MUST be 200
+> docker exec signora-lane-qe-postgres-1 psql -U signora -d signora -tAc \
+>   "select text_size from person_preferences;"      # record the starting state
+> ```
+>
+> 🔴 **NEVER RUN `make e2e` FROM `integration`, `main` OR A DETACHED HEAD.** **`require-e2e-url` refuses (B-1014)** — ⛔ **and worse, `environments.py` on `integration` derives `signora-v2` on PORT 5432, human review's cluster.** ✅ **Name it: `SIGNORA_ENVIRONMENT=lane-qe make e2e`, and `make -n` it first.**
+>
+> ✅ **[B-1081](BUGS.md) is `VERIFIED`** — all four unanchored `docker compose` sites fixed, regression test fire-tested both ways, and `make review` proven in the real path.
+>
+> ⛔ **[B-1082](BUGS.md) stays OPEN by choice** — the promotion gate's blocking-🔴 check reads `docs/BUGS.md` alone while two 🔴 rows sit in `LANE_COORDINATION.md`. **Widening it is a contract change and is the product owner's.**
+>
+> ⚡ **NEXT CYCLE'S INPUT IS ALREADY PUSHED: `origin/lane-a-product-surface-r4` = `10d1558c`.**
+
+> ---
+>
 > ## Cycle 273 — promoted `eaecf496e3c4`, 2026-08-26 · **the two gates that are not gates, and a command the repository kept printing**
 >
 > **`main` = `eaecf496e3c4` = the certified commit**, verified from the remote. **ZERO merge commits**, `--audit-main` holds across 2431. `pytest` **5459** · **95.03%** · **679 invariants** · `mypy` **957** · `import-linter` **37/37** · `tsc` · frontend **4167/228** · `eslint` · smoke **24/215s** · scenario **208** · DR ✅. **No migration — reversibility NOT APPLICABLE rather than ticked.**

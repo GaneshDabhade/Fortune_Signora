@@ -20244,7 +20244,7 @@ role=null aria-live=polite  "Navigated to /w/4e158d14-ab29-4b23-b99d-a8b10986f8e
 | **Module** | **Repository tooling and QE's own runbooks** — 📁 [`docs/REPOSITORY_RELEASE_CHECKLIST.md`](REPOSITORY_RELEASE_CHECKLIST.md):47 · [`docs/RUNNING.md`](RUNNING.md):95 · [`infra/review.py`](../infra/review.py):351,356 |
 | **Current assignee** | **QE** — all four sites are QE-owned files ([`CLAUDE.md`](../CLAUDE.md) §20e, *Shared files have one owner*) |
 | **Severity** | 🟠 — **wrong behaviour somebody would hit.** ⛔ **It already happened**: one lane recreated another's running container on a shared port |
-| **Status** | ✅ **`FIXED` — QE, 2026-08-26.** The two documents in cycle 273's Closeout; **[`infra/review.py`](../infra/review.py) in a slice of its own, with [`backend/tests/test_compose_commands_are_anchored.py`](../backend/tests/test_compose_commands_are_anchored.py) enforcing it.** **`VERIFIED` is QE's at the next cycle** |
+| **Status** | ✅ **`VERIFIED` — QE, 2026-08-27.** All four sites anchored; the regression test shipped in `761f371598c2` and **fire-tested both ways** — reverting `infra/review.py` turns it red. ⚡ **Proven in the real path too**: `make review` with slot 0 down refuses **and prints the anchored form** |
 | **Found** | **2026-08-26 by QE**, prompted by Lane A reporting the same class against itself |
 | **Commit found** | `eaecf496` |
 
@@ -20326,4 +20326,53 @@ role=null aria-live=polite  "Navigated to /w/4e158d14-ab29-4b23-b99d-a8b10986f8e
 **Three candidate resolutions, none chosen here:** ⓵ extend the block so defects land in `BUGS.md` where they belong ([C-1562](LANE_COORDINATION.md)) · ⓶ teach the guard both registers · ⓷ forbid a 🔴 severity marker in the coordination register outright, so the classification error is unrepresentable rather than merely discouraged.
 
 📁 **This is the second blind spot QE has found in its own promotion gate this week and kept rather than patched.** **The first: the guard reads `docs/BUGS.md` from the CANDIDATE TREE, so a 🔴 filed after a snapshot is pinned is invisible to that promotion.** ⚡ **Both share a shape — the gate answers confidently about a narrower question than the one it appears to answer**, which is the class this repository has now met four times in one day.
+
+---
+
+### B-1083 · 🟠 `layout-invariants` fails on its precondition, so the invariant it names is never checked — and the red result looks like it was
+
+| | |
+|---|---|
+| **Module** | **QE's own repository-wide suite** — 📁 [`frontend/tests/e2e/fixtures/layout-invariants.ts`](../frontend/tests/e2e/fixtures/layout-invariants.ts):280–291 · [`frontend/tests/e2e/layout-invariants.spec.ts`](../frontend/tests/e2e/layout-invariants.spec.ts):33 |
+| **Current assignee** | **QE** — §20e: *"QE creates, maintains, extends and retires repository-wide automated tests"* |
+| **Severity** | 🟠 — ⛔ **a silent coverage gap wearing a failure's clothes.** ⚠️ **Not 🔴: it is loud, and no product behaviour is known to be wrong** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-27 by QE**, comparing a candidate's browser run against the baseline and refusing to accept the diff |
+| **Commit found** | `761f3715` candidate · `a7b172b6` baseline — **it reproduces on BOTH** |
+
+**Steps to reproduce.** Run `make e2e ARGS="layout-invariants"` twice. **A different set of screen × breakpoint combinations fails each time**, on an unchanged tree.
+
+**Expected.** *"Shell regions do not overlap"* is measured on every screen at every breakpoint, and a red result means regions overlapped.
+
+**Actual.** Between **3 and 6** of them fail with:
+
+```
+Error: the page never settled at its bottom, so clearance cannot be judged
+  at fixtures/layout-invariants.ts:291
+```
+
+⛔ **That is the PRECONDITION, not the property.** ⚡ **The overlap assertion at :293 never executes**, so for those screens the invariant is **unmeasured** — **and the red result is indistinguishable from *"we checked it and it failed"*.**
+
+### 📁 The mechanism, read rather than guessed
+
+```js
+for (let attempt = 0; attempt < 20 && previous !== scrollHeight; attempt += 1) {
+  previous = scrollHeight; window.scrollTo(0, previous);
+  await new Promise((r) => setTimeout(r, 150));
+}
+```
+
+⚠️ **20 × 150ms = a 3-second budget for the page to stop growing.** ⛔ **A screen that settles more slowly — lazily-loaded content, a late layout pass, a scroll container that is not the document — fails the precondition rather than the property.**
+
+### ⚡ Why this was worth finding rather than filing as a flake
+
+**It is what stood between a candidate and a false regression report.** The candidate showed **7 candidate-only failures** against the baseline's 24; ⛔ **four of the seven reproduced ON THE BASELINE when re-run**, and **two baseline-only failures reproduced on the candidate.** ✅ **The subjects swap freely between runs regardless of which tree is under test** — so a diff of two full runs cannot attribute a `layout-invariants` failure to anything.
+
+> 🔴 **A test whose subject varies run to run cannot detect a regression, and this one is currently red 3–6 times in every full suite.** ⚠️ **Every one of those is a screen whose layout invariant nobody measured.**
+
+### ⛔ What this row does NOT claim
+
+**That the product is fine.** ⚡ **A page that never settles within three seconds may itself be a defect** — unbounded growth, or a scroll container the fixture is not looking at. ⛔ **The fixture cannot currently tell those apart from a slow render**, which is why the fix is *not* simply a longer timeout: **a raised budget would convert an honest red into a green that proves nothing.**
+
+✅ **The repair has to make the two distinguishable** — settle on the real scrolling element, and report *what* failed to settle — **before any budget is touched.**
 

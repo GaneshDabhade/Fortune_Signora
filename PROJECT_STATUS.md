@@ -2,13 +2,50 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `eaecf496`, 2026-08-26.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `761f3715`, 2026-08-27.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
 > **It is a dashboard, not an engineering journal.** [`SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) answers a different question — *"what should the next session know?"* — and does not repeat what is here. Historical implementation detail belongs in ADRs and module documentation; **the appendices below are dated records and are never rewritten to match the present.**
 
 ---
+
+## Cycle 274 — promoted `761f371598c2`, 2026-08-27
+
+| | |
+|---|---|
+| **Promoted** | **`761f371598c2`** — `promoted == certified`, 8 commits, **zero merge commits**. `--audit-main` holds across 2441 |
+| **Gates** | **5465 pytest · 95.03% · 679 Security Invariants · mypy strict 958 · import-linter 37/37 · tsc clean · frontend 4178 in 230 files · eslint clean · smoke 24 stages in 222s · scenario 208 assertions** |
+| **DR** | ✅ passed — 679 invariants against the restarted stack |
+| **Migrations** | none — reversibility **not applicable** rather than ticked. Head unchanged at `0066` |
+| **Open defects** | **zero unresolved 🔴** |
+
+**Lane A**: Account 360's stated absences and header, Profile's ninth section, Settings' one editable field, and the Notification Center audit. **QE**: [B-1081](docs/BUGS.md) closed and `VERIFIED`, [B-1082](docs/BUGS.md) filed against QE's own gate, [B-1083](docs/BUGS.md) filed against QE's own suite.
+
+### 🔴 The first completed full browser suite since cycle 266, and the repository carries ~21 persistent failures
+
+⛔ **Cycle 266's attempt died twice and every cycle since validated a subset.** ✅ **This cycle ran the full suite TWICE — once on the candidate, once on the baseline — under conditions verified identical.**
+
+| | failed | passed |
+|---|---|---|
+| **Baseline** — `integration` `a7b172b6` | **24** | 433 |
+| **Candidate** — `761f371598c2` | **21** | **436** |
+
+⚡ **ZERO failures are attributable to this candidate**, and that is measured rather than argued. A title-based diff — ⛔ **not `file:line`, because the same test moves between lines across cycles** — showed 16 shared, 7 candidate-only, 10 baseline-only. **That diff was not accepted.** ✅ **Four of the seven candidate-only failures reproduced ON THE BASELINE when re-run; two baseline-only failures reproduced on the candidate; the two non-layout candidate-only failures did not reproduce at all.**
+
+> ⚠️ **The ~21 persistent failures are now a published measurement rather than an impression.** **They are not new and not this candidate's** — but nothing had measured them for eight cycles, and a number nobody publishes gets worse quietly.
+
+### 🔴 [B-1083](docs/BUGS.md) — a test that fails on its precondition, so the property is never checked
+
+**`layout-invariants` reports `the page never settled at its bottom, so clearance cannot be judged`** — ⛔ **the PRECONDITION, not the property.** ⚡ **The overlap assertion never executes**, so **between three and six screens per full run have that invariant UNMEASURED while showing red** — indistinguishable from having been checked and failed.
+
+⛔ **The row deliberately does NOT prescribe a longer timeout.** ⚠️ **A raised budget would convert an honest red into a green that proves nothing**; the repair must first make *slow render* and *never settles* distinguishable.
+
+### ✅ A QE classification withdrawn, and then settled by measurement
+
+**QE reported `profile-journey:175` as an instance of Lane A's C-1568.** ⛔ **Lane A challenged it with a direct counter-measurement and QE withdrew** — the evidence had come from a run QE had **itself declared void** for a transport misconfiguration, cited as classification while telling Lane A not to read the same run's failure count.
+
+✅ **On the clean run it PASSED**, with the starting state measured at `text_size = 100` before the suite began. **The preference round-trips; only C-1568's own claim — the value applies to nothing — is real.** ⚡ **The three-way split earned its keep even though two branches came back empty: without it, a passing journey would have read as *"C-1568 is fixed"*, which is false.**
 
 ## Cycle 273 — promoted `eaecf496e3c4`, 2026-08-26
 

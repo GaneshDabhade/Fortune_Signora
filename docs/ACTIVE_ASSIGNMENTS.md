@@ -71,7 +71,18 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-26, `eaecf496`
+## Current — as of 2026-08-27, `761f3715`
+
+> ⚡ **Cycle 274 Closeout. 8 commits, Lane A + QE, no migrations, EIGHT gates on the FIRST attempt.**
+>
+> ✅ **No board rows removed** — **this cycle promoted no `TASK-nnn`.**
+>
+> 🔴 **The first completed FULL browser suite since cycle 266, run TWICE** — candidate and baseline, conditions verified identical. **21 vs 24 failures; ZERO attributable to the candidate.** ⚠️ **~21 persistent failures are now a published measurement rather than an impression.**
+>
+> 🔴 **[B-1083](BUGS.md) filed against QE's own suite**: `layout-invariants` fails on its precondition, so **3–6 screens per run are unmeasured while showing red.**
+>
+> ✅ **[B-1081](BUGS.md) `VERIFIED`.** ⛔ **[B-1082](BUGS.md) open by choice — widening a gate is the product owner's.**
+
 
 > ⚡ **Cycle 273 Closeout. 5 commits, Lane A, no migrations, EIGHT gates on the FIRST attempt.**
 >
