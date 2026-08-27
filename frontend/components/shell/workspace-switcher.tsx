@@ -377,6 +377,14 @@ export function WorkspaceSwitcher({ collapsed = false }: { collapsed?: boolean }
                       onFocus={() => setActiveItem(index)}
                       onClick={() => choose(workspace.id)}
                       className={cn(
+                        // 🔴 **📁 `2.5.8`: *"Rows are 48px on touch and 40px on
+                        // pointer."*** ⛔ **They were 38px** — `py-2` around a
+                        // 22px avatar — **and had no touch variant at all**,
+                        // so the design's mobile band (*"touch targets raised
+                        // to 44px, so rows are 48px"*) had no implementation.
+                        // ⚡ **A minimum rather than a fixed height**: a name
+                        // that wraps must grow the row, not overflow it.
+                        'min-h-10 coarse:min-h-12',
                         'flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors',
                         ' focus-visible:bg-surface-sunken',
                         current

@@ -388,4 +388,31 @@ describe('📁 §4.1.3 — a switch announces politely, and it was silent', () =
     await userEvent.keyboard('{Home}');
     expect(screen.getAllByRole('menuitemradio')[0]).toHaveFocus();
   });
+
+  it('📁 a row clears 40px on a pointer and 48px on touch', async () => {
+    /**
+     * 📁 **`2.5.8`**: *"Rows are 48px on touch and 40px on pointer"*, and the
+     * design's mobile band says why — *"touch targets raised to 44px, so rows
+     * are 48px."*
+     *
+     * ⛔ **They were 38px** — `py-2` around a 22px avatar — **with no touch
+     * variant at all.**
+     *
+     * ⚠️ **Classes, not measured pixels, and the trade is the same one
+     * `code-input.test.tsx` states**: jsdom applies no stylesheet, so a
+     * rect here is zero and would pass any value. **A class assertion can
+     * fail, so it is the honest instrument available.**
+     */
+    switcher(THREE);
+    await userEvent.click(screen.getByRole('button', { name: /Active organization/ }));
+
+    const rows = screen.getAllByRole('menuitemradio');
+    expect(rows).toHaveLength(THREE.length);
+    for (const row of rows) {
+      // ⚡ **A MINIMUM, not a fixed height** — a name that wraps must grow the
+      // row rather than overflow it.
+      expect(row.className).toContain('min-h-10');
+      expect(row.className).toContain('coarse:min-h-12');
+    }
+  });
 });

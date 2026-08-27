@@ -7,6 +7,8 @@
  * states the design specifies and the ones P-A says get skipped.**
  */
 import { fireEvent, render, screen, within } from '@testing-library/react';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Workspace } from '@/lib/api/types';
@@ -195,5 +197,77 @@ describe('what it deliberately does not say', () => {
     const row = screen.getByRole('button', { name: /Northwind Global/ });
 
     expect(within(row).getByText('NG')).toBeInTheDocument();
+  });
+
+  it('🔴 focus lands on the heading, never on the search field', () => {
+    /**
+     * 📁 **`2.4.3`**: *"WS-B places focus on the h1 on load, **not the search
+     * field**, so the list is announced before the control."*
+     *
+     * ⛔ **The search field carried `autoFocus`**, so a screen-reader user
+     * arrived inside a filter for a list they had not been told existed —
+     * ⚡ **and the sentence under the heading, *"you are a member of four"*,
+     * is the fact that makes a filter make sense.**
+     */
+    workspaceContext.mockReturnValue({
+      ...IDLE,
+      workspaces: Array.from({ length: 9 }, (_, i) => workspace(`Org ${i + 1}`)),
+    });
+    render(<ChooserPage />);
+
+    const heading = screen.getByRole('heading', { name: 'Choose an organization' });
+    expect(heading).toHaveFocus();
+    // ⚡ **The vacuity half**: the search field must EXIST at this count, or
+    // the assertion above passes for the wrong reason.
+    expect(screen.getByRole('searchbox')).toBeInTheDocument();
+    expect(screen.getByRole('searchbox')).not.toHaveFocus();
+  });
+
+  it('⛔ and `autoFocus` is not on the field, which the render above CANNOT prove', () => {
+    /**
+     * 🔴 **Fire-tested, and the first version of the guard above did not
+     * fail.** ⚡ **Restoring `autoFocus` left the suite green**, because jsdom
+     * does not honour it on a React-rendered input and the effect that focuses
+     * the heading runs afterwards either way.
+     *
+     * ⛔ **So the render proves the heading half and nothing about the other
+     * half** — 📁 the repository's own rule, one register over: *a guard that
+     * cannot fail is documentation pretending to be code.*
+     *
+     * ✅ **A source read CAN fail**, which is why the second half is asserted
+     * here instead of pretended above. ⚠️ **Narrow on purpose**: it bans the
+     * attribute in this one file, not everywhere — `autoFocus` is correct on a
+     * dialog's first field and this is not a rule about dialogs.
+     */
+    const source = readFileSync(
+      join(process.cwd(), 'app/workspaces/page.tsx'),
+      'utf8',
+    );
+    expect(source).not.toContain('autoFocus');
+    // ⚡ **The vacuity half**: the file must still be the one that renders the
+    // search field, or an empty read would satisfy the assertion above.
+    expect(source).toContain('type="search"');
+  });
+
+  it('⛔ the filter appears ABOVE six organizations, not at six', () => {
+    /**
+     * 📁 *"Search appears **above 6 memberships**"* — ⚡ which is seven.
+     * ⚠️ **The switcher already used `>` and this used `>=`**, so the two
+     * surfaces disagreed about one word.
+     */
+    workspaceContext.mockReturnValue({
+      ...IDLE,
+      workspaces: Array.from({ length: 6 }, (_, i) => workspace(`Org ${i + 1}`)),
+    });
+    const six = render(<ChooserPage />);
+    expect(screen.queryByRole('searchbox')).toBeNull();
+    six.unmount();
+
+    workspaceContext.mockReturnValue({
+      ...IDLE,
+      workspaces: Array.from({ length: 7 }, (_, i) => workspace(`Org ${i + 1}`)),
+    });
+    render(<ChooserPage />);
+    expect(screen.getByRole('searchbox')).toBeInTheDocument();
   });
 });

@@ -16323,6 +16323,39 @@ perhaps twenty lines — **and it answers C-1567's architectural question as a
 side effect**, which is 📁 [§2](../CLAUDE.md)'s *decision wearing a document's
 clothes*.
 
+### C-1575 · Two documents give the switcher's filter two different thresholds — six and eight
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-27, auditing 📁 `Workspace Chooser`'s `contract` |
+| **Module** | `product_surface` — 📁 [`workspace-switcher.tsx`](../frontend/components/shell/workspace-switcher.tsx):88 |
+| **Owner of the answer** | 🟢 **Product owner**, and it is one number |
+| **Status** | **`OPEN`** — ⚠️ **nothing is broken.** ✅ **WS-B's threshold is NOT contested and has been corrected** |
+
+### 📁 The conflict, verbatim
+
+> **`App Shell`, twice**: *"the menu … **searches above six entries**"* · *"Grouped by organisation, **search appears above six workspaces**."*
+>
+> **`Workspace Chooser`, three times**: *"**At 8 rows in the switcher** and 6 in the chooser"* · *"Search appears **above 8 rows in WS-A** and above 6 in WS-B"* · and WS-B's own layout note, *"search appears above 6 memberships."*
+
+⛔ **Six and eight, for the same control.** ⚠️ **The shipped constant is `6` and its docstring quotes the App Shell sentence**, so the implementation is faithful to one document and wrong against the other.
+
+### ⚡ Why this lane did not simply take the more specific number
+
+**The `Workspace Chooser` is the document that OWNS this control**, states it three times, distinguishes the two surfaces deliberately, and gives a reason: *"below that a filter field is a control asking to be used for no reason; above it, scrolling is the wrong interaction."* ⚡ **That is a strong reading.**
+
+⛔ **But `App Shell`'s sentence is not a passing summary either** — it is describing the rail's own menu, and it says six twice. **Two authoritative documents, one control, two numbers**, and 📁 [§2](../CLAUDE.md)'s rule is that a lane picking one settles it by implementation.
+
+### ✅ What WAS fixed, because it is not contested
+
+⛔ **WS-B used `>=` where WS-A used `>`**, so the two surfaces disagreed about the word *above*. 📁 **Only the `Workspace Chooser` describes WS-B at all**, and it says *"above 6"* — **which is seven.** ✅ **Corrected**, with a guard that renders six and asserts no filter, then seven and asserts one.
+
+⚠️ **Also corrected, and also uncontested**: 📁 `2.5.8` — *"rows are 48px on touch and 40px on pointer"*, with the mobile band's reason, *"touch targets raised to 44px, so rows are 48px."* ⛔ **They were 38px with no touch variant.**
+
+### ⛔ And one part of the same contract line has no subject
+
+📁 *"…and matches on **name and slug**."* ⛔ **`Workspace` carries `id`, `name`, `created_at`, `updated_at` and no slug** — measured, not assumed. **Filtering on a field the platform does not publish is not a defect this lane can fix**, and inventing one would be the fabrication [§20c](../CLAUDE.md) forbids.
+
 ### C-1574 · WS-A cannot be a `listbox` and still hold the filter and the administrative rows the same document requires
 
 | | |

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button, EmptyState, Input, SkeletonText } from '@/components/ui';
 import { initialsFor } from '@/lib/workspace/initials';
@@ -53,6 +53,16 @@ export default function WorkspaceChooserPage() {
   const { workspaces, isLoading, error, setActiveWorkspace } = useWorkspaceContext();
   const router = useRouter();
   const [filter, setFilter] = useState('');
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  /**
+   * ⚡ **Once, on arrival.** ⛔ **Not on every render** — re-focusing the
+   * heading while somebody is typing in the filter would take the cursor away
+   * from them, which is the opposite of what `2.4.3` is protecting.
+   */
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, []);
   const { data: session } = useSession();
   const signedInAs = session?.user.email ?? null;
 
@@ -87,7 +97,30 @@ export default function WorkspaceChooserPage() {
       </div>
 
       <header className="flex flex-col gap-2">
-        <h1 className="text-xl font-semibold text-content">Choose an organization</h1>
+        {/**
+          * 🔴 **📁 `2.4.3`: *"WS-B places focus on the h1 on load, **not the
+          * search field**, so the list is announced before the control."***
+          *
+          * ⛔ **The search field used to focus itself on load**, so a
+          * screen-reader user arrived inside a filter for a list they had not
+          * been told existed —
+          * ⚡ **and the sentence above it, *"you are a member of four"*, is the
+          * one fact that makes the filter make sense.**
+          *
+          * ⚠️ **`tabIndex={-1}` is what makes a heading focusable at all** — the
+          * heading is a focus TARGET, never a tab stop. ⛔ **And no
+          * `outline-none` beside it**: the global indicator is `:focus-visible`,
+          * which does not match programmatic focus, **so there is nothing to
+          * suppress and suppressing it would only lean on an exemption the
+          * repository's focus guard grants for a different case.**
+          */}
+        <h1
+          ref={headingRef}
+          tabIndex={-1}
+          className="text-xl font-semibold text-content"
+        >
+          Choose an organization
+        </h1>
         <p className="text-sm text-content-muted">
           {/* 📁 *"You are a member of four. Signora will remember this choice on
               this device, so you will not be asked again."*
@@ -126,7 +159,10 @@ export default function WorkspaceChooserPage() {
         />
       ) : (
         <>
-          {workspaces.length >= SEARCH_APPEARS_ABOVE ? (
+          {/* ⛔ **`>`, not `>=`** — 📁 *"search appears **above** 6 memberships"*,
+              which is seven and not six. ⚠️ **The switcher already used `>`**,
+              so the two surfaces disagreed about one word. */}
+          {workspaces.length > SEARCH_APPEARS_ABOVE ? (
             <Input
               // ⚡ **The label IS the placeholder's sentence**, and `Input`
               // requires one — 📁 *"an unlabelled input is unusable with a
@@ -140,7 +176,6 @@ export default function WorkspaceChooserPage() {
               onKeyDown={(event) => {
                 if (event.key === 'Escape') setFilter('');
               }}
-              autoFocus
             />
           ) : null}
 
@@ -194,9 +229,21 @@ export default function WorkspaceChooserPage() {
   );
 }
 
-/** 📁 *"Search appears above six workspaces."* ⛔ **Six, not five** — the same
- * threshold the shell switcher uses, because it is the same judgement about
- * when a list stops being scannable. */
+/**
+ * 📁 **`Workspace Chooser`, three times**: *"At 8 rows in the switcher and
+ * **6 in the chooser**"* · *"Search appears **above 6 memberships**"* ·
+ * *"above 8 rows in WS-A and above 6 in WS-B."*
+ *
+ * ⚠️ **This constant's previous note said *"the same threshold the shell
+ * switcher uses"*, and the design says the opposite** — the two surfaces have
+ * deliberately different numbers, with a stated reason: *"below that a filter
+ * field is a control asking to be used for no reason; above it, scrolling is
+ * the wrong interaction."*
+ *
+ * ⛔ **The switcher's own number is contested and is NOT changed here** —
+ * 📁 [C-1575](../../../docs/LANE_COORDINATION.md). **WS-B's is not contested:
+ * only this document describes WS-B at all.**
+ */
 const SEARCH_APPEARS_ABOVE = 6;
 
 /**
