@@ -2,13 +2,53 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `761f3715`, 2026-08-27.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `8c247dd6`, 2026-08-27.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
 > **It is a dashboard, not an engineering journal.** [`SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) answers a different question — *"what should the next session know?"* — and does not repeat what is here. Historical implementation detail belongs in ADRs and module documentation; **the appendices below are dated records and are never rewritten to match the present.**
 
 ---
+
+## Cycle 275 — promoted `8c247dd68722`, 2026-08-27
+
+| | |
+|---|---|
+| **Promoted** | **`8c247dd68722`** — `promoted == certified`, 7 commits, **zero merge commits**. `--audit-main` holds across 2449 |
+| **Gates** | **5465 pytest · 95.03% · 679 Security Invariants · mypy strict 958 · import-linter 37/37 · tsc clean · frontend 4201 in 232 files · eslint clean · smoke 24 stages in 212s · scenario 208 assertions** |
+| **DR** | ✅ passed |
+| **Migrations** | none — reversibility **not applicable** rather than ticked |
+
+**Lane A**: six accessibility commits — onboarding inputs with no visible focus indicator, a section header carrying its worst status by colour alone, §17's 1.4.11 claim contradicting its own palette, a 2.1.1 keyboard audit, a registration error announced twice, and an OTP error that never said what was wrong.
+
+### 🔴 [B-1086](docs/BUGS.md) — the browser suite cannot currently attribute a regression
+
+| run | tree | failed | passed |
+|---|---|---|---|
+| 274 candidate | `761f3715` | 21 | 436 |
+| 274 baseline | `a7b172b6` | 24 | 433 |
+| **275 candidate** | `8c247dd6` | **27** | 430 |
+| **275 targeted re-run** | **same tree** | **6 of 88** | 82 |
+
+⛔ **275 showed ELEVEN failures absent from `main`. A re-run on the SAME TREE reproduced ZERO of them** and failed on six different tests instead. **The failing set is unstable across runs of an unchanged tree, so a diff of two runs cannot attribute anything.**
+
+⚡ **The eleven were CONNECTION failures** — `net::ERR_ABORTED`, `read ECONNRESET`, `waitForURL` timeouts — **not assertion failures.** Both tiers were alive and serving 200s at the end. **The signature points at the Next.js dev server stalling on-demand recompilation across a 55-minute run.**
+
+⚠️ **Several of the eleven were auth and session journeys, and the candidate genuinely touches the register form, enrolment, step-up and the OTP input.** ⛔ **A plausible causal story was available and it would have been wrong.** ✅ **Reading the error text rather than the failure count is what prevented it.**
+
+### ⚠️ QE argued for skipping a required scope, and caught itself
+
+**QE wrote a justification into the certification record for not running the browser suite** — *"accessibility work whose journeys are unchanged."* ⛔ **`--journeys` returns ALL, and the justification was factually wrong**: the batch changes `register-form.tsx`, three onboarding forms, `enrolment.tsx`, `step-up-dialog.tsx` and `code-input.tsx`, **every one of which has a journey.** ⚡ **QE had reasoned from the CHARACTER of the work rather than the PATHS it touched.** ✅ **The record was amended to say so rather than quietly corrected, and the suite was run.**
+
+⛔ **The uncorrected version reached `integration` first**, because the amend changed the SHA and QE merged the pre-amend one. **Replaced with the corrected record — identical tree, message only — rather than left standing** (§2).
+
+### 🔴 [B-1084](docs/BUGS.md) — two red tests caused by a fix of QE's own, unattributed for weeks
+
+📁 **[B-1076](docs/BUGS.md) was QE's finding; Lane A's fix flipped `PANEL_OPEN_BY_DEFAULT` to `true`; QE marked it `VERIFIED` in a browser.** ⛔ **The fix changed the ROLE the utility rail's controls carry, and two specs assert collapsed properties without collapsing.** ⚠️ **They went red and nothing attributed it, because no full browser suite completed between cycle 266 and 274.**
+
+> 🔴 **`VERIFIED` meant *the defect is gone*. It was read as *the repository still holds*. Those are different claims.**
+
+✅ **The rule taken from Lane A, cheaper than re-running a suite: when a fix changes a role, an attribute or a default, GREP THE SUITES FOR THE OLD ONE.** **A render proves the new state; only a search proves nothing still expects the old one.**
 
 ## Cycle 274 — promoted `761f371598c2`, 2026-08-27
 

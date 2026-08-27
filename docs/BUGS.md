@@ -20376,3 +20376,120 @@ for (let attempt = 0; attempt < 20 && previous !== scrollHeight; attempt += 1) {
 
 ✅ **The repair has to make the two distinguishable** — settle on the real scrolling element, and report *what* failed to settle — **before any budget is touched.**
 
+---
+
+### B-1084 · 🟠 Two browser tests assert a collapsed panel they never collapse — QE's own fix flipped the default and nothing attributed the red
+
+| | |
+|---|---|
+| **Module** | **Browser suite** — 📁 [`frontend/tests/e2e/shell-values.spec.ts`](../frontend/tests/e2e/shell-values.spec.ts):241 · [`frontend/tests/e2e/accessibility.spec.ts`](../frontend/tests/e2e/accessibility.spec.ts):813 |
+| **Current assignee** | **Lane A** — both specs are its own, and 📁 both cite [B-1055](BUGS.md), which it filed |
+| **Severity** | 🟠 — ⛔ **two persistently red tests that assert nothing about the product.** ⚠️ **No customer-visible defect: the panel behaves exactly as [B-1076](BUGS.md) required** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-27 by QE**, on a mechanism supplied by Lane A and verified from source |
+| **Commit found** | `8c247dd6` — ⚡ **and it reproduces on the baseline; it is not this candidate's** |
+
+### 🔴 The chain, and it starts with QE
+
+📁 **[B-1076](BUGS.md) was QE's finding**: *"the utility panel is closed at every breakpoint, including the two where the design says it is open."* **Lane A fixed it in `ea4dbd91`, flipping `PANEL_OPEN_BY_DEFAULT` from `false` to `true`. QE marked the row `VERIFIED` on 2026-08-26, in a browser, fresh context.**
+
+⚡ **The fix is correct and stays.** ⛔ **What it changed underneath is the ROLE the three rail controls carry** — 📁 `utility-panel.tsx`:484–496, deliberately, and [B-1055](BUGS.md) is why:
+
+| panel state | what the controls render |
+|---|---|
+| **collapsed** | `aria-expanded={false}`, plain buttons, **no `role`** |
+| **open** | `role="tab"`, `aria-selected`, roving tabindex, **no `aria-expanded`** |
+
+**Both specs assert COLLAPSED properties and neither collapses the panel.**
+
+- `shell-values:241` sets 1440×900, opens `/accounts`, then asserts `'#shell-utility-panel button[aria-expanded]'` **`toHaveCount(3)`**. ⛔ **Open, the attribute is not rendered at all — the count is 0.**
+- `accessibility:813` opens `/accounts` and expects `getByRole('button', { name: 'Insights' })`. ⛔ **Open, that control is `role="tab"`, and `getByRole('button')` does not match it.**
+
+⚡ **`PANEL_OPEN_BY_DEFAULT = true` and `width` initialises to `1440`, so `panelStateFor(1440, true)` returns `'open'`.** **Both specs were correct when written, against a panel that opened closed.**
+
+### ⛔ Why it went unattributed for weeks, and that is the part worth keeping
+
+**It DID go red. Nothing read it.** 📁 **No full browser suite completed between cycle 266 — which died twice — and cycle 274.** ⚠️ **Every cycle in between validated a subset, and neither spec was in one.**
+
+> 🔴 **And QE verified [B-1076](BUGS.md) in a browser without running the suite.** ⛔ **`VERIFIED` meant *the defect is gone*, not *the repository still holds*.** ⚡ **Those are different claims and the row said the first while being read as the second.**
+
+**This is the family this repository keeps meeting, pointed at a verification rather than at a probe:** *an action versus the evidence that it landed* · *anchored versus anchored-and-verified* · *certified versus promoted*.
+
+### ✅ The repair, and it is not "collapse the panel first"
+
+**Collapsing first is necessary and not sufficient.** ⚡ **Lane A's own proposal is the right shape** — ***assert the precondition***:
+
+```ts
+await expect(page.locator('#shell-utility-panel')).toHaveAttribute('data-state', 'tab-rail');
+```
+
+⛔ **A precondition that asserts itself cannot fail silently**, which is the general form of [B-1083](BUGS.md) and the one repair that does not raise a timeout budget. **`data-state` is already rendered** — 📁 `utility-panel.tsx`:421.
+
+### ⚠️ What this row does NOT claim
+
+⛔ **That the other three utility-panel failures share this cause.** **QE proposed *"five red tests, plausibly one cause"* and it is probably WRONG.** ⚡ **Lane A supplied the mechanism AND named what it does not reach**: `utility-panel:41`/`:93` fail on `getByRole('complementary')`, whose `<aside>` is `hidden … smalllaptop:flex` and therefore role-less below 1024 — **and Playwright's default viewport is 1280, which clears it.** **`accessibility:769` is unaccounted for.**
+
+✅ **Two of five explained with a named mechanism, one contradicted, two unexplained — which is worth more than a confirmation would have been.**
+
+---
+
+### B-1086 · 🔴 The browser suite cannot currently attribute a regression — the failing set moves on an unchanged tree
+
+| | |
+|---|---|
+| **Module** | **QE's own repository-wide browser suite**, and the way QE serves the app to it |
+| **Current assignee** | **QE** — §20e: *"QE creates, maintains, extends and retires repository-wide automated tests"* |
+| **Severity** | 🟠 — **and QE wrote 🔴 first, then lowered it. ⚠️ THE CONFLICT IS STATED RATHER THAN RESOLVED QUIETLY: QE authored this row and is the lane that benefits from it not blocking.** See the severity note below |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-27 by QE**, refusing to attribute six extra failures to a candidate |
+| **Commit found** | `8c247dd6` |
+
+### ⚖️ Why 🟠 and not 🔴, with the conflict of interest on the record
+
+**QE wrote this row 🔴** — *a gate that cannot attribute is not a gate, and every browser verdict QE published this week rests on it.* ⛔ **Then the parser reported what 🔴 actually does: `blocks_promotion` returned `B-1086`, so the NEXT promotion would have been refused by QE's own row.**
+
+⚠️ **QE is the author of this row AND the lane that benefits from it not blocking. That is the [B-1068](BUGS.md) conflict, and it is named here rather than left for a reader to notice.**
+
+**The scale decides it, not the convenience.** 📁 §20e classifies a **Blocking Quality Defect** as *"coverage below the floor · a failing test · a failing type check · a broken migration · an import-contract violation · a Security Invariant failure."* ⛔ **This is none of those.** ⚡ **The browser suite is not a member of `REQUIRED_GATES`**, so certification never depended on it, and 🔴 would have blocked **every lane's** finished work on QE's own instrument — 📁 *"a blocking defect holds every lane's finished work hostage."*
+
+✅ **🟠 is what the definition supports: wrong behaviour, serious, not milestone-blocking.** ⚠️ **If a reader concludes QE lowered its own severity for its own convenience, the original 🔴 rationale is preserved above and the evidence is unchanged — reverse it and QE will not argue.**
+
+### 🔴 The measurement, across four runs in two days
+
+| run | tree | failed | passed |
+|---|---|---|---|
+| 274 candidate | `761f3715` | **21** | 436 |
+| 274 baseline | `a7b172b6` | **24** | 433 |
+| 275 candidate | `8c247dd6` | **27** | 430 |
+| 275 targeted re-run | `8c247dd6` — **same tree** | **6 of 88** | 82 |
+
+⛔ **275 showed ELEVEN failures absent from what is on `main`.** ✅ **A targeted re-run on the SAME TREE reproduced ZERO of them** — and failed on **six different tests instead**, two of which are already in the known-persistent set.
+
+> 🔴 **The failing set is unstable across runs of an unchanged tree.** ⛔ **So a diff of two runs cannot attribute anything**, which is the one thing a regression suite exists to do.
+
+### ⚠️ The eleven were CONNECTION failures, and that is the mechanism
+
+```
+net::ERR_ABORTED at http://localhost:3200/
+route.fetch: read ECONNRESET
+page.waitForURL: Test timeout of 60000ms exceeded
+```
+
+⛔ **Not assertion failures.** ⚡ **Both tiers were alive and serving 200s when the run ended, and the containers were healthy throughout** — nothing died. **The signature points at the Next.js DEV SERVER stalling requests during on-demand recompilation across a 55-minute run.**
+
+⚠️ **QE serves the suite from `npm run dev`. A dev server compiles routes on first request** — so the first visit to a cold route under concurrent load can exceed a 60s budget, and the suite reads that as the product failing.
+
+### ⛔ Why this was nearly reported as a regression, and was not
+
+**Several of the eleven were auth and session journeys — `forgot password`, `signing out everywhere`, `revoking a session`, `the root path redirects` — and the candidate genuinely touches `register-form.tsx`, `enrolment.tsx`, `step-up-dialog.tsx` and `code-input.tsx`.** ⚡ ***A plausible causal story was available and it would have been wrong.***
+
+✅ **What prevented it was reading the error text rather than the failure count.** 📁 The standing rule: *if a result changes on an unchanged tree, read the error before reporting a verdict — a connection error is an ABORT, not a result.*
+
+### ✅ What this row does NOT claim
+
+⛔ **That the ~21 persistent failures are noise.** **Sixteen of them reproduce across independent runs on both trees** and at least two are attributed ([B-1084](BUGS.md)). ⚡ **The instability is ON TOP of a real backlog, not instead of it.**
+
+⛔ **And it does not claim a fix.** **Serving a production build instead of a dev server is the obvious candidate and is NOT obviously right**: `make smoke` already builds one, the suite's own config expects a dev origin, and **a change that makes the numbers stabilise without anyone understanding why would be worse than the instability** — it would convert an honest unreliable red into a green nobody can defend.
+
+> ⚡ **The first repair is to make the two distinguishable in the record**: a connection abort must not be counted as a test failure. **A suite that cannot tell *the product is wrong* from *the server did not answer* is reporting one number for two questions**, which is the same defect as [B-1083](BUGS.md) one level up.
+

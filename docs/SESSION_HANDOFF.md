@@ -1,5 +1,27 @@
 # Session Handoff
 
+> ## Cycle 275 — promoted `8c247dd68722`, 2026-08-27 · **the browser suite cannot attribute, and QE nearly argued its way out of running it**
+>
+> **`main` = `8c247dd68722` = the certified commit.** **ZERO merge commits**, `--audit-main` holds across 2449. `pytest` **5465** · **95.03%** · **679 invariants** · `mypy` **958** · `import-linter` **37/37** · `tsc` · frontend **4201/232** · `eslint` · smoke **24/212s** · scenario **208** · DR ✅. **No migration.**
+>
+> 🔴 **[B-1086](BUGS.md) — DO NOT ATTRIBUTE A REGRESSION FROM A BROWSER DIFF UNTIL THIS IS FIXED.** **275 showed ELEVEN failures absent from `main`; a targeted re-run ON THE SAME TREE reproduced ZERO of them** and failed on six different tests instead. ⛔ **The failing set is unstable across runs of an unchanged tree.**
+>
+> ⚡ **The eleven were CONNECTION failures** — `net::ERR_ABORTED`, `read ECONNRESET`, `waitForURL` timeout — **not assertion failures.** **Both tiers were alive and serving 200s at the end.** ⚠️ **QE serves the suite from `npm run dev`, and a dev server compiles routes on first request** — a cold route under concurrent load exceeds 60s and reads as the product failing.
+>
+> ⛔ **A PLAUSIBLE CAUSAL STORY WAS AVAILABLE AND WOULD HAVE BEEN WRONG.** **Several of the eleven were auth/session journeys and the candidate touches `register-form.tsx`, `enrolment.tsx`, `step-up-dialog.tsx`, `code-input.tsx`.** ✅ **Reading the ERROR TEXT rather than the failure count is what prevented it.**
+>
+> ⛔ **B-1086 is 🟠 and QE wrote 🔴 first.** ⚠️ **The conflict is on the row: QE authored it AND benefits from it not blocking.** **The scale decided — §20e's Blocking Quality Defect list does not include it, and the browser suite is not in `REQUIRED_GATES`.** ✅ **The original 🔴 rationale is preserved; reverse it and QE will not argue.**
+>
+> ⚠️ **QE WROTE A JUSTIFICATION FOR SKIPPING A REQUIRED SCOPE AND CAUGHT ITSELF.** *"Accessibility work whose journeys are unchanged"* — ⛔ **`--journeys` returns ALL and the claim was factually wrong.** ⚡ **QE had reasoned from the CHARACTER of the work rather than the PATHS it touched.** 🔴 **The moment QE finds itself arguing for a narrower scope is the moment to re-read what the tool said.**
+>
+> ⛔ **And the uncorrected record reached `integration` first** — the amend changed the SHA and QE merged the pre-amend one. **Replaced, identical tree, message only.** ⚠️ **After `git commit --amend`, merge the NEW SHA.**
+>
+> 🔴 **[B-1084](BUGS.md) — a fix of QE's own turned two specs red and nothing attributed it for weeks.** **[B-1076](BUGS.md) flipped `PANEL_OPEN_BY_DEFAULT`; the rail's controls changed ROLE; two specs assert collapsed properties without collapsing.** ✅ **Lane A's rule, and it is the durable one: when a fix changes a role, an attribute or a default, GREP THE SUITES FOR THE OLD ONE.**
+>
+> ⚡ **NEXT CYCLE'S INPUT IS PUSHED: `origin/lane-a-product-surface-r4`, well ahead** — Security Center's twelve `a11y` claims, Workspace Chooser, and **[B-1085](BUGS.md)**: an unbraced JSX block comment rendered as visible text on Home, above the fold, for everyone with more than one organization. **`tsc` and `eslint` both passed — a text node is valid JSX — and `WorkspaceStrip` had NO TEST AT ALL.**
+
+> ---
+>
 > ## Cycle 274 — promoted `761f371598c2`, 2026-08-27 · **the first full browser suite since 266, run twice**
 >
 > **`main` = `761f371598c2` = the certified commit**, verified from the remote. **ZERO merge commits**, `--audit-main` holds across 2441. `pytest` **5465** · **95.03%** · **679 invariants** · `mypy` **958** · `import-linter` **37/37** · `tsc` · frontend **4178/230** · `eslint` · smoke **24/222s** · scenario **208** · DR ✅. **No migration — reversibility NOT APPLICABLE rather than ticked.**

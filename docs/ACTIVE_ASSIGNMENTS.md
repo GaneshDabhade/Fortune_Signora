@@ -71,7 +71,18 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-27, `761f3715`
+## Current — as of 2026-08-27, `8c247dd6`
+
+> ⚡ **Cycle 275 Closeout. 7 commits, Lane A + QE, no migrations, EIGHT gates on the FIRST attempt.**
+>
+> ✅ **No board rows removed** — this cycle promoted no `TASK-nnn`.
+>
+> 🔴 **[B-1086](BUGS.md): the browser suite cannot attribute a regression** — eleven failures absent from `main`, **zero reproduced on a re-run of the same tree.** ⚠️ **🟠 with the conflict stated: QE authored it and benefits from it not blocking.**
+>
+> 🔴 **[B-1084](BUGS.md): a fix of QE's own turned two specs red, unattributed for weeks.**
+>
+> ⚠️ **QE argued for skipping a required browser scope and caught itself; the record says so rather than being quietly corrected.**
+
 
 > ⚡ **Cycle 274 Closeout. 8 commits, Lane A + QE, no migrations, EIGHT gates on the FIRST attempt.**
 >
