@@ -16323,6 +16323,80 @@ perhaps twenty lines — **and it answers C-1567's architectural question as a
 side effect**, which is 📁 [§2](../CLAUDE.md)'s *decision wearing a document's
 clothes*.
 
+### C-1569 · §17's `1.4.11` claim contradicts the palette the same document ships
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-26, auditing 📁 `Design System v2`'s eleven `a11y` claims |
+| **Module** | — 🔴 **the design itself.** `frontend/app/globals.css` reproduces it faithfully |
+| **Owner of the answer** | 🔴 **Product owner** — ⛔ **a palette change touches every surface, and the value is the design's** |
+| **Status** | **`OPEN`** — ⚠️ **not an implementation defect.** Two statements in one authoritative document disagree |
+
+### 📁 The claim
+
+> **§17 `1.4.11`**: ***"Every control border, chart series and status dot clears
+> 3:1 against its own ground."***
+
+### ⛔ The design's own palette, measured
+
+📁 **`Design System v2.dc.html` declares `--border: 33 20% 89%`** against
+**`--card: 0 0% 100%`** — ⛔ **`1.26:1`, before any implementation exists.**
+
+**Computed from `app/globals.css`, both themes:**
+
+| pair | light | dark | |
+|---|---|---|---|
+| `border` on `surface` | **1.43** | **1.52** | ⛔ |
+| `border` on `canvas` | **1.35** | **1.70** | ⛔ |
+| `border-strong` on `surface` | **2.77** | **3.39** | ⛔ light |
+| `border-soft` on `surface` | **1.25** | **1.25** | ⛔ |
+| `danger-line` on `danger-subtle` | **1.23** | **1.29** | ⛔ |
+| `warning-line` on `warning-subtle` | **1.21** | **1.34** | ⛔ |
+| `success-line` on `success-subtle` | **1.19** | **1.41** | ⛔ |
+
+### ✅ And the other half of the same sentence holds
+
+| pair | light | dark |
+|---|---|---|
+| `danger` dot on `surface` | 6.62 | 5.92 |
+| `warning` dot on `surface` | 4.53 | 7.06 |
+| `success` dot on `surface` | 5.25 | 6.10 |
+| `accent` — dot and focus line | 8.83 | 5.91 |
+
+⚡ **Status dots and the focus indicator clear 3:1 comfortably. Only the borders
+do not.**
+
+### ⛔ What this lane did NOT do
+
+**Darken any border token.** ⚡ It would satisfy the claim in one edit — **and it
+would change every surface in the product and overwrite a value the design
+states.** 📁 [§20c](../CLAUDE.md): a token edit *toward* the finalized design is
+the migration; **this would be away from it.**
+
+### ✅ What it did
+
+**Guarded the half that holds** — `tests/unit/non-text-contrast.test.ts`, seven
+pairs across both themes. ⚡ **And recorded the failing pair as an explicit
+`toBeLessThan` assertion**, so:
+
+- **the number is where a reader will see it**, not only in this row, and
+- 🔴 **the day somebody resolves this by darkening the token, that test goes red
+  and names C-1569** — asking them to move the pair into the passing list rather
+  than leaving a stale exemption behind.
+
+⚠️ **A guard asserting the border PASSES would be false; one ignoring it would
+let the conflict drift out of sight.**
+
+### The question
+
+> **Is `1.4.11`'s sentence the intent, or is the palette?**
+
+⛔ **They cannot both stand.** ⚡ **WCAG's own `1.4.11` is narrower than §17's
+wording** — it requires 3:1 only for *"visual information required to identify"*
+a control, and a control identifiable by its fill, label and position may not
+depend on its border. **So a third answer exists: §17's sentence is stricter
+than it needs to be, and the palette is fine.**
+
 ### C-1567 · 🔴 The UI claims a cross-device preference; first paint is controlled by a browser-local store disconnected from it
 
 | | |

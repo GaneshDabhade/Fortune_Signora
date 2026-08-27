@@ -26,46 +26,14 @@
  * fail in the other**, and a check that read only `:root` would say nothing about
  * half the product.
  */
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
-
 import { describe, expect, it } from 'vitest';
 
-const CSS = readFileSync(join(process.cwd(), 'app', 'globals.css'), 'utf8');
-
 /**
- * ⚡ **The dark block is `:root[data-theme='dark']`**, and the light values are
- * everything before it. ⛔ **Read positionally rather than by parsing CSS**: a
- * parser here would be a dependency, and the file's own structure is the
- * contract — the light palette is defined once at the top and overridden below.
+ * ⚡ **Extracted to `tests/support/contrast.ts` when §17 `1.4.11` needed the
+ * same arithmetic** — ⛔ copying it would have been two implementations of one
+ * calculation ([§2](../../../CLAUDE.md)).
  */
-const DARK_AT = CSS.indexOf(":root[data-theme='dark']");
-
-function token(name: string, theme: 'light' | 'dark'): [number, number, number] {
-  const source = theme === 'light' ? CSS.slice(0, DARK_AT) : CSS.slice(DARK_AT);
-  const matches = [...source.matchAll(new RegExp(`--color-${name}:\\s*([\\d\\s]+);`, 'g'))];
-  const last = matches.at(-1);
-  if (last === undefined) throw new Error(`--color-${name} has no ${theme} value`);
-  const parts = last[1]!.trim().split(/\s+/).map(Number);
-  return [parts[0]!, parts[1]!, parts[2]!];
-}
-
-/** WCAG 2.1 relative luminance. */
-function luminance([r, g, b]: [number, number, number]): number {
-  const channel = (value: number) => {
-    const v = value / 255;
-    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
-  };
-  return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
-}
-
-/** WCAG 2.1 contrast ratio, `(L1 + 0.05) / (L2 + 0.05)`. */
-function ratio(foreground: string, background: string, theme: 'light' | 'dark'): number {
-  const a = luminance(token(foreground, theme));
-  const b = luminance(token(background, theme));
-  const [light, dark] = a > b ? [a, b] : [b, a];
-  return (light + 0.05) / (dark + 0.05);
-}
+import { luminance, ratio, token } from '../support/contrast';
 
 /**
  * 📁 **Home's own tag pairs.** ⚡ `card.attention` draws a tag per posture — 📁
