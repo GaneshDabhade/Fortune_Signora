@@ -117,6 +117,74 @@ export function WorkspaceSwitcher({ collapsed = false }: { collapsed?: boolean }
     return workspaces.filter((w) => w.name.toLowerCase().includes(needle));
   }, [workspaces, filter]);
 
+  /**
+   * 🔴 **`role="menu"` promises arrow keys, and this component had none.**
+   *
+   * ⛔ **Every row was a `<button>` reachable only by `Tab`**, which is what a
+   * *list of buttons* offers — ⚡ **but a `menu` puts most screen readers into
+   * application mode, where `Tab` is intercepted and the arrows are the way
+   * through.** 📁 **The rule is the panel's own, one component along**:
+   * [B-1055](../../../docs/BUGS.md) — *"the role is claimed only when it is
+   * true."* **Here the role was true about the shape and false about the
+   * keyboard.**
+   *
+   * ⚠️ **The items are the workspace rows AND the two administrative rows**, in
+   * DOM order, because that is what the menu contains and a person arrowing
+   * down expects to reach the end of it rather than stop halfway.
+   */
+  const itemsRef = useRef<(HTMLElement | null)[]>([]);
+  const [activeItem, setActiveItem] = useState(0);
+
+  /**
+   * ⛔ **Filtering renumbers the rows**, so an index held across a keystroke
+   * points at a different organization — or at nothing.
+   */
+  useEffect(() => {
+    setActiveItem(0);
+  }, [filter]);
+
+  /**
+   * ⛔ **The count comes from the DATA, never from the ref array.** ⚡ A ref
+   * array holds `null` where a row has unmounted and keeps its length until
+   * React writes over it, **so `itemsRef.current.length` is stale exactly when
+   * the filter has just changed** — which is the moment somebody presses
+   * `End`. **`shown` cannot be stale: it is what was rendered.**
+   */
+  const focusItem = (index: number) => {
+    const total = shown.length + ADMIN_ACTIONS.length;
+    if (total === 0) return;
+    // ⚡ **Wraps, both ways** — the menu is short and a person holding ArrowDown
+    // should not have to notice they reached the bottom.
+    const next = ((index % total) + total) % total;
+    setActiveItem(next);
+    itemsRef.current[next]?.focus();
+  };
+
+  const onMenuKey = (event: React.KeyboardEvent) => {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      // ⚡ **From the filter field, ArrowDown enters the list at the top**
+      // rather than at wherever focus last was — somebody who has just typed is
+      // looking at the first match.
+      focusItem(event.target === searchRef.current ? 0 : activeItem + 1);
+      return;
+    }
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      focusItem(event.target === searchRef.current ? -1 : activeItem - 1);
+      return;
+    }
+    if (event.key === 'Home') {
+      event.preventDefault();
+      focusItem(0);
+      return;
+    }
+    if (event.key === 'End') {
+      event.preventDefault();
+      focusItem(shown.length + ADMIN_ACTIONS.length - 1);
+    }
+  };
+
   const close = (returnFocus: boolean) => {
     setOpen(false);
     setFilter('');
@@ -262,6 +330,7 @@ export function WorkspaceSwitcher({ collapsed = false }: { collapsed?: boolean }
           id={listId}
           role="menu"
           aria-label="Switch organization"
+          onKeyDown={onMenuKey}
           // 📁 *"Menu 340px at --e4."* ⚡ `--shadow-xl` IS `--e4` — the fourth
           // elevation TASK-491 added for surfaces that sit over the page.
           style={{ width: 340, maxWidth: `calc(100vw - ${RAIL_WIDTH.collapsed}px)` }}
@@ -297,6 +366,15 @@ export function WorkspaceSwitcher({ collapsed = false }: { collapsed?: boolean }
                       type="button"
                       role="menuitemradio"
                       aria-checked={current}
+                      ref={(node) => {
+                        itemsRef.current[index] = node;
+                      }}
+                      // ⛔ **Roving, not every item at 0** — 📁 the same
+                      // correction `utility-panel.tsx` needed: *"all three read
+                      // `null` before, so `Tab` walked the strip instead of
+                      // leaving it."* ⚡ **One stop for the whole menu.**
+                      tabIndex={index === activeItem ? 0 : -1}
+                      onFocus={() => setActiveItem(index)}
                       onClick={() => choose(workspace.id)}
                       className={cn(
                         'flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors',
@@ -358,11 +436,16 @@ export function WorkspaceSwitcher({ collapsed = false }: { collapsed?: boolean }
 
           {/* 📁 *"Administrative actions are always the last two rows."* */}
           <div className="border-t border-border-soft py-1">
-            {ADMIN_ACTIONS.map((action) => (
+            {ADMIN_ACTIONS.map((action, offset) => (
               <Link
                 key={action.href}
                 href={action.href}
                 role="menuitem"
+                ref={(node) => {
+                  itemsRef.current[shown.length + offset] = node;
+                }}
+                tabIndex={shown.length + offset === activeItem ? 0 : -1}
+                onFocus={() => setActiveItem(shown.length + offset)}
                 onClick={() => close(false)}
                 className="block px-3 py-2 text-sm text-content-muted transition-colors hover:bg-surface-sunken hover:text-content focus-visible:bg-surface-sunken"
               >

@@ -16323,6 +16323,54 @@ perhaps twenty lines — **and it answers C-1567's architectural question as a
 side effect**, which is 📁 [§2](../CLAUDE.md)'s *decision wearing a document's
 clothes*.
 
+### C-1574 · WS-A cannot be a `listbox` and still hold the filter and the administrative rows the same document requires
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-27, auditing 📁 `Workspace Chooser`'s ten `a11y` claims |
+| **Module** | `product_surface` — 📁 [`workspace-switcher.tsx`](../frontend/components/shell/workspace-switcher.tsx) |
+| **Owner of the answer** | 🔴 **Product owner** — ⛔ **the shell is [§20c](../CLAUDE.md) RED**, and the design contradicts itself about which role WS-A carries |
+| **Status** | **`OPEN`** — ✅ **the keyboard defect underneath it is FIXED and needs no ruling**; this is the role question alone |
+
+### 📁 The conflict, and it is inside one document
+
+> **`1.3.1`**: *"WS-A is a listbox with `role="listbox"` and rows as `role="option"`; group headers are `role="presentation"` with `aria-owns`."*
+>
+> **`4.1.2`**: *"The trigger carries `aria-expanded` and **`aria-haspopup="listbox"`**."*
+>
+> ⚠️ **`2.1.2`, the same document**: *"WS-A traps focus **as a menu** and closes on Escape."*
+
+### ⛔ And the popup's own required contents rule the listbox out
+
+📁 **The same design requires WS-A to contain**: *"type to filter"* and *"administrative actions are always the last two rows."*
+
+🔴 **A `listbox` may own `option` elements and nothing else.** ⛔ **A search input and two navigation links inside one is invalid ARIA**, and an assistive technology reading it will either ignore the non-options or misreport the count.
+
+⚡ **This repository already knows the rule and states it**: 📁 [`command-palette.tsx`](../frontend/components/ui/command-palette.tsx) — *"a `listbox` may only own `option`"* — **and that component is a genuine listbox because its popup contains nothing else.** ✅ [`account-search.tsx`](../frontend/components/intelligence/account-search.tsx) is the second.
+
+### ✅ What ships today, and why it is the closer of the two
+
+| | |
+|---|---|
+| popup | `role="menu"` |
+| organization rows | `role="menuitemradio"` + `aria-checked` |
+| administrative rows | `role="menuitem"` |
+| trigger | `aria-expanded` ✅ · `aria-haspopup="menu"` |
+
+⚡ **A menu MAY contain `menuitemradio` and `menuitem` together**, which is exactly *"choose one of these, or do one of these two things"* — **the popup's actual shape.** ⛔ **Only the filter field is awkward in either reading**, and it is awkward in the listbox reading too.
+
+### 🔴 What this row is NOT asking for, because it was already fixed
+
+⛔ **`role="menu"` promised arrow keys and this component had none** — every row was a `<button>` reachable only by `Tab`. ⚡ **A `menu` puts most screen readers into application mode, where `Tab` is intercepted and the arrows are the way through.** 📁 **That is [B-1055](BUGS.md)'s rule one component along** — *"the role is claimed only when it is true"* — **and the role was true about the shape and false about the keyboard.**
+
+✅ **Fixed 2026-08-27**: ArrowUp/ArrowDown/Home/End with a roving tabindex, ArrowDown from the filter entering the list at the top, and the administrative rows included because they are part of the menu. **Three guards, all fire-tested.** ⚡ **This repair is correct under EITHER role**, which is why it did not wait for the ruling.
+
+### ⚠️ Two further parts of `1.3.1` have no subject
+
+**Group headers `role="presentation"` with `aria-owns`** — ⛔ **WS-A does not group.** **And `aria-owns` on a presentational header is not a shape this row endorses**: it is how a listbox fakes grouping when it may not contain `group` elements, which is the same constraint arriving from the other side.
+
+⚠️ **`2.5.8`'s *"the pin affordance has a 24px target"*** — ⛔ **there is no pin.** **Not filed as a defect: an unbuilt affordance is not a failing one.**
+
 ### C-1573 · Reduce motion cannot be *pre-set* while `reduce_motion` cannot say *never chosen*
 
 | | |
@@ -16386,6 +16434,29 @@ clothes*.
 
 ⛔ **A wrong one-time code IS a failure** — Security Center says `alert`.
 ⛔ **A wrong one-time code ends NOTHING** — System States says polite.
+
+### ⚡ A THIRD document arrived, 2026-08-27, and it breaks the tie
+
+📁 **`Security Gates` `3.3.1`, verbatim:**
+
+> *"A failed challenge **announces politely** and describes the action, never the factor. The error sits adjacent to the input in text, not in a toast."*
+
+📁 **And its `4.1.3` shows the distinction is deliberate rather than an oversight:**
+
+> *"Prevent gates announce assertively once. Restrict and explain gates announce politely. **Challenge gates announce assertively, naming the action being protected**."*
+
+⚡ **So `Security Gates` separates the two events explicitly**: **the challenge** interrupts, **its failure** does not. ⛔ **That is a coherent rule, and it is the opposite of `Security Center` `4.1.3` on the one event both describe.**
+
+| | says a failed code announces |
+|---|---|
+| 📁 `Security Center` `4.1.3` | **assertively** — *"only failures interrupt with an alert role"* |
+| 📁 `System States` `4.1.3` | **politely** — *"only a state that ends the session announces assertively"* |
+| 📁 **`Security Gates` `3.3.1`** | ✅ **politely** — *"a failed challenge announces politely"* |
+
+🔴 **Two to one, and the two agree on a reason** — *the failure is not the interruption; the challenge was.* ⛔ **`Security Center` `4.1.3`'s clause is the outlier, and its own sentence is about revocation progress**, where every step is a status and only a step that fails is worth interrupting for. ⚠️ **A wrong code is not a step in a progress sequence**, so it may never have been that clause's subject at all.
+
+⛔ **Still not settled by this lane.** ⚡ **The reading above is a recommendation and the count is evidence, not authority** — 📁 [§2](../CLAUDE.md): *governance describes reality, it never quietly changes it*, and **picking the majority is still picking.** ✅ **But the ruling is now a one-line one**, and `step-up-dialog.tsx`'s existing `role="status"` is already what two of the three documents ask for.
+
 
 ### ⚡ The product already disagrees with itself, on the same event
 

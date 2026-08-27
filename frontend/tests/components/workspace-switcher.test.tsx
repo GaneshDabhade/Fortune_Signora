@@ -323,4 +323,69 @@ describe('📁 §4.1.3 — a switch announces politely, and it was silent', () =
 
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
+
+  it('🔴 the arrows walk the menu, because `role="menu"` promises they do', async () => {
+    /**
+     * ⛔ **Every row was a `<button>` reachable only by `Tab`** — which is what
+     * a list of buttons offers, ⚡ **but a `menu` puts most screen readers into
+     * application mode, where `Tab` is intercepted and the arrows are the way
+     * through.** 📁 [B-1055](../../../docs/BUGS.md), one component along:
+     * *"the role is claimed only when it is true."*
+     */
+    switcher(THREE);
+    await userEvent.click(screen.getByRole('button', { name: /Active organization/ }));
+
+    const rows = screen.getAllByRole('menuitemradio');
+    rows[0]?.focus();
+
+    await userEvent.keyboard('{ArrowDown}');
+    expect(rows[1]).toHaveFocus();
+    await userEvent.keyboard('{ArrowDown}');
+    expect(rows[2]).toHaveFocus();
+
+    // ⚡ **The administrative rows are part of the menu**, so arrowing past the
+    // last organization reaches them rather than stopping.
+    await userEvent.keyboard('{ArrowDown}');
+    expect(screen.getByRole('menuitem', { name: 'Organization settings' })).toHaveFocus();
+
+    // ⛔ **Wraps** — the menu is short and holding ArrowDown should not stall.
+    await userEvent.keyboard('{ArrowDown}{ArrowDown}');
+    expect(rows[0]).toHaveFocus();
+
+    await userEvent.keyboard('{ArrowUp}');
+    expect(screen.getByRole('menuitem', { name: 'Members & roles' })).toHaveFocus();
+  });
+
+  it('⛔ and only ONE item is a tab stop, so Tab leaves the menu', async () => {
+    /**
+     * 📁 **A roving tabindex** — the same correction `utility-panel.tsx`
+     * needed: *"all three read `null` before, so `Tab` walked the strip instead
+     * of leaving it."*
+     */
+    switcher(THREE);
+    await userEvent.click(screen.getByRole('button', { name: /Active organization/ }));
+
+    const stops = [
+      ...screen.getAllByRole('menuitemradio'),
+      ...screen.getAllByRole('menuitem'),
+    ].filter((node) => node.getAttribute('tabindex') === '0');
+    expect(stops).toHaveLength(1);
+  });
+
+  it('⚡ Home and End reach the ends, and End is not confused by filtering', async () => {
+    /**
+     * ⛔ **The count comes from what was RENDERED, never from the ref array** —
+     * a ref array keeps `null` holes and its stale length, and the moment that
+     * matters is immediately after a filter keystroke.
+     */
+    switcher(THREE);
+    await userEvent.click(screen.getByRole('button', { name: /Active organization/ }));
+    screen.getAllByRole('menuitemradio')[0]?.focus();
+
+    await userEvent.keyboard('{End}');
+    expect(screen.getByRole('menuitem', { name: 'Members & roles' })).toHaveFocus();
+
+    await userEvent.keyboard('{Home}');
+    expect(screen.getAllByRole('menuitemradio')[0]).toHaveFocus();
+  });
 });
