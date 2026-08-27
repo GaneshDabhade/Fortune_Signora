@@ -102,9 +102,33 @@ export function SignUpForm() {
 
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-4">
-      {/* Announced once, politely — the design's 3.3.1. `role="alert"` would
-          interrupt somebody mid-field. */}
-      <p aria-live="polite" className="sr-only">
+      {/**
+        * 🔴 **The same error was announced TWICE, and one of them was
+        * assertive** — 📁 [C-1571](../../../../docs/LANE_COORDINATION.md).
+        *
+        * ⛔ **This `sr-only` polite region announced it, and a separate
+        * `role="alert"` below announced it again** — so a screen-reader user
+        * heard the sentence twice, **the second time as an interruption.**
+        *
+        * ⚠️ **The comment that stood here already said why that is wrong** —
+        * *"`role="alert"` would interrupt somebody mid-field"* — **while the
+        * file did it thirty-five lines later.** 📁 §17 `3.3.1` (*"announced
+        * politely"*) and `System States` `4.1.3` (*"only a state that ends the
+        * session announces assertively"*), and a failed registration ends
+        * nothing.
+        *
+        * ✅ **One element, which is `signin-form.tsx`'s shape** — the sibling
+        * screen that got this right: **`sr-only` when there is nothing to say,
+        * and the visible error itself when there is.** ⚡ **One node, one
+        * announcement, and the visible text and the announced text cannot
+        * drift apart because they are the same node.**
+        */}
+      <p
+        aria-live="polite"
+        className={
+          error === null ? 'sr-only' : 'text-sm text-danger'
+        }
+      >
         {error ?? ''}
       </p>
 
@@ -137,12 +161,6 @@ export function SignUpForm() {
         />
         <PasswordStrength rules={rules} />
       </div>
-
-      {error ? (
-        <p role="alert" className="text-sm text-danger">
-          {error}
-        </p>
-      ) : null}
 
       {/* ⚡ **`w-full` is the design's *width fixed*, not a layout preference.**
           The button's Loading spec is *"label kept, width fixed"* — and this

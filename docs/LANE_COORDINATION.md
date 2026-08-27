@@ -16323,6 +16323,61 @@ perhaps twenty lines — **and it answers C-1567's architectural question as a
 side effect**, which is 📁 [§2](../CLAUDE.md)'s *decision wearing a document's
 clothes*.
 
+### C-1571 · Registration announced the same error twice, and the second was an interruption
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-26, auditing 📁 §17 `3.3.1` |
+| **Module** | `product_surface` — 📁 [`app/(auth)/register/register-form.tsx`](../frontend/app/(auth)/register/register-form.tsx) |
+| **Owner of the answer** | — ✅ **FIXED in the same pass.** Recorded here because Lane A's `B-` block is exhausted ([C-1562](#c-1562)) |
+| **Status** | ✅ **FIXED, awaiting `VERIFIED`** — QE's |
+
+### 📁 The rules
+
+> **§17 `3.3.1`**: *"Errors are adjacent, textual, and **announced politely**."*
+> **`System States` `4.1.3`**: *"Region errors and retries announce politely.
+> **Only a state that ends the session** — 500, maintenance — **announces
+> assertively**, once."*
+
+### ⛔ What it did
+
+**Two elements carried one error string:**
+
+| | |
+|---|---|
+| an always-present `<p aria-live="polite" class="sr-only">` | ✅ the polite announcement |
+| a separate conditional `<p role="alert">` | ⛔ **an assertive announcement of the same sentence** |
+
+🔴 **A screen-reader user heard the error twice, the second time as an
+interruption** — and **a failed registration ends nothing.**
+
+⚠️ **The form's own comment already said why that is wrong** — *"`role="alert"`
+would interrupt somebody mid-field"* — **while the file did it thirty-five lines
+later.** 📁 The comment-versus-code class this session keeps finding, here with
+both halves in one file.
+
+### ✅ The correct pattern was already in the sibling file
+
+📁 **`signin-form.tsx` is one node**: `aria-live="polite"`, `sr-only` when there
+is nothing to say, **and the visible error itself when there is**. ⚡ **One node,
+one announcement — and the visible text and the announced text cannot drift
+apart, because they are the same node.** ✅ **Adopted rather than invented.**
+
+### ⚠️ And a test was holding the defect in place
+
+⛔ **`registration.test.tsx` asserted `findByRole('alert')`.** ✅ **Corrected to
+assert the polite region and the ABSENCE of an alert**, with a vacuity half —
+**the region must exist and be silent before any error**, since a form rendering
+nothing would satisfy *"no alert"*.
+
+### 📋 Not swept
+
+**45 `role="alert"` sites exist product-wide.** ⛔ **Not changed**: each needs its
+own reading of *"does this state end the session?"*, and a blind sweep is 45
+chances to make an error silent that should interrupt. ⚡ **This one is
+unambiguous because the same string was already being announced politely beside
+it.**
+
 ### C-1570 · SUSPECTED — the tooltip may fail `1.4.13`'s *hoverable*, and this lane could not reproduce it
 
 | | |

@@ -231,8 +231,40 @@ describe('the form the design draws', () => {
     await userEvent.type(screen.getByLabelText('Password'), STRONG);
     await userEvent.click(screen.getByRole('button', { name: 'Continue' }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('An account with that email exists.');
+    /**
+     * 🔴 **This asserted `findByRole('alert')`, which was the defect** —
+     * 📁 [C-1571](../../../docs/LANE_COORDINATION.md).
+     *
+     * ⛔ **The form announced the same error twice**: an `sr-only`
+     * `aria-live="polite"` region AND a separate `role="alert"`. **A screen
+     * reader heard the sentence twice, the second time as an interruption.**
+     *
+     * ⚠️ **The form's own comment already said why that is wrong** —
+     * *"`role="alert"` would interrupt somebody mid-field"* — **while the file
+     * did it thirty-five lines later, and this test held it in place.**
+     *
+     * ✅ **Now one node**, which is `signin-form.tsx`'s shape: `sr-only` when
+     * silent, the visible error when not. ⚡ **The visible text and the
+     * announced text cannot drift apart, because they are the same node.**
+     */
+    const announced = await screen.findByText('An account with that email exists.');
+    expect(announced).toHaveAttribute('aria-live', 'polite');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(push).not.toHaveBeenCalled();
+  });
+
+  /**
+   * ⚠️ **The vacuity half.** ⛔ A form that rendered nothing would satisfy
+   * *"no alert"* — **the region must exist and be silent**, which is what makes
+   * the announcement happen exactly once when it fills.
+   */
+  it('⚠️ and the polite region is present and silent before any error', () => {
+    const { container } = render(<SignUpForm />);
+
+    const live = container.querySelector('[aria-live="polite"]');
+    expect(live, 'no polite live region — the error would never be announced').not.toBeNull();
+    expect(live?.textContent).toBe('');
+    expect(live?.className).toMatch(/\bsr-only\b/);
   });
 });
 
