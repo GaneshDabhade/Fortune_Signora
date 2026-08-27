@@ -101,6 +101,7 @@ export function ViewTabs({
     let next: number | null = null;
     if (event.key === 'ArrowRight') next = (index + 1) % order.length;
     if (event.key === 'ArrowLeft') next = (index - 1 + order.length) % order.length;
+
     if (event.key === 'Home') next = 0;
     if (event.key === 'End') next = order.length - 1;
     if (next === null) return;
@@ -216,7 +217,25 @@ export function ViewTabs({
           definition in this row is ordinary — **and the sentence says so
           rather than implying something broke.** */}
       {refusal === null ? null : (
-        <p role="alert" className="-mt-2 mb-4 text-xs text-content-muted">
+        /**
+         * 🔴 **`role="status"`, and it was `alert`.** 📁 `System States`
+         * `4.1.3`: *"Region errors and retries announce politely. **Only a
+         * state that ends the session** — 500, maintenance — **announces
+         * assertively**, once."*
+         *
+         * ⛔ **This is not even an error most of the time**, and the note above
+         * says so in its own words: *"the commonest case is not an error — the
+         * store is workspace-wide and holds four screens' declarations, so a
+         * Reports definition in this row is ordinary."* ⚡ **Interrupting a
+         * screen-reader user to tell them something ordinary happened is the
+         * worst version of an assertive announcement.**
+         *
+         * ⚠️ **No competing document.** 📁 `Companies` publishes no `a11y`
+         * array and no announcement rule at all, so `System States` governs
+         * alone — ⛔ **unlike [C-1572](../../../../docs/LANE_COORDINATION.md)**,
+         * where two documents disagree and this lane changed nothing.
+         */
+        <p role="status" className="-mt-2 mb-4 text-xs text-content-muted">
           {refusal}
         </p>
       )}
