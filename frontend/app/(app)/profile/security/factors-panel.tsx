@@ -192,12 +192,19 @@ function RemoveFactor({
         onChange={(event) => setPassword(event.target.value)}
         autoComplete="current-password"
         required
+        /**
+         * 🔴 **The refusal was a loose paragraph beside the field** — the same
+         * defect [`enrolment.tsx`](enrolment.tsx) carried, and this form has
+         * **one** field, so there is nothing to guess about what failed.
+         *
+         * ✅ **`Input.error` already does all of it** — `aria-invalid`,
+         * `aria-describedby`, and the message with `role="alert"` on it, so
+         * the announcement is unchanged and the association is added.
+         * ⛔ **Rendering a second paragraph was building around the library
+         * rather than using it** ([§20c](../../../../../CLAUDE.md)).
+         */
+        {...(failed === null ? {} : { error: failed })}
       />
-      {failed === null ? null : (
-        <p role="alert" className="text-sm text-danger">
-          {failed}
-        </p>
-      )}
       <div className="flex flex-wrap gap-2">
         <Button type="submit" variant="danger" loading={busy}>
           Remove it

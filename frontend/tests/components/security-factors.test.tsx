@@ -239,6 +239,41 @@ describe('🔴 removal states its blast radius and the server holds the gate', (
     expect(disable).toHaveBeenCalledWith({ password: 'hunter-two' });
   });
 
+  it('🔴 and the refusal is attached to the field, not floating beside it', async () => {
+    /**
+     * 📁 `Security Center` `2.4.7`: *"the message is programmatically
+     * associated."* ⛔ **It was a loose `<p role="alert">` next to the field**,
+     * so a screen-reader user heard that something was wrong and never that it
+     * was **this** field — the same defect [`enrolment.tsx`](../../app/(app)/profile/security/enrolment.tsx)
+     * carried until `2.4.7` was fixed there.
+     *
+     * ⚡ **This form has ONE field**, so there is nothing to guess about what
+     * failed. ⚠️ **`password-panel.tsx` has two and deliberately keeps a
+     * form-level alert** — attaching an error to a guessed field would put
+     * `aria-invalid` on one that may be perfectly correct.
+     */
+    disable.mockResolvedValue({ error: { message: 'Invalid password' } });
+    render(<FactorsPanel twoFactorEnabled hasPassword />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Remove' }));
+    const field = screen.getByLabelText('Your password');
+    // ⚡ **The vacuity half**: before the failure there is NO association, so a
+    // component that described the field unconditionally would fail here.
+    expect(field).not.toHaveAttribute('aria-describedby');
+    expect(field).not.toHaveAttribute('aria-invalid');
+
+    await userEvent.type(field, 'wrong');
+    await userEvent.click(screen.getByRole('button', { name: 'Remove it' }));
+
+    await screen.findByRole('alert');
+    expect(field).toHaveAttribute('aria-invalid', 'true');
+    const describedBy = field.getAttribute('aria-describedby');
+    expect(describedBy).not.toBeNull();
+    expect(document.getElementById(describedBy as string)).toHaveTextContent(
+      'Invalid password',
+    );
+  });
+
   it('⛔ a refused password keeps the factor and says so', async () => {
     disable.mockResolvedValue({ error: { message: 'Invalid password' } });
     render(<FactorsPanel twoFactorEnabled hasPassword />);

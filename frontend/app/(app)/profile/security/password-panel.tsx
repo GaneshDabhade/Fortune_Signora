@@ -220,6 +220,28 @@ function ChangePasswordForm() {
             />
           </fieldset>
 
+          {/**
+            * ⚠️ **A FORM-level alert, and it stays one — deliberately, unlike
+            * [`factors-panel.tsx`](factors-panel.tsx) and
+            * [`enrolment.tsx`](enrolment.tsx), where the same paragraph moved
+            * onto the field.**
+            *
+            * ⛔ **This form has TWO password fields** and the failure can
+            * belong to either: *the current one is wrong* or *the new one
+            * fails policy*. ⚡ **Nothing here can tell which.**
+            * `authClient.changePassword` returns `error.message` and this
+            * repository has no evidence of a stable `error.code` from it —
+            * measured, not assumed: the only `error.code` read anywhere is
+            * [`lib/integrations/record.ts`](../../../../lib/integrations/record.ts),
+            * against Signora's own envelope.
+            *
+            * 🔴 **Attaching it to a guessed field would put `aria-invalid` on
+            * a field that may be perfectly correct**, which is a false claim on
+            * the screen — the class this repository keeps refusing. 📁
+            * `Security Center` `3.3.1` asks for errors that are *"adjacent,
+            * textual and specific"*, and **an error about the submission is
+            * specific when it is attached to the submission.**
+            */}
           {failed === null ? null : (
             <p role="alert" className="text-sm text-danger">
               {failed}
