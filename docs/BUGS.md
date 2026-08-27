@@ -20157,6 +20157,45 @@ role=null aria-live=polite  "Navigated to /w/4e158d14-ab29-4b23-b99d-a8b10986f8e
 
 ---
 
+### B-1084-A · 🟠 An engineering docstring rendered on Home as visible text
+
+> ⚠️ **This row has a PROVISIONAL identifier.** ⛔ **Lane A's `B-200`–`B-299` block is exhausted** — 📁 [C-1562](LANE_COORDINATION.md), awaiting the product owner. **`B-1084-A` is a suffix on QE's own `B-1084` rather than a number taken from a block this lane does not hold**, and it is renumbered the moment a range is allocated. ✅ **Filed here rather than in the coordination register on purpose**: 📁 C-1562's whole finding is that the promotion gate reads **this** file, and a defect filed elsewhere is invisible to it.
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — 📁 [`components/home/workspace-strip.tsx`](../frontend/components/home/workspace-strip.tsx):181 |
+| **Current assignee** | **Lane A** |
+| **Severity** | 🟠 — **wrong behaviour a customer would hit.** ⛔ Not 🔴: nothing is unusable and no data is wrong. ⚡ **But it is on Home, above the fold, for every person with more than one organization on their first entry of the day** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-27**, with a rendering test and a permanent lint rule. ⛔ **`VERIFIED` is QE's** |
+| **Found** | **2026-08-27 by Lane A**, auditing `Workspace Chooser`'s `a11y` claims and reading the strip on the way past |
+| **Commit found** | `9d602b07` — ⚠️ **and it is older than that.** The block is mangled in a way only a reflow produces, so it has shipped through several promotions |
+
+### 🔴 What a customer saw
+
+**Rendered on Home, immediately above *"You are working in Northwind Global"*:**
+
+> `/** * ♿ **`role="status"`** — 📁 4.1.3, *"entry announces once"*, and the greeting * already owns that sentence. ⛔ **Not `alert`**: confirming where somebody * already is is not an interruption. * * ⛔ **In flow, never overlaid** — 📁 `2.4.11`: *"reduce the scroll area rather * than overlaying it."* ⚡ **And it fades rather than slides**, which the * design says by name: *"never slides — it is not an alert."* */`
+
+⛔ **An unbraced block comment between two JSX children is not a comment — it is a text node**, and React renders it verbatim.
+
+### ⚡ How it got there, and why nothing caught it
+
+⚠️ **The `* *` fragments mid-sentence are the tell**: a `{/* … */}` comment was reflowed by a formatter until the braces were lost. ⛔ **The prose still reads as a comment**, which is exactly why it survived review.
+
+🔴 **`WorkspaceStrip` had NO test.** ⛔ **Nothing in the repository rendered the component**, so no assertion could see its output — and `tsc` and `eslint` both passed, because a text node is valid JSX.
+
+### ✅ Fixed, and guarded twice
+
+| | |
+|---|---|
+| **The instance** | Braces restored, with the reason written beside them |
+| **The class** | ✅ **`react/jsx-no-comment-textnodes` registered in `eslint.config.mjs`** — ⚡ **a parser rule, not a regex**: deciding whether a `/**` sits inside JSX is a parsing question, and every heuristic answer is either too narrow or too wide. ⛔ **Only that rule** — `react/recommended` would put hundreds of stylistic findings in front of a gate that reports zero |
+| **The component** | 📁 [`workspace-strip.test.tsx`](../frontend/tests/components/workspace-strip.test.tsx) — **five assertions where there were none**, including rules 11 and 22 and the failed-entry path |
+
+⚡ **Measured across the repository**: the rule finds **exactly one** occurrence, so this is a single instance rather than a family. ✅ **It cannot become one now.**
+
+---
+
 ### B-1079 · 🟡 The team directory has column headers and no row headers — 1.3.1 asks for both
 
 | | |

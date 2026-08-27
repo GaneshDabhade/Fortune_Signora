@@ -1,4 +1,5 @@
 import js from '@eslint/js';
+import react from 'eslint-plugin-react';
 import tseslint from 'typescript-eslint';
 
 /**
@@ -48,6 +49,35 @@ export default tseslint.config(
       // security review gap, not a style preference.
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    },
+  },
+  {
+    /**
+     * 🔴 **One rule, and it was added because the defect it catches was
+     * SHIPPING on Home.**
+     *
+     * ⛔ **An unbraced `/** … *\/` between two JSX elements is not a comment —
+     * it is a text node**, and React renders it verbatim. 📁
+     * [`workspace-strip.tsx`](components/home/workspace-strip.tsx) had one, and
+     * the mangled `* *` fragments inside it show how it got there: a `{/* … *\/}`
+     * comment reflowed until the braces were lost.
+     *
+     * ⚡ **A parser rule rather than a regex**, and that is the whole reason to
+     * reach for the plugin instead of writing a source sweep: **a sweep would
+     * have to decide whether a `/**` is inside JSX**, which is a parsing
+     * question, and every heuristic answer is either too narrow or too wide.
+     * ✅ **`eslint-plugin-react` is already installed** — it arrives with
+     * `eslint-config-next` — so this registers a capability the repository has
+     * rather than adding a dependency.
+     *
+     * ⚠️ **Only this rule.** ⛔ **Not `react/recommended`**, which would put
+     * hundreds of stylistic findings in front of a gate that currently reports
+     * zero — 📁 the same argument `.next-build/**` is ignored for.
+     */
+    files: ['**/*.tsx'],
+    plugins: { react },
+    rules: {
+      'react/jsx-no-comment-textnodes': 'error',
     },
   },
   {

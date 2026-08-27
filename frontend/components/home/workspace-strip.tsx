@@ -179,12 +179,20 @@ export function WorkspaceStrip({
   return (
     <>
       {notice}
-      /** * ♿ **`role="status"`** — 📁 4.1.3, *"entry announces once"*, and the greeting
-      * already owns that sentence. ⛔ **Not `alert`**: confirming where somebody *
-      already is is not an interruption. * * ⛔ **In flow, never overlaid** — 📁 `2.4.11`:
-      *"reduce the scroll area rather * than overlaying it."* ⚡ **And it fades rather
-      than slides**, which the * design says by name: *"never slides — it is not an
-      alert."* */
+      {/* ♿ **`role="status"`** — 📁 4.1.3, *"entry announces once"*, and the
+          greeting already owns that sentence. ⛔ **Not `alert`**: confirming
+          where somebody already is is not an interruption.
+
+          ⛔ **In flow, never overlaid** — 📁 `2.4.11`: *"reduce the scroll area
+          rather than overlaying it."* ⚡ **And it fades rather than slides**,
+          which the design says by name: *"never slides — it is not an alert."*
+
+          🔴 **THE BRACES ARE LOAD-BEARING.** ⛔ **This block was unbraced**, and
+          an unbraced comment between two JSX children is not a comment — **it
+          is a text node**, so every word above rendered on Home as visible
+          text. ⚡ **The `* *` fragments left in it showed how**: a braced
+          comment reflowed until the braces were lost. ✅ **Guarded now by
+          `react/jsx-no-comment-textnodes`** in `eslint.config.mjs`. */}
       <div
         role="status"
         data-testid={welcoming ? 'workspace-welcome' : 'workspace-confirmation'}
