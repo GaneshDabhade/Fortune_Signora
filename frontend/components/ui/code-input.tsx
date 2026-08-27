@@ -193,9 +193,41 @@ export function CodeInput({
           maxLength={1}
           aria-label={`${label}, character ${index + 1} of ${length}`}
           className={cn(
-            'h-12 w-10 rounded-md border text-center text-lg font-medium',
+            // 📁 **`Security Center` states the cell three times and agrees with
+            // itself**: the `otp()` renderer's literal `width: 38, height: 44,
+            // borderRadius: 8`, the hierarchy row *"OtpInput — 6 cells, one
+            // field · input 44px"*, and `2.5.8`: *"OTP cells are 38 × 44px."*
+            // ⛔ **This was `h-12 w-10` — 48 × 40, taller and narrower than
+            // every one of them.** ⚡ **Moving it is the UI Migration Program,
+            // not a breach of the freeze**: 📁 [§20c](../../CLAUDE.md) —
+            // *"the direction of the change: toward the finalized design is the
+            // migration; away from it, to suit one caller, is the defect."*
+            //
+            // ⚠️ **`rounded-md` is already right and the reason is a trap worth
+            // leaving written down**: Tailwind's own `rounded-md` is 6px, but
+            // `--radius-md` overrides it to **8px**, which is the design's.
+            // ⛔ **Reading the utility name rather than the token would have
+            // "fixed" a corner that was never wrong.**
+            'h-11 w-[38px] rounded-md border text-center',
+            // 📁 *"fontFamily: ui-monospace, fontSize: 17, fontWeight: 600."*
+            // ⚡ **Monospace is the substantive half** — a code is read back
+            // character by character, and `BackupCodes` already uses it for
+            // exactly that. ⚠️ **17px has no token** (`--text-lg` is 18,
+            // `--text-base` 16) and one pixel does not justify a scale step
+            // that no other role asks for: 📁 the config's own rule, *"only the
+            // roles this row adds or corrects."*
+            'font-mono text-lg font-semibold',
             'bg-surface text-content transition-colors',
             'disabled:opacity-60',
+            // ⛔ **NOT a risk-coloured focus ring, and that is a precedence
+            // decision rather than an omission.** 📁 `Security Center` `2.4.7`
+            // asks for one; 📁 **§17 Design System `2.4.7` says the indicator is
+            // *"2px brand focus ring at 2px offset plus a border change; never
+            // suppressed"*** — brand, unconditionally, with **the border**
+            // carrying the state. ✅ **The Design System outranks a screen
+            // document, `Input` behaves identically, and this already does
+            // both halves**: the global `:focus-visible` paints the brand
+            // indicator and `border-danger` is the border change.
             invalid ? 'border-danger' : 'border-border-strong',
           )}
         />

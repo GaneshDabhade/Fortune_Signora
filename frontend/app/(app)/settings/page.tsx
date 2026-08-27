@@ -380,12 +380,15 @@ export default function SettingsPage() {
               <TBody>
                 {workspaces.map((workspace) => (
                   <TR key={workspace.id}>
-                    <TD pin>
+                    {/* 🔴 **[B-1079](../../../docs/BUGS.md)**, the third site
+                        the row names — ⛔ **the organization's name IS the row**,
+                        and *"Active"* announced without it says nothing. */}
+                    <TH scope="row" pin>
                       {workspace.name}
                       {workspace.id === activeWorkspace?.id ? (
                         <span className="ml-2 text-xs text-content-subtle">Active</span>
                       ) : null}
-                    </TD>
+                    </TH>
                     <TD className="text-content-muted">
                       {new Date(workspace.created_at).toLocaleDateString()}
                     </TD>

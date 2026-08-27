@@ -394,14 +394,30 @@ export function SessionsPanel({
                         />
                       )}
                     </TD>
-                    <TD>
+                    {/**
+                      * 🔴 **A row header, not a `<td>`** — 📁 `Security Center`
+                      * `1.3.1`: *"Sessions and history are real tables with
+                      * **row and column headers**."*
+                      *
+                      * ⛔ **This table had six `th[scope="col"]` and zero
+                      * `th[scope="row"]`**, so a screen reader moving across a
+                      * row announced *"203.116.•.• · IP address"* and never
+                      * **which session** it belonged to — on the one screen
+                      * where the answer decides whether you revoke it.
+                      *
+                      * ⚡ **The client IS the row's identity here**, deliberately:
+                      * the panel's own rule is *"a session is an issued token,
+                      * not a device"*, and the client string is the most
+                      * identifying thing this repository actually holds.
+                      */}
+                    <TH scope="row">
                       <span className="text-content">{clientOf(session.userAgent)}</span>
                       {isThisOne ? (
                         <Badge tone="accent" className="ml-2">
                           This device
                         </Badge>
                       ) : null}
-                    </TD>
+                    </TH>
                     <TD>
                       <span className="font-mono text-xs">{session.ipAddress ?? 'Not recorded'}</span>
                     </TD>

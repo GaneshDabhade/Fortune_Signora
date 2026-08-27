@@ -291,12 +291,25 @@ export default function TeamPage() {
               <TBody>
                 {people.map((one) => (
                   <TR key={one.id}>
-                    <TD pin>
+                    {/**
+                      * 🔴 **[B-1079](../../../../docs/BUGS.md)** — the directory
+                      * had **four `th[scope="col"]` and zero `th[scope="row"]`**,
+                      * and the identity cell was a plain `<td>`.
+                      *
+                      * ⛔ **So a screen reader announced *"Owner · Role"* without
+                      * ever saying WHOSE role**, on the screen where the answer
+                      * decides whether you change somebody's access. 📁 `User
+                      * Profile` `1.3.1` asks for both headers; the column half
+                      * was there and the row half was not.
+                      *
+                      * ⚡ **Visually identical** — see the note on `TH`.
+                      */}
+                    <TH scope="row" pin>
                       {nameOf(one, viewerId)}
                       {one.user_id === viewerId ? (
                         <span className="ml-2 text-xs text-content-subtle">You</span>
                       ) : null}
-                    </TD>
+                    </TH>
                     <TD>
                       {/* **The role is the control**, rather than a menu item
                           beside a label. An owner reading the roster to decide
@@ -559,7 +572,13 @@ export default function TeamPage() {
               <TBody>
                 {[...waiting, ...settled].map((one) => (
                   <TR key={one.id}>
-                    <TD pin>{one.invited_email}</TD>
+                    {/* 🔴 **[B-1079](../../../../docs/BUGS.md)**, the same
+                        defect in the invitations table — ⛔ **the email IS the
+                        row**, and *"Withdraw"* beside no name is the one
+                        announcement that must never be ambiguous. */}
+                    <TH scope="row" pin>
+                      {one.invited_email}
+                    </TH>
                     <TD className="text-content-muted">{ROLE_CAPABILITIES[one.role].summary}</TD>
                     <TD>
                       <Badge tone={STATE_TONE[one.state]}>{STATE_WORDS[one.state]}</Badge>

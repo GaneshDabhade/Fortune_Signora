@@ -201,11 +201,68 @@ export interface CellProps {
   pin?: boolean;
 }
 
+/**
+ * 🔴 **The body cell's appearance, shared by `TD` and a row-scoped `TH`.**
+ *
+ * ⛔ **Extracted rather than duplicated**: a row header must be *the same cell*
+ * as the one it replaces, and two copies of this list would drift the first
+ * time either was touched — **at which point one table's identity column would
+ * look unlike every other's, for a reason nobody could find.**
+ */
+function bodyCell(pin: boolean, className?: string): string {
+  return cn(
+    // ⚠️ `relative` is safe here and is NOT safe on a column header — see the
+    // note there. A pinned cell gets `sticky` from `pinned()` below, which
+    // tailwind-merge resolves in that call's favour because it comes after.
+    'relative border-b border-border-soft px-4 py-3 text-content last:border-b-0',
+    // 📁 **Rule ②'s edge, on the pinned cell** so it reads at the row's start
+    // where the eye lands — and it is 2px, which is what makes selection
+    // legible without colour.
+    'group-data-[selected]:before:absolute group-data-[selected]:before:inset-y-0',
+    pin && 'bg-surface group-hover:bg-surface-sunken group-data-[selected]:bg-accent-subtle',
+    pin &&
+      'group-data-[selected]:before:left-0 group-data-[selected]:before:w-0.5 group-data-[selected]:before:bg-accent',
+    pinned(pin),
+    className,
+  );
+}
+
+/**
+ * 🔴 **`scope="row"` exists because a table with only column headers is not a
+ * table to a screen reader — it is a grid of unlabelled values.**
+ *
+ * 📁 **`Security Center` `1.3.1`**: *"Sessions and history are real tables with
+ * **row and column headers**."* 📁 **`User Profile` says the same of the team
+ * directory**, and [B-1079](../../../docs/BUGS.md) measured the consequence
+ * there: **four `th[scope="col"]` and zero `th[scope="row"]`**, with the
+ * identity cell a plain `<td>`.
+ *
+ * ⚡ **Both tables had the same defect, so the repair belongs HERE** —
+ * 📁 [§20c](../../../CLAUDE.md): *"add to the library rather than around it"*,
+ * and a row header written twice at two call sites is the page-local variant
+ * that rule forbids.
+ *
+ * ⚠️ **A row-scoped header is visually identical to the cell it replaces.**
+ * ⛔ **`<th>` defaults to bold and centred and Tailwind's preflight does not
+ * reset either**, so both are stated explicitly — **the change is for the
+ * accessibility tree, and a column that suddenly went bold would be a visual
+ * change nobody asked for riding along with it.**
+ */
 export function TH({
   className,
   pin = false,
+  scope = 'col',
   ...props
 }: ThHTMLAttributes<HTMLTableCellElement> & CellProps) {
+  if (scope === 'row') {
+    return (
+      <th
+        scope="row"
+        className={cn(bodyCell(pin, className), 'text-left font-normal')}
+        {...props}
+      />
+    );
+  }
   return (
     <th
       scope="col"
@@ -236,27 +293,7 @@ export function TD({
   pin = false,
   ...props
 }: TdHTMLAttributes<HTMLTableCellElement> & CellProps) {
-  return (
-    <td
-      className={cn(
-        // ⚠️ `relative` is safe here and is NOT safe on `TH` — see the note
-        // there. A pinned `TD` gets `sticky` from `pinned()` below, which
-        // tailwind-merge resolves in that call's favour because it comes after.
-        'relative border-b border-border-soft px-4 py-3 text-content last:border-b-0',
-        // 📁 **Rule ②'s edge, on the pinned cell** so it reads at the row's
-        // start where the eye lands — and it is 2px, which is what makes
-        // selection legible without colour.
-        'group-data-[selected]:before:absolute group-data-[selected]:before:inset-y-0',
-        pin &&
-          'bg-surface group-hover:bg-surface-sunken group-data-[selected]:bg-accent-subtle',
-        pin &&
-          'group-data-[selected]:before:left-0 group-data-[selected]:before:w-0.5 group-data-[selected]:before:bg-accent',
-        pinned(pin),
-        className,
-      )}
-      {...props}
-    />
-  );
+  return <td className={bodyCell(pin, className)} {...props} />;
 }
 
 export interface EditableCellProps extends CellProps {

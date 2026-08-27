@@ -20164,9 +20164,27 @@ role=null aria-live=polite  "Navigated to /w/4e158d14-ab29-4b23-b99d-a8b10986f8e
 | **Module** | **`product_surface`** — 📁 [`app/(app)/settings/team/page.tsx`](../frontend/app/(app)/settings/team/page.tsx):294 · [`components/ui/table.tsx`](../frontend/components/ui/table.tsx):211,234 |
 | **Current assignee** | **Lane A** |
 | **Severity** | 🟡 — **wrong but survivable.** The person's name is on screen and reachable; what a screen-reader user loses is the cell announcement pairing *"Role · Owner"* with *whose* role it is. On a six-row directory the row is inferable; it stops being inferable as a team grows |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-27**, at the primitive and at all three call sites, with two fire-tested guards. ⛔ **`VERIFIED` is QE's** |
 | **Found** | **2026-08-26 by QE**, Team Management conformance audit |
 | **Commit found** | `1d03cd33` |
+
+### ✅ Fixed 2026-08-27 — at the primitive, because the row proved it was one defect in three places
+
+⚡ **The row's own finding ② is what decided where the repair goes**: *"`pin` is visual, not semantic — the concept the design's row header names is already declared in the primitive; it simply renders as `<td>`."* ✅ **So `TH` gained `scope?: 'col' | 'row'`**, and a row-scoped header shares the body cell's appearance through an extracted `bodyCell()` rather than a second copy of the class list — 📁 [§20c](../CLAUDE.md), *"add to the library rather than around it."*
+
+**All three call sites the row names now use it**, and they were three tables with one defect:
+
+| | |
+|---|---|
+| [`settings/team/page.tsx`](../frontend/app/(app)/settings/team/page.tsx) | the person, **and** the invited email — ⛔ *"Withdraw"* beside no name is the announcement that must never be ambiguous |
+| [`settings/page.tsx`](../frontend/app/(app)/settings/page.tsx) | the organization's name |
+| [`profile/security/sessions-panel.tsx`](../frontend/app/(app)/profile/security/sessions-panel.tsx) | ⚡ **a fourth site the row did not name** — 📁 `Security Center` `1.3.1` makes the identical claim of the sessions table, and it had six `th[scope="col"]` and zero `th[scope="row"]` |
+
+⚠️ **Visually identical, deliberately.** ⛔ **`<th>` defaults to bold and centred and Tailwind's preflight resets neither**, so both are stated explicitly — **the change is for the accessibility tree, and a column that suddenly went bold would be a visual change riding along with a semantic one.**
+
+⚡ **Two guards, both fire-tested** by making `TH` fall through to the column branch — 📁 [`table.test.tsx`](../frontend/tests/components/table.test.tsx). ⚠️ **The first draft of the second one fired on correct code**: it asserted `className` did not *contain* `bg-surface-sunken`, and a pinned body cell legitimately carries **`group-hover:bg-surface-sunken`**, the design's hover tint. ✅ **Narrowed to `classList` tokens**, which ask the question the assertion means.
+
+⛔ **The row's finding ③ is preserved and NOT closed**: the role matrix does not exist, so 1.3.1's second half remains unfiled rather than fixed.
 
 📁 **The design's own `a11y` array, 1.3.1, verbatim:**
 

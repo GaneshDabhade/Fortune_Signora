@@ -168,6 +168,38 @@ describe('♿ one field with a name, not six anonymous boxes', () => {
     );
   });
 
+  it('📁 a cell is the design\'s 38 × 44, not the 48 × 40 it drifted to', () => {
+    /**
+     * 📁 **`Security Center` says it three times and agrees with itself**: the
+     * `otp()` renderer's `width: 38, height: 44`, the hierarchy row *"input
+     * 44px"*, and `2.5.8` — *"OTP cells are 38 × 44px."*
+     *
+     * ⚠️ **This asserts CLASSES, not measured pixels, and the trade is worth
+     * stating**: jsdom applies no stylesheet, so `getBoundingClientRect` here
+     * returns zero for every box and would pass any value at all. ⛔ **A guard
+     * that cannot fail is worse than no guard** — 📁
+     * [`focus-never-suppressed.test.ts`](../unit/focus-never-suppressed.test.ts)
+     * exists because one of mine could not. **A class assertion can fail, so
+     * it is the honest instrument available.**
+     *
+     * ✅ **`h-11` is 44px and `--radius-md` is 8px** — ⛔ **note that
+     * Tailwind's own `rounded-md` is 6px and this repository overrides it, so
+     * the token is what is being asserted, not the utility's default.**
+     */
+    render(<CodeInput value="" onChange={() => {}} label="Verification code" />);
+    for (const box of boxes()) {
+      expect(box.className).toContain('h-11');
+      expect(box.className).toContain('w-[38px]');
+      expect(box.className).toContain('rounded-md');
+      // 📁 *"fontFamily: ui-monospace"* — a code is read back character by
+      // character, and every other place this product shows one uses it.
+      expect(box.className).toContain('font-mono');
+    }
+    // ⚡ **The vacuity half**: if `boxes()` ever returned nothing, every
+    // assertion above would pass by never running.
+    expect(boxes()).toHaveLength(6);
+  });
+
   it('🔴 and a wrong code KEEPS the digits', () => {
     // 📁 TASK-486: "a wrong code shows inline and keeps the digits — it never
     // clears what was typed." The component cannot clear what it does not own,

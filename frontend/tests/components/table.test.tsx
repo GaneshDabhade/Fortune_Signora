@@ -246,3 +246,71 @@ describe('📁 rule ④ — the AI summary row', () => {
     expect(container.querySelector('[data-summary-row]')).toBeNull();
   });
 });
+
+describe('♿ a row header, because a table with only column headers is a grid of unlabelled values', () => {
+  /**
+   * 📁 **`Security Center` `1.3.1`**: *"Sessions and history are real tables
+   * with **row and column headers**."* 📁 **`User Profile` says the same of the
+   * team directory**, and [B-1079](../../../docs/BUGS.md) measured what its
+   * absence cost: **four `th[scope="col"]`, zero `th[scope="row"]`**, so a
+   * screen reader announced a role without ever saying whose.
+   */
+  function withRowHeader() {
+    return render(
+      <Table>
+        <THead>
+          <TR>
+            <TH pin>Account</TH>
+            <TH>Owner</TH>
+          </TR>
+        </THead>
+        <TBody>
+          <TR>
+            <TH scope="row" pin>
+              Vantage
+            </TH>
+            <TD>M. Reinhardt</TD>
+          </TR>
+        </TBody>
+      </Table>,
+    );
+  }
+
+  it('🔴 a row-scoped header is a `th`, and the scope is what makes it one', () => {
+    const { container } = withRowHeader();
+    const cell = screen.getByText('Vantage');
+    expect(cell.tagName).toBe('TH');
+    expect(cell).toHaveAttribute('scope', 'row');
+    // ⚡ **The vacuity half**: the column headers must still be `scope="col"`,
+    // ⛔ **so a change that made EVERY header a row header would fail here**
+    // rather than passing the assertion above.
+    expect(container.querySelectorAll('th[scope="col"]')).toHaveLength(2);
+    expect(container.querySelectorAll('th[scope="row"]')).toHaveLength(1);
+  });
+
+  it('⛔ and it does NOT wear the column header\'s clothes', () => {
+    /**
+     * ⚠️ **The change is for the accessibility tree.** ⛔ **A row header that
+     * picked up `sticky top-0` and the sunken header fill would scroll a body
+     * cell to the top of the plane and tint it** — a visual change nobody
+     * asked for, riding along with a semantic one.
+     *
+     * ✅ **And `<th>` defaults to bold and centred, which Tailwind's preflight
+     * does not reset**, so both are stated explicitly by the component.
+     */
+    withRowHeader();
+    const cell = screen.getByText('Vantage', { selector: 'th' });
+    // ⚠️ **`classList`, not `className.toContain` — and the first draft of this
+    // test used the substring and fired on correct code.** ⛔ A pinned body cell
+    // legitimately carries **`group-hover:bg-surface-sunken`**, the design's
+    // hover tint, which contains the header fill's name. **A token comparison
+    // asks the question the assertion means**; a substring asked a wider one.
+    expect(cell.classList.contains('top-0')).toBe(false);
+    expect(cell.classList.contains('bg-surface-sunken')).toBe(false);
+    expect(cell.classList.contains('text-left')).toBe(true);
+    expect(cell.classList.contains('font-normal')).toBe(true);
+    // ⚡ **It IS still the pinned identity column**, which is the whole reason
+    // it is the row's header.
+    expect(cell.classList.contains('sticky')).toBe(true);
+  });
+});
