@@ -6679,6 +6679,16 @@ this row on a resemblance. **Re-measure on the rebased tree.**
 
 ### B-283 · 🟠 Companies and Home both reflow after they load, and the screen that did not is the one just retired
 
+> ⚠️ **STATUS, 2026-08-28, Lane A: the fix is promoted and was UNGUARDED; a witness now exists, and the residual stays open for the product owner.**
+>
+> ✅ **Verified with `git show origin/integration:frontend/app/globals.css`** — `html { scrollbar-gutter: stable; }` is on `integration`. ⛔ **The only mention anywhere in `tests/` was a COMMENT in `visual.spec.ts`**, so **one line in a shared stylesheet could be removed by a tidy-up and only an expensive browser run would notice.**
+>
+> ✅ **`design-tokens.test.tsx` now asserts the declaration**, and asserts the *absence* of `overflow-y: scroll`, which was rejected on measurement because it draws a dead track on every short page. ⚡ **Fire-tested**: removing the line turns it red.
+>
+> ⛔ **This asserts the DECLARATION, not the shift, and it must not be read as closing the measurement.** **jsdom computes no layout**, so `0.277 → 0.003` remains `visual.spec.ts`'s to measure. ⚠️ **A row closed on a component assertion that claimed to measure layout shift would be worse than an open row.**
+>
+> 🔴 **The residual is UNCHANGED and is not this lane's**: `card.attention`'s skeleton has **no declared height** in §04 (`1.45fr × auto`), and the first-run strip's height cannot be reserved without shifting the page for everyone who has already dismissed it — **the larger population.** ⛔ **Neither is guessed.**
+
 ### ✅ Lane A, 2026-08-19 — the cause was the SCROLLBAR, and one declaration fixed the larger half
 
 🔴 **It was not the auto-layout table and it was not the utility panel.**

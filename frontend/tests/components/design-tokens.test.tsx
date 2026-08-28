@@ -171,6 +171,55 @@ describe('components consume design tokens', () => {
     ).toEqual([]);
   });
 
+  it('🔴 B-283 — the scrollbar gutter is reserved, or every shell element jumps 15px at once', () => {
+    /**
+     * 🔴 **[B-283](../../../docs/BUGS.md)** — Companies and Home both reflowed
+     * after they loaded, and **neither obvious hypothesis was right.**
+     *
+     * ⚡ **Measured with `PerformanceObserver`, attributing each entry to its
+     * sources**: Home's largest event named *both right-column cards, the
+     * content wrapper, AND `aside#shell-utility-panel` — all moving together*,
+     * with `clientWidth` going **1280 → 1265** in the same window.
+     *
+     * ⛔ **So nothing resized.** **The page grew past the viewport as the last
+     * card's data landed, the vertical scrollbar arrived, and every element in
+     * the shell's flex row lost the same 15px at once.** ⚠️ **Companies'
+     * *"table settling its column widths"* was that same 15px reaching an
+     * auto-layout table, which redistributed it across every column** — **a
+     * dramatic symptom of an undramatic cause.**
+     *
+     * | Screen | Before | After |
+     * |---|---|---|
+     * | Companies | **0.277** | **0.003 · 0.003 · 0.016** |
+     * | Home | 0.154 · 0.166 · 0.167 | 0.099 · 0.110 · 0.112 |
+     *
+     * ## ⚠️ What this asserts, and what it cannot
+     *
+     * ⛔ **This asserts the DECLARATION, not the shift.** **jsdom computes no
+     * layout**, so the 0.277 → 0.003 is `visual.spec.ts`'s to measure and this
+     * cannot stand in for it.
+     *
+     * ✅ **But the declaration is one line in a shared stylesheet with nothing
+     * else guarding it** — **the only mention anywhere in `tests/` is a comment
+     * — so a tidy-up removes it and only an expensive browser run notices.**
+     *
+     * ⛔ **`html`, not `body`**: the document element is the scrolling box.
+     * ⛔ **Not `overflow-y: scroll`**, which draws a dead track on every short
+     * page.
+     */
+    const css = readFileSync(join(process.cwd(), 'app', 'globals.css'), 'utf8');
+
+    expect(
+      /html\s*\{[^}]*scrollbar-gutter:\s*stable/.test(css),
+      'html must reserve the scrollbar gutter, or the shell reflows when it appears',
+    ).toBe(true);
+
+    // ⛔ **And not the alternative that was rejected on measurement.**
+    expect(css, 'overflow-y: scroll draws a dead track on every short page').not.toMatch(
+      /html\s*\{[^}]*overflow-y:\s*scroll/,
+    );
+  });
+
   it('the token set is defined in exactly one place', () => {
     const css = readFileSync(join(process.cwd(), 'app', 'globals.css'), 'utf8');
 
