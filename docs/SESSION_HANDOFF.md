@@ -1,5 +1,25 @@
 # Session Handoff
 
+> ## Cycle 281 — promoted `a36a9b5fca32`, 2026-08-28 · **two runs killed for reasons that were not gate failures, and a population nobody could measure twice**
+>
+> **`main` = `a36a9b5fca32617fc0d0569f63828a7bf7c8fdd1` = the certified commit.** **ZERO merges**, `--audit-main` holds across 2518. `pytest` **5465** · **95.03%** · **679 invariants** · `mypy` **958** · `import-linter` **37/37** · `tsc` · frontend **4479/263** · `eslint` · smoke **24/148s** · scenario **208** · DR ✅. **No migration; head `0066`. THIRD attempt.**
+>
+> ⛔ **RUN 1 KILLED — a row filed carrying a number that had just been disproven.** [B-1091](BUGS.md) was filed at **82**. Lane A challenged the definition and was right: it constrained the LITERAL and never the SUBJECT, sweeping in `expect(array).toContain('x')` — **an exact element match where the defect is structurally impossible** — plus assertions against a file's TEXT, a UUID, and calls that were **already the corrected form**. ⚡ **The row is ABOUT population definition, so shipping it with a broken population would have been the error demonstrating itself.**
+>
+> ⛔ **RUN 2 KILLED — QE edited the working tree while certification ran against it.** ⚠️ **`make certify` runs pytest against the WORKING TREE, not a checkout of the commit.** **QE sampled `ps` twice, saw no pytest, and could have reasoned collection had not begun.** ⚡ **The kill found `pytest --cov` ALIVE AS AN ORPHAN** — running throughout. **The reasoning that would have kept the run was wrong, and only the kill exposed it.** 📁 **Rule for every future cycle: during certification, read-only work ONLY. If the tree was touched, RESTART — do not reason about whether pytest had got there.**
+>
+> 📁 **ELEVEN MEASUREMENTS OF ONE PROPERTY, TWO LANES, no two agreeing until the definition was pinned.** QE **18 → 82 → 46**; Lane A **18 → 13 → 37 → a different 18 → 60**. ✅ **Reconciled at 60 both ways** once each blind spot was named — **QE's matcher spanned newlines and missed vitest's TWO-ARGUMENT `expect(value, message)`; Lane A's was line-bounded and matched `.className` ANYWHERE on the line.** ⚡ **Neither lane could see its own; each needed the other.** ⛔ **The residual disagreement is PUBLISHED, not resolved into a headline.**
+>
+> ⚡ **A bare single word is evidence of a SHORT class, not of a token family** — QE's exemption generalised from `ai` alone. **Three of five are real classes**, and `filter-chip.tsx:50`'s `'border border-border'` means **`border-border` satisfies `toContain('border')` with the width class gone.** Lane A fire-tested it: the chip loses its border on every handset while the assertion stays green.
+>
+> 🔴 **PROMOTED KNOWINGLY WITH TWO 🔴 COORDINATION ROWS OPEN.** [C-1567](LANE_COORDINATION.md) and [C-1568](LANE_COORDINATION.md) were `OPEN` and 🔴; `certification-guard` reported `PASS no unresolved 🔴`. ⛔ **The gate was not wrong — it reads `docs/BUGS.md`, and [B-1082](BUGS.md) already records that `registers.py` has no coordination parsing at all.** **C-1567's fix moves where the theme is stored and `lib/state` is 🔴 tier, so NO LANE MAY MAKE IT.** ⚠️ **That reasoning is QE's and QE benefits from it — the instance table is appended to B-1082 each cycle, and if the product owner reads the blocking rule as covering both registers, cycles 280 AND 281 were promoted against it.**
+>
+> ✅ **[B-1092](BUGS.md) — a required gate decided by wall clock.** `mint-sharing.test.tsx` gated on `Date.now()` deltas with **zero timer control**. ⚡ **Lane A fixed it AND verified the reproduction still reproduces** — a timing fix that quietly disarms its own witness leaves the suite green and the file testing nothing, **and that failure mode has no symptom.**
+>
+> ⛔ **NEXT, and all three are ready:** ⚡ **B-1091's headline moves to the composition** *(46 class-shaped + 5 bare instances, delta open)* · **the stashed B-206 removal invariant, fire-tested by breaking `RemoveMember` ITSELF rather than `resolve_role`** *(Lane A's correction: weakening the filter fails both tests and proves only what the leave-path test already showed)* · **one production-build browser run closes [B-303](BUGS.md), [B-304](BUGS.md), [B-305](BUGS.md)** — `FIXED` and unverified since 2026-08-03, **25 days** — **and takes the layout-shift measurement, predictions recorded in advance.**
+
+> ---
+>
 > ## Cycle 280 — promoted `3ba57bdc1fc8`, 2026-08-28 · **B-1086 answered with two causes, and a healthy stack that rejects every registration**
 >
 > **`main` = `3ba57bdc1fc8a45845ec4a46c69867c664e39c59` = the certified commit.** **ZERO merges**, `--audit-main` holds across 2505. `pytest` **5465** · **95.03%** · **679 invariants** · `mypy` **958** · `import-linter` **37/37** · `tsc` · frontend **4471/262** · `eslint` · smoke **24/240s** · scenario **208** · DR ✅. **No migration; head `0066`. FIRST attempt.**

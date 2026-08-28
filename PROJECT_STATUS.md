@@ -2,13 +2,62 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `3ba57bdc`, 2026-08-28.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `a36a9b5f`, 2026-08-28.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
 > **It is a dashboard, not an engineering journal.** [`SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) answers a different question — *"what should the next session know?"* — and does not repeat what is here. Historical implementation detail belongs in ADRs and module documentation; **the appendices below are dated records and are never rewritten to match the present.**
 
 ---
+
+## Cycle 281 — promoted `a36a9b5fca32`, 2026-08-28
+
+| | |
+|---|---|
+| **Promoted** | **`a36a9b5fca32617fc0d0569f63828a7bf7c8fdd1`** — `promoted == certified`, 12 commits, **zero merge commits**. `--audit-main` holds across **2518** |
+| **Gates** | **5465 pytest · 95.03% · 679 Security Invariants · mypy strict 958 · import-linter 37/37 · tsc clean · frontend 4479 in 263 files · eslint clean · smoke 24 stages in 148s · scenario 208** |
+| **DR** | ✅ passed — PostgreSQL, Redis, API, workers and relay restarted, idempotency ledger intact, 679 invariants green against the restarted stack |
+| **Migrations** | ⚠️ **not applicable rather than skipped** — no file under `backend/migrations` changed, and the version count is **66 on both `main` and the candidate** |
+| **Composition** | **one QE slice, eleven of Lane A's.** ⛔ **Certified on the THIRD attempt, and the two abandoned runs are the cycle's substance** |
+
+### ⛔ Two certification runs were killed, and neither was a gate failure
+
+**① A row was filed carrying a number that had just been disproven.** [B-1091](docs/BUGS.md)'s population was filed at **82**. Lane A challenged the definition and was right: it constrained the *literal* and never the *subject*, so it swept in `expect(array).toContain('x')` — **an exact element match, where the defect is structurally impossible** — plus assertions against a file's text, a UUID, and calls that were **already the corrected form**. QE had counted the fix as the defect.
+
+⚡ **The row is *about* population definition, so filing it with a broken population would have been the error demonstrating itself.** Killed and re-cut.
+
+**② QE edited the working tree while certification was running against it.** `make certify` runs pytest against the **working tree**, not a checkout of the commit, so the record would have described a tree that never equalled the candidate.
+
+⛔ **QE sampled `ps` twice, saw no pytest, and could have reasoned that collection had not started.** ⚡ **The kill found `pytest --cov` alive as an orphan — it had been running throughout.** **The reasoning that would have preserved the run was wrong, and only the kill exposed it.**
+
+### 📁 One property, eleven measurements, two lanes — and no two agreed until the definition was pinned
+
+| | |
+|---|---|
+| QE, first sweep | **18** — flagged only where a longer token *already exists*, so it measured the states the code **occupies** rather than those it can **reach** |
+| QE, second sweep | **82** — constrained the literal, never the subject |
+| Lane A | **18 → 13 → 37 → a different 18** across the same property |
+| QE, paren-walked | **46 class-shaped**, and the `.*?`+`re.S` flaw it replaced **did not move that number** |
+| Lane A | **60** raw |
+| ✅ **reconciled** | **60 both ways**, once each method's blind spot was named |
+
+⚠️ **The blind spots were mutual and neither lane could see its own.** QE's matcher spanned newlines and missed **vitest's two-argument `expect(value, message)`**; Lane A's was line-bounded and matched `.className` **anywhere on the line**, so it counted an `expect(...split(/\s+/))` array as a class string.
+
+⚡ **The disagreement is published rather than resolved into a headline.** A number neither method could reproduce would have been the eleventh measurement repeating the first ten's mistake.
+
+### 🔴 Promoted knowingly with two 🔴 coordination rows open
+
+⛔ **[C-1567](docs/LANE_COORDINATION.md) and [C-1568](docs/LANE_COORDINATION.md) were `OPEN` and 🔴 at promotion, and `certification-guard` reported `PASS no unresolved 🔴`.** **The gate was not wrong** — it reads `docs/BUGS.md`, where there is no open 🔴 row; [B-1082](docs/BUGS.md) already records that `registers.py` contains no coordination parsing at all.
+
+**QE read the coordination register directly at Closeout because B-1082 says to, found both open, and promoted.** C-1567's fix moves where the theme is stored and `lib/state` is 🔴 tier, so **no lane may make it**, and blocking every promotion until a product-owner ADR lands would freeze the repository on a decision no lane can take.
+
+> ⚠️ **That reasoning is QE's and QE benefits from it.** **If the product owner reads the one blocking rule as covering 🔴 rows in either register, cycles 280 and 281 were both promoted against it.** The instance table is appended to B-1082 each cycle.
+
+### ✅ [B-1092](docs/BUGS.md) — a required gate decided by wall clock
+
+`mint-sharing.test.tsx` gated a required frontend suite on `Date.now()` deltas with **zero timer control**, so certification could fail on machine load alone. Found when a run recorded `NOT CERTIFIED` on a tree that passed the same file five times in isolation.
+
+⚡ **Lane A fixed it with fake timers and then verified the reproduction still reproduces** — reintroducing the defect still fails. **A timing fix that quietly disarms its own witness leaves the suite green, the flake gone, and the file no longer testing anything**, and that failure mode has no symptom.
 
 ## Cycle 280 — promoted `3ba57bdc1fc8`, 2026-08-28
 

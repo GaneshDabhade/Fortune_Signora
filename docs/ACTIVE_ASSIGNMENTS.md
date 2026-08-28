@@ -210,6 +210,16 @@
 >
 > ⛔ **QE reconciles this board; it does not fill it.**
 
+> ⚡ **Cycle 281 Closeout. 12 commits — one QE, eleven Lane A — no migrations, certified on the THIRD attempt.**
+>
+> ✅ **Activity 3 PERFORMED and empty: 0 promoted assignments removed, and that is a measurement rather than a skip** ([B-1000](BUGS.md) was filed for skipping it). ⛔ **Checked the way this board requires — `git diff --name-only 9e863c10..a36a9b5f -- docs/BACKLOG.md docs/ACTIVE_ASSIGNMENTS.md` returns NOTHING**, so no claim moved and no row is eligible. 📁 **Not `git log --grep`, which removed five rows wrongly at cycle 249.**
+>
+> ⚠️ **Lane A's `AVAILABLE` row is now a FOURTH consecutive cycle with no startable task**, and its own note says what unblocks it in order — [C-298](LANE_COORDINATION.md), then [C-299](LANE_COORDINATION.md), then [C-1424](LANE_COORDINATION.md). ⛔ **None is large; all are decisions rather than implementations, and none is QE's to take** ([§20e](../CLAUDE.md): *QE validates, certifies, integrates, promotes, closes out, synchronizes and declares. It does not decide who works on what*).
+>
+> ⚡ **The lane was not idle in practice.** It spent the cycle on test-quality work in its own modules and on two corrections to QE's measurements — **the `toContain` population, and the exemption QE had generalised from a single example.** ✅ **Eleven of the twelve promoted commits are Lane A's.**
+>
+> ⛔ **QE reconciles this board; it does not fill it.**
+
 > ⚡ **Cycle 253 Closeout. 10 commits, Lane A, no migrations, EIGHT gates on the FIRST attempt.**
 >
 > ✅ **1 promoted assignment removed — [TASK-1484](BACKLOG.md).** ⛔ **Checked against the task's own status row in [`BACKLOG.md`](BACKLOG.md)** — `IN VALIDATION`, *"BOTH HALVES BUILT, the shell journey extended rather than replaced, and run headed"* — **and its commits are ancestors of `main`.**
