@@ -29,7 +29,7 @@
  * `apiRequest` → `fetchAccessToken` → `mintAccessToken` path, so it proves
  * something about the product rather than about a copy of it.
  */
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { apiRequest } from '@/lib/api/client';
 
@@ -47,6 +47,41 @@ let mints = 0;
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 beforeEach(() => {
+  /**
+   * 🔴 **This file ran on the WALL CLOCK, and it recorded a cycle
+   * `NOT CERTIFIED`.**
+   *
+   * ⚠️ **QE's row for it is not cited here yet, deliberately.** ⛔ **The row was
+   * filed on QE's branch and has not reached `integration`**, and
+   * `row-citations.test.tsx` refuses a citation to a row this tree cannot see
+   * — **which is the guard doing exactly its job.** ✅ **The id goes in when
+   * the row does.**
+   *
+   * ⛔ **`arrived = Date.now() - start` with real timers means the offsets are
+   * DURATIONS**, and `'0:rej'` requires the 0ms caller to reach the fetch stub
+   * within 30ms of `beforeEach`. ⚡ **Under 4479 tests across 263 files the
+   * event loop is busy, `setTimeout(0)` lands late, `arrived` exceeds 30, and
+   * the caller is correctly served a 200.**
+   *
+   * ✅ **The product did the right thing; the test's precondition was never
+   * established.** ⚠️ **That is the fourth face of the vacuity family — *the
+   * branch ran, with the wrong input* — and here the input was the machine.**
+   *
+   * ⛔ **NOT fixed by widening `COOKIE_READABLE_AT` or the offsets**, which
+   * makes the window bigger and the flake rarer: **it would pass for weeks and
+   * fail on a busy afternoon, by which time nobody would connect it to this
+   * row.**
+   *
+   * ✅ **Fake timers make the offsets ORDERING rather than duration**, so
+   * `Date.now()` moves only when this test moves it — **the precondition
+   * becomes something the test establishes instead of hopes for.**
+   *
+   * 📁 **§2, hidden inputs**: the suite's declared input is the tree; its
+   * actual input was the tree AND machine load. **Third instrument this day
+   * after [B-1086](../../docs/BUGS.md)'s compile state and
+   * [B-1088](../../docs/BUGS.md)'s shell.**
+   */
+  vi.useFakeTimers();
   mints = 0;
   start = Date.now();
   vi.stubGlobal(
@@ -67,9 +102,18 @@ beforeEach(() => {
   );
 });
 
+/**
+ * ⛔ **Restored, or every file that runs after this one inherits a frozen
+ * clock** — the same class of leak as [B-1088](../../docs/BUGS.md)'s shell
+ * variable, one process in.
+ */
+afterEach(() => {
+  vi.useRealTimers();
+});
+
 /** Fires one read per offset. `distinctKeys` removes the sharing and nothing else. */
 async function fire(distinctKeys = false): Promise<PromiseSettledResult<unknown>[]> {
-  return Promise.allSettled(
+  const pending = Promise.allSettled(
     OFFSETS.map(
       (delay, i) =>
         new Promise((resolve, reject) => {
@@ -82,6 +126,16 @@ async function fire(distinctKeys = false): Promise<PromiseSettledResult<unknown>
         }),
     ),
   );
+
+  /**
+   * ⚡ **Drive the mock clock past every offset and every mint that follows
+   * one.** ⛔ **Nothing here resolves on its own**: a joiner's own mint is
+   * issued when the shared one settles at ~60ms and takes another 60, so the
+   * last thing to finish lands near 120. **The margin is generous because a
+   * too-small advance would reintroduce exactly the flake this replaces.**
+   */
+  await vi.advanceTimersByTimeAsync(400);
+  return pending;
 }
 
 const settled = (results: PromiseSettledResult<unknown>[]) =>
@@ -143,14 +197,18 @@ describe('🔴 B-1067 — a mint shares its success, never its failure', () => {
    */
   it('concurrent callers still share ONE mint when it succeeds', async () => {
     // ⚡ Fired after the cookie is readable, so the mint they share succeeds.
-    await sleep(COOKIE_READABLE_AT + 5);
-    const results = await Promise.allSettled([
+    // ⛔ **Advanced rather than slept** — under the mock clock a bare `sleep`
+    // never resolves, and the test would hang rather than fail.
+    await vi.advanceTimersByTimeAsync(COOKIE_READABLE_AT + 5);
+    const pending = Promise.allSettled([
       apiRequest('/anything'),
       apiRequest('/anything'),
       apiRequest('/anything'),
       apiRequest('/anything'),
       apiRequest('/anything'),
     ]);
+    await vi.advanceTimersByTimeAsync(MINT_LATENCY + 40);
+    const results = await pending;
 
     expect(results.every((r) => r.status === 'fulfilled')).toBe(true);
     expect(mints, 'five concurrent reads must cost one mint').toBe(1);
