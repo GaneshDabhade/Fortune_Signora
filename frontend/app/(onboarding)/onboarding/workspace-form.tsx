@@ -70,6 +70,23 @@ export function WorkspaceForm() {
   const [slug, setSlug] = useState<string | null>(null);
   const [availability, setAvailability] = useState<SlugAvailability | null>(null);
   const [checking, setChecking] = useState(false);
+  /**
+   * 🔴 **A check that FAILED is not a check still running.**
+   *
+   * ⛔ **Without this the two are the same state** — `availability === null`
+   * with `checking` false — **and `Verdict` painted *Checking…* forever.** ⚡ It
+   * is [B-277](../../../../docs/BUGS.md)'s exact shape one screen over: **a
+   * read that finished, rendered as one still in flight**, on the field
+   * carrying the only permanent decision in onboarding.
+   *
+   * 📁 **The design rules this without needing a new state.** Its treatment of
+   * a producer that cannot answer is stated for the enrichment badge —
+   * *"Enrichment unavailable: fields stay empty and editable, **the Inferred
+   * badge is absent**, and the step is never blocked by it."* ✅ **So the
+   * verdict is ABSENT**, and `Create` stays enabled because the server is what
+   * actually decides.
+   */
+  const [checkFailed, setCheckFailed] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
 
   const shownName = name ?? suggestedName;
@@ -86,6 +103,7 @@ export function WorkspaceForm() {
   useEffect(() => {
     const candidate = shownSlug;
     setAvailability(null);
+    setCheckFailed(false);
     if (candidate.length < MIN_SLUG) {
       setChecking(false);
       return;
@@ -119,7 +137,16 @@ export function WorkspaceForm() {
           // — the read failed, and rendering that as an answer would block
           // somebody out of a name that is theirs. **Create stays enabled and
           // the server decides.**
-          if (live) setAvailability(null);
+          //
+          // ⚠️ **Nor is it *still checking*.** ⛔ **Without `checkFailed` these
+          // two states are the same pair** — `checking` false, `availability`
+          // null — **and the field said *Checking…* forever.** ✅ The marker
+          // goes ABSENT instead, which is 📁 the design's own treatment of a
+          // producer that cannot answer.
+          if (live) {
+            setAvailability(null);
+            setCheckFailed(true);
+          }
         })
         .finally(() => {
           if (live) setChecking(false);
@@ -271,6 +298,7 @@ export function WorkspaceForm() {
           <span id="slug-state" role="status" className="flex-none pr-3">
             <Verdict
               checking={checking}
+              checkFailed={checkFailed}
               tooShort={tooShort}
               availability={availability}
             />
@@ -322,16 +350,21 @@ export function WorkspaceForm() {
 /**
  * 📁 The design's right-hand marker: a green check and *Available*.
  *
- * ⛔ **Four states, and *nothing yet* is one of them.** ⚠️ **Silence while a
- * check is in flight is not *unavailable***, and a red mark that appears for
- * 300ms on every keystroke would teach somebody to ignore it.
+ * ⛔ **Five states, and two of them say nothing.** ⚠️ **Silence while a check
+ * is in flight is not *unavailable***, and a red mark that appears for 300ms
+ * on every keystroke would teach somebody to ignore it.
+ *
+ * 🔴 **And a check that FAILED renders no marker at all** — ⛔ **not
+ * *Checking…*, which is what it used to do forever.**
  */
 function Verdict({
   checking,
+  checkFailed,
   tooShort,
   availability,
 }: {
   checking: boolean;
+  checkFailed: boolean;
   tooShort: boolean;
   availability: SlugAvailability | null;
 }) {
@@ -340,6 +373,10 @@ function Verdict({
       <span className="text-xs text-content-subtle">{MIN_SLUG} characters or more</span>
     );
   }
+  // ⛔ **Before the in-flight branch** — a failed check has `checking` false
+  // and `availability` null, which is otherwise indistinguishable from a
+  // check that has not answered yet.
+  if (checkFailed) return null;
   if (checking || availability === null) {
     return <span className="text-xs text-content-subtle">Checking…</span>;
   }

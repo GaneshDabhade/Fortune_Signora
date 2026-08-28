@@ -689,7 +689,7 @@ substitute would not be.
 | | |
 |---|---|
 | **Raised** | **Lane A**, 2026-08-21, implementing Settings |
-| **Owner of the answer** | ⛔ **Product Owner** |
+| **Owner** | ⛔ **Product Owner** |
 | **Severity** | 🟢 **P3** — ✅ **the capability works and is reachable**; what is unresolved is where it belongs |
 | **Status** | 🟢 **`OPEN`** |
 
@@ -706,7 +706,7 @@ substitute would not be.
 | | |
 |---|---|
 | **Raised** | **Lane A**, 2026-08-21, implementing Settings |
-| **Owner of the answer** | ⛔ **Product Owner** — ⚡ **two FINAL documents disagree**, which [§20e](../CLAUDE.md) says a lane records rather than resolves |
+| **Owner** | ⛔ **Product Owner** — ⚡ **two FINAL documents disagree**, which [§20e](../CLAUDE.md) says a lane records rather than resolves |
 | **Severity** | 🟠 **P2** — ⚡ **it decides the composition of two of the eleven sections** |
 | **Status** | 🟠 **`OPEN`** |
 
@@ -729,7 +729,7 @@ substitute would not be.
 | | |
 |---|---|
 | **Raised** | **Lane A**, 2026-08-21, on taking the Playground seeder to unblock browser verification |
-| **Owner of the answer** | ⛔ **Product Owner** — ⚡ **every alternative below decides what *development mode* means**, and 📁 [§10](../CLAUDE.md) / [ADR-0028](architecture/adr/0028-model-runtime-by-environment.md) is a ratified position this lane must not reinterpret |
+| **Owner** | ⛔ **Product Owner** — ⚡ **every alternative below decides what *development mode* means**, and 📁 [§10](../CLAUDE.md) / [ADR-0028](architecture/adr/0028-model-runtime-by-environment.md) is a ratified position this lane must not reinterpret |
 | **Severity** | 🟠 **P2** — ⛔ **no AI-authored surface can render in development.** ✅ **Production and evaluation are unaffected**; both use real providers |
 | **Status** | 🟠 **`OPEN`** |
 
@@ -788,7 +788,7 @@ cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -m tests.playgroun
 | | |
 |---|---|
 | **Raised** | **Lane A**, 2026-08-21, the Company 360 heading pass |
-| **Owner of the answer** | ⛔ **Product Owner** |
+| **Owner** | ⛔ **Product Owner** |
 | **Severity** | 🟢 **P3** — ⚡ **one heading**, and the section is producer-backed and correct |
 | **Status** | 🟢 **`OPEN`** — ✅ **left unchanged** |
 
@@ -807,7 +807,7 @@ cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -m tests.playgroun
 | | |
 |---|---|
 | **Raised** | **Lane A**, 2026-08-21, the Company 360 micro-audit |
-| **Owner of the answer** | ⛔ **Product Owner** |
+| **Owner** | ⛔ **Product Owner** |
 | **Severity** | 🟢 **P3** — ⚡ **everything renders; what differs is where** |
 | **Status** | 🟢 **`OPEN`** |
 
@@ -828,7 +828,7 @@ cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -m tests.playgroun
 | | |
 |---|---|
 | **Raised** | **Lane A**, 2026-08-21 — ⚡ **by QE, who caught it before validation rather than at it** |
-| **Owner of the answer** | ⛔ **Lane C** — 📁 **[D-022](DECISION_REGISTER.md)**: *"Lane C's responsibilities are formally expanded to include Platform Foundation work that belongs to no product bounded context"*, reserving **`infra/` · `Makefile` · environment profiles** |
+| **Owner** | ⛔ **Lane C** — 📁 **[D-022](DECISION_REGISTER.md)**: *"Lane C's responsibilities are formally expanded to include Platform Foundation work that belongs to no product bounded context"*, reserving **`infra/` · `Makefile` · environment profiles** |
 | **Severity** | 🟢 **P3** — ⛔ **nothing is blocked.** ✅ **The instrument works today** |
 | **Status** | 🟢 **`OPEN`** — **an offer, not a request** |
 
@@ -863,7 +863,7 @@ cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -m tests.playgroun
 | | |
 |---|---|
 | **Raised** | **Lane A**, 2026-08-21, implementing [B-1058](BUGS.md) — *four focus treatments on one screen* |
-| **Owner of the answer** | ⛔ **Product Owner** — 📁 **the design document disagrees with itself**, and [§20c](../CLAUDE.md) is explicit that a lane records a conflict rather than resolving it in code |
+| **Owner** | ⛔ **Product Owner** — 📁 **the design document disagrees with itself**, and [§20c](../CLAUDE.md) is explicit that a lane records a conflict rather than resolving it in code |
 | **Severity** | 🟢 **P3** — ⚡ **one declaration, on one component**, and both candidate answers are visible focus indicators |
 | **Status** | 🟢 **`OPEN`** — ✅ **implemented as the DRAWN value**, which is stated below and is reversible in one line |
 
@@ -15700,7 +15700,7 @@ latter, they are backend rows and the copy follows them.**
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-25, measuring [B-1033](BUGS.md)'s remaining half rather than taking the row's arithmetic |
 | **Module** | `product_surface` — 📁 [`recents-card.tsx`](../frontend/components/home/recents-card.tsx) |
-| **Owner of the answer** | 🔴 **Product owner.** ⛔ **Every resolution changes what a customer sees, so no lane may take it** |
+| **Owner** | 🔴 **Product owner.** ⛔ **Every resolution changes what a customer sees, so no lane may take it** |
 | **Status** | **`OPEN`** — ⚠️ **blocking nobody; the card ships and is honest about nothing** |
 
 **The design makes four claims about `card.recents`. They are individually
@@ -15772,7 +15772,7 @@ registry.
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-25, sweeping backend routes for absent frontend consumers |
 | **Module** | `action_batch` · `commercial_profile` — 📁 [`router.py:676`](../backend/modules/commercial_profile/interface/router.py) |
-| **Owner of the answer** | 🔴 **Product owner**, and it needs a backend row before a screen can be built |
+| **Owner** | 🔴 **Product owner**, and it needs a backend row before a screen can be built |
 | **Status** | **`OPEN`** — ⚠️ **the silent half is fixed; the capability is not** |
 
 📁 **`propose_account_tag_batch` is explicit, and correct:**
@@ -15875,7 +15875,7 @@ implicit.
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-25, auditing `User Profile` §02 against `lib/api/preferences.ts` |
 | **Module** | `product_surface` · `workspace_tenancy` |
-| **Owner of the answer** | 🔴 **Product owner** |
+| **Owner** | 🔴 **Product owner** |
 | **Status** | **`OPEN`** — ⚠️ **blocking nobody**; the three shipped fields work |
 
 📁 **The design's `localeFields` array is six entries**, and its own
@@ -15937,7 +15937,7 @@ workspace-level field before any screen can draw it locked.**
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-25, auditing the design's `rules` and `a11y` contracts |
 | **Module** | `commercial_profile` — the read · `workspace_tenancy` — removal |
-| **Owner of the answer** | 🔴 **Product owner**, and it needs a route before a control can exist |
+| **Owner** | 🔴 **Product owner**, and it needs a route before a control can exist |
 | **Status** | **`OPEN`** — ⚠️ **the consequence is now stated; the choice is not built** |
 
 📁 **Team Management, `a11y` §3.3.4:**
@@ -15990,7 +15990,7 @@ complete without it and that is a backend rule, not a dialog.**
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-25, on an observation QE recorded without filing |
 | **Module** | `product_surface` — 📁 [`stated-absence.tsx`](../frontend/components/feedback/stated-absence.tsx) |
-| **Owner of the answer** | 🔴 **Product owner** |
+| **Owner** | 🔴 **Product owner** |
 | **Status** | **`OPEN`** — ⚠️ **the announcement half is fixed; the heading half is a design question** |
 
 📁 **`System States` §1.3.1:** ***"Every full-page state is a single `<main>`
@@ -16055,7 +16055,7 @@ an empty one"*, **and the page branch is currently that conflation.**
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-25, auditing `Workspace Chooser`'s `a11y` contract |
 | **Module** | `product_surface` — 📁 [`workspace-switcher.tsx`](../frontend/components/shell/workspace-switcher.tsx) |
-| **Owner of the answer** | 🔴 **Product owner** — ⚠️ **it may be that the second sentence simply does not apply to this implementation** |
+| **Owner** | 🔴 **Product owner** — ⚠️ **it may be that the second sentence simply does not apply to this implementation** |
 | **Status** | **`OPEN`** — ⚠️ **the first half is implemented; blocking nobody** |
 
 📁 **`Workspace Chooser` §4.1.3:**
@@ -16106,7 +16106,7 @@ returning focus would **steal** it from where the person just clicked.
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-25, auditing `Session Continuity`'s `contract` array |
 | **Module** | `product_surface` — 📁 [`lib/entry/`](../frontend/lib/entry/) · the three authenticated layouts |
-| **Owner of the answer** | 🔴 **Product owner** — **the fix needs a 🔴 routing change** |
+| **Owner** | 🔴 **Product owner** — **the fix needs a 🔴 routing change** |
 | **Status** | **`OPEN`** — ⛔ **a shipped capability that cannot fire** |
 
 📁 **`Session Continuity` `contract`:**
@@ -16197,7 +16197,7 @@ about a repository that tells the truth about itself.
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-26, auditing 📁 `Fortune Signora Account 360.dc.html` for completeness |
 | **Module** | `product_surface` — 📁 [`app/(app)/accounts/[accountId]/page.tsx`](../frontend/app/(app)/accounts/[accountId]/page.tsx) |
-| **Owner of the answer** | 🔴 **Product owner** — ⛔ **it is a scope decision, not an implementation one** |
+| **Owner** | 🔴 **Product owner** — ⛔ **it is a scope decision, not an implementation one** |
 | **Status** | **`OPEN`** — ⚠️ **the decision was already reached and reasoned; it was never filed** |
 
 ### 📁 What the design draws
@@ -16260,7 +16260,7 @@ sections and the rail carry every producer-backed destination today.
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-26, sweeping every Settings/Profile control on the product owner's instruction — *"don't accept 'the value saves' as proof that the feature works"* |
 | **Module** | `product_surface` — 📁 [`lib/api/preferences.ts`](../frontend/lib/api/preferences.ts) and the four panels that write it |
-| **Owner of the answer** | 🔴 **Blocked on [C-1567](#c-1567)'s ruling** — **the question is the same one**: *where is a server-persisted preference applied?* |
+| **Owner** | 🔴 **Blocked on [C-1567](#c-1567)'s ruling** — **the question is the same one**: *where is a server-persisted preference applied?* |
 | **Status** | **`OPEN`** — 🔴 **two whole panels of controls that save correctly and change nothing** |
 
 ### The measurement
@@ -16329,7 +16329,7 @@ clothes*.
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-28, opening `Workspace Setup` to audit its `a11y` claims |
 | **Module** | — 📁 **the design snapshot itself**: [`docs/design-snapshot/screens/`](design-snapshot/screens/) and [`MANIFEST.md`](design-snapshot/MANIFEST.md) |
-| **Owner of the answer** | 🔴 **Lane C · Product Office** — 📁 [D-138](DECISION_REGISTER.md) makes the snapshot the implementation authority and Product Office its custodian. ⛔ **No implementation lane may delete a file from it** |
+| **Owner** | 🔴 **Lane C · Product Office** — 📁 [D-138](DECISION_REGISTER.md) makes the snapshot the implementation authority and Product Office its custodian. ⛔ **No implementation lane may delete a file from it** |
 | **Status** | **`OPEN`** — ⚠️ **blocking nobody today**, and the reason is luck rather than design: see below |
 
 ### ⛔ The finding
@@ -16384,7 +16384,7 @@ clothes*.
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-27, testing 📁 [`forbidden-card.tsx`](../frontend/components/home/forbidden-card.tsx), which had no test |
 | **Module** | `product_surface` — 📁 [`lib/system-states/ladder.ts`](../frontend/lib/system-states/ladder.ts) · [`forbidden-card.tsx`](../frontend/app/../frontend/components/home/forbidden-card.tsx) |
-| **Owner of the answer** | 🔴 **Product owner** — ⛔ **two halves of `System States` disagree, and the ladder is generated from one of them** |
+| **Owner** | 🔴 **Product owner** — ⛔ **two halves of `System States` disagree, and the ladder is generated from one of them** |
 | **Status** | **`OPEN`** — 🟠 **customer-visible on Home today.** ⚠️ **Pinned by a test so it cannot be fixed silently** |
 
 ### 🔴 What a customer sees
@@ -16430,7 +16430,7 @@ clothes*.
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-27, auditing 📁 `Workspace Chooser`'s `contract` |
 | **Module** | `product_surface` — 📁 [`workspace-switcher.tsx`](../frontend/components/shell/workspace-switcher.tsx):88 |
-| **Owner of the answer** | 🟢 **Product owner**, and it is one number |
+| **Owner** | 🟢 **Product owner**, and it is one number |
 | **Status** | **`OPEN`** — ⚠️ **nothing is broken.** ✅ **WS-B's threshold is NOT contested and has been corrected** |
 
 ### 📁 The conflict, verbatim
@@ -16463,7 +16463,7 @@ clothes*.
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-27, auditing 📁 `Workspace Chooser`'s ten `a11y` claims |
 | **Module** | `product_surface` — 📁 [`workspace-switcher.tsx`](../frontend/components/shell/workspace-switcher.tsx) |
-| **Owner of the answer** | 🔴 **Product owner** — ⛔ **the shell is [§20c](../CLAUDE.md) RED**, and the design contradicts itself about which role WS-A carries |
+| **Owner** | 🔴 **Product owner** — ⛔ **the shell is [§20c](../CLAUDE.md) RED**, and the design contradicts itself about which role WS-A carries |
 | **Status** | **`OPEN`** — ✅ **the keyboard defect underneath it is FIXED and needs no ruling**; this is the role question alone |
 
 ### 📁 The conflict, and it is inside one document
@@ -16511,7 +16511,7 @@ clothes*.
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-27, fixing 📁 [B-1080](BUGS.md) |
 | **Module** | `product_surface` — 📁 [`accessibility-panel.tsx`](../frontend/app/(app)/profile/accessibility-panel.tsx) · the contract is [`preferences.ts`](../frontend/lib/api/preferences.ts):54 |
-| **Owner of the answer** | 🟠 **Product owner**, and it is one question: **may `reduce_motion` become tri-state?** ⚡ **The field is a server preference, so this is a contract change rather than a screen decision** |
+| **Owner** | 🟠 **Product owner**, and it is one question: **may `reduce_motion` become tri-state?** ⚡ **The field is a server preference, so this is a contract change rather than a screen decision** |
 | **Status** | **`OPEN`** — ✅ **B-1080's measured harm is FIXED without it**; this is the half that cannot be built on the current contract |
 
 ### 📁 What the design asks for
@@ -16554,7 +16554,7 @@ clothes*.
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-26, auditing 📁 `Security Center`'s twelve `a11y` claims |
 | **Module** | `product_surface` — 📁 [`enrolment.tsx`](../frontend/app/(app)/profile/security/enrolment.tsx) · [`step-up-dialog.tsx`](../frontend/components/auth/step-up-dialog.tsx) |
-| **Owner of the answer** | 🔴 **Product owner** — ⛔ **two authoritative documents disagree; a lane picking one settles it by implementation** |
+| **Owner** | 🔴 **Product owner** — ⛔ **two authoritative documents disagree; a lane picking one settles it by implementation** |
 | **Status** | **`OPEN`** — ⚠️ **nothing is broken. The product is inconsistent with itself, and that inconsistency is the evidence** |
 
 ### 📁 The conflict, verbatim
@@ -16631,7 +16631,7 @@ unchanged.**
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-26, auditing 📁 §17 `3.3.1` |
 | **Module** | `product_surface` — 📁 [`app/(auth)/register/register-form.tsx`](../frontend/app/(auth)/register/register-form.tsx) |
-| **Owner of the answer** | — ✅ **FIXED in the same pass.** Recorded here because Lane A's `B-` block is exhausted ([C-1562](#c-1562)) |
+| **Owner** | — ✅ **FIXED in the same pass.** Recorded here because Lane A's `B-` block is exhausted ([C-1562](#c-1562)) |
 | **Status** | ✅ **FIXED, awaiting `VERIFIED`** — QE's |
 
 ### 📁 The rules
@@ -16686,7 +16686,7 @@ it.**
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-26, auditing 📁 §17's eleven `a11y` claims |
 | **Module** | `product_surface` — 🔴 [`components/ui/tooltip.tsx`](../frontend/components/ui/tooltip.tsx) is RED tier, **though [§20c](../CLAUDE.md) permits an accessibility fix there** |
-| **Owner of the answer** | **This lane, once it is reproduced** |
+| **Owner** | **This lane, once it is reproduced** |
 | **Status** | **`OPEN` — ⚠️ SUSPECTED, NOT DEMONSTRATED** |
 
 ### 📁 The claim
@@ -16734,7 +16734,7 @@ such component exists.
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-26, auditing 📁 `Design System v2`'s eleven `a11y` claims |
 | **Module** | — 🔴 **the design itself.** `frontend/app/globals.css` reproduces it faithfully |
-| **Owner of the answer** | 🔴 **Product owner** — ⛔ **a palette change touches every surface, and the value is the design's** |
+| **Owner** | 🔴 **Product owner** — ⛔ **a palette change touches every surface, and the value is the design's** |
 | **Status** | **`OPEN`** — ⚠️ **not an implementation defect.** Two statements in one authoritative document disagree |
 
 ### 📁 The claim
@@ -16808,7 +16808,7 @@ than it needs to be, and the palette is fine.**
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-26, auditing 📁 `Executive Dashboard`'s `mechanics` — *"dark theme: resolved before first paint"* |
 | **Module** | `product_surface` — 🔴 **[`lib/state/theme-provider.tsx`](../frontend/lib/state/theme-provider.tsx) is RED tier** ([§20c](../CLAUDE.md)) |
-| **Owner of the answer** | 🔴 **Product owner + ADR** — ⛔ **the resolution moves where the theme is stored, and `lib/state` is not a lane's to change** |
+| **Owner** | 🔴 **Product owner + ADR** — ⛔ **the resolution moves where the theme is stored, and `lib/state` is not a lane's to change** |
 | **Status** | **`OPEN`** — 🔴 **a customer-visible setting that reports success and does nothing** |
 
 ### 🔴 The finding, stated as the product owner framed it
@@ -16886,7 +16886,7 @@ explicit that recommending is not proceeding.
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-26, auditing 📁 `Fortune Signora System States.dc.html`'s `loadingTiers` |
 | **Module** | `product_surface` — 📁 [`lib/home/loading.ts`](../frontend/lib/home/loading.ts) |
-| **Owner of the answer** | 🔴 **Product owner** on the threshold conflict · **this lane** on the placement, once ruled |
+| **Owner** | 🔴 **Product owner** on the threshold conflict · **this lane** on the placement, once ruled |
 | **Status** | **`OPEN`** — ⚠️ **nothing renders wrongly. Five surfaces flicker where the design says show nothing** |
 
 ### 📁 The rule, and both documents agree on its first tier
@@ -16955,7 +16955,7 @@ the shape [§2](../CLAUDE.md) calls a decision wearing a document's clothes.**
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-26, sweeping every customer-facing absence string after [B-299](BUGS.md#b-299) ⑦ |
 | **Module** | `product_surface` — 📁 [`lib/home/copy.ts`](../frontend/lib/home/copy.ts) |
-| **Owner of the answer** | **This lane**, once the states are confirmed reachable — ⛔ **filed rather than fixed because whether the STATE occurs is a producer question** |
+| **Owner** | **This lane**, once the states are confirmed reachable — ⛔ **filed rather than fixed because whether the STATE occurs is a producer question** |
 | **Status** | **`OPEN`** — ⚠️ **nothing renders wrongly.** Three designed states have no surface |
 
 ### Measured, per constant
@@ -16998,7 +16998,7 @@ before it could be used at all.
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-26, measuring [B-299](BUGS.md#b-299) ⑦ against the Playground |
 | **Module** | `knowledge_graph` · `observation_engine` — the producers. `product_surface` is the consumer |
-| **Owner of the answer** | **The producing modules' current assignee**, joined from [`modules.toml`](coordination/modules.toml) |
+| **Owner** | **The producing modules' current assignee**, joined from [`modules.toml`](coordination/modules.toml) |
 | **Status** | **`OPEN`** — ⚠️ **nothing renders wrongly now.** ⛔ The copy defect is fixed; **this is the capability behind it** |
 
 ### What is actually there
@@ -17059,7 +17059,7 @@ is explicit: *"never continue on an assumption — do not guess, do not infer."*
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-26, on allocating [B-299](BUGS.md#b-299) |
 | **Module** | — **repository governance.** 📁 [`CLAUDE.md`](../CLAUDE.md) §20e, *Identifiers are allocated from a block* |
-| **Owner of the answer** | 🔴 **Product owner** — ⛔ **an allocation table lives in `CLAUDE.md`, which is 🔴 and is the product owner's alone** |
+| **Owner** | 🔴 **Product owner** — ⛔ **an allocation table lives in `CLAUDE.md`, which is 🔴 and is the product owner's alone** |
 | **Status** | **`OPEN`** — ⚠️ **not yet blocking. It blocks the next defect this lane finds** |
 
 ### 🔴 This stopped being bookkeeping on 2026-08-26 — QE's finding
@@ -17191,7 +17191,7 @@ ids, their references and their history, and `200`–`299` is not used further.
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-26, auditing 📁 `Fortune Signora Account 360.dc.html`'s `stateRules` while fixing [B-299](BUGS.md#b-299) |
 | **Module** | `timeline` — the producer. 📁 [`lib/query/hooks/timeline.ts`](../frontend/lib/query/hooks/timeline.ts) is the consumer |
-| **Owner of the answer** | **The `timeline` module's current assignee**, joined from [`modules.toml`](coordination/modules.toml) |
+| **Owner** | **The `timeline` module's current assignee**, joined from [`modules.toml`](coordination/modules.toml) |
 | **Status** | **`OPEN`** — ⚠️ **nothing renders wrongly. The header states no number where the design draws one, which is honest and incomplete** |
 
 ### 📁 What the design asks for
@@ -17241,7 +17241,7 @@ recorded as unsatisfiable rather than unbuilt.
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-25, auditing `Global Search`'s `rules` |
 | **Module** | `product_surface` — 📁 [`top-bar.tsx`](../frontend/components/shell/top-bar.tsx) · [`account-search.tsx`](../frontend/components/intelligence/account-search.tsx) |
-| **Owner of the answer** | 🔴 **Product owner / Lane C** — ⛔ **it needs a backlog row; `components/shell` is 🔴 and this lane's queue has none** |
+| **Owner** | 🔴 **Product owner / Lane C** — ⛔ **it needs a backlog row; `components/shell` is 🔴 and this lane's queue has none** |
 | **Status** | **`OPEN`** — ⚠️ **nothing is broken; the product has two search surfaces where the design has one** |
 
 ### 📁 The design says it four times, and never ambiguously
@@ -17298,3 +17298,48 @@ bear on the shell's own field**, so this is not the deferral being re-litigated.
 publishes an opener the way 📁 `Copilot` already publishes `useCopilot()`, and
 `account-search.tsx` and its tests are deleted. ⛔ **`useAccountSearch` stays —
 the palette is its consumer.**
+
+---
+
+### C-1578 · The organization URL is 3–32 in the design and 3–63 in the producer, and the UI enforces the producer's number
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-28, writing the first witness for onboarding's workspace step |
+| **Module** | `workspace_tenancy` · `frontend/app/(onboarding)/onboarding/workspace-form.tsx` · `frontend/lib/workspace/slug.ts` |
+| **Owner** | 🔴 **Product owner** — ⛔ **it is a design-versus-producer contradiction, and §20e forbids a lane resolving one** |
+| **Status** | **`OPEN`** — ⚠️ **blocking nothing.** The screen ships the producer's number today and a ruling either way is a one-line change |
+
+### 📁 The two statements
+
+📁 **`Fortune Signora Onboarding.dc.html`**, the `rules` array, verbatim:
+
+> `{ field: 'Workspace URL', rule: 'Lowercase, 3–32, letters/numbers/hyphens. Availability checked 300ms after typing stops; reserved words rejected with the reason.' }`
+
+⛔ **The producer says 63, in three places that agree with each other:**
+
+| | |
+|---|---|
+| `backend/modules/workspace_tenancy/domain/entities.py:32` | `MAX_WORKSPACE_SLUG_LENGTH = 63` |
+| `interface/schemas.py:80` | `Field(min_length=…, max_length=MAX_WORKSPACE_SLUG_LENGTH)` |
+| `migrations/…/0062_workspace_slug.py:74` | `sa.String(length=63)` |
+
+✅ **The frontend mirrors the producer** — `MIN_SLUG = 3`, `MAX_SLUG = 63`, and the input carries `maxLength={MAX_SLUG}`.
+
+### ⚠️ Why this is a ruling and not a fix
+
+⛔ **Neither number is safe for a lane to pick**, and they fail in opposite directions:
+
+| If the design wins | If the producer wins |
+|---|---|
+| **The UI caps at 32 and refuses a value the server would accept.** ⚡ Nobody is locked out — but a customer whose organization genuinely needs a longer address is stopped by a control, not by a rule, **and the address is PERMANENT** | **The UI accepts up to 63, as it does today.** ⛔ **The design's stated limit is not enforced anywhere** |
+
+🔴 **`63` is not arbitrary and that is what makes this worth a ruling rather than a coin toss.** ⚡ **It is the maximum length of a single DNS label**, and the address is rendered as `signora.app/<slug>` — **a path segment, where 63 has no meaning.** ⛔ **So the producer's number may be a subdomain assumption that the design has since moved away from**, and 📁 the design's own example is `eu.signora.app/northwind` — **a subdomain AND a path.**
+
+⚠️ **A lane changing either number would be deciding whether the address is a DNS label**, which is an architecture question wearing a validation constant's clothes.
+
+### ⛔ What Lane A did instead
+
+✅ **Nothing.** **The constants are untouched, the input still carries the producer's `maxLength`, and the new witness asserts the MINIMUM only** — `3`, where the two agree — **so the test cannot be read as ratifying either maximum.**
+
+📁 **Related:** [C-1575](#) records a `6` vs `8` filter-entry conflict of the same shape, and the standing instruction on it applies here too: **record it, do not let it block the rest.**
