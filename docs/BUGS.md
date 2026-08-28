@@ -20734,3 +20734,56 @@ env: { SIGNORA_ENVIRONMENT: 'test' },
 ### ⚠️ QE fixed a defect QE found, in QE's own tooling
 
 📁 §20e: *"Verifies and closes — **QE, never the lane that fixed it**."* ⛔ **There is no other lane that owns `vitest.config.ts` for this purpose, so `VERIFIED` is left unset rather than self-awarded.** ⚡ **The evidence above is stated so somebody else can check it in one command**, which is the most this arrangement allows. **Same conflict as [B-1086](#b-1086), named the same way rather than resolved quietly.**
+
+### B-1089 · 🟡 `vocabulary.test.tsx` never walked `lib`, so four customer-read strings reached `/settings` while the guard was green
+
+| | |
+|---|---|
+| **Module** | — **repository-wide test.** 📁 [`frontend/tests/components/vocabulary.test.tsx`](../frontend/tests/components/vocabulary.test.tsx):38 |
+| **Current assignee** | **QE** — 📁 §20e: *"QE creates, maintains, extends and retires repository-wide automated tests."* ⚡ **Lane A measured it and deliberately did not widen it**, restoring the file untouched, which is the line drawn correctly |
+| **Severity** | 🟡 — **wrong but survivable.** ⛔ Nothing is unusable and no data is wrong. ⚠️ **But the platform's word reached a customer on a shipped screen**, which is exactly what [ADR-0034](architecture/adr/0034-ubiquitous-language.md) exists to prevent |
+| **Status** | ✅ **`FIXED` — QE, 2026-08-28**, with three witnesses, each fire-tested. ⛔ **`VERIFIED` is not QE's to set here** — QE found it and QE fixed it |
+| **Found** | **2026-08-28 by Lane A**, auditing `/settings`; **the identifier is QE's**, whose guard it is |
+| **Commit found** | `fd3f42e2` |
+
+### ⛔ The finding
+
+```ts
+const ROOTS = ['app', 'components'];
+```
+
+**`lib` is not walked.** ⚡ **Four customer-read strings in `lib/settings/sections.ts` — a section heading, a navigation group label and two meta lines — all render on `/settings`, and this guard could not see the file they were in.**
+
+### 🔴 It is this file's own scar, one level of population up
+
+📁 **The comment on `humanReadable` already records the same defect:**
+
+> *"`subject` was missing and it is the sharpest of them… A customer was told **"Signora could not load your workspaces"** on the audit screen, and this guard could not see it because the population named eight props and not the ninth. **The population was too NARROW, which fails silently** — the guard was green throughout, which is the worst way for a guard to be wrong."*
+
+⛔ **That was a population of PROPS. This is a population of DIRECTORIES.** ⚡ **Same defect, same silence, one level up** — and the file names the class in its own docstring without the class being applied to its own `ROOTS`.
+
+### ⚠️ And one of them was invisible to a grep
+
+**Three of the four strings were the literal `'Workspace'`; the fourth was `'Workspace-wide'`.** ⛔ **A grep for `'Workspace'` finds two of four. The render found all four.** 📁 **Same lesson as `id={UTILITY_PANEL_TARGET}` and `role={open ? 'tablist' : undefined}`** — *a grep sees the text you wrote; the render sees the text that exists.*
+
+### ✅ Fixed — and the witnesses test the POPULATION, not the constant
+
+| witness | fire test |
+|---|---|
+| **`lib` is actually read** — asserts a `lib/settings/` file reached `SOURCES`, ⛔ **not that `ROOTS` contains the string `'lib'`**, which would be the constant asserting itself | remove `lib` from `ROOTS` → **fails** ✅ |
+| **the guard still reports a real offender** | empty the exception list → **fails on `lib/research/capability.ts: "Knowledge graph"`** ✅ |
+| **no stale forgiveness** — every excused file must STILL have an offender | point the exception at a clean file → **fails** ✅ |
+
+### ⛔ One exception, and it carries the id of the decision that ends it
+
+**`lib/research/capability.ts` labels a capability `Knowledge graph`, and all eight of its siblings are customer phrases** — *"Ask a question"*, *"The answer, with its sources"*, *"Share and export"*. ⚡ **The file's own convention is the customer's vocabulary; this label is the odd one out.**
+
+⛔ **Neither a feature lane nor QE may choose its replacement.** 📁 **Raised as [C-1579](LANE_COORDINATION.md) by Lane A**, owner the product owner. ⚠️ **Latent rather than live — nothing renders the module; one unit test imports it.**
+
+> 🔴 **An exception without an id is how a guard quietly stops guarding.** ⚡ **It is the too-wide-and-silent failure arriving by accretion rather than by design**: nobody widens the guard, they add one more line, and every line is individually defensible. **The id is what makes it answerable later, and the staleness witness is what stops it outliving its cause.**
+
+### ⚠️ QE cited this row before filing it, and a guard caught that too
+
+⛔ **The first version of the fix cited `B-1089` in a comment while no such row existed.** ✅ **📁 [`row-citations.test.tsx`](../frontend/tests/components/row-citations.test.tsx) failed the full suite** — *"file the row, or remove the citation — never renumber it to something that happens to exist"* — **and it did not appear when the guard was run in isolation.**
+
+⚡ **That is [B-1069](#b-1069)'s guard doing exactly its job, on QE, four hours after QE wrote up a false claim in a dashboard.** **Same class: a citation is the evidence, so nobody checks the evidence.**

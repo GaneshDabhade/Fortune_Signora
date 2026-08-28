@@ -35,7 +35,21 @@ import { extname, join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-const ROOTS = ['app', 'components'];
+/**
+ * ⛔ **The population of DIRECTORIES is under test, not a constant somebody
+ * maintains** — 📁 [B-1089](../../../docs/BUGS.md).
+ *
+ * ⚠️ **`lib` was missing until 2026-08-28**, and four customer-read strings in
+ * `lib/settings/sections.ts` reached `/settings` carrying the platform word
+ * while this guard was green.
+ *
+ * ⚡ **That is this file's own `subject` scar one level up.** The comment on
+ * `humanReadable` below records a population of PROPS that was too narrow and
+ * shipped *"Signora could not load your workspaces"*; **this was a population
+ * of ROOTS that was too narrow and shipped four labels on Settings.** ⛔ **Both
+ * fail SILENTLY, which is the worst way for a guard to be wrong.**
+ */
+const ROOTS = ['app', 'components', 'lib'];
 
 function walk(dir: string): string[] {
   return readdirSync(dir).flatMap((entry) => {
@@ -143,14 +157,60 @@ function humanReadable(source: string): string[] {
   return found.filter((s) => /[a-z]{3}/i.test(s));
 }
 
-describe('the platform vocabulary never reaches a customer', () => {
-  it('uses no internal term in a string a human reads', () => {
-    const pattern = new RegExp(`\\b(?:${INTERNAL_TERMS.join('|')})s?\\b`, 'i');
+/**
+ * ⛔ **An exception carries the id of the decision that ends it, or it is
+ * permanent by accident.**
+ *
+ * ⚠️ **`lib/research/capability.ts` labels a capability `Knowledge graph`, and
+ * every one of its eight siblings is a customer phrase** — *"Ask a question"*,
+ * *"The answer, with its sources"*, *"Share and export"*. **It is the odd one
+ * out and the guard is right to find it.**
+ *
+ * ⛔ **But choosing its replacement is a word choice with no design statement
+ * behind it, and neither a feature lane nor QE may make one.** 📁 **Raised as
+ * [C-1579](../../../docs/LANE_COORDINATION.md).** ⚡ **Latent rather than live:
+ * nothing renders this module — only a unit test imports it.**
+ *
+ * ✅ **The second test below is what stops this becoming permanent**: an
+ * exception whose offender has gone is removed, loudly, rather than sitting
+ * here forgiving nothing.
+ */
+const AWAITING_A_PRODUCT_DECISION: readonly (readonly [string, string])[] = [
+  ['lib/research/capability.ts', 'C-1579'],
+];
 
-    const offenders = SOURCES.flatMap(({ name, source }) =>
-      humanReadable(source)
-        .filter((line) => pattern.test(line))
-        .map((line) => `${name}: "${line.trim()}"`),
+function offendersIn(sources: typeof SOURCES): string[] {
+  const pattern = new RegExp(`\\b(?:${INTERNAL_TERMS.join('|')})s?\\b`, 'i');
+  return sources.flatMap(({ name, source }) =>
+    humanReadable(source)
+      .filter((line) => pattern.test(line))
+      .map((line) => `${name}: "${line.trim()}"`),
+  );
+}
+
+const EXCUSED = new Set(AWAITING_A_PRODUCT_DECISION.map(([file]) => file));
+
+describe('the platform vocabulary never reaches a customer', () => {
+  /**
+   * ⛔ **The population itself is under test.** ⚡ **`ROOTS` was
+   * `['app','components']` until 2026-08-28**, and a guard that walks the wrong
+   * directories is green for the same reason an empty one is.
+   *
+   * ✅ **Asserting that a `lib/` file with human-readable strings was actually
+   * READ** — not that the constant contains the string `'lib'`, which would be
+   * the constant asserting itself.
+   */
+  it('⚡ reads lib — the population is under test, not a constant somebody maintains', () => {
+    expect(
+      SOURCES.some((f) => f.name.startsWith('lib/settings/')),
+      'ROOTS must include lib: four customer-read strings on /settings carried ' +
+        'the platform word while this guard was green (B-1089)',
+    ).toBe(true);
+  });
+
+  it('uses no internal term in a string a human reads', () => {
+    const offenders = offendersIn(SOURCES).filter(
+      (entry) => ![...EXCUSED].some((file) => entry.startsWith(`${file}:`)),
     );
 
     expect(
@@ -159,6 +219,23 @@ describe('the platform vocabulary never reaches a customer', () => {
         'Internal vocabulary belongs in code, schema and docs/architecture — never in ' +
         'a sentence somebody reads.',
     ).toEqual([]);
+  });
+
+  /**
+   * ⛔ **An exception list that outlives its cause is how a guard quietly stops
+   * guarding.** ⚡ **So every excused file must STILL have an offender**: when
+   * the word is finally chosen, this fails and the entry is deleted rather than
+   * left behind forgiving something that no longer happens.
+   */
+  it('⚡ and every excused file is still excusing something — no stale forgiveness', () => {
+    for (const [file, item] of AWAITING_A_PRODUCT_DECISION) {
+      const still = offendersIn(SOURCES.filter((f) => f.name === file));
+      expect(
+        still,
+        `${file} is excused pending ${item} and no longer has an offender — ` +
+          'remove the exception rather than leaving one that forgives nothing',
+      ).not.toEqual([]);
+    }
   });
 
   /**
