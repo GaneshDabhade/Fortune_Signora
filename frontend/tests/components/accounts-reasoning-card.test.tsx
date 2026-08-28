@@ -121,6 +121,14 @@ describe('⛔ no count is rendered that could be zero', () => {
     });
     const { container } = card();
 
+    // ⚠️ **The pin comes first, and it is the whole reason this test is
+    // evidence.** ⛔ **Both assertions below are negative, and a negative
+    // passes on a card that never rendered** — a crashed fixture, or a mock
+    // aimed at a barrel this component does not import, would make them green
+    // while proving nothing. ⚡ **`getByText` THROWS when absent**, so it
+    // establishes that there is a rendered card to be negative about.
+    expect(screen.getByText(/has not reached a conclusion/)).toBeInTheDocument();
+
     expect(container.textContent ?? '').not.toContain('0 sources');
     expect(container.textContent ?? '').not.toContain('sources');
   });
