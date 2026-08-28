@@ -13,6 +13,8 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { withoutComments } from '../support/source';
+
 /**
  * 🔴 **Eleven directory constants stood here and are deleted with the list they
  * fed.** ⚠️ **Their history is worth one line each, because it is the argument
@@ -282,15 +284,41 @@ describe('the type and radius scales are tokens too', () => {
   const ARBITRARY_TYPE = /\btext-\[/;
   const ARBITRARY_RADIUS = /\brounded-\[/;
 
+  /**
+   * 🔴 **[B-275](../../../docs/BUGS.md) — this tested the RAW FILE, so a comment
+   * explaining why the mock's one-off pixel value was avoided failed the guard
+   * that wanted it avoided.**
+   *
+   * ⛔ **The guard was correct about the code every time; what it refused was
+   * the DOCUMENTATION of compliance** — ⚡ **and that documentation is exactly
+   * what [§12](../../../CLAUDE.md) asks a lane to leave behind**: *"could a
+   * lane that has never seen this module continue the work without reading
+   * commit history?"* **The next person reaching for the literal pixel value
+   * has to be told why not, in the file, and could not be told in the obvious
+   * words.**
+   *
+   * ⚠️ **It also taught the wrong lesson quietly**: a lane that hits this and
+   * does not read the regex concludes the guard is flaky, **which is how a
+   * check stops being trusted.**
+   *
+   * ✅ **`withoutComments` is the repository's existing walker** — 📁 it tracks
+   * quotes and template literals precisely because
+   * [B-162](../../../docs/BUGS.md) is the same defect in the other direction:
+   * *a guard narrowed to strip comments started treating `//` in a URL as the
+   * start of one, and stopped catching real matches.* ⛔ **So this reuses it
+   * rather than adding a fourth regex** ([§2](../../../CLAUDE.md)).
+   */
   it.each(ALL_COMPONENTS)('$name uses no arbitrary type size', ({ source }) => {
     expect(
-      ARBITRARY_TYPE.test(source),
+      ARBITRARY_TYPE.test(withoutComments(source)),
       'an arbitrary text-[…] survives a type-scale change unaltered, which is the bug',
     ).toBe(false);
   });
 
   it.each(ALL_COMPONENTS)('$name uses no arbitrary radius', ({ source }) => {
-    expect(ARBITRARY_RADIUS.test(source), 'arbitrary rounded-[…] found').toBe(false);
+    expect(ARBITRARY_RADIUS.test(withoutComments(source)), 'arbitrary rounded-[…] found').toBe(
+      false,
+    );
   });
 
   it('every type size a component uses is a declared token', () => {
