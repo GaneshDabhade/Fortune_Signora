@@ -17413,6 +17413,50 @@ statement and a producer disagreeing, recorded rather than resolved.
 
 ---
 
+### C-1581 · A `select` projection over an existing query — is that *adding to* `lib/query`, or *modifying* it?
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-28, implementing [B-261](BUGS.md) |
+| **Module** | `product_surface` — `frontend/lib/query/hooks.ts` |
+| **Owner** | 🔴 **Product owner** — 📁 [§20e](../CLAUDE.md) puts the frontend foundation in 🔴: **product owner + ADR.** ⛔ **QE validates; it does not grant budget exemptions**, and said so when asked |
+| **Status** | **`OPEN`** — ⚠️ **not blocking.** ⚡ **The change is made and announced** (see below), **and the reversal is one file with no consumers to move** |
+
+### 📁 What was needed
+
+📁 **Account 360 persists a collapsed section *"per user and per account TYPE, not per record"***, and 🔴 [B-261](BUGS.md) is that **no read the page made carried a type.** The fix puts `kind` on `/account-identities`, **beside the identity** — the row is explicit that folding it into `AccountIdentity` would put a classification inside an identity resolver.
+
+### 🔴 Why that is not free on the frontend
+
+⛔ **The response becomes `{account, kind}[]`, and `useAccountIdentities` has EIGHT production consumers** — Home's attention, posture, agent and recents cards, the shell palette, notifications, the signal queue, and Account 360. **Exactly one wants a type.**
+
+📁 **§20c**: *"a component bent to suit one caller is slightly wrong for every other, and the cost lands on whoever writes the next page."* ⚡ **Moving eight surfaces to serve one page is the change that section exists to refuse.**
+
+### ✅ What was done instead
+
+**`useAccountEntries` is the query. `useAccountIdentities` is a `select` projection over it, sharing its `queryKey`** — one cache entry, one network request, `select` running per observer.
+
+| | |
+|---|---|
+| Existing exports' public shape | ⛔ **unchanged** — `useAccountIdentities` still returns `Map<string, AccountIdentity>` |
+| Consumer diffs | ⛔ **zero** |
+| New key in `keys.ts` | ⛔ **none** — the projection shares the existing one |
+| `tsc` · `eslint` · vitest | ✅ **0 · 0 · 4483 / 264** |
+
+### ❓ The question, and it is narrow
+
+> ⚡ **Is adding an export to `lib/query/hooks.ts`, which moves no existing export's shape and no caller, the 🟠 *adding* case or the 🔴 *modifying* case?**
+
+📁 **The budget already draws that distinction for the sibling directory**: 🟠 covers *"a new component in `components/ui`"*, and §20c's own instruction is ***"add to the library rather than around it."*** ⛔ **It is written for `components/ui` and NOT for `lib/query`**, which is why this is a question rather than an answer.
+
+⚠️ **Lane A's reading is that this is the adding case, and it is a reading rather than a ruling.** ⛔ **QE was asked and declined to rule, correctly** — *"a peer lane telling you «that's fine» is worth exactly nothing if the product owner reads it differently."*
+
+### ⚡ Why it proceeded rather than held
+
+**The reversal is nearly free**: one file, no consumers to move, every public shape already identical. ⛔ **Holding B-261 on this question would have left a design rule unsatisfiable for a change that can be undone in minutes** — and 📁 [§20e](../CLAUDE.md)'s test for an architectural blocker is *whether proceeding encodes an assumption about the answer.* ✅ **It does not: if the ruling is 🔴, the projection collapses back into `useAccountIdentities` and `useAccountEntries` disappears.**
+
+⚠️ **Announced in the commit message as 🟠 requires**, whichever way this is ruled.
+
 ### C-1580 · Home must have an `h1` naming the organization, must not draw one, and the element carrying the name is dismissible
 
 | | |

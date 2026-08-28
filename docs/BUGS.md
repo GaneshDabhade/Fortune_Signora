@@ -7189,8 +7189,8 @@ cd frontend && npm run --silent keys:generate >> ../infra/.env.prod-local
 | **Module** | **`product_surface`** — ⚡ **assignee joined from [`modules.toml`](coordination/modules.toml)**: `current_owner = "Lane A"` |
 | **Current assignee** | **Lane A** — ⚡ **found by this lane implementing [TASK-1476](BACKLOG.md), and filed rather than worked around** |
 | **Severity** | 🟡 — ⛔ **nothing renders wrongly.** ⚠️ **One design rule cannot be satisfied**, and the section states so in code rather than pretending |
-| **Status** | 🔵 **`OPEN`** — ✅ **the shipped behaviour is the safe half**: a preference is **not stored** rather than stored under a guess |
-| **Found** | **2026-08-12, by Lane A** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-28, by option ⓐ below.** ⚠️ **QE verifies and closes.** ⚠️ **The prior state, kept rather than rewritten** ([§2](../CLAUDE.md)): 🔵 **`OPEN`** — *"the shipped behaviour is the safe half: a preference is **not stored** rather than stored under a guess"* |
+| **Found** | **2026-08-12, by Lane A** · **Fixed 2026-08-28** |
 
 #### ⚡ AUDIT 2026-08-16, Lane A — the obvious fix is forbidden by this module's own design
 
@@ -7219,6 +7219,49 @@ created_at: datetime   # …AccountIdentity deliberately holds no such field:
 ⚡ **ⓐ is the recommendation.** ⛔ **Neither is started**: 🔴 **a backend field with no consumer is the unreachable-primitive class this lane has now found five times**, so **the read and Account 360's use of it belong in ONE slice**, with the frontend `AccountIdentity` type and `AccountSectionShell`'s `kind` prop changing in the same change.
 
 ⚠️ **Not converted into a `TASK-` row by this lane** — 📁 [§20e](../CLAUDE.md): *a lane never invents work*, and **the backlog is the product owner's.** ✅ **Recorded here so the fix is one reading rather than one rediscovery.**
+
+#### ✅ FIXED 2026-08-28, Lane A — option ⓐ, and the cost estimate in it was wrong
+
+**`GET /workspaces/{id}/account-identities` now returns `{account, kind}[]`.** `kind` sits beside the identity and never inside it, exactly as the audit above required, and `AccountIdentityEntryResponse` composes `AccountIdentityResponse` in `ListedAccountResponse`'s idiom.
+
+| | |
+|---|---|
+| `ports.py` | **`entities_by_ids`** — the plural of `entity_by_id`, one `IN`, absent rather than defaulted |
+| `repository.py` · `fakes.py` | Both implementations, workspace scoped in the same `where` |
+| `queries.py` | **`AccountIdentityEntry`** and **`identity_entries()`** — the composition made ONCE, not by every caller |
+| `schemas.py` · `router.py` | The response, and the endpoint's summary and docstring with it |
+| `lib/api/types.ts` | `AccountIdentityEntry` |
+| `lib/query/hooks.ts` | **`useAccountEntries`**, and `useAccountIdentities` as a `select` over it |
+| Account 360 | `accountKind` is the read's, not `null` |
+
+#### 🔴 *"Additive · one field · no new endpoint"* was measured wrong, and that is worth recording
+
+⚠️ **The audit's own cost estimate for ⓐ.** ⛔ **`useAccountIdentities` has EIGHT production consumers** — Home's attention, posture, agent and recents cards, the shell palette, notifications, the signal queue and Account 360 — **and exactly one of them wants a type.**
+
+🔴 **A response shape change ripples to all eight.** ⚡ **And `lib/query` is 🔴 in the [Change Budget](../CLAUDE.md)**: 📁 [§20c](../CLAUDE.md) — *"a component bent to suit one caller is slightly wrong for every other, and the cost lands on whoever writes the next page."* ⛔ **Moving eight surfaces to serve one page is the change that section exists to refuse.**
+
+✅ **So the hook's public shape did not change at all.** **`useAccountEntries` is the query; `useAccountIdentities` is a `select` projection over it, sharing its `queryKey`** — so TanStack serves both from **one cache entry and one network request**, `select` running per observer over data fetched once. **Zero consumers moved. `tsc` clean.**
+
+⛔ **Not two hooks with two keys**, which would be a second representation of one read ([§2](../CLAUDE.md)) and a second request for bytes already in the cache.
+
+#### ⚡ The witness, and what it is FOR
+
+📁 **`frontend/tests/components/account-identity-projection.test.tsx`** — **four assertions, and the first is the one nothing else can see:**
+
+| | |
+|---|---|
+| **One request, not two** | ⛔ **A regression to two query keys leaves every other assertion in this repository green** and doubles the network cost of every list that names its rows |
+| **The projection returns identities, unchanged** | The eight consumers assert this by not having moved; **a leaked envelope would break them all and nothing else would notice** |
+| **The kind is the ACCOUNT's, not a constant** | ⚠️ **Two rows, two kinds, one response.** ⛔ Asserting only `'company'` passes on an endpoint returning `'company'` for everything — **which is the guessed type this row exists to prevent** |
+| **An unowned account is absent, never defaulted** | 📁 [B-1053](#b-1053) must not return through `kind` |
+
+✅ **Fire-tested, both directions.** Giving `useAccountIdentities` its own key fails **one**; leaking the envelope through the `select` fails **one**; each fails only its own. ⚠️ **The file went green on the first run, which is when a test is least trustworthy.**
+
+📁 **Backend**: `test_api_accounts.py` asserts `kind` on the single read **and on every row of a page** — *a composition built per row can still be built wrongly for all but one of them.* **144 integration tests, 142 module tests, `mypy --strict` clean on 958 files, 37 import contracts kept.**
+
+#### ⛔ `null` still means *persist nothing*, and that branch is not dead
+
+⚠️ **`AccountSectionShell`'s `kind: string | null` is unchanged and its two guards still pin it.** ⚡ **The read is in flight on first paint, and an account the workspace does not own is absent from the map entirely** — **so the absence is still honoured rather than defaulted**, which is the half of this row that was always right.
 
 #### 📁 The rule
 

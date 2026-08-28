@@ -341,6 +341,29 @@ COMMERCIAL_ATTRIBUTES: tuple[ClaimAttribute, ...] = (
 
 
 @dataclass(frozen=True, slots=True)
+class AccountIdentityEntry:
+    """Who one requested account is, **and what kind of thing it is.**
+
+    🔴 **[B-261](../../../../docs/BUGS.md).** 📁 Account 360's collapsed-section
+    rule is *"state persists per user and per account **TYPE**, not per
+    record"* — ⛔ **and the page could not read a type.** ⚡ **A rep who
+    collapses *Technology stack* has decided they do not care about technology
+    stacks on COMPANIES, not that they do not care about it on Acme; keyed per
+    record, the preference is re-made on every account opened, which is the
+    same as having none.**
+
+    ⛔ **`kind` sits BESIDE the identity and never inside it**, which is
+    `ListedAccount`'s arrangement and for its reason: **`AccountIdentity`
+    answers *who is this*, and `kind` answers *what kind of thing is it*.**
+    Folding it in would put a classification inside an identity resolver, and
+    the same argument already keeps `created_at` out.
+    """
+
+    account: AccountIdentity
+    kind: EntityKind
+
+
+@dataclass(frozen=True, slots=True)
 class ListedAccount:
     """One account on a browse page: **who it is, and what kind of thing.**
 
@@ -573,6 +596,39 @@ class GraphQueries:
             entity_id: _identity(entity_id, tuple(found), freshest.get(entity_id))
             for entity_id, found in grouped.items()
         }
+
+    async def identity_entries(
+        self, workspace_id: UUID, entity_ids: tuple[UUID, ...]
+    ) -> tuple[AccountIdentityEntry, ...]:
+        """Who these accounts are **and what kind of thing each one is.**
+
+        🔴 **[B-261](../../../../docs/BUGS.md) — the composition, made once
+        here rather than by every caller.** 📁 Account 360 keys a collapsed
+        section *"per account TYPE, not per record"*, and neither read it had
+        carried a type: `AccountAttention` has none and `AccountIdentity`
+        deliberately holds none. **`ListedAccount` carried one, to a different
+        screen.**
+
+        ⛔ **Not a whole list read to key a collapse toggle.** ⚡ **Two narrow
+        reads over the ids the caller already holds** — the identity pass this
+        wraps, and one `IN` over the entity rows for their `kind`.
+
+        ⚠️ **An account present in one and absent from the other is absent
+        here.** ⛔ **Not defaulted to a kind** — 📁 ADR-0409 §5, and
+        [B-1053](../../../../docs/BUGS.md) is what happened the last time this
+        module answered for an id it did not hold. ✅ **`identities()` is
+        already seeded from the workspace's own bindings, so the intersection
+        is what the workspace owns AND the graph has an entity row for.**
+        """
+        if not entity_ids:
+            return ()
+        identities = await self.identities(workspace_id, entity_ids)
+        entities = await self._repository.entities_by_ids(workspace_id, tuple(identities))
+        return tuple(
+            AccountIdentityEntry(account=identity, kind=entity.kind)
+            for entity_id, identity in identities.items()
+            if (entity := entities.get(entity_id)) is not None
+        )
 
     async def commercial(
         self, workspace_id: UUID, entity_ids: tuple[UUID, ...]

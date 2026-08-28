@@ -119,6 +119,29 @@ vi.mock('@/lib/query/hooks', () => ({
   useAccountResearch: research,
   useAccounts: accounts,
   useAccountIdentities: identities,
+  /**
+   * 🔴 **[B-261](../../../docs/BUGS.md) — the page's primary identity read is
+   * now `useAccountEntries`**, which carries the account's TYPE beside the
+   * identity so a collapsed section can be keyed *per account type, not per
+   * record*.
+   *
+   * ⛔ **Derived from the `identities` fixture rather than declared beside
+   * it.** ⚠️ **A second fixture would be a second representation of one
+   * contract**, and every one of the twelve `identities.mockReturnValue` calls
+   * below would then have to be kept in step with a twin it cannot see —
+   * which is how a fixture drifts into manufacturing findings.
+   *
+   * ⚡ **`'company'` is honest here**: this file's subject is the brief's
+   * sentences, and 📁 `account-identity-projection.test.tsx` is where *the
+   * kind is the account's and not a constant* is actually asserted.
+   */
+  useAccountEntries: (...args: unknown[]) => {
+    const read = identities(...args) as { data?: Map<string, unknown> };
+    if (read?.data === undefined) return read;
+    const entries = new Map<string, unknown>();
+    for (const [id, account] of read.data) entries.set(id, { account, kind: 'company' });
+    return { ...read, data: entries };
+  },
   // ⚡ **The design's `#reasoning` card in the 340px track.** 📁 The endpoint,
   // the hook and the contract all ship, and the Companies list has consumed
   // them since they did — ⛔ the record page was the surface that did not.

@@ -12,7 +12,7 @@ scopes the session — RLS is the authoritative control, not the only one
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from datetime import datetime
 from typing import Any
 from uuid import UUID, uuid4
@@ -243,6 +243,24 @@ class SqlGraphRepository:
             )
         ).scalar_one_or_none()
         return None if row is None else _to_entity(row)
+
+    async def entities_by_ids(
+        self, workspace_id: UUID, entity_ids: tuple[UUID, ...]
+    ) -> Mapping[UUID, Entity]:
+        # ⛔ **One query for the whole set** (§14), and **scoped to the
+        # workspace in the same `where`** — an id belonging to another
+        # organization matches nothing here rather than being filtered after
+        # the fact, which is `CLAUDE.md` §7's *404, never 403* in the read
+        # itself.
+        if not entity_ids:
+            return {}
+        rows = await self._session.execute(
+            select(EntityModel).where(
+                EntityModel.workspace_id == workspace_id,
+                EntityModel.id.in_(entity_ids),
+            )
+        )
+        return {row.id: _to_entity(row) for row in rows.scalars()}
 
     async def bindings_for_entity(
         self, workspace_id: UUID, entity_id: UUID

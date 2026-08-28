@@ -246,12 +246,29 @@ resolve_entity(workspace_id, hint) -> Entity
 claim_set(workspace_id, entity_id, attribute) -> ClaimSet
 entity_evidence(workspace_id, entity_id) -> list[Claim]
 identities(workspace_id, entity_ids) -> dict[UUID, AccountIdentity]
+identity_entries(workspace_id, entity_ids) -> tuple[AccountIdentityEntry, ...]
 find_accounts(workspace_id, text, limit) -> tuple[AccountMatch, ...]
 relationships(workspace_id, entity_id, kind=None, as_of=None) -> list[Relationship]
 resolution_history(workspace_id, entity_id) -> list[ResolutionDecision]
 ```
 
 `as_of` on `relationships` is the seam for historical replay. Adding it now costs nothing; retrofitting a temporal query onto a non-temporal API costs a rewrite of every caller.
+
+### `identity_entries` — who these accounts are, **and what kind of thing each one is**
+
+**Added 2026-08-28 by [B-261](../BUGS.md).** `GET /workspaces/{id}/account-identities?ids=` returns it; the endpoint's shape changed with it, from `AccountIdentityResponse[]` to `{account, kind}[]`.
+
+**The rule it serves is Account 360's**, from the approved design: *"state persists per user and per account **TYPE**, not per record."* A rep who collapses *Technology stack* has decided they do not care about technology stacks **on companies**, not that they do not care about it on one account — **keyed per record, the preference is re-made on every account opened, which is the same as having none.**
+
+**And no read the page made carried a type.** `AccountAttention` has none; `AccountIdentity` deliberately has none. `ListedAccount` had one, to a different screen — and adding a whole browse page to key a collapse toggle is disproportionate to the thing it keys.
+
+**`kind` sits beside the identity and never inside it.** This is `ListedAccount`'s arrangement and it is here for its reason: **`AccountIdentity` answers *who is this*, and `kind` answers *what kind of thing is it*.** Folding it in would put a classification inside an identity resolver, and the same argument already keeps `created_at` out. The interface layer models the same separation, so `AccountIdentityEntryResponse` composes `AccountIdentityResponse` rather than extending it.
+
+**Two narrow reads, never an N+1.** It wraps the `identities()` pass and adds one `IN` over the entity rows (`entities_by_ids`) — the plural of `entity_by_id`, added for the same reason `bindings_for_entities` exists (§14).
+
+**An account present in one pass and absent from the other is absent here, never defaulted to a kind.** ADR-0409 §5, and [B-1053](../BUGS.md) is what a zero-filled identity row cost the last time this module answered for an id it did not hold. `identities()` is already seeded from the workspace's own bindings, so the intersection is what the workspace owns *and* the graph has an entity row for.
+
+**`identities()` is unchanged and still published.** The browse page composes it with `entity_page`, which already carries `kind` per row; adding a second entity read there would be a query the page does not need.
 
 ### `find_accounts` — searching by name, and why it searches names nobody displays
 

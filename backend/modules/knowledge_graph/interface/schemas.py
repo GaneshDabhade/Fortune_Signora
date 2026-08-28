@@ -18,6 +18,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from modules.knowledge_graph.application.queries import (
     AccountCommercial,
     AccountIdentity,
+    AccountIdentityEntry,
     ListedAccount,
     AccountMatch,
     AccountMatchGroup,
@@ -288,6 +289,38 @@ class ListedAccountResponse(BaseModel):
         )
 
 
+class AccountIdentityEntryResponse(BaseModel):
+    """Who one requested account is, **and what kind of thing it is.**
+
+    🔴 **[B-261](../../../../docs/BUGS.md).** Account 360 persists a collapsed
+    section *per account **type***, and until this field existed the page could
+    not read one — so it stored nothing rather than store a preference under a
+    guessed type, which is a preference a rep cannot get back.
+
+    **`kind` sits beside the identity rather than inside it**, which is
+    `ListedAccountResponse`'s arrangement and for its reason: an identity
+    answers *who is this*, and a classification is a different question about
+    the same account.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    account: AccountIdentityResponse = Field(
+        description="Who this account is — the same shape the list, search and the "
+        "brief return, so a caller reads one identity everywhere."
+    )
+    kind: EntityKind = Field(
+        description="What kind of thing this is. Read it rather than assuming: the "
+        "graph knows more kinds than any one surface asks for."
+    )
+
+    @classmethod
+    def from_domain(cls, entry: AccountIdentityEntry) -> "AccountIdentityEntryResponse":
+        return cls(
+            account=AccountIdentityResponse.from_domain(entry.account), kind=entry.kind
+        )
+
+
 class AccountCommercialEntryResponse(BaseModel):
     """What one requested account is worth, with the id it answers.
 
@@ -308,6 +341,7 @@ class AccountCommercialEntryResponse(BaseModel):
 
 __all__ = [
     "AccountCommercialEntryResponse",
+    "AccountIdentityEntryResponse",
     "AccountCommercialResponse",
     "AccountIdentityResponse",
     "SearchGroupResponse",

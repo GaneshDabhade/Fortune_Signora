@@ -73,6 +73,7 @@ import { ApiError } from '@/lib/api/client';
 import { useSession } from '@/lib/auth/client';
 import {
   useAccounts,
+  useAccountEntries,
   useAccountIdentities,
   useAccountNarration,
   useAccountObservations,
@@ -312,15 +313,6 @@ export default function AccountBriefPage() {
   // Casbin on the server is that, and always.
   const { data: session } = useSession();
   const viewerId = session?.user.id ?? null;
-  // ⛔ **The account TYPE is not published to this page, so nothing is
-  // guessed.** 📁 `useAccounts` returns `AccountAttention` and
-  // `useAccountIdentities` returns `AccountIdentity`; **neither carries
-  // `kind`**, and only the Companies list's `ListedAccount` does. ⚡ **A
-  // collapse preference keyed under a guessed type is one a rep cannot get
-  // back**, so `null` means *persist nothing* rather than *persist wrongly* —
-  // [B-261](../../../../docs/BUGS.md).
-  const accountKind: string | null = null;
-
   /**
    * ⚡ **`refetch` is taken because 📁 System States `rules` ⑤ needs it** —
    * *"one primary action… **'Reload the page' is a last resort, never the
@@ -475,8 +467,31 @@ export default function AccountBriefPage() {
     data: identities,
     isLoading: nameLoading,
     isSuccess: nameSettled,
-  } = useAccountIdentities(workspaceId, [accountId]);
-  const identity = identities?.get(accountId);
+  } = useAccountEntries(workspaceId, [accountId]);
+  const entry = identities?.get(accountId);
+  const identity = entry?.account;
+  /**
+   * ✅ **[B-261](../../../../docs/BUGS.md) — the account's TYPE, read rather
+   * than guessed.**
+   *
+   * 📁 Account 360's collapsed-section rule is *"state persists per user and
+   * per account **TYPE**, not per record"* — ⛔ **and no read this page made
+   * carried one.** `useAccounts` returns `AccountAttention` and the identity
+   * read returned `AccountIdentity`; **only the Companies list's
+   * `ListedAccount` had it**, and adding a whole browse read to key a collapse
+   * toggle is disproportionate to the thing it keys.
+   *
+   * ⚡ **So the field went on the read this page already makes**, beside the
+   * identity rather than inside it — **an identity answers *who is this*, and
+   * a classification is a different question about the same account.**
+   *
+   * ⛔ **`null` still means *persist nothing*, and that branch is not dead.**
+   * An account the workspace does not own is absent from this map entirely
+   * ([B-1053](../../../../docs/BUGS.md)), and the read is in flight on first
+   * paint — **a preference stored under a guessed type is one a rep cannot get
+   * back**, so the absence is still honoured rather than defaulted.
+   */
+  const accountKind: string | null = entry?.kind ?? null;
 
   /**
    * 🔴 **[B-1053](../../../../docs/BUGS.md) — this screen never asked whether

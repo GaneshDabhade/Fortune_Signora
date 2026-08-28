@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   AccountAttention,
   AccountIdentity,
+  AccountIdentityEntry,
   AccountNarration,
   AccountObservation,
   AccountOpportunity,
@@ -114,18 +115,59 @@ export function useAccounts(workspaceId: string | null, scope: OwnerScope = 'all
  * it already has.
  */
 export function useAccountIdentities(workspaceId: string | null, accountIds: string[]) {
+  /**
+   * ⛔ **A projection of `useAccountEntries`, never a second request.** 🔴
+   * [B-261](../../../docs/BUGS.md) put `kind` on this read, and **eight
+   * surfaces here want a name and one wants a type.**
+   *
+   * ⚡ **Same `queryKey`, so TanStack serves both from ONE cache entry and one
+   * network round trip** — `select` runs per observer, over data that is
+   * fetched once. ⛔ **A sibling hook with its own key would be a second
+   * representation of one read** ([§2](../../../CLAUDE.md)), and a second
+   * request for bytes already in the cache.
+   *
+   * ✅ **And the shape this returns is unchanged**, which is why no caller
+   * moved: `lib/query` is 🔴 in the [Change Budget](../../../CLAUDE.md) and a
+   * ripple through eight consumers to serve one page is what §20c bars.
+   */
+  return useAccountEntries(workspaceId, accountIds, (entries) => {
+    const names = new Map<string, AccountIdentity>();
+    for (const [id, entry] of entries) names.set(id, entry.account);
+    return names;
+  });
+}
+
+/**
+ * **Names AND types for a set of accounts, in one request** — 🔴
+ * [B-261](../../../docs/BUGS.md).
+ *
+ * 📁 Account 360 keys a collapsed section *"per account TYPE, not per
+ * record"*. ⛔ **Neither read it made carried a type**, and the third that did
+ * — `useAccountsList` — is a whole browse page, **disproportionate to the
+ * thing it keys.**
+ *
+ * ⚠️ **`select` is the parameter and not a second query.** A caller that wants
+ * only names passes a projection; `useAccountIdentities` above is exactly
+ * that, and both share one cache entry because they share one key.
+ */
+export function useAccountEntries<TResult = Map<string, AccountIdentityEntry>>(
+  workspaceId: string | null,
+  accountIds: string[],
+  select?: (entries: Map<string, AccountIdentityEntry>) => TResult,
+) {
   const ids = [...new Set(accountIds)].sort();
 
   return useQuery({
     queryKey: queryKeys.identities(workspaceId ?? '', ids),
     queryFn: async () => {
       const query = ids.map((id) => `ids=${encodeURIComponent(id)}`).join('&');
-      const identities = await apiRequest<AccountIdentity[]>(
+      const entries = await apiRequest<AccountIdentityEntry[]>(
         `/workspaces/${workspaceId}/account-identities?${query}`,
         { workspaceId: workspaceId ?? undefined },
       );
-      return new Map(identities.map((identity) => [identity.account_id, identity]));
+      return new Map(entries.map((entry) => [entry.account.account_id, entry]));
     },
+    select,
     // Nothing to ask about, so nothing is asked — an empty request would be a
     // round trip whose answer is known.
     enabled: workspaceId !== null && ids.length > 0,

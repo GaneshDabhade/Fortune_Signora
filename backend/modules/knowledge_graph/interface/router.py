@@ -27,7 +27,7 @@ from apps.api.composition.accounts import GraphRead
 from modules.knowledge_graph.interface.schemas import (
     AccountCommercialEntryResponse,
     AccountCommercialResponse,
-    AccountIdentityResponse,
+    AccountIdentityEntryResponse,
     ListedAccountResponse,
     SearchGroupResponse,
 )
@@ -54,12 +54,13 @@ CursorParam = Annotated[str | None, Query()]
 
 @router.get(
     "/workspaces/{workspace_id}/account-identities",
-    response_model=list[AccountIdentityResponse],
-    summary="Who these accounts are, and how sure we are about the names",
+    response_model=list[AccountIdentityEntryResponse],
+    summary="Who these accounts are, what kind of thing each one is, and how sure "
+    "we are about the names",
 )
 async def account_identities(
     context: CurrentWorkspace, queries: GraphRead, ids: IdsParam
-) -> list[AccountIdentityResponse]:
+) -> list[AccountIdentityEntryResponse]:
     """Resolve names for a set of accounts.
 
     An account's name is not a stored field — it is a `legal_name` **claim**,
@@ -74,12 +75,20 @@ async def account_identities(
 
     **Not a page.** This answers a request about accounts the caller already
     has, so it returns a plain list in no particular order; join it to your rows
-    by `account_id`. An account the workspace does not own is simply absent
-    rather than reported, which is the same reason a non-member sees 404.
+    by `account.account_id`. An account the workspace does not own is simply
+    absent rather than reported, which is the same reason a non-member sees 404.
+
+    **Each row carries `kind` beside the identity** — B-261. Account 360
+    persists a collapsed section *per account type, not per record*, and until
+    this field existed the page could not read a type: it stored nothing rather
+    than store a preference under a guess, which is a preference a rep cannot
+    get back. `kind` sits beside the identity rather than inside it, because an
+    identity answers *who is this* and a classification is a different question
+    about the same account.
     """
     context.authorize(Resource.ACCOUNT, Action.READ)
-    identities = await queries.identities(context.workspace_id, tuple(ids))
-    return [AccountIdentityResponse.from_domain(identity) for identity in identities.values()]
+    entries = await queries.identity_entries(context.workspace_id, tuple(ids))
+    return [AccountIdentityEntryResponse.from_domain(entry) for entry in entries]
 
 
 @router.get(

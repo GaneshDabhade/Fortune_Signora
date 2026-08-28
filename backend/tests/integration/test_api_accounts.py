@@ -395,11 +395,17 @@ class TestAccountIdentitiesAreResolvedNotStored:
         )
 
         assert response.status_code == 200, response.text
-        (identity,) = response.json()
+        (entry,) = response.json()
+        identity = entry["account"]
         assert UUID(identity["account_id"]) == entity_id
         assert identity["name"], "the pipeline produced an account nothing can name"
         assert identity["agreement"] in {"unknown", "single_source", "agreed", "disputed"}
         assert identity["source_count"] >= 1
+        # B-261 — the account's TYPE, beside the identity rather than inside
+        # it. Account 360 keys a collapsed section *per account type, not per
+        # record*, and until this field existed the page stored nothing rather
+        # than store a preference under a guess.
+        assert entry["kind"] == "company"
 
     async def test_one_request_names_a_whole_page(
         self,
@@ -423,7 +429,10 @@ class TestAccountIdentitiesAreResolvedNotStored:
         )
 
         assert response.status_code == 200, response.text
-        assert {i["account_id"] for i in response.json()} == set(ids)
+        assert {e["account"]["account_id"] for e in response.json()} == set(ids)
+        # Every row carries a kind, not merely the first — a composition built
+        # per row can still be built wrongly for all but one of them.
+        assert all(e["kind"] for e in response.json())
 
     async def test_an_account_says_how_current_its_evidence_is(
         self,
@@ -456,7 +465,8 @@ class TestAccountIdentitiesAreResolvedNotStored:
         )
 
         assert response.status_code == 200, response.text
-        (identity,) = response.json()
+        (entry,) = response.json()
+        identity = entry["account"]
         assert identity["last_observed_at"] is not None, (
             "the pipeline produced claims for this account, so something was observed"
         )
@@ -2042,7 +2052,7 @@ class TestFindingAnAccountByName:
                 params={"ids": [str(entity_id)]},
                 headers=_auth(key_pair, user_id),
             )
-        ).json()[0]
+        ).json()[0]["account"]
         assert named["name"], "the pipeline produced an account nothing can name"
 
         response = await client.get(
@@ -2080,7 +2090,7 @@ class TestFindingAnAccountByName:
                 params={"ids": [str(their_entity)]},
                 headers=_auth(key_pair, their_user),
             )
-        ).json()[0]["name"]
+        ).json()[0]["account"]["name"]
 
         response = await client.get(
             f"/workspaces/{mine}/account-search",
@@ -2176,7 +2186,7 @@ class TestFindingAnAccountByName:
                 params={"ids": [str(entity_id)]},
                 headers=_auth(key_pair, user_id),
             )
-        ).json()[0]
+        ).json()[0]["account"]
 
         response = await client.get(
             f"/workspaces/{workspace_id}/account-search",

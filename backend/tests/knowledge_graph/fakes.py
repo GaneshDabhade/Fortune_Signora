@@ -8,7 +8,7 @@ boundary would have leaked (CLAUDE.md §11) — so these exist as much to
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Any
@@ -86,6 +86,17 @@ class FakeGraphRepository:
 
     async def entity_by_id(self, workspace_id: UUID, entity_id: UUID) -> Entity | None:
         return self.entities.get(entity_id)
+
+    async def entities_by_ids(
+        self, workspace_id: UUID, entity_ids: tuple[UUID, ...]
+    ) -> Mapping[UUID, Entity]:
+        # ⛔ **Absent rather than defaulted**, matching the port: an id this
+        # fake does not hold contributes no row at all.
+        return {
+            entity_id: entity
+            for entity_id in entity_ids
+            if (entity := self.entities.get(entity_id)) is not None
+        }
 
     async def bindings_for_entity(
         self, workspace_id: UUID, entity_id: UUID

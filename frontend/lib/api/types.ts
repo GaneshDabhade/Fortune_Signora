@@ -331,6 +331,28 @@ export interface AccountIdentity {
   last_observed_at: string | null;
 }
 
+/**
+ * **Who one account is, and what kind of thing it is** — 🔴
+ * [B-261](../../../docs/BUGS.md).
+ *
+ * 📁 Account 360 persists a collapsed section ***"per user and per account
+ * TYPE, not per record"***, and ⛔ **no read the page made carried a type**:
+ * `AccountAttention` has none, and `AccountIdentity` deliberately holds none.
+ * ⚡ **So the page stored nothing rather than store a preference under a
+ * guess** — a rep who collapses *Technology stack* on companies would have
+ * found it re-made on every account they opened.
+ *
+ * ⛔ **`kind` sits BESIDE the identity and never inside it**, which is
+ * `ListedAccount`'s arrangement and for its reason: **an identity answers *who
+ * is this*, and a classification is a different question about the same
+ * account.** Folding it in would put a classification inside an identity
+ * resolver, and the same argument already keeps `created_at` out.
+ */
+export interface AccountIdentityEntry {
+  account: AccountIdentity;
+  kind: EntityKind;
+}
+
 /** What kind of thing a search result is.
  *
  * **Read it from the result, never from the endpoint you called.** Signora

@@ -7,7 +7,7 @@ tested against fakes without a database (CLAUDE.md §11).
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from datetime import datetime
 from typing import Protocol
 from uuid import UUID
@@ -53,6 +53,29 @@ class GraphRepository(Protocol):
     async def supersede_binding(self, binding_id: UUID, *, by: UUID) -> None: ...
 
     async def entity_by_id(self, workspace_id: UUID, entity_id: UUID) -> Entity | None: ...
+
+    async def entities_by_ids(
+        self, workspace_id: UUID, entity_ids: tuple[UUID, ...]
+    ) -> Mapping[UUID, Entity]:
+        """These accounts themselves, by id — **what kind of thing each one is.**
+
+        🔴 **The plural of `entity_by_id`, and it exists for the same reason
+        `bindings_for_entities` does**: naming a page of fifty accounts one
+        entity at a time is fifty round trips, and an obvious N+1 is a defect
+        at write time rather than a future optimisation (`CLAUDE.md` §14).
+
+        ⛔ **A mapping rather than a sequence, and an id the workspace does not
+        own is simply ABSENT.** ⚡ **Not a row carrying a default kind** — 📁
+        ADR-0409 §5, *absence is never inferred, defaulted or zero-filled*, and
+        [B-1053](../../../../docs/BUGS.md) is what a zero-filled identity row
+        cost the last time this module answered for ids it did not hold.
+
+        ⚠️ **Read for `kind`, never for a name.** An entity carries no attribute
+        values at all — 📁 `Entity`: *"a `name` column here would be
+        truth-resolution in miniature"* — so this answers *what kind of thing
+        is it*, and `identities()` still answers *who is it*.
+        """
+        ...
 
     async def bindings_for_entity(
         self, workspace_id: UUID, entity_id: UUID
