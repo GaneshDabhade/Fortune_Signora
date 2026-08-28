@@ -1115,7 +1115,7 @@ allows now returns `["Ask Signora", "Navigate", "Settings"]`, where it returned
 | **Module** | `product_surface` — `components/home/attention-card.tsx`, `posture-cards.tsx`, `recents-card.tsx`, `app/(app)/signals/signal-queue.tsx` |
 | **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — **Lane A** |
 | **Severity** | 🟠 — **wrong behaviour on the first screen of every session**, on the card the design calls Home's answer |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-28. ⚠️ The fix was promoted; the COVERAGE was one surface of four.** ✅ **Verified with `git show origin/integration:…`**: `attention-card`, `posture-cards` and `signal-queue` all pass `pending` to `AccountName`, **which owns the rule and is witnessed in both states** (`remaining-surfaces.test.tsx`). ⛔ **`recents-card` rendered the branch BY HAND** — `pending ? <Skeleton/> : label` — **so it inherited nothing and nothing asserted it: the one surface where the rule could drift alone.** ✅ **Now delegates to `AccountName`** ([§2](../CLAUDE.md) — behaviour exists once; **no `href`, because the whole row is already a `<Link>`**), **with both halves witnessed**: a pending name is a skeleton, and a settled read with no name IS *"Unnamed account"* — ⛔ **without the second, the fix could be *"never say Unnamed account"*, which loses a real state the identity surface can report.** ⚡ **Fire-tested**: forcing `pending={false}` turns it red. ⚠️ **QE verifies and closes.** ⚠️ **The prior state, kept rather than rewritten** ([§2](../CLAUDE.md)): **`OPEN`** |
 | **Found** | **2026-08-19 by Lane A**, performing [TASK-495](BACKLOG.md) ⓑ's headed review — ⚡ **in a screenshot, not in a test** |
 
 **Measured**, on the Playground, as the owner:

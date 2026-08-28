@@ -101,6 +101,56 @@ describe('🔴 B-1033 — adjacent rows are separated, or two links read as one 
    * rows at `gap:0` with a rule between, **and a divider is not a gap**: two
    * links flush against one another are one target to a coarse pointer.
    */
+  it('🔴 B-290 — a name still arriving is a skeleton, never "Unnamed account"', () => {
+    /**
+     * ⚠️ **Measured on the Playground**: five rows read *"Unnamed account"* for
+     * over a second and then became five real companies. ⛔ **The identity read
+     * is a SECOND request** that settles after the list, **so the card stated a
+     * settled fact and then contradicted it.**
+     *
+     * ✅ **Fixed on all four surfaces and witnessed on one** —
+     * `home-attention-card.test.tsx`. ⛔ **This row rendered the branch BY
+     * HAND**, so it inherited nothing from `AccountName` and nothing asserted
+     * it: **the one surface where the rule could drift on its own.**
+     */
+    recents.mockReturnValue({
+      data: [viewed('a1', 0)],
+      isPending: false,
+      isError: false,
+      error: null,
+    });
+    identities.mockReturnValue({ data: undefined, isPending: true });
+
+    const { container } = render(<RecentsCard />);
+
+    // ✅ **The row IS rendered** — this is one field waiting, not a card
+    // skeleton. Without this pin the absence below passes on an empty card.
+    expect(screen.getByRole('link')).toBeInTheDocument();
+    expect(container.querySelectorAll('[data-skeleton]').length).toBeGreaterThan(0);
+    // ⛔ **Not the fallback**, which is an answer this card does not have yet.
+    expect(screen.queryByText('Unnamed account')).toBeNull();
+  });
+
+  it('✅ and it IS the answer once the identity read settles with no name', () => {
+    // ⚡ **The vacuity half.** ⛔ Without it the fix could be *"never say
+    // Unnamed account"*, which loses a real state: **an account nobody has
+    // named is a fact the identity surface can report.**
+    recents.mockReturnValue({
+      data: [viewed('a1', 0)],
+      isPending: false,
+      isError: false,
+      error: null,
+    });
+    // ⚠️ **A `Map`, because that is what the hook returns.** ⛔ **`{}` gave
+    // `identities.data?.get is not a function`** — the sixth fixture this
+    // session to reach past a contract it had rebuilt by hand.
+    identities.mockReturnValue({ data: new Map(), isPending: false });
+
+    render(<RecentsCard />);
+
+    expect(screen.getByText('Unnamed account')).toBeInTheDocument();
+  });
+
   it('⛔ puts real space between rows, not only a dividing rule', () => {
     recents.mockReturnValue({
       data: [viewed('a1', 0), viewed('a2', 2)],

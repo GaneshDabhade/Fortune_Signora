@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 
+import { AccountName } from '@/components/intelligence/account-name';
+
 import { CardFailure } from '@/components/home/card-failure';
 import { Card, Skeleton } from '@/components/ui';
 import { useCardPhase } from '@/lib/home/loading';
@@ -172,11 +174,20 @@ function Row({
       >
         {pending ? null : initials(label)}
       </span>
-      {pending ? (
-        <Skeleton className="h-4 w-32" />
-      ) : (
-        <span className="min-w-0 truncate text-label text-content">{label}</span>
-      )}
+      {/* 🔴 **[B-290](../../../docs/BUGS.md) — the name was rendered here by
+          hand, and that was a SECOND implementation of one decision.**
+          ⛔ **`AccountName` already owns *a name that has not arrived is not a
+          name that does not exist*** and is witnessed in both states; **this
+          row repeated the branch, so a change to that rule would have reached
+          three surfaces and not this one** ([§2](../../../CLAUDE.md)).
+          ⚡ **No `href`** — the whole row is already a `<Link>` and a nested
+          one is invalid. */}
+      <AccountName
+        name={name}
+        pending={namePending}
+        absent="Unnamed account"
+        className="min-w-0 truncate text-label text-content"
+      />
       <span className="ml-auto flex-none text-2xs text-content-subtle">
         {when(record.viewed_at)}
       </span>
