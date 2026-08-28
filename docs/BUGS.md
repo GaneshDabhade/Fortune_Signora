@@ -20642,7 +20642,7 @@ page.waitForURL: Test timeout of 60000ms exceeded
 | **Module** | — **repository tooling.** 📁 [`frontend/vitest.config.ts`](../frontend/vitest.config.ts) · [`Makefile`](../Makefile):546 · 📁 [`frontend/lib/auth/config.ts`](../frontend/lib/auth/config.ts):255 |
 | **Current assignee** | **QE** — 📁 §20e: *a defect in a gate is QE's to fix* |
 | **Severity** | 🟡 — ⛔ **it fails loudly and corrupts nothing.** ⚠️ **But it fails as a NINE-FAILURE frontend-suite gate naming a lane's candidate**, which is the expensive part |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` — QE, 2026-08-28**, in `frontend/vitest.config.ts`, with a witness fire-tested both ways. ⛔ **`VERIFIED` is not QE's to set here** — see the conflict note at the foot of this row |
 | **Found** | **2026-08-28 by QE**, certifying cycle 277 — **and very nearly reported against Lane A's branch** |
 | **Commit found** | `319ee4b4` |
 
@@ -20706,3 +20706,31 @@ function isDeployed(): boolean {
 ### ⚠️ What this cost, stated plainly
 
 ⛔ **A full certification run — 15 minutes — and a NOT-CERTIFIED record naming `319ee4b4`**, which was discarded per 📁 [`attempts.py`](../backend/tests/certification/attempts.py). ⚡ **The candidate touches no auth file**, which is what stopped the report: `git diff --name-only origin/integration HEAD | grep -iE 'auth|config'` returned nothing. ⛔ **Had the candidate touched one, a plausible causal story would have been available and it would have been wrong** — 📁 the identical near-miss B-1086 records.
+
+
+### ✅ Fixed 2026-08-28 — pinned in the suite's own config, and the witness can fail
+
+```ts
+// frontend/vitest.config.ts
+env: { SIGNORA_ENVIRONMENT: 'test' },
+```
+
+⛔ **Not in `make certify`.** **Fixing the caller would leave `npx vitest run`, an IDE and every lane's own loop carrying the same dependency.** ✅ **In the config, the environment is part of the suite's contract instead of the shell's.**
+
+⚡ **`test` was chosen over `local` on a measurement, not a preference**: the only comparisons in `lib/auth/config.ts` are `?? 'local'`, the `['local','test']` allow-list, and `=== 'demo'` — **so the two are behaviourally identical and the pin changes nothing a clean shell already did.** **Every test that cares sets the value explicitly and restores it.**
+
+**The witness is [`tests/unit/suite-environment.test.ts`](../frontend/tests/unit/suite-environment.test.ts), and it was fire-tested in both directions before it was committed** — ⚠️ **because a test that asserted the pin from inside the pin's own scope would be the pin restating itself:**
+
+| | |
+|---|---|
+| **pin present**, `SIGNORA_ENVIRONMENT=lane-qe` in the shell | **2 passed** ✅ |
+| **pin removed**, same shell | **2 failed** ✅ |
+| **the whole suite**, `SIGNORA_ENVIRONMENT=lane-qe` in the shell | ⚡ **4398 passed in 256 files, zero failures, zero React warnings** |
+
+**That last row is the proof**: it is the exact condition that produced `frontend-suite 9 failed` in cycle 277.
+
+⛔ **What is NOT fixed**: 📁 `require-e2e-url` still instructs `SIGNORA_ENVIRONMENT=lane-a make …` without noting that the variable belongs to the *stack* and not to the *suite*. **The pin makes following that instruction harmless; it does not make the two messages aware of each other.**
+
+### ⚠️ QE fixed a defect QE found, in QE's own tooling
+
+📁 §20e: *"Verifies and closes — **QE, never the lane that fixed it**."* ⛔ **There is no other lane that owns `vitest.config.ts` for this purpose, so `VERIFIED` is left unset rather than self-awarded.** ⚡ **The evidence above is stated so somebody else can check it in one command**, which is the most this arrangement allows. **Same conflict as [B-1086](#b-1086), named the same way rather than resolved quietly.**
