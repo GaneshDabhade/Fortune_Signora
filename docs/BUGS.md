@@ -20160,7 +20160,7 @@ fix** — 📁 `PANEL_WIDTH` already carries 360 and 300 from the same array.
 | **Module** | **`product_surface`** — 📁 [`components/shell/route-announcer.tsx`](../frontend/components/shell/route-announcer.tsx):39 |
 | **Current assignee** | **Lane A** — joined from [`modules.toml`](coordination/modules.toml) |
 | **Severity** | 🟠 — **a screen-reader user is the ONLY user who hears this, and what they hear is a route** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-28.** 📁 **The design named the replacement, so this was not a choice**: App Shell's `main` landmark — *"Receives focus on route change and **announces the new page title**."* ⛔ **`document.title` cannot answer it** — only the root layout declares one (`'Signora'`), identical on every screen. ✅ **The page's own `h1` IS the page title**, and it is a producer that already exists, is already enumerated by `page-heading-role.test.tsx`, and is already kept free of the platform's words by `vocabulary.test.tsx` — **so the announcement INHERITS ADR-0034 rather than restating it.** ⛔ **A route→label map was rejected**: `RAIL_DESTINATIONS` already holds one, and a third representation of every screen's name is worse than the defect ([§2](../CLAUDE.md)). ⚠️ **No heading → silence**, never the route: a page without an `h1` is a defect the heading guard catches, and announcing nothing is honest. ⚡ **Fire-tested** — restoring `Navigated to ${pathname}` turns four assertions red. ⚠️ **QE verifies and closes.** ⚠️ **The prior state, kept rather than rewritten** ([§2](../CLAUDE.md)): **`OPEN`** |
 | **Found** | **2026-08-26 by QE**, Home conformance audit against the design's own `a11y` array |
 | **Commit found** | `c6860a48` — ⚡ **the PROMOTED state** |
 
