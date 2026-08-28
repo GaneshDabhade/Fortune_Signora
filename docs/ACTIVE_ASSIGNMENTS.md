@@ -71,7 +71,20 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-28, `3d4ff473`
+## Current — as of 2026-08-28, `3ba57bdc`
+
+> ⚡ **Cycle 280 Closeout. 10 commits — two QE slices with eight of Lane A's rebased on top. No migrations, eight gates on the FIRST attempt.**
+>
+> ✅ **No board rows removed** — this cycle promoted no `TASK-nnn`.
+>
+> ✅ **[B-1086](BUGS.md) answered: TWO causes.** `next dev` compilation *(fixed by a production build)* and **a suite that mutates state and is not idempotent across runs** *(fixed by reseeding every run)*. **Both are QE's harness.**
+>
+> 🔴 **[B-1090](BUGS.md) filed to Lane C** — a healthy production stack that rejects every registration.
+>
+> ⚡ **Verification debt drawn down 38 → 40 `VERIFIED`**, measured rather than counted from intent. **Two rows changed state — B-231 and B-144.** ⛔ **B-270's `make` half is verified and the row stays `FIXED`, because its `conftest` half is QE's own code; B-1060 was a GRADING, not a verification.**
+>
+> ⛔ **B-1091 drafted and NOT filed** — the sweep is an undercount and is being re-measured.
+
 
 > ⚡ **Cycle 279 Closeout. 5 commits — two QE slices with three of Lane A's rebased on top. No migrations.**
 >

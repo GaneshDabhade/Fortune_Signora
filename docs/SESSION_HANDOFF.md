@@ -1,5 +1,25 @@
 # Session Handoff
 
+> ## Cycle 280 — promoted `3ba57bdc1fc8`, 2026-08-28 · **B-1086 answered with two causes, and a healthy stack that rejects every registration**
+>
+> **`main` = `3ba57bdc1fc8a45845ec4a46c69867c664e39c59` = the certified commit.** **ZERO merges**, `--audit-main` holds across 2505. `pytest` **5465** · **95.03%** · **679 invariants** · `mypy` **958** · `import-linter` **37/37** · `tsc` · frontend **4471/262** · `eslint` · smoke **24/240s** · scenario **208** · DR ✅. **No migration; head `0066`. FIRST attempt.**
+>
+> ✅ **[B-1086](BUGS.md) ANSWERED — TWO causes, not one.** ⚡ **① `next dev` compiles on demand: two full runs against a production build gave ZERO `ERR_ABORTED`/`ECONNRESET`/`ECONNREFUSED`**, where `next dev` produced them by the dozen. ⛔ **The counts are NOT comparable; the error class is.** ⚡ **② The suite MUTATES STATE and is not idempotent across runs** — 10 of 11 failures now reproduce where **zero of 11** did on `next dev`, and the residue is `onboarding-journey.spec.ts`, a serial file in the `[mutating]` project whose first failure skipped its 8 dependents. ✅ **Reseed, run it alone → 12 passed.**
+>
+> 🔴 **SO THE HARNESS NEEDS TWO CHANGES, BOTH QE'S: serve a production build, and RESEED BEFORE EVERY RUN — not only the first.** ⛔ **[B-1084](BUGS.md)'s family is five of the ten stable failures: genuine all along, invisible inside the noise.**
+>
+> 🔴 **[B-1090](BUGS.md) — a stack provisioned exactly as `docker-compose.prod.yml` defines it reports EVERY CONTAINER HEALTHY and answers sign-up with a 500**, `relation "user" does not exist`. **Alembic has a `migrate:` service; Better Auth has nothing**, and the production image is a standalone build with no `scripts/`. ⛔ **No gate sees it — `mint_token()` signs a JWT straight from the private key and no stage calls sign-up.** **Lane C's.**
+>
+> ⚡ **QE's verification debt measured and drawn down for the first time: 186 `FIXED` awaiting `VERIFIED` against 38 verified.** **Four closed** — B-231 *(verified as the DEFECT not occurring, since the fix was deliberately reversed by TASK-493)*, B-144 *(two clone states plus the structural half)*, B-270's `make` half *(through `refuse-slot-0` alone — never trigger the condition a guard prevents)*, and B-1060 *(graded 🟠, not 🟡)*.
+>
+> ⚠️ **Seven rows across two lanes claimed a defect that was not live, and the SPLIT matters more than the count**: **4 outlived their fix** *(a false claim about the product)* · **2 shipped with nothing guarding them** *(the row was RIGHT to stay open)* · **1 stale on the remedy only.** ⛔ **Neither lane has escalated it.** **The question is not *close them faster* but *what writes a row back when a fix promotes, and should anything?***
+>
+> 📁 **THREE GUARDS REFUSED QE IN ONE DAY** — `row-citations` on an invented `B-1089` *(and it did NOT fire when the edited guard ran in isolation)*, `conftest.py` on a database URL still pointing at human review's 5432, and the destructive-tests consent QE nearly reported as a broken test. ⚡ **All three REFUSED rather than warned.**
+>
+> ⛔ **NEXT: B-1091 is drafted and NOT yet filed** — 18 class assertions where the wrong value is a substring of the right one. ⚠️ **Lane A has shown the sweep is an UNDERCOUNT: it only catches cases where the longer token already exists.** **Re-measure before filing.**
+
+> ---
+>
 > ## Cycle 279 — promoted `3d4ff473b8ff`, 2026-08-28 · **two QE gate fixes, and a measured verification debt of QE's own**
 >
 > **`main` = `3d4ff473b8ffdd6207a15a8cf92c3251b52496c8` = the certified commit.** **ZERO merges**, `--audit-main` holds across 2493. `pytest` **5465** · **95.03%** · **679 invariants** · `mypy` **958** · `import-linter` **37/37** · `tsc` · frontend **4426/258** · `eslint` · smoke **24/213s** · scenario **208** · DR ✅. **No migration; head `0066`.**

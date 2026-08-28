@@ -2,11 +2,82 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `3d4ff473`, 2026-08-28.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `3ba57bdc`, 2026-08-28.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
 > **It is a dashboard, not an engineering journal.** [`SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) answers a different question — *"what should the next session know?"* — and does not repeat what is here. Historical implementation detail belongs in ADRs and module documentation; **the appendices below are dated records and are never rewritten to match the present.**
+
+---
+
+## Cycle 280 — promoted `3ba57bdc1fc8`, 2026-08-28
+
+| | |
+|---|---|
+| **Promoted** | **`3ba57bdc1fc8a45845ec4a46c69867c664e39c59`** — `promoted == certified`, 10 commits, **zero merge commits**. `--audit-main` holds across 2505 |
+| **Gates** | **5465 pytest · 95.03% · 679 Security Invariants · mypy strict 958 · import-linter 37/37 · tsc clean · frontend 4471 in 262 files · eslint clean · smoke 24 stages in 240s · scenario 208** |
+| **DR** | ✅ passed |
+| **Migrations** | none — head unchanged at `0066` |
+| **Composition** | **two QE slices, eight of Lane A's rebased on top.** Certified on the **first** attempt |
+
+### ✅ [B-1086](docs/BUGS.md) answered — and there were TWO causes, not one
+
+⚠️ **Cycle 276's Closeout reported this experiment as done. It had not been run** — corrected in place there, original preserved.
+
+**① `next dev` compiles on demand — confirmed.** **Two full runs against the production topology on 3100** *(a standalone Next build, not a dev server)*:
+
+| | run 1 | run 2 |
+|---|---|---|
+| passed | 446 | 437 |
+| failed | 11 | 12 |
+| ⚡ **`ERR_ABORTED` · `ECONNRESET` · `ECONNREFUSED`** | **0** | **0** |
+
+⛔ **Against `next dev` the same suite produced them by the dozen.** ⚠️ **The COUNTS are not comparable** — different server, fresh data, later tree. **The error CLASS is, and it went from many to zero.**
+
+**② The suite mutates state and is not idempotent across runs — new.** **The failing SET was always the real complaint: 10 of 11 now reproduce, where ZERO of 11 reproduced on `next dev`.** ⛔ **The residue has its own cause**: `onboarding-journey.spec.ts` is a **serial** file in the `[mutating]` project; its first test failed in run 2 and **its 8 dependents were skipped**, which is the whole *"did not run"* count. ✅ **Demonstrated: reseed, run that file alone → 12 passed.** **Run 1 mutated the state run 2 started from.**
+
+> ⚡ **So QE's harness needs two things, both properties of the HARNESS rather than of any candidate: serve a production build, and reseed before EVERY run rather than only the first.** 📁 **[B-1084](docs/BUGS.md)'s family is five of the ten stable failures — genuine all along, invisible inside the noise.**
+
+### 🔴 [B-1090](docs/BUGS.md) — a healthy stack that rejects every registration, and no gate could see it
+
+**Found while standing the production topology up to verify [B-231](docs/BUGS.md).** ⛔ **A stack provisioned exactly as `docker-compose.prod.yml` defines it reports every container healthy and answers `POST /api/auth/sign-up` with a 500** — `relation "user" does not exist`.
+
+📁 **[§8](CLAUDE.md) requires schema migration as *"a discrete release step"*, and both tiers obey it. Only one has that step in the production topology**: Alembic has the `migrate:` service; Better Auth has nothing. ⚡ **The production image is a standalone build with no `scripts/`, so it cannot provision its own schema either.**
+
+⛔ **Why no gate sees it** — Lane A's phrase, and it is the right one: ***the gates test the door they have a key to.*** `mint_token()` signs a JWT straight from the private key, and **no smoke stage calls sign-up**; `make dr` uses a minted token. **Assigned to Lane C, who owns `infra/`.**
+
+### ⚡ QE's verification debt — measured, and drawn down for the first time
+
+**186 rows were `FIXED` awaiting `VERIFIED` against 38 verified. It is now 40**, measured at the promoted commit. ⚠️ **Two rows changed state; the other two entries below did not, and saying *four closed* would have been the kind of figure this cycle spent all day catching** — **B-270's `make` half is verified while the row stays `FIXED` (its `conftest` half is QE's own code), and B-1060 was a GRADING rather than a verification.**
+
+| | |
+|---|---|
+| **B-231** | ⚠️ **verified as *the defect does not occur*, NOT as *the fix survives*** — the fix was *remove `twoFactor()`* and TASK-493 deliberately put it back. **200 on the real endpoint, user in `auth."user"`, `twoFactor` table present** |
+| **B-144** | **46 passed identically from two clone states**, plus the structural half — `premature_releases(rows, outstanding)` takes its input as an argument and makes no `git` call. 📁 The row's `Actual` was *"the same tree, the same command, a different answer"* |
+| **B-270**, `make` half | exercised through `refuse-slot-0` **alone**, ⛔ **never through `make demo-seed`** — verifying a guard by triggering the condition it prevents risks the outcome if the guard is broken. **All three directions.** |
+| **B-1060** | graded **🟠, not 🟡**, on QE's verification of Lane A's finding: the palette pushes a literal `/w/[workspace]/home` and 404s from the first entry of the primary navigation surface |
+
+### ⚠️ Seven rows across two lanes claimed a defect that was not live — and the split matters more than the count
+
+**Lane A drained four assigned rows and found four fixes already promoted; QE found three more while verifying.** ⛔ **Reported as *"seven stale rows"* this would invite *close them faster*, which is the wrong remedy:**
+
+| shape | count | |
+|---|---|---|
+| fixed, promoted, **row never written back** | **4** | ⛔ a false claim about the product ([§2](CLAUDE.md)) — **it looks answered, so nobody asks** |
+| fixed, but **the property was never guarded** | **2** | ✅ **the row was RIGHT to stay open** — the defect could return silently |
+| fixed by a route the row did not describe | **1** | the row is accurate about the defect and stale about the remedy |
+
+⚡ **Only the first is *a write that never happened*.** ⛔ **Neither lane has taken this to the product owner, deliberately** — the useful question is not *close them faster* but ***what writes a row back when a fix promotes, and should anything?***, and that may well answer *"nothing, and a lane checks before working."*
+
+### 📁 Three guards refused QE in one day, and all three refused rather than warned
+
+| | |
+|---|---|
+| `row-citations.test.tsx` | QE cited **`B-1089`** in a comment before filing the row. ⚠️ **It did not fire when the edited guard was run in isolation** — *"the guard passes"* was true and useless |
+| `conftest.py` | `SIGNORA_TEST_ADMIN_DATABASE_URL` still pointed at **`localhost:5432` — human review's database**, from a seeder that truncates every table |
+| the destructive-tests consent | **46 errors** on B-144's witness, which QE nearly reported as a broken test |
+
+⛔ **A warning is what you read past when you are three steps into something careful.** ⚡ **All three were QE's own errors, and none was caught by care.**
 
 ---
 
