@@ -163,7 +163,8 @@ interface RailPending extends RailEntryBase {
  */
 type RailEntry = RailItem | RailAction | RailPending;
 
-function goesSomewhere(entry: RailEntry): entry is RailItem {
+/** ⚡ **Exported for the palette**, which must filter the same way the rail does. */
+export function goesSomewhere(entry: RailEntry): entry is RailItem {
   return 'href' in entry;
 }
 

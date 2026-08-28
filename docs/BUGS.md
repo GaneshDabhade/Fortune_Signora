@@ -18726,8 +18726,8 @@ Compare the workspace menu (click *Playground*) → `"12px"`.
 | | |
 |---|---|
 | **Module** | `product_surface` — **Lane A** · the palette's navigation entries |
-| **Severity** | 🟡 **P2** — **one entry of ten**, on a surface reachable from every screen by `⌘K` |
-| **Status** | **`OPEN`** |
+| **Severity** | 🟡 **P2 as filed** — **one entry of ten**, on a surface reachable from every screen by `⌘K`. ⚠️ **Lane A measured it worse and is NOT re-grading it unilaterally** — see the Status cell: **the entry does not merely display the template, it NAVIGATES to it.** ⛔ **QE grades; this records the measurement** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-28.** 🔴 **Filed as cosmetic and it is functional.** ⚡ **The palette navigates with `router.push(item.id.slice('nav:'.length))`, and the id is built from the raw `href`** — **so selecting *Home* pushed the literal `/w/[workspace]/home`: a 404 with a plausible shape, from the surface a person reaches for first.** ✅ **`resolved()` already existed for exactly this** — 📁 [B-233](#b-233), *"a `[workspace]` literal must never reach a `<Link>`"* — ⛔ **and the palette was the one renderer that never called it**, which is the same shape B-233 itself found in the phone bar. ⚡ **`goesSomewhere` is now exported so the palette filters the way the rail does**, and an entry with no organization to fill is dropped rather than offered. ✅ **Two witnesses in `shell-palette.test.tsx`** — the navigation target, and **no `[workspace]` anywhere in the rendered palette**, so a second destination gaining a dynamic segment cannot reintroduce it silently. ⚡ **Fire-tested**: restoring the raw `RAIL_DESTINATIONS` turns both red. ⚠️ **QE verifies and closes.** ⚠️ **The prior state, kept rather than rewritten** ([§2](../CLAUDE.md)): **`OPEN`** |
 | **Found** | 2026-08-21 by QE, UI conformance audit, on `98793262`, **by opening the palette and reading every option's subtitle** |
 | **Route** | Any — the palette is shell-wide |
 | **Surface** | `⌘K` → **NAVIGATE** group → the *Home* entry's subtitle |

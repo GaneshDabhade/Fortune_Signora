@@ -8,7 +8,7 @@ import { useCopilot } from '@/components/shell/copilot';
 import { useAccountSearch } from '@/lib/query/hooks/search';
 import { useAccountIdentities } from '@/lib/query/hooks';
 import { useRecentlyViewed } from '@/lib/query/hooks/recently-viewed';
-import { RAIL_DESTINATIONS } from '@/components/shell/navigation';
+import { RAIL_DESTINATIONS, goesSomewhere, resolved } from '@/components/shell/navigation';
 import { can, guardFor, type Capability, type WorkspaceRole } from '@/lib/state/permissions';
 import { useWorkspaceLabel } from '@/lib/shell/workspace-label';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
@@ -281,7 +281,29 @@ export function ShellPalette({
     // 📁 **`Navigate` — the destinations the shell owns.** ⛔ **Filtered by the
     // same guard the rail applies**, so the palette is not a second answer to
     // *what can this person reach*.
-    const navigate: CommandItem[] = RAIL_DESTINATIONS.filter((item) =>
+    /**
+     * 🔴 **[B-1060](../../../docs/BUGS.md) — this read `RAIL_DESTINATIONS`
+     * directly, and Home's `href` is the ROUTE TEMPLATE `/w/[workspace]/home`.**
+     *
+     * ⛔ **Filed as cosmetic — *"shows a customer the literal template"* — and
+     * it is not.** ⚡ **The palette navigates with `router.push(item.id.slice(…))`,
+     * so selecting *Home* pushed the literal `[workspace]` segment**: a
+     * 404 with a plausible shape, from the surface a person reaches for first.
+     *
+     * ✅ **`resolved()` is the existing authority** — 📁
+     * [`navigation.tsx`](./navigation.tsx), written for
+     * [B-233](../../../docs/BUGS.md) precisely because *"a `[workspace]`
+     * literal must never reach a `<Link>`"*. ⛔ **The palette was the one
+     * renderer that never called it**, which is the same shape as the phone
+     * bar that B-233 itself found.
+     *
+     * ⚡ **It also drops the entry when there is no organization to fill it**,
+     * rather than offering a destination that cannot exist — **the rail's
+     * behaviour, unchanged, now shared.**
+     */
+    const destinations = resolved(RAIL_DESTINATIONS, activeWorkspace?.id ?? null);
+
+    const navigate: CommandItem[] = destinations.filter(goesSomewhere).filter((item) =>
       reachable(item.href),
     ).map((item) => ({
       id: `nav:${item.href}`,

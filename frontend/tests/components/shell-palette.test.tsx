@@ -243,6 +243,47 @@ describe('✅ selecting navigates', () => {
     expect(push).toHaveBeenCalledWith('/business');
   });
 
+  it('🔴 B-1060 — Home goes to the ORGANIZATION’s home, never the route template', async () => {
+    /**
+     * 🔴 **Filed as cosmetic — *"shows a customer the literal template"* — and
+     * it was not.** ⚡ **The palette navigates with
+     * `router.push(item.id.slice('nav:'.length))`**, so selecting *Home*
+     * pushed `/w/[workspace]/home`: **a 404 with a plausible shape, from the
+     * surface a person reaches for first.**
+     *
+     * ⛔ **`[workspace]` is a directory name on disk** —
+     * `app/(app)/w/[workspace]/home/page.tsx` — **shown to a salesperson as
+     * though it were an address**, and 📁
+     * [ADR-0034](../../../docs/architecture/adr/0034-ubiquitous-language.md)
+     * makes it doubly wrong: the internal word AND the framework's routing
+     * syntax on one line.
+     *
+     * ✅ **`resolved()` already existed for exactly this** — 📁
+     * [B-233](../../../docs/BUGS.md), *"a `[workspace]` literal must never
+     * reach a `<Link>`"* — **and the palette was the one renderer that never
+     * called it.**
+     */
+    palette();
+    await userEvent.keyboard('{Meta>}k{/Meta}');
+    await userEvent.click(screen.getByText('Home'));
+
+    expect(push).toHaveBeenCalledWith('/w/w1/home');
+    expect(push).not.toHaveBeenCalledWith(expect.stringContaining('[workspace]'));
+  });
+
+  it('⛔ and no entry anywhere in the palette displays a route template', async () => {
+    // ⚡ **Asserted across the whole surface rather than on the one entry**, so
+    // a second destination gaining a dynamic segment cannot reintroduce it
+    // silently — 📁 `navigation.tsx` notes Home is currently the only one.
+    palette();
+    await userEvent.keyboard('{Meta>}k{/Meta}');
+
+    expect(document.body.textContent ?? '').not.toContain('[workspace]');
+    // ✅ **The pin** — the palette is open with destinations in it, so the
+    // absence above is an answer rather than an empty render.
+    expect(screen.getByText('Home')).toBeInTheDocument();
+  });
+
   it('an account goes to its record', async () => {
     searchData = [group()];
     palette();
