@@ -197,7 +197,7 @@ describe('📱 the strip wraps rather than truncating', () => {
     // ⚡ Found through the content rather than by position: a structural
     // selector would keep passing if the strip moved and stopped wrapping.
     const strip = screen.getByText('Confidence 4 of 5').closest('div');
-    expect(strip?.className).toContain('flex-wrap');
+    expect(strip?.classList.contains('flex-wrap')).toBe(true);
     expect(container.innerHTML).not.toContain('truncate');
     expect(container.innerHTML).not.toContain('text-ellipsis');
   });

@@ -235,7 +235,7 @@ describe('🔴 C-1553 — the footprint is reserved WITHOUT clipping the stage l
     const { container } = render(<PipelineHealthCard />);
     const card = container.firstElementChild as HTMLElement;
 
-    expect(card.className).toContain('min-h-[320px]');
+    expect(card.classList.contains('min-h-[320px]')).toBe(true);
     expect(card.className).not.toMatch(/(?:^|\s)h-\[320px\]/);
     expect(card.className).not.toContain('overflow-hidden');
   });

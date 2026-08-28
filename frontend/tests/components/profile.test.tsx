@@ -256,9 +256,9 @@ describe('screen 03 · appearance is the account\'s, not the browser\'s', () => 
     expect(card, 'the choice is not wrapped in a label').not.toBeNull();
 
     // 📁 *"border-radius:12px"* — `rounded-lg`, not `rounded`.
-    expect(card?.className).toContain('rounded-lg');
+    expect(card?.classList.contains('rounded-lg')).toBe(true);
     // 📁 The selected card takes the brand border AND the brand tint.
-    expect(card?.className).toContain('border-accent');
+    expect(card?.classList.contains('border-accent')).toBe(true);
     expect(card?.className, 'the selected card is not filled with the brand tint').toContain(
       'bg-accent-subtle',
     );

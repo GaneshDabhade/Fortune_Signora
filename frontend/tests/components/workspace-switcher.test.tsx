@@ -411,8 +411,8 @@ describe('📁 §4.1.3 — a switch announces politely, and it was silent', () =
     for (const row of rows) {
       // ⚡ **A MINIMUM, not a fixed height** — a name that wraps must grow the
       // row rather than overflow it.
-      expect(row.className).toContain('min-h-10');
-      expect(row.className).toContain('coarse:min-h-12');
+      expect(row.classList.contains('min-h-10')).toBe(true);
+      expect(row.classList.contains('coarse:min-h-12')).toBe(true);
     }
   });
 });

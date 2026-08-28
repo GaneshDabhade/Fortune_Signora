@@ -188,12 +188,12 @@ describe('♿ one field with a name, not six anonymous boxes', () => {
      */
     render(<CodeInput value="" onChange={() => {}} label="Verification code" />);
     for (const box of boxes()) {
-      expect(box.className).toContain('h-11');
-      expect(box.className).toContain('w-[38px]');
-      expect(box.className).toContain('rounded-md');
+      expect(box.classList.contains('h-11')).toBe(true);
+      expect(box.classList.contains('w-[38px]')).toBe(true);
+      expect(box.classList.contains('rounded-md')).toBe(true);
       // 📁 *"fontFamily: ui-monospace"* — a code is read back character by
       // character, and every other place this product shows one uses it.
-      expect(box.className).toContain('font-mono');
+      expect(box.classList.contains('font-mono')).toBe(true);
     }
     // ⚡ **The vacuity half**: if `boxes()` ever returned nothing, every
     // assertion above would pass by never running.

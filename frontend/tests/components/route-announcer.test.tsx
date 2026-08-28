@@ -134,6 +134,6 @@ describe('♿ once, and politely — both halves are the rule', () => {
 
   it('⚡ and it is heard, not seen', () => {
     render(page('Home'));
-    expect(screen.getByRole('status').className).toContain('sr-only');
+    expect(screen.getByRole('status').classList.contains('sr-only')).toBe(true);
   });
 });

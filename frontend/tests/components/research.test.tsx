@@ -209,7 +209,7 @@ describe('the brief keeps the deterministic half legible inside the design’s g
     // ⚡ **The intelligence hue is the attribution now that the headings are
     // gone** — 📁 the design's `--ai` border and `--ai-tint` band. ⛔ **A token,
     // never a literal colour** (§20c).
-    expect(container.querySelector('section')?.className).toContain('border-ai');
+    expect(container.querySelector('section')?.classList.contains('border-ai')).toBe(true);
     expect(container.querySelector('.bg-ai-subtle')).not.toBeNull();
   });
 

@@ -150,8 +150,8 @@ describe('below 1024 the rail is a sheet, and the top bar opens it', () => {
     // reachable by keyboard, off the side of the screen** — which is a worse
     // defect than the one this row fixes, because it is invisible to the eye.
     const sheet = sheetContainer();
-    expect(sheet.className).toContain('invisible');
-    expect(sheet.className).toContain('-translate-x-full');
+    expect(sheet.classList.contains('invisible')).toBe(true);
+    expect(sheet.classList.contains('-translate-x-full')).toBe(true);
   });
 
   it('✅ the trigger opens it', async () => {
@@ -161,7 +161,7 @@ describe('below 1024 the rail is a sheet, and the top bar opens it', () => {
 
     const sheet = sheetContainer();
     expect(sheet.className).not.toContain('invisible');
-    expect(sheet.className).toContain('translate-x-0');
+    expect(sheet.classList.contains('translate-x-0')).toBe(true);
   });
 
   it('✅ and opening it does not create a second navigation', async () => {
@@ -181,7 +181,7 @@ describe('below 1024 the rail is a sheet, and the top bar opens it', () => {
 
     await userEvent.keyboard('{Escape}');
 
-    expect(sheetContainer().className).toContain('invisible');
+    expect(sheetContainer().classList.contains('invisible')).toBe(true);
   });
 
   it('✅ its own close control closes it', async () => {
@@ -192,7 +192,7 @@ describe('below 1024 the rail is a sheet, and the top bar opens it', () => {
     // opened it must be able to close it the way they opened it.**
     await userEvent.click(screen.getByRole('button', { name: 'Close navigation' }));
 
-    expect(sheetContainer().className).toContain('invisible');
+    expect(sheetContainer().classList.contains('invisible')).toBe(true);
   });
 
   it('⛔ the sheet is never the 56px collapsed rail', async () => {

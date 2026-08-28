@@ -75,15 +75,15 @@ describe('the one card every authentication screen sits in', () => {
     // closed in the foundation, and the screen simplified rather than patched.
     render(<AuthShell title="Sign in">{null}</AuthShell>);
 
-    expect(frame().className).toContain('phone:max-w-card');
+    expect(frame().classList.contains('phone:max-w-card')).toBe(true);
     expect(frame().className).not.toMatch(/max-w-\[/);
   });
 
   it('applies the design radius and elevation classes — intent, not layout', () => {
     render(<AuthShell title="Sign in">{null}</AuthShell>);
 
-    expect(card().className).toContain('phone:rounded-xl');
-    expect(card().className).toContain('phone:shadow');
+    expect(card().classList.contains('phone:rounded-xl')).toBe(true);
+    expect(card().classList.contains('phone:shadow')).toBe(true);
   });
 
   it('⚡ drops the frame below 640px rather than shrinking it', () => {
@@ -119,9 +119,9 @@ describe('the one card every authentication screen sits in', () => {
     // ⚠️ **These name classes; they do not prove any of them render.**
     // 📁 [`auth-layout.spec.ts`](../e2e/auth-layout.spec.ts) is where the
     // computed padding and justification are compared across the bands.
-    expect(main.className).toContain('phone:pt-24');
-    expect(main.className).toContain('smalllaptop:justify-center');
-    expect(main.className).toContain('px-5');
+    expect(main.classList.contains('phone:pt-24')).toBe(true);
+    expect(main.classList.contains('smalllaptop:justify-center')).toBe(true);
+    expect(main.classList.contains('px-5')).toBe(true);
   });
 });
 

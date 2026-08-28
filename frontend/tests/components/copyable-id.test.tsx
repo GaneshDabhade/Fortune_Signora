@@ -43,13 +43,13 @@ describe('📁 2.5.8 — a copy button is ≥ 24px, and says so itself', () => {
     render(<CopyableId value="a1b2c3" />);
     const button = screen.getByRole('button');
 
-    expect(button.className).toContain('min-h-6');
+    expect(button.classList.contains('min-h-6')).toBe(true);
     // ⚡ **`inline-flex` is what makes a min-height bite on a button whose
     // content is a text run** — without it the class is decoration.
-    expect(button.className).toContain('inline-flex');
+    expect(button.classList.contains('inline-flex')).toBe(true);
     // 📁 **The repository's own touch floor**, the same one `Button` and the
     // accounts toolbar use.
-    expect(button.className).toContain('coarse:min-h-11');
+    expect(button.classList.contains('coarse:min-h-11')).toBe(true);
   });
 
   it('✅ it names itself and the value it will copy', () => {

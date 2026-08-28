@@ -34,7 +34,7 @@ describe('the container caps and centres', () => {
     render(<Container>content</Container>);
 
     const box = screen.getByTestId('content-container');
-    expect(box.className).toContain('mx-auto');
+    expect(box.classList.contains('mx-auto')).toBe(true);
     expect(box.className).toContain(`max-w-[${CONTENT_GRID.maxWidth}px]`);
   });
 
@@ -44,8 +44,8 @@ describe('the container caps and centres', () => {
     // ⚡ **24px on each side of a 390px phone is 12% of the viewport spent on
     // nothing**, and the design states the rule rather than leaving it to taste.
     const box = screen.getByTestId('content-container');
-    expect(box.className).toContain('p-4');
-    expect(box.className).toContain('phone:p-6');
+    expect(box.classList.contains('p-4')).toBe(true);
+    expect(box.classList.contains('phone:p-6')).toBe(true);
   });
 });
 
@@ -79,10 +79,10 @@ describe('the column axis is opted into, never inherited', () => {
     );
 
     const grid = screen.getByTestId('content-columns');
-    expect(grid.className).toContain('grid-cols-12');
+    expect(grid.classList.contains('grid-cols-12')).toBe(true);
     // 📁 **`gap-6` is the same 24px as the container's padding** — a gutter is
     // one measurement, not two that happen to match.
-    expect(grid.className).toContain('gap-6');
+    expect(grid.classList.contains('gap-6')).toBe(true);
   });
 
   it('⚡ a span resolves to a whole class name, never a computed one', () => {
@@ -92,7 +92,14 @@ describe('the column axis is opted into, never inherited', () => {
     // unrepresentable**, and this is the test that proves the table is used.
     const { container } = render(<Column span={7}>seven</Column>);
 
-    expect(container.firstElementChild?.className).toContain('col-span-7');
+    // ⚠️ **The whole name INCLUDING its variant prefix.** 🔴 **This read
+    // `toContain('col-span-7')`, which `smalllaptop:col-span-7` satisfies** —
+    // and since that IS the class, the assertion passed while being unable to
+    // tell a real lookup from a computed fragment. ✅ **`classList` names the
+    // token exactly**, which is the property the test is actually about.
+    expect(container.firstElementChild?.classList.contains('smalllaptop:col-span-7')).toBe(
+      true,
+    );
   });
 
   it('🔴 B-1062 — a column is FULL WIDTH below the column axis, never a fraction of a handset', () => {
@@ -130,7 +137,7 @@ describe('the column axis is opted into, never inherited', () => {
       ?.firstElementChild;
 
     expect(column?.className.split(/\s+/)).toContain('col-span-12');
-    expect(column?.className).toContain('smalllaptop:col-span-8');
+    expect(column?.classList.contains('smalllaptop:col-span-8')).toBe(true);
   });
 
   it('⛔ the twelve spans are all present and all distinct', () => {

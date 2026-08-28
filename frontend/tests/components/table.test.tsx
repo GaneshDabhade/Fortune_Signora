@@ -55,7 +55,7 @@ describe('🔴 the structure the rebuild exists for', () => {
     // is right**, which is the same trap `design-scale.test.ts` hit.
     const { container } = grid();
     const table = container.querySelector('table');
-    expect(table?.className).toContain('border-separate');
+    expect(table?.classList.contains('border-separate')).toBe(true);
     expect(table?.className).not.toContain('border-collapse');
 
     const source = readFileSync(join(process.cwd(), 'components/ui/table.tsx'), 'utf8');
@@ -80,7 +80,7 @@ describe('📁 rule ① — pinned identity', () => {
      */
     const { container } = grid();
     const pinned = container.querySelector('th[scope="col"]');
-    expect(pinned?.className).toContain('sticky');
+    expect(pinned?.classList.contains('sticky')).toBe(true);
     expect(pinned?.className).toMatch(/after:w-6/); // 24px
     expect(pinned?.className).toMatch(/after:bg-gradient-to-r/);
     expect(pinned?.className).not.toMatch(/\bborder-r\b/);
@@ -108,7 +108,7 @@ describe('📁 rule ② — hover and selection, without colour vision', () => {
     const { container } = grid();
     const selected = container.querySelector('tr[data-selected]');
     expect(selected).not.toBeNull();
-    expect(selected?.className).toContain('bg-accent-subtle');
+    expect(selected?.classList.contains('bg-accent-subtle')).toBe(true);
 
     const pinnedCell = selected?.querySelector('td');
     expect(pinnedCell?.className).toMatch(/before:w-0\.5/); // 2px
@@ -125,7 +125,7 @@ describe('📁 rule ② — hover and selection, without colour vision', () => {
   it('📁 hover is the sunken tint', () => {
     const { container } = grid();
     const rows = [...container.querySelectorAll('tbody tr')];
-    expect(rows[1]?.className).toContain('hover:bg-surface-sunken');
+    expect(rows[1]?.classList.contains('hover:bg-surface-sunken')).toBe(true);
   });
 });
 
@@ -199,7 +199,7 @@ describe('📁 rule ③ — inline editing', () => {
 
     // ⛔ **No fill and no border of its own** — the two things that would make
     // a table of these look like a form.
-    expect(input.className).toContain('bg-transparent');
+    expect(input.classList.contains('bg-transparent')).toBe(true);
     expect(input.className).not.toMatch(/\bborder\b/);
     expect(input.className).not.toMatch(/\bbg-surface\b/);
 
@@ -210,8 +210,8 @@ describe('📁 rule ③ — inline editing', () => {
 
     // ⚡ **The one thing focus DOES change here is stacking**, so the indicator
     // is not painted under the neighbouring cells.
-    expect(input.className).toContain('focus:relative');
-    expect(input.className).toContain('focus:z-10');
+    expect(input.classList.contains('focus:relative')).toBe(true);
+    expect(input.classList.contains('focus:z-10')).toBe(true);
   });
 });
 

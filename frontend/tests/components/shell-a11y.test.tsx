@@ -66,8 +66,8 @@ describe('📁 2.4.1 — skip links, visible on focus', () => {
     // `display:none` is not focusable and does nothing at all.
     render(<SkipLinks />);
     const link = screen.getByRole('link', { name: 'Skip to content' });
-    expect(link.className).toContain('sr-only');
-    expect(link.className).toContain('focus:not-sr-only');
+    expect(link.classList.contains('sr-only')).toBe(true);
+    expect(link.classList.contains('focus:not-sr-only')).toBe(true);
   });
 
   it('✅ and each one points at a landmark the shell actually renders', () => {

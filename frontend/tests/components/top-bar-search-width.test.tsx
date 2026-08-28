@@ -126,9 +126,9 @@ describe('⛔ the numbers are the contract’s and are not restated', () => {
   it('♿ only the width transitions, so the focus ring is immediate', () => {
     bar();
 
-    expect(slot().className).toContain('transition-[width]');
+    expect(slot().classList.contains('transition-[width]')).toBe(true);
     expect(slot().className).not.toContain('transition-all');
     // ⚡ **And nothing animates for a reader who asked for no motion.**
-    expect(slot().className).toContain('motion-reduce:transition-none');
+    expect(slot().classList.contains('motion-reduce:transition-none')).toBe(true);
   });
 });

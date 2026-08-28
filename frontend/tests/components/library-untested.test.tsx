@@ -129,7 +129,7 @@ describe('📁 a filter chip is one object, named, and says whether it is applie
       <FilterChip field="Period" value="q" options={OPTIONS} onChange={() => {}} />,
     );
     const applied = set.container.firstElementChild as HTMLElement;
-    expect(applied.className).toContain('bg-surface-sunken');
+    expect(applied.classList.contains('bg-surface-sunken')).toBe(true);
     expect(applied.className).not.toContain('border border-border');
   });
 

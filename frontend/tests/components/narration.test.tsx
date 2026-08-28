@@ -378,8 +378,8 @@ describe('§14 — the AI summary strip wears the reserved hue', () => {
 
     const strip = container.querySelector('section > div');
     expect(strip).not.toBeNull();
-    expect(strip?.className).toContain('bg-ai-subtle');
-    expect(strip?.className).toContain('border-ai-line');
+    expect(strip?.classList.contains('bg-ai-subtle')).toBe(true);
+    expect(strip?.classList.contains('border-ai-line')).toBe(true);
 
     // ⛔ **And not the neutral treatment it replaced**, so a revert fails here
     // rather than passing quietly on a superset of classes.

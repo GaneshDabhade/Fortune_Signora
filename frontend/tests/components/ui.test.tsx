@@ -49,7 +49,7 @@ describe('Button', () => {
 
     // tailwind-merge must resolve conflicts in the caller's favour, or
     // every page needs a wrapper div to do what className should.
-    expect(screen.getByRole('button').className).toContain('w-full');
+    expect(screen.getByRole('button').classList.contains('w-full')).toBe(true);
   });
 });
 
@@ -146,6 +146,6 @@ describe('Badge', () => {
   it('renders each tone without a hardcoded colour', () => {
     render(<Badge tone="success">Active</Badge>);
 
-    expect(screen.getByText('Active').className).toContain('text-success');
+    expect(screen.getByText('Active').classList.contains('text-success')).toBe(true);
   });
 });

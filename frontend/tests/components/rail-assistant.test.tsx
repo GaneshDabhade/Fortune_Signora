@@ -141,7 +141,16 @@ describe('📁 the design tints it, and only it', () => {
   it('✅ the assistant carries the intelligence tint and Settings does not', () => {
     render(<Navigation role="owner" roleKnown />);
 
-    expect(screen.getByRole('button', { name: 'Ask Signora' }).className).toContain('ai');
+    // ⚠️ **`toContain` deliberately, and this is the case it is FOR.** ⛔ **`ai`
+    // is not a class; it is the token FAMILY** — `text-ai`, `bg-ai-subtle`,
+    // `border-ai-line` all satisfy the claim *"carries the intelligence tint"*.
+    // ⚡ **Converting this to `classList` would assert a class that does not
+    // exist**, which is why the substring sweep does not propose a blanket
+    // rewrite. ⚠️ **QE's row id is not cited: it is filed on their branch and
+    // `row-citations.test.tsx` refuses a row this tree cannot see.**
+    expect(
+      screen.getByRole('button', { name: 'Ask Signora' }).className,
+    ).toContain('ai');
     expect(screen.getByRole('link', { name: 'Settings' }).className).not.toContain('ai');
   });
 });

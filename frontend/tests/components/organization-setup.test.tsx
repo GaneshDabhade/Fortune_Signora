@@ -204,8 +204,8 @@ describe('Organization setup', () => {
     expect(current).toHaveAttribute('aria-current', 'true');
     // ✅ **The sighted half, which is what was missing.**
     expect(current).toHaveTextContent('Current');
-    expect(current.className).toContain('bg-accent-subtle');
-    expect(current.className).toContain('font-semibold');
+    expect(current.classList.contains('bg-accent-subtle')).toBe(true);
+    expect(current.classList.contains('font-semibold')).toBe(true);
 
     // ⚡ **The vacuity half**: the OTHER row must carry none of it, or these
     // assertions pass on a list that marks everything.
