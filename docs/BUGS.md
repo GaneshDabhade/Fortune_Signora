@@ -6233,6 +6233,31 @@ test:
 
 ---
 
+### ✅ The `make` half VERIFIED — QE, 2026-08-28, at `3d4ff473`
+
+**Exercised through `refuse-slot-0` ALONE rather than through `make demo-seed`**, ⛔ **deliberately: verifying a guard by triggering the condition it prevents risks the outcome if the guard is broken.** ⚡ **`refuse-slot-0` is a standalone prerequisite target, so a failing guard could not have reached a database.** ✅ **Containment checked first — 3000, 8000 and 5432 were all free.**
+
+| condition | expected | result |
+|---|---|---|
+| `SIGNORA_ENVIRONMENT=review` *(derives port 5432)* | **refuse** | ✅ `REFUSED: port 5432 is slot 0 — human review's stack.` **exit 2** |
+| `SIGNORA_ENVIRONMENT=lane-qe` | pass | ✅ **exit 0** |
+| `SIGNORA_ENVIRONMENT=review ALLOW_SLOT_0=1` | pass | ✅ **exit 0** |
+
+⛔ **All three, because a guard that refuses everything is not a guard** and the documented override has to work or people route around it.
+
+### ⚡ And the `conftest` half refused QE by accident on the same day
+
+**Seeding the production stack to verify [B-231](#b-231), QE set `SIGNORA_TEST_APP_DATABASE_URL` and left `SIGNORA_TEST_ADMIN_DATABASE_URL` pointing at `localhost:5432`.**
+
+```
+RuntimeError: REFUSED — SIGNORA_TEST_ADMIN_DATABASE_URL points at
+localhost:5432/signora, which is human review's database. This suite
+truncates every table after each test (B-270).
+```
+
+⚠️ **That is this row's exact hazard, reproduced unintentionally by the lane that wrote the guard**, three steps into something careful. 🔴 **It REFUSED rather than warned**, which is the property that made it work — **a warning is what you read past in that state.** ⛔ **It remains `FIXED` rather than `VERIFIED`: it is QE's own code and QE does not verify its own work.**
+
+
 ### B-269 · Three nullable JSONB columns document a `NULL` that no SQL predicate can see
 
 | | |
@@ -9043,6 +9068,25 @@ Received: http://localhost:3300/api/auth/verify-email?token=eyJhbGciOiJIUzI1NiJ9
 
 ⚠️ **And the correct repair is not obviously *"loosen the regex"*.** **The assertion the journey actually wants is *the link is real and openable*, which is the row's own stated ask** — ✅ **so the honest fix asserts that the link RESOLVES**, by following it, rather than pattern-matching a URL whose shape belongs to a dependency. ⛔ **A regex over a vendor's URL is a test of Better Auth's routing, not of Signora's.**
 
+### ✅ Verified 2026-08-28 — and the row was stale rather than wrong
+
+⚠️ **This row's `Fix` reads *"`twoFactor()` removed until its schema exists"*, and `twoFactor()` IS registered today** — 📁 [`lib/auth/server.ts`](../frontend/lib/auth/server.ts):113, re-added deliberately under [TASK-493](BACKLOG.md) with its own justification. ⛔ **So verifying the FIX would have been the wrong question.** ✅ **What is verified is that the DEFECT does not occur** — *"every `POST /api/auth/sign-up` failed"* — which is what the row is actually about.
+
+**Measured against a production build on 3100, through the endpoint the row names:**
+
+```
+POST /api/auth/sign-up/email                                   → HTTP 200
+{"user":{"email":"qe-verify-b231-…","twoFactorEnabled":false,…}}
+
+select email from auth."user" where email='qe-verify-b231-…'   → the row exists
+select tablename from pg_tables where schemaname='auth'
+    → account  session  twoFactor  user  verification
+```
+
+⚡ **The `twoFactor` table is present, which is the condition the original fix was waiting for**, and `twoFactorEnabled: false` on a fresh account is the row's own Definition of Done: *"a person with no second factor enrolled signs in exactly as they did."*
+
+⛔ **`make smoke` could not have established this.** 📁 `infra/smoke.sh:88` — `mint_token()` signs a JWT **directly from the private key** and no stage calls `/api/auth/sign-up`. ⚠️ **Verifying this row required standing the endpoint up and using it**, which is how [B-1090](#b-1090) was found on the way.
+
 ### B-243 · 🔴 `backend/.env.example` runs the API as the database owner, so Row-Level Security is bypassed on every request
 
 > ## ⛔ SUPERSEDED BY [B-183](#b-183) — folded 2026-08-12 by QE, whose duplicate this was
@@ -9599,7 +9643,7 @@ query errors  →  error set, isLoading false  →  GATE OPENS  →  page mounts
 | **Module** | `product_surface` — [`frontend/lib/auth/server.ts`](../frontend/lib/auth/server.ts) |
 | **Current assignee** | **Lane A** — and 🔴 **this lane shipped it**, in [TASK-493](BACKLOG.md), hours earlier |
 | **Severity** | 🔴 **Blocks a milestone.** ⛔ **Nobody could create an account** — the first journey in the product |
-| **Status** | ✅ **`FIXED` — Lane A, 2026-08-10, in the slice that found it.** ⚠️ **QE verifies and closes** |
+| **Status** | ✅ **`VERIFIED` — QE, 2026-08-28, at `3d4ff473`**, against a **production build** on 3100, through the real endpoint. ⚠️ **Verified as *the defect does not occur*, NOT as *the fix survives*** — see below |
 | **Commit found** | Found by [TASK-475](BACKLOG.md)'s journeys running against the real stack |
 
 > ⚠️ **NOT `VERIFIED` — and the reason is the rule QE applied to sixteen backlog rows this morning.** ⛔ **QE has not measured that account registration works.** **The suite passes and Lane A's own journeys found and fixed it, which is why the row reads `FIXED` rather than `OPEN`** — ✅ **but `VERIFIED` means QE pointed at the behaviour, and the certification gates never create an account.** **It closes when a journey QE can run does.**
@@ -20787,3 +20831,60 @@ const ROOTS = ['app', 'components'];
 ⛔ **The first version of the fix cited `B-1089` in a comment while no such row existed.** ✅ **📁 [`row-citations.test.tsx`](../frontend/tests/components/row-citations.test.tsx) failed the full suite** — *"file the row, or remove the citation — never renumber it to something that happens to exist"* — **and it did not appear when the guard was run in isolation.**
 
 ⚡ **That is [B-1069](#b-1069)'s guard doing exactly its job, on QE, four hours after QE wrote up a false claim in a dashboard.** **Same class: a citation is the evidence, so nobody checks the evidence.**
+
+### B-1090 · 🟠 A production-topology stack reports healthy and rejects every registration, because only one of the two schemas has a provisioning step
+
+| | |
+|---|---|
+| **Module** | **`platform_foundation`** — 📁 [`infra/docker-compose.prod.yml`](../infra/docker-compose.prod.yml) `migrate:` · [`Makefile`](../Makefile) `up:` |
+| **Current assignee** | **Lane C** — current assignee of `platform_foundation` in [`modules.toml`](coordination/modules.toml). ⛔ **`infra/` is Lane C's under [D-022](DECISION_REGISTER.md)**, and this is new provisioning rather than the repair of a gate QE runs |
+| **Severity** | 🟠 — ⛔ **no customer can create an account on a stack provisioned exactly as the production topology defines it.** ⚠️ **Not 🔴: it is latent until M14.5 provisions that topology, and every local workflow already runs the missing step.** ⚡ **But 📁 [§20b](../CLAUDE.md) binds every milestone to keeping the application *deployable to* that topology, and a topology that cannot register a user is not** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-28 by QE**, attempting to verify [B-231](#b-231) against a real endpoint after establishing that `make smoke` never touches `/api/auth/sign-up` |
+| **Commit found** | `3d4ff473` |
+
+### ⛔ Reproduced, on a stack the gates had just passed
+
+```
+make up                        # every container healthy
+POST /api/auth/sign-up/email   → HTTP 500, empty body
+```
+
+**`docker logs signora-prod-frontend-1`:**
+
+```
+ERROR [Better Auth]: relation "user" does not exist
+code: '42P01'   routine: 'parserOpenTable'
+```
+
+**Measured in the prod database rather than inferred:** ⚡ **70+ application tables present; `user`, `session`, `account` and `verification` all absent.**
+
+### 📁 The asymmetry, and it is the whole finding
+
+📁 **[§8](../CLAUDE.md) requires schema migration to run as *"a discrete release step, never from inside a running service."*** ✅ **Both tiers obey it.** ⛔ **Only one of them has that step in the production topology.**
+
+| tier | discrete step | present in `docker-compose.prod.yml`? |
+|---|---|---|
+| **Python / Alembic** | `apps.migrate.main` | ✅ **the `migrate:` service, with the owner credential and a `service_completed_successfully` gate** |
+| **Better Auth** | `npm run auth:migrate` | ⛔ **nothing** |
+
+⚡ 📁 **[`auth-migrate.ts`](../frontend/scripts/auth-migrate.ts) is explicit that this is by design** — *"It does not run automatically, and no service runs it at boot… the same rule the Python tier follows, for the same reason."* ✅ **The rule is right.** ⛔ **The gap is that the production compose implements the rule for one tier and simply omits the other.**
+
+⚠️ **The step exists for the DEV stack** — 📁 `demo-prepare` runs `alembic upgrade head` **and** `auth:migrate` **and** `demo-users` **and** `demo-seed`. ⛔ **`make up` runs Alembic alone.**
+
+### 🔴 Why no gate could have caught it
+
+| gate | why it passes on a stack that cannot register anyone |
+|---|---|
+| **`make smoke`** | ⚡ **`mint_token()` signs a JWT directly from the private key in `.env.prod-local`** — 📁 `infra/smoke.sh:88`. ⛔ **It never calls `/api/auth/sign-up`, and no stage does** |
+| **`make dr`** | creates its workspace with a minted token |
+| **health · readiness** | the frontend is serving; the missing tables are a query-time failure |
+| **`docker ps`** | ⛔ **every container reports `healthy`** |
+
+⚡ **So the one observation that reveals it is registering a user, and nothing in the repository does that against this stack.** 📁 **The browser suite would — and it is pointed at a lane's dev server, never at 3100.**
+
+### ✅ What a fix needs to say
+
+**A provisioning step for Better Auth's schema in the production topology, on the same terms the Alembic one already has**: a discrete step, under a credential that may perform DDL, gated before the frontend accepts traffic. ⛔ **Not a service that migrates at boot** — that is what both tiers correctly refuse.
+
+⚠️ **And the sequence is currently operator lore**: it appears in [B-1044](#b-1044)'s timing table and in [B-1017](#b-1017)'s reproduction as *"`make up` · `auth:migrate` · `demo:users` · `seed`"*, **which is exactly the shape of knowledge that does not survive a rotation** ([§12](../CLAUDE.md)).
