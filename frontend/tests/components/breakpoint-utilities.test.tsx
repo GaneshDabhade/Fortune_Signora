@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { globSync } from 'glob';
 import { describe, expect, it } from 'vitest';
 
 /**
@@ -36,13 +37,51 @@ import { describe, expect, it } from 'vitest';
  */
 
 const ROOT = process.cwd();
+/** 📁 The committed snapshot — D-138's implementation authority, never `Design Documents/`. */
+const SNAPSHOT = join(ROOT, '..', 'docs', 'design-snapshot', 'screens');
 
 /** The bands the config actually defines. */
 function definedScreens(): string[] {
+  return screenBands().map(([name]) => name);
+}
+
+/**
+ * ⚡ **Name AND value.** 🔴 **This helper captured both and returned only the
+ * NAME**, so every assertion below was green about `tablet` while saying
+ * nothing about `768px` — **and changing it to `800px` would have passed.**
+ *
+ * ⚠️ **The band names are this repository's; the NUMBERS are the design's**, and
+ * a config that keeps the names while moving a number reflows 24 documents'
+ * worth of screens somewhere they are not drawn to.
+ */
+function screenBands(): [string, number][] {
   const config = readFileSync(join(ROOT, 'tailwind.config.ts'), 'utf8');
   const block = config.slice(config.indexOf('screens: {'));
   const end = block.indexOf('}');
-  return [...block.slice(0, end).matchAll(/(\w+):\s*'(\d+)px'/g)].map((m) => m[1] as string);
+  return [...block.slice(0, end).matchAll(/(\w+):\s*'(\d+)px'/g)].map((m) => [
+    m[1] as string,
+    Number(m[2]),
+  ]);
+}
+
+/**
+ * 📁 **Every number inside a `range:` declaration, across the whole snapshot.**
+ *
+ * ⛔ **This is what makes the assertion a CHECK rather than a restatement** —
+ * 📁 the file's own docblock: *"a guard is only ever as wide as the population
+ * it was written from, and this one inherited its population from the config it
+ * was checking."* ⚡ **Reading the design corpus is the only way the config can
+ * be wrong about it.**
+ */
+function corpusBreakpoints(): Set<number> {
+  const found = new Set<number>();
+  for (const file of globSync('*.dc.html', { cwd: SNAPSHOT })) {
+    const text = readFileSync(join(SNAPSHOT, file), 'utf8');
+    for (const m of text.matchAll(/range:\s*'([^']*)'/g)) {
+      for (const n of (m[1] ?? '').matchAll(/\d{3,4}/g)) found.add(Number(n[0]));
+    }
+  }
+  return found;
 }
 
 /** Every `prefix:utility` in the source, with the file it is in. */
@@ -117,6 +156,36 @@ describe('🔴 B-424 — no utility names a breakpoint the config does not defin
       'smalllaptop',
       'tablet',
     ]);
+  });
+
+  it('🔴 B-298 — and every band sits on a number the DESIGN actually names', () => {
+    /**
+     * 🔴 **The assertion above pins the NAMES and said nothing about the
+     * numbers** — 📁 `definedScreens()` captured both and returned one.
+     * ⛔ **`tablet: '800px'` would have passed it**, while 📁 24 design
+     * documents reflow at `768`.
+     *
+     * ⚡ **Read out of the snapshot rather than transcribed**, which is what
+     * makes this a check: **a config value that no `range:` declaration
+     * mentions is one this repository invented.**
+     */
+    const corpus = corpusBreakpoints();
+    // ⚠️ **The instrument before the subject** — an empty corpus would report
+    // every band as valid.
+    expect(corpus.size, 'no `range:` declarations were read from the snapshot').toBeGreaterThan(3);
+
+    const invented = screenBands()
+      .filter(([, px]) => !corpus.has(px))
+      .map(([name, px]) => `${name}: ${px}px`);
+
+    expect(
+      invented,
+      'these breakpoints appear in no design document’s `range:` declaration',
+    ).toEqual([]);
+
+    // ⛔ **And the one the row is about, named explicitly** — 📁 `768` is the
+    // most-used breakpoint in the corpus and was the one band with no token.
+    expect(screenBands()).toContainEqual(['tablet', 768]);
   });
 
   it('⛔ no Tailwind default breakpoint survives as a live utility', () => {
