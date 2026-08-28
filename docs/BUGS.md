@@ -20209,7 +20209,7 @@ role=null aria-live=polite  "Navigated to /w/4e158d14-ab29-4b23-b99d-a8b10986f8e
 | **Module** | **`product_surface`** — 📁 [`app/(app)/w/[workspace]/home/home.tsx`](../frontend/app/(app)/w/[workspace]/home/home.tsx):433 |
 | **Current assignee** | **Lane A** |
 | **Severity** | 🟡 — **wrong but survivable**: the workspace IS on screen, in the scope line beside the heading. ⚠️ **What a screen-reader user loses is the h1 as the page's name** |
-| **Status** | **`OPEN`** |
+| **Status** | **`OPEN` — ⛔ BLOCKED on [C-1580](LANE_COORDINATION.md), raised by Lane A 2026-08-28.** ✅ **The FINDING is accurate and confirmed**: `main h1` is the greeting, and the design states ① four times. ⛔ **The REMEDY is not derivable, and picking one would settle a design question inside a defect fix.** ⚡ **The design's own Home mock draws NO `h1` at all** — the workspace name sits in `<span>`s and the greeting is an `h2` — **and `workspace-strip.tsx`, which carries that name, is CONDITIONAL and DISMISSIBLE**, so making it the heading loses Home's only `h1` on the second visit of the day. ⚠️ **Four readings, each breaking one of the design's three statements** — tabulated in C-1580. ⛔ **Nothing changed; today's behaviour is the only reading that never leaves Home without an `h1`** |
 | **Found** | **2026-08-26 by QE**, Home conformance audit |
 | **Commit found** | `c6860a48` |
 

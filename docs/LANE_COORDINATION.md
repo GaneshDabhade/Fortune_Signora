@@ -17410,3 +17410,57 @@ rather than its licence. **QE picking it is no better than a lane picking it**
 
 📁 **Related:** [C-1578](#) is the same shape one register over — a design
 statement and a producer disagreeing, recorded rather than resolved.
+
+---
+
+### C-1580 · Home must have an `h1` naming the organization, must not draw one, and the element carrying the name is dismissible
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-28, implementing [B-1078](BUGS.md) |
+| **Module** | `product_surface` — `components/home/greeting.tsx`, `components/home/workspace-strip.tsx` |
+| **Owner** | 🔴 **Product owner** — ⛔ **three design statements, no two of which can be satisfied together** |
+| **Status** | **`OPEN`** — ⚠️ **blocking nothing; today's behaviour is one of the three readings and ships unchanged** |
+
+### 📁 The three statements, all from `Fortune Signora Home.dc.html`
+
+**①** `a11y` **`1.3.1`**: *"Home is one `<main>` with **an h1 naming the workspace**. Each card is a `<section>` with its own `h2`…"*
+
+**②** **The screen's own mock draws NO `h1`.** ⚡ Read out of the snapshot, in document order around the greeting:
+
+```
+<span>You are in</span>  <span>Northwind Global</span>  <span>Switch workspace</span>  <span>✕</span>
+<h2 style="font-size:27px…">Good morning, Aurélie</h2>
+<div>Thursday 13 August · 3 things need you today · 2 meetings</div>
+```
+
+⛔ **The workspace name is in `<span>`s, and the greeting — the top visual element — is an `h2`.**
+
+**③** **Focus**: *"Focus lands on the h1, not the search field"* · *"Skip to content… lands on the Home h1"* · *"Focus after entry is on the h1."*
+
+> ⚠️ **The `<h1>Home</h1>` elsewhere in the document is the design VIEWER's own chrome** — it sits beside a Light/Dark toggle at 44px — **and is not part of the Home mock.** ✅ **Checked before being cited.**
+
+### 🔴 And the element that carries the name cannot be the heading
+
+📁 **`workspace-strip.tsx` is CONDITIONAL and DISMISSIBLE** — `welcoming = firstEver && firstToday && !dismissed`, `confirming = !firstEver && memberships > 1 && firstToday && !dismissed`.
+
+⛔ **So the strip is absent on the second visit of the day, absent for a single-organization reader, and removable by the customer.** ⚡ **A page whose only `h1` disappears when a strip is dismissed fails ① in the majority of sessions** — **which is worse than the defect B-1078 reports.**
+
+### ⛔ Every available reading breaks one of the three
+
+| | satisfies | breaks |
+|---|---|---|
+| **A — greeting stays `h1`** *(ships today)* | ②'s prominence, ③'s focus target | 🔴 **①** — the `h1` names the person |
+| **B — a VISIBLE `h1` naming the organization** | ①, ③ | 🔴 **②** — adds a heading the design does not draw, above a 27px greeting |
+| **C — a VISUALLY HIDDEN `h1`** | ①, ② | 🔴 **③** — **focus lands on something invisible**, and 📁 the same document says *"a focused element is never hidden behind sticky chrome"* |
+| **D — the strip's name becomes the `h1`** | ①, ② | 🔴 **①** again — **no `h1` at all once dismissed** |
+
+### ✅ What Lane A did, and did not
+
+⛔ **Nothing changed.** **Reading A ships**, which is what B-1078 reports as the defect — ⚠️ **and it is the only reading that never leaves Home without an `h1`.**
+
+📁 **B-1078 is accurate as a FINDING**: `main h1` is `["Good morning, Dana"]` and the design does say ① four times. ⛔ **What is not derivable is the REMEDY**, and picking one would settle a design question inside a defect fix.
+
+⚡ **Three of Home's four checkable `a11y` claims pass** — `1.3.1`'s structure, `1.4.10`'s 320px, `3.2.3`'s stable order — **so this is one clause, not a failing screen.**
+
+📁 **Same shape as [C-1553](#c-1553)** (the recents card's four statements, no three compatible) **and [B-297](BUGS.md)** (*three-cycle* against `infinite`): **the design states more than one thing and the implementation can satisfy any two.**
