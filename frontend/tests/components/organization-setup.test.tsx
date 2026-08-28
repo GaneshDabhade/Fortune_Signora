@@ -174,13 +174,45 @@ describe('Organization setup', () => {
   });
 
   it('marks the organization currently open, so switching is not guesswork', () => {
+    /**
+     * 🔴 **This asserted `aria-current` and nothing else, and the row was
+     * therefore announced and INVISIBLE.** ⛔ **Every row carried identical
+     * classes**, so a sighted reader could not tell which organization they
+     * were in from the list that exists to tell them.
+     *
+     * 📁 **The design draws three markers** — `bg: var(--brand-tint)` ·
+     * `weight: 600` · `mark: 'Current'` — and 📁 `Workspace Chooser` `1.4.1`
+     * states the rule: *"the selected row uses the brand tint, a 600-weight
+     * name and the word 'Current'. **Colour alone never marks selection.**"*
+     *
+     * ⚡ **The same trio the shell switcher already renders**, deliberately —
+     * two surfaces naming one fact the same way is what stops a customer
+     * learning it twice.
+     *
+     * ⚠️ **The query is a regex now**, because the visible word joins the
+     * accessible name. **That is the switcher's behaviour too**, and it is the
+     * reason this test failed rather than a sign it was wrong.
+     */
     const second = { ...workspace, id: 'w-2', name: 'Northwind APAC' };
     reset({ workspaces: [workspace, second] });
     render(<OrganizationSetupPage />);
-    expect(screen.getByRole('button', { name: 'Northwind' })).toHaveAttribute(
-      'aria-current',
-      'true',
-    );
+
+    // ⚡ **Named by what only the current row says** — `/^Northwind\b/` matches
+    // both rows, and `'Northwind'` exactly matches neither now that the word
+    // joins the name.
+    const current = screen.getByRole('button', { name: 'Northwind Current' });
+    expect(current).toHaveAttribute('aria-current', 'true');
+    // ✅ **The sighted half, which is what was missing.**
+    expect(current).toHaveTextContent('Current');
+    expect(current.className).toContain('bg-accent-subtle');
+    expect(current.className).toContain('font-semibold');
+
+    // ⚡ **The vacuity half**: the OTHER row must carry none of it, or these
+    // assertions pass on a list that marks everything.
+    const other = screen.getByRole('button', { name: 'Northwind APAC' });
+    expect(other).not.toHaveAttribute('aria-current');
+    expect(other).not.toHaveTextContent('Current');
+    expect(other.className).not.toContain('bg-accent-subtle');
   });
 
   it('never shows a customer the platform word', () => {

@@ -16345,7 +16345,7 @@ clothes*.
 
 ### 📁 They are not identical, and the difference is a layout decision
 
-**Twelve diff lines, all in the logo row:**
+**Ten differing lines, all in the logo row** — ⚠️ **and this row first said *twelve*, which is `diff | wc -l`: the count of diff OUTPUT lines, two of which are the range header and the `---` separator.** ⛔ **Six lines exist only in the prefixed file and four only in the unprefixed one.** ⚡ **Corrected by QE, who measured it rather than taking it** — 🔴 **and an imprecise count inside a row about a miscount is the defect describing itself.**
 
 > **Prefixed**: `display:flex;align-items:center;gap:10px;**row-gap:6px;flex-wrap:wrap**` with the actions in their own wrapping `<span>` and `white-space:nowrap` on the filename.
 >

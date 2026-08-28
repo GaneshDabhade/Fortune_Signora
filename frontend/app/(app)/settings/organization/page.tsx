@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from '@/lib/design/cn';
 import { suggestSlug } from '@/lib/workspace/slug';
 import { Building2, Globe, Palette, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
@@ -319,20 +320,57 @@ export default function OrganizationSetupPage() {
         <CardBody>
           {workspaces.length > 1 ? (
             <ul className="flex flex-col gap-2">
-              {workspaces.map((candidate) => (
-                <li key={candidate.id}>
-                  <button
-                    type="button"
-                    onClick={() => setActiveWorkspace(candidate.id)}
-                    aria-current={
-                      candidate.id === activeWorkspace?.id ? 'true' : undefined
-                    }
-                    className="w-full rounded border border-border px-3 py-2 text-left text-sm text-content transition-colors hover:border-border-strong "
-                  >
-                    {candidate.name}
-                  </button>
-                </li>
-              ))}
+              {workspaces.map((candidate) => {
+                const current = candidate.id === activeWorkspace?.id;
+                return (
+                  <li key={candidate.id}>
+                    {/**
+                      * 🔴 **The current row was announced and INVISIBLE.**
+                      * ⛔ `aria-current` was the only thing distinguishing it —
+                      * every row carried identical classes — **so a sighted
+                      * reader could not tell which organization they were in
+                      * from the list that exists to tell them.**
+                      *
+                      * 📁 **The design draws three markers and this now carries
+                      * all three**: `bg: var(--brand-tint)` · `weight: 600` ·
+                      * `mark: 'Current'`. ⚡ **Which is the same trio
+                      * [`workspace-switcher.tsx`](../../../../components/shell/workspace-switcher.tsx)
+                      * already renders** — 📁 `Workspace Chooser` `1.4.1`:
+                      * *"the selected row uses the brand tint, a 600-weight
+                      * name and the word 'Current'. **Colour alone never marks
+                      * selection.**"*
+                      *
+                      * ⛔ **Not a fourth vocabulary for one fact** — the two
+                      * surfaces name the same thing the same way, which is what
+                      * stops a customer learning it twice.
+                      *
+                      * ⚠️ **The design's region, member count and *Suspended*
+                      * mark are NOT here**: `Workspace` publishes no region, no
+                      * member count and no state. **Three markers that exist
+                      * beat six where half are invented.**
+                      */}
+                    <button
+                      type="button"
+                      onClick={() => setActiveWorkspace(candidate.id)}
+                      aria-current={current ? 'true' : undefined}
+                      className={cn(
+                        'flex w-full items-center gap-2 rounded border px-3 py-2 text-left text-sm transition-colors',
+                        current
+                          ? 'border-accent bg-accent-subtle font-semibold text-accent'
+                          : 'border-border text-content hover:border-border-strong',
+                      )}
+                    >
+                      <span className="min-w-0 flex-1 truncate">{candidate.name}</span>
+                      {current ? (
+                        <span className="flex-none text-2xs font-semibold uppercase tracking-wide text-accent">
+                          Current
+                        </span>
+                      ) : null}
+
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <EmptyState
