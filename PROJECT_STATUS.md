@@ -2,13 +2,50 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `8c247dd6`, 2026-08-27.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `cf1d31db`, 2026-08-28.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
 > **It is a dashboard, not an engineering journal.** [`SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) answers a different question — *"what should the next session know?"* — and does not repeat what is here. Historical implementation detail belongs in ADRs and module documentation; **the appendices below are dated records and are never rewritten to match the present.**
 
 ---
+
+## Cycle 276 — promoted `cf1d31db0782`, 2026-08-28
+
+| | |
+|---|---|
+| **Promoted** | **`cf1d31db0782`** — `promoted == certified`, 18 commits, **zero merge commits**. `--audit-main` holds across 2468 |
+| **Gates** | **5465 pytest · 95.03% · 679 Security Invariants · mypy strict 958 · import-linter 37/37 · tsc clean · frontend 4287 in 243 files · eslint clean at `--max-warnings=0` · smoke 24 stages in 321s · scenario 208** |
+| **DR** | ✅ passed |
+| **Migrations** | none — reversibility **not applicable** rather than ticked |
+
+**Lane A, seventeen commits**: Security Center's twelve `a11y` claims, Workspace Chooser's focus and target sizes, Security Gates' region and focus contracts, the onboarding forms' first witness, and **[B-1085](docs/BUGS.md)**.
+
+### 🔴 [B-1085](docs/BUGS.md) — an engineering docstring rendered on Home as visible text
+
+⛔ **An unbraced block comment between two JSX children is not a comment. It is a text node, and React renders it.** ⚠️ **It shipped above the fold, immediately above *"You are working in Northwind Global"*, to everyone with more than one organization** — through several promotions.
+
+⚡ **`tsc` and `eslint` both passed, because a text node is valid JSX.** 🔴 **And nothing in the repository rendered `WorkspaceStrip` at all**, so no assertion could have seen it. **A component with no test is not a coverage gap — it is a surface with no witness.**
+
+✅ **`react/jsx-no-comment-textnodes` is now registered** — **a parser rule rather than a source sweep, because deciding whether a `/**` sits inside JSX is a parsing question and every regex answer is too narrow or too wide.**
+
+### ✅ Zero React warnings across 4287 tests, reported as its own line
+
+⚡ **A suite that is green AND quiet has one fewer place for something to hide.** 📁 **This cycle proved why**: Lane A found three test files whose mocks answered every unmatched path with a page of accounts — **and in two, the queue is positional, so an unmatched `/saved-views` call CONSUMED a paginated page and shifted which page an assertion was reading.** ⛔ **Those tests PASSED while asserting against a page they did not believe they were reading.** ⚠️ **The only surface evidence was a React key warning nobody read** — **and an unread warning is functionally identical to no warning at all.**
+
+### ⚠️ The browser suite ran as an EXPERIMENT and deliberately gated nothing
+
+📁 **[B-1086](docs/BUGS.md) records that the suite cannot currently attribute a regression.** ⛔ **So a conventional run would have produced a number nobody could act on.** ✅ **Instead it ran against a PRODUCTION BUILD of the pinned commit, testing B-1086's own hypothesis** — that the phantom failures came from the dev server stalling on on-demand compilation.
+
+⛔ **It did not gate this promotion in either direction, and the certification record says so explicitly** so nobody later reads the promotion as having waited for it. **The browser suite is not in `REQUIRED_GATES`; certification decided, and certification passed.**
+
+### 📁 Two miscounts, and the conclusion is about method rather than either error
+
+**Lane A reported the duplicate design files differing in 12 lines; QE measured 10** — `diff | wc -l` counts diff OUTPUT lines, two of which were the range header and the separator. **QE then miscounted the screens: 35 files minus the duplicate is 34, but `MANIFEST.md`'s own sentence four lines above also excludes an audit document. 33 is right.**
+
+> ⚡ **Both are correct procedures applied to the wrong set. Neither was caught by re-running anything — only by the other person counting independently.** ⛔ **A checklist reproduces the procedure, and the procedure was not what was wrong.**
+
+⚠️ **QE's audit notes carried *"of 35 designs"* as the denominator** — **a conformance report with the wrong denominator overstates coverage in the direction that flatters it.** ✅ **Corrected to 33.**
 
 ## Cycle 275 — promoted `8c247dd68722`, 2026-08-27
 

@@ -1,5 +1,25 @@
 # Session Handoff
 
+> ## Cycle 276 — promoted `cf1d31db0782`, 2026-08-28 · **a docstring that shipped on Home, and a suite that runs as an experiment**
+>
+> **`main` = `cf1d31db0782` = the certified commit.** **ZERO merges**, `--audit-main` holds across 2468. `pytest` **5465** · **95.03%** · **679 invariants** · `mypy` **958** · `import-linter` **37/37** · `tsc` · frontend **4287/243** · `eslint` at `--max-warnings=0` · smoke **24/321s** · scenario **208** · DR ✅. **No migration.**
+>
+> 🔴 **[B-1085](BUGS.md) — AN UNBRACED JSX BLOCK COMMENT IS A TEXT NODE AND REACT RENDERS IT.** **It shipped above the fold on Home, immediately above *"You are working in Northwind Global"*, to everyone with more than one organization, through several promotions.** ⛔ **`tsc` and `eslint` both passed — a text node is valid JSX** — **and NOTHING IN THE REPOSITORY RENDERED `WorkspaceStrip` AT ALL.** ⚡ **A component with no test is not a coverage gap; it is a surface with no witness.** ✅ **`react/jsx-no-comment-textnodes` now registered.**
+>
+> ⚠️ **THE BROWSER SUITE RAN AS AN EXPERIMENT AND GATED NOTHING, DELIBERATELY.** 📁 **[B-1086](BUGS.md): the suite cannot attribute a regression** — eleven failures in 275, **zero reproduced on a re-run of the same tree.** ✅ **So it ran against a PRODUCTION BUILD of the pinned commit, to test B-1086's own hypothesis.** ⛔ **The certification record says explicitly that it gated nothing, so nobody later reads the promotion as having waited for it.**
+>
+> 🔴 **A SUITE-MOCK DEFECT THAT CHANGES HOW TO READ ANY GREEN RUN.** **Three test files' mocks answered EVERY unmatched path with a page of accounts.** ⛔ **In two, the queue is POSITIONAL — so an unmatched `/saved-views` call CONSUMED a paginated page and shifted which page an assertion was reading. THOSE TESTS PASSED.** ⚠️ **The only evidence was a React key warning nobody read.** ⚡ **An unread warning is functionally identical to no warning at all — which is why *zero React warnings* is now reported as its own line beside the 4287.**
+>
+> 📁 **TWO MISCOUNTS AND THE CONCLUSION IS ABOUT METHOD.** **Lane A: `diff | wc -l` counted the range header and separator — 12 reported, 10 real. QE: 35 files minus the duplicate is 34, but `MANIFEST.md` also excludes an audit document — 33 is right.** ⛔ **Both are correct procedures applied to the wrong set, and NEITHER was caught by re-running — only by the other person counting independently.** ⚠️ **A checklist reproduces the procedure, and the procedure was not what was wrong.**
+>
+> ⚠️ **QE'S AUDIT DENOMINATOR WAS WRONG AND IS CORRECTED: 33 distinct screens, not 35.** ⛔ **A conformance report with the wrong denominator overstates coverage in the direction that flatters it.**
+>
+> 🔴 **[C-1577] — THE DESIGN SNAPSHOT HOLDS TWO REVISIONS OF ONE SCREEN.** **`Workspace Setup.dc.html` is the only file in `screens/` without the `Fortune Signora ` prefix and differs in 10 lines.** ⛔ **Both are in the snapshot with equal standing.** **It blocks nobody today only because the differing lines are the logo-upload row and logo upload has no producer — which is luck, not design.** ✅ **Lane C's: no implementation lane may delete from the snapshot, and QE may not either.**
+>
+> ⚡ **NEXT CYCLE'S INPUT: `origin/lane-a-product-surface-r4` above the pin — Lane A rebases and re-gates before 277 is cut.**
+
+> ---
+>
 > ## Cycle 275 — promoted `8c247dd68722`, 2026-08-27 · **the browser suite cannot attribute, and QE nearly argued its way out of running it**
 >
 > **`main` = `8c247dd68722` = the certified commit.** **ZERO merge commits**, `--audit-main` holds across 2449. `pytest` **5465** · **95.03%** · **679 invariants** · `mypy` **958** · `import-linter` **37/37** · `tsc` · frontend **4201/232** · `eslint` · smoke **24/212s** · scenario **208** · DR ✅. **No migration.**

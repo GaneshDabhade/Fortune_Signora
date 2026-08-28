@@ -71,7 +71,18 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-27, `8c247dd6`
+## Current — as of 2026-08-28, `cf1d31db`
+
+> ⚡ **Cycle 276 Closeout. 18 commits, Lane A + QE, no migrations, EIGHT gates on the FIRST attempt.**
+>
+> ✅ **No board rows removed** — this cycle promoted no `TASK-nnn`.
+>
+> 🔴 **[B-1085](BUGS.md): an unbraced JSX block comment rendered as visible text on Home**, above the fold, through several promotions. **`tsc` and `eslint` both passed; `WorkspaceStrip` had no test at all.**
+>
+> ⚠️ **The browser suite ran as an EXPERIMENT and gated nothing** — [B-1086](BUGS.md) records that it cannot attribute a regression.
+>
+> 📁 **[C-1577] raised against the design snapshot: two revisions of one screen, equal standing. Lane C's.**
+
 
 > ⚡ **Cycle 275 Closeout. 7 commits, Lane A + QE, no migrations, EIGHT gates on the FIRST attempt.**
 >
