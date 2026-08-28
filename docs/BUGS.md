@@ -20975,3 +20975,136 @@ code: '42P01'   routine: 'parserOpenTable'
 **A provisioning step for Better Auth's schema in the production topology, on the same terms the Alembic one already has**: a discrete step, under a credential that may perform DDL, gated before the frontend accepts traffic. ⛔ **Not a service that migrates at boot** — that is what both tiers correctly refuse.
 
 ⚠️ **And the sequence is currently operator lore**: it appears in [B-1044](#b-1044)'s timing table and in [B-1017](#b-1017)'s reproduction as *"`make up` · `auth:migrate` · `demo:users` · `seed`"*, **which is exactly the shape of knowledge that does not survive a rotation** ([§12](../CLAUDE.md)).
+
+### B-1092 · 🟠 A required gate is decided by wall-clock timing, so certification can fail on machine load alone
+
+| | |
+|---|---|
+| **Module** | `product_surface` — 📁 [`frontend/tests/components/mint-sharing.test.tsx`](../frontend/tests/components/mint-sharing.test.tsx):37, :49, :71 |
+| **Current assignee** | **Lane A** — the file is theirs, written 2026-08-28 for [B-1067](#b-1067) |
+| **Severity** | 🟠 — ⛔ **the PRODUCT is not defective; the test is.** ⚠️ **But `frontend-suite` is in `REQUIRED_GATES`, so this makes certification itself non-deterministic** — 📁 §20e's *"a gate must answer the same way twice"*, which is [B-144](#b-144)'s whole subject |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-28 by QE**, certifying cycle 281 — **the run recorded `NOT CERTIFIED` and was discarded rather than promoted** |
+| **Commit found** | `dbd0b093` |
+
+### ⛔ What happened
+
+```
+FAIL tests/components/mint-sharing.test.tsx
+  › a caller that fires after the cookie is readable succeeds, even when it joined
+AssertionError: expected [ '0:ok', '2:ok', '4:ok', '6:ok' ]
+                to deeply equal [ '0:rej', '2:ok', '4:ok', '6:ok' ]
+```
+
+**The caller at 0ms was expected to be refused and succeeded.**
+
+### 📁 Reproduced by context rather than by the tree
+
+| | |
+|---|---|
+| the file alone, **5 consecutive runs** | ✅ **3 passed, every time** |
+| the full suite, run by QE | ✅ **4478 passed** |
+| the full suite, **inside `make certify`** | ⛔ **this failure** |
+
+⚡ **So it is not the tree and not the assertion. It is the load the assertion runs under.**
+
+### 🔴 The mechanism, and there is no timer control anywhere in the file
+
+```ts
+const COOKIE_READABLE_AT = 30;
+const OFFSETS = [0, 2, 4, 6, 40, 45];
+start = Date.now();                                   // beforeEach
+setTimeout(() => apiRequest(…), delay)                // one per offset
+const arrived = Date.now() - start;                   // inside the fetch stub
+return arrived < COOKIE_READABLE_AT ? 401 : 200;
+```
+
+⛔ **`grep -c 'useFakeTimers|advanceTimersByTime'` → `0`.** **Every offset is real wall-clock time.**
+
+⚡ **The assertion `'0:rej'` requires the 0ms caller to reach the fetch stub within 30ms of `beforeEach`.** **Under 4478 tests across 263 files the event loop is busy, a `setTimeout(0)` callback lands late, `arrived` exceeds 30, and the caller is legitimately served a 200.** ✅ **The product did the right thing; the test's PRECONDITION was never established.**
+
+⚠️ **That is Lane A's own fourth face** — *"an assertion whose precondition the test never established: the branch ran, with the wrong input"* — **and the input here is the machine.**
+
+### ⚡ It is [B-1086](#b-1086)'s sentence in a third instrument
+
+📁 **§2, hidden inputs.** **The suite's declared inputs are the tree.** ⛔ **Its actual inputs are the tree AND compile state ([B-1086](#b-1086)) AND the operator's shell ([B-1088](#b-1088)) AND now machine load.** ⚡ **Three instruments, one defect class, found in one day.**
+
+### ✅ The fix, and why QE did not simply re-run
+
+**`vi.useFakeTimers()` with explicit advancement.** The offsets become ordering rather than duration, and the assertion's precondition becomes something the test *establishes* instead of *hopes for*.
+
+⛔ **QE did NOT re-run certification to obtain a green record.** ⚡ **A second run would have had a good chance of passing, and promoting on it would have been rolling dice on a gate known to be load-dependent** — 📁 the repository's own standard: *do not optimize for getting the pipeline green*. **The correct output of a flaky required gate is a fix, not another roll.**
+
+**281 is held until this lands.**
+
+### B-1091 · 🟡 Class assertions cannot distinguish the class they name from a variant-prefixed form of it
+
+| | |
+|---|---|
+| **Module** | — **test quality, repository-wide.** 📁 `frontend/tests/**` |
+| **Current assignee** | ⚠️ **Split.** **QE** for the repository-wide files — `design-foundation`, `library-untested`, `ui`, `container`, `table`. **The module's current assignee** for the rest ([§20e](../CLAUDE.md): *lanes own the tests specific to the slices they implement*) |
+| **Severity** | 🟡 — ⛔ **no current wrong behaviour; every one passes for the right reason today.** ⚠️ **They are guards weaker than they read, and each would stay green through the regression it exists to catch** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-28 by QE**, sweeping after Lane A found the shape in [B-1062](#b-1062). ⚡ **The population was corrected by Lane A after the first sweep undercounted it** |
+| **Commit found** | `dbd0b093` |
+
+### ⛔ The shape, in Lane A's words
+
+> **The class it must NOT be is a substring of the class it must be.**
+
+```ts
+expect(className).toContain('col-span-7')      // passes on smalllaptop:col-span-7
+expect(className).toContain('max-w-full')      // passes on smalllaptop:max-w-full
+```
+
+⚡ **Tailwind makes this systematic**: **14 variant prefixes are in use in this repository** — `phone` · `laptop` · `smalllaptop` · `tablet` · `coarse` · `hover` · `focus` · `focus-visible` · `active` · `disabled` · `group-hover` · `dark` · `motion-reduce` · `first`/`last` — **so ANY class can gain one**, and every numeric scale nests (`gap-2` inside `gap-24`, `h-4` inside `h-40`).
+
+### 📁 The population, corrected — and the correction is the finding
+
+| | |
+|---|---|
+| any `toContain` whose literal is class-shaped | **78** |
+| − subject is **not a class string** — an array, a source file's text, `innerHTML`, `textContent` | **−21** |
+| − **negative** assertions — `.not.toContain` is **stricter**, never looser, and is not this defect | **−11** |
+| ✅ **positive · `className` subject · class-shaped literal** | 🔴 **46** |
+| of those, ambiguous against a token that **exists today** | **18** |
+| ambiguous against a variant **a change could introduce** | **28** |
+
+⚠️ **Also excluded, and separately: 11 bare single-word literals** — `toContain('ai')` in `rail-assistant` is Lane A's example. ⛛ **`ai` is not a class; it is the token *family*** that `text-ai`, `bg-ai-subtle` and `border-ai-line` all satisfy. **Converting it would assert a class that does not exist.**
+
+### 🔴 Both sweeps were wrong, in opposite directions — and that is the finding
+
+🔴 **QE's first sweep reported 18.** ⛔ **It flagged only assertions where a LONGER TOKEN ALREADY EXISTS in the source** — so `toContain('max-w-full')` passed as safe, because `smalllaptop:max-w-full` is used nowhere **today**. ⚡ **Lane A found it by asking what a change would introduce, which is the entire point of a guard.**
+
+🔴 **QE's second sweep reported 82, and this row was filed carrying it.** ⛔ **It constrained the LITERAL and never the SUBJECT** — so it swept in `expect(REGISTRY.map((c) => c.id)).toContain('pipeline-health')`, where **`toContain` on an ARRAY is an exact element match and the defect is structurally impossible**; `expect(shellSource).toContain('max-w-card')`, which asserts a *file's contents*; a UUID in `validation.test.tsx`; and `container.test.tsx`'s `.split(/\s+/)` calls, **which are already the corrected form.**
+
+> ⚠️ **A guard's population is the states the code could REACH — no narrower, and no wider.** ⛔ **18 was narrower than the property. 82 was wider than it.** ⚡ **Only a definition that constrains the subject, the polarity AND the literal lands on the property, and that definition gives 46.**
+
+📁 **⚠️ Corrected 2026-08-28, before this row was ever pushed, on Lane A's challenge** — *"the population definition is doing all the work, and mine was wrong three times before it was right."* **Lane A's own count moved 18 → 13 → 37 → 18-but-a-different-18 as they tightened the same three constraints.** ⛔ **Two lanes, six measurements of one property, and no two agreed until the subject was pinned.**
+
+📁 **That is the sixth instance of this axis in this repository**: `subject` was a population of props · `ROOTS` of directories · `resolved()` of callers · `no-vacuous-skip` of files · **this sweep of *values that satisfy the assertion*** · **and the sweep itself, twice.**
+
+### 🔴 Two of the conversions were WRONG, and neither was visible in the diff
+
+**Lane A converted 52 and the suite refused two of them** ([`17ee25be`](https://example.invalid)):
+
+| | |
+|---|---|
+| **`rail-assistant`** — `toContain('ai')` | ⛔ **`ai` is a token family, not a class.** `classList.contains('ai')` is **false** for `text-ai` |
+| **`container`** — `toContain('col-span-7')` | ⛔ **The real class is `smalllaptop:col-span-7`**, so `classList.contains('col-span-7')` is **false**. ✅ **Now names the whole token including its prefix** — which is what that test was always about |
+
+> ⚠️ **Both were correct as they stood. Both look identical to the other 50 in a diff.** ⛔ **A mechanical transform over a population you have not verified converts the exceptions too, silently** — ⚡ **and that is a stronger argument against a blanket rewrite than review size, because review is exactly what would not have caught it.**
+
+### ⛔ What is NOT proposed
+
+**Not a lint rule.** ⚡ **`toContain` on a class string is legitimate where the caller genuinely means *any class in this family***, and a rule would have to distinguish intent from accident.
+
+**Not a rewrite of all 82.** ⛔ **A change touching 82 assertions is a change nobody reviews.**
+
+### ✅ What is proposed
+
+| | |
+|---|---|
+| **The 18** | **fix now** — they are ambiguous against tokens that exist, enumerated, and finite |
+| **The other 28** | ⚡ **convention going forward**: `expect([...el.classList]).toContain('x')` is exact by construction and costs nothing |
+| **The one already taken** | 📁 `team.test.tsx` → `max-w-full`, **fixed by Lane A** because [B-1019](#b-1019)'s closure rested on it, and *"closing a row while citing a witness that cannot see the regression would have been a weak close"* |
