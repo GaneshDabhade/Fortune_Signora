@@ -17343,3 +17343,70 @@ the palette is its consumer.**
 ✅ **Nothing.** **The constants are untouched, the input still carries the producer's `maxLength`, and the new witness asserts the MINIMUM only** — `3`, where the two agree — **so the test cannot be read as ratifying either maximum.**
 
 📁 **Related:** [C-1575](#) records a `6` vs `8` filter-entry conflict of the same shape, and the standing instruction on it applies here too: **record it, do not let it block the rest.**
+
+---
+
+### C-1579 · `Knowledge graph` is the platform's word on a customer-facing label, and nobody is entitled to pick its replacement
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-28, measuring the cost of widening `vocabulary.test.tsx` to walk `lib/` |
+| **Module** | `frontend/lib/research/capability.ts` |
+| **Owner** | 🔴 **Product owner** — ⛔ **it is a word a customer reads, and there is no design statement to derive it from** |
+| **Status** | **`OPEN`** — ⚠️ **blocks nothing today; blocks a guard tomorrow.** See *Why this is filed now* |
+
+### 📁 The finding
+
+📁 **[ADR-0034](architecture/adr/0034-ubiquitous-language.md)** puts *knowledge
+graph* on the platform's side of the vocabulary, and `INTERNAL_TERMS` in
+`vocabulary.test.tsx` carries it. **`lib/research/capability.ts` line 122
+declares `label: 'Knowledge graph'`.**
+
+⚡ **Every sibling label in that array is a customer phrase:**
+
+> *Ask a question* · *The answer, with its sources* · *Live progress* ·
+> *Which prompt, which model* · *Versions* · *Comments* · *Editing, preserved
+> through regeneration* · **`Knowledge graph`** · *Share and export*
+
+⛔ **It is the only engineering term in the list**, which is itself the
+evidence: **the file's own convention is the customer's vocabulary, and this
+row departs from it.**
+
+### ✅ It is LATENT, not live — measured, not assumed
+
+⚡ **Nothing renders it.** `grep -rn "from '@/lib/research/capability'"` returns
+**one** consumer and it is `tests/unit/research-capability.test.ts`. ⛔ **So no
+customer has read this word**, and this is not a defect report — **it is a
+landmine report.**
+
+### ⚠️ Why this is filed now rather than when something renders it
+
+🔴 **QE is widening `vocabulary.test.tsx`'s `ROOTS` to include `lib/`**, which
+closes a real gap: **four customer-read strings on `/settings` carried the
+platform word and the guard could not see the file they live in.** ⛔ **This
+label is the only other thing in `lib/` that the widened guard finds.**
+
+⚡ **So the widening cannot land green**, and there are exactly two honest
+routes:
+
+| | |
+|---|---|
+| **① Answer this row first** | The label changes, the guard lands clean |
+| **② Ship the widening with this row in the guard's exception list, carrying `C-1579` beside it** | ⚡ **The id is the only thing that keeps an exception temporary** — 📁 an exception list without ids is how a guard quietly stops guarding |
+
+### ⛔ Why neither Lane A nor QE may simply pick a word
+
+⚠️ **The obvious replacement is derivable and that is not the same as
+decided.** The entry's own `absence` sentence supplies customer vocabulary —
+*"Signora is not yet able to show you how the things it found connect to each
+other"* — **so *How findings connect* or *Connections* both read naturally.**
+
+⛔ **But no design document names this capability**, and 📁 [D-138](DECISION_REGISTER.md)
+makes the snapshot the implementation authority. ⚡ **A lane deriving a
+customer-facing name from a sibling sentence is inventing product vocabulary**,
+which is [ADR-0034](architecture/adr/0034-ubiquitous-language.md)'s subject
+rather than its licence. **QE picking it is no better than a lane picking it**
+— agreed between both lanes before this row was written.
+
+📁 **Related:** [C-1578](#) is the same shape one register over — a design
+statement and a producer disagreeing, recorded rather than resolved.
