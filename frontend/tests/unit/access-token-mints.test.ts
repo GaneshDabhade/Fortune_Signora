@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -71,10 +69,19 @@ describe('⛔ the server never shares a mint between callers', () => {
     ).toHaveLength(3);
   });
 
-  it('keeps a separate mint per workspace, because the token is scoped to one', () => {
-    // ⛔ **Keyed on `workspaceId`** — a token minted for one organization must
-    // never be handed to a request for another.
-    const source = readFileSync(join(process.cwd(), 'lib', 'api', 'client.ts'), 'utf8');
-    expect(source).toContain('const key = workspaceId ?? ');
-  });
+  /**
+   * ⚠️ **A source grep lived here and it has been REPLACED by behaviour** —
+   * 📁 `tests/components/access-token-mints.test.tsx`, *"a token minted for one
+   * organization is never handed to another."*
+   *
+   * ⛔ **It read `client.ts` and asserted it contained `const key = workspaceId
+   * ?? `.** ⚡ **That passes on any refactor that keeps the string and breaks
+   * the behaviour, and FAILS on any refactor that preserves the behaviour and
+   * renames the variable** — it asserted the mechanism where the property is
+   * what matters, and the property is a tenancy one.
+   *
+   * ⛔ **Not kept alongside the new one** ([§2](../../../CLAUDE.md)): two
+   * representations of one guarantee, and the weaker one is the one that would
+   * have gone stale unnoticed.
+   */
 });

@@ -60,6 +60,104 @@ describe('🔴 concurrent reads share one access token mint', () => {
     expect(calls.filter((url) => !url.includes('/api/token'))).toHaveLength(5);
   });
 
+  it('⛔ a token minted for one organization is never handed to another', async () => {
+    /**
+     * ⚠️ **This was asserted by a SOURCE GREP** — `tests/unit` read
+     * `client.ts` and checked it contained `const key = workspaceId ?? `.
+     *
+     * ⛔ **That passes on any refactor that keeps the string and breaks the
+     * behaviour, and fails on any refactor that preserves the behaviour and
+     * renames the variable.** ⚡ **It asserts the mechanism where the property
+     * is what matters** — and the property is a tenancy one: 📁
+     * [ADR-0034](../../../docs/architecture/adr/0034-ubiquitous-language.md)
+     * aside, **a token is scoped to one organization** and sharing across keys
+     * would hand a customer another customer's scope.
+     *
+     * ✅ **Asserted here as behaviour**, in the browser environment where the
+     * sharing path is actually on.
+     */
+    const mints: string[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes('/api/token')) {
+          mints.push(url);
+          return jsonResponse({ access_token: `token-${mints.length}` });
+        }
+        return jsonResponse({ ok: true });
+      }),
+    );
+
+    await Promise.all([
+      apiRequest('/one', { workspaceId: 'w1' }),
+      apiRequest('/two', { workspaceId: 'w2' }),
+    ]);
+
+    expect(mints, 'two organizations shared one token').toHaveLength(2);
+    expect(mints[0]).toContain('workspace_id=w1');
+    expect(mints[1]).toContain('workspace_id=w2');
+  });
+
+  it('🔴 B-1067 — a joiner inherits a SUCCESS, never a REJECTION', async () => {
+    /**
+     * ⛔ **Sharing a success is the point of the dedupe; sharing a rejection
+     * removed retries it never meant to remove.**
+     *
+     * ⚡ **A mint's verdict is formed when its request ARRIVES at `/api/token`**,
+     * and the server answers from the cookie it can see at that moment. ⚠️ **A
+     * caller that joins later inherited a verdict formed before it existed** —
+     * **including one firing after the cookie became readable, which would have
+     * succeeded on its own.**
+     *
+     * 📁 **The row's measurement, identical timings, sharing the only
+     * variable:**
+     *
+     * ```
+     * shared    mints=1   0:rej 2:rej 4:rej 6:rej 40:rej       45:rej
+     * control   mints=6   0:rej 2:rej 4:rej 6:rej 40:FULFILLED 45:FULFILLED
+     * ```
+     *
+     * ⛔ **And nothing downstream recovers it**: `apiRequest` throws at
+     * `await fetchAccessToken(...)` **before** its `fetch`, **so the 401 retry
+     * never runs for a failed MINT** — it only ever covered a 401 *response*.
+     * ⚠️ **Which is exactly what the test below this one asserts**, and why it
+     * could not see this defect.
+     */
+    const calls: string[] = [];
+    let mints = 0;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        calls.push(url);
+        if (url.includes('/api/token')) {
+          mints += 1;
+          // ⚡ **The first mint fails; every later one succeeds** — the cookie
+          // has become readable, which is the seconds-after-sign-in case.
+          return mints === 1
+            ? jsonResponse({ error: {} }, 401)
+            : jsonResponse({ access_token: `token-${mints}` });
+        }
+        return jsonResponse({ ok: true });
+      }),
+    );
+
+    // ⚡ **Started together**, so the second reaches `inFlightMints.get(key)`
+    // while the first is still in flight — the only way to BE a joiner.
+    const settled = await Promise.allSettled([
+      apiRequest('/one', { workspaceId: 'w1' }),
+      apiRequest('/two', { workspaceId: 'w1' }),
+    ]);
+
+    // ⛔ **The joiner minted its own rather than inheriting the rejection.**
+    expect(mints, 'the joiner reused the failed mint').toBeGreaterThan(1);
+    // ✅ **And therefore SUCCEEDED**, which is the customer-visible half: one
+    // read failing where the other recovers, rather than both failing together.
+    expect(settled.filter((r) => r.status === 'fulfilled')).toHaveLength(1);
+    expect(settled.filter((r) => r.status === 'rejected')).toHaveLength(1);
+  });
+
   it("🔴 a retry does NOT receive the mint that just 401'd", async () => {
     // ⛔ **Without this the second attempt awaits the same in-flight promise
     // and fails identically**, turning a recoverable 401 into a hard failure.
