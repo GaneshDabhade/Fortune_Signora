@@ -2845,7 +2845,7 @@ This error was caught after test environment was torn down.
 | **Module** | `product_surface` — **joined from [`modules.toml`](coordination/modules.toml)** |
 | **Current assignee** | **Lane A** |
 | **Severity** | 🟠 — ⛔ **a real WCAG 2.5.8 failure on real data, and the assertion written for it was passing** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` for the separation clause — Lane A. ⚠️ The FIX was already on `origin/integration`; what was missing was a WITNESS.** ⛔ **`recents-card.tsx` renders `flex flex-col gap-2` — 8px, the clause's own number — and nothing asserted it**, so a spacing tidy-up could have removed it silently. ✅ **A component assertion now names it**, using `classList` rather than `toContain` — 📁 [B-1062](#b-1062) is the row where `toContain('col-span-7')` matched `smalllaptop:col-span-7` and could not see the property it named. ⚡ **Fire-tested**: dropping `gap-2` turns it red. ⚠️ **The 44px clause is NOT closed and is not this lane's to close** — 📁 it collides with the design's own `1fr × 160px` footprint (five rows at 44px is 220px before padding), which is [C-1553](LANE_COORDINATION.md) and the product owner's. ⛔ **Not resolved by shrinking a row or dropping a record**: either would make the page pass a test by making the product worse. ⚠️ **QE verifies and closes the separation half.** ⚠️ **The prior state, kept rather than rewritten** ([§2](../CLAUDE.md)): **`OPEN`** |
 | **Found** | **2026-08-19 by QE**, certifying `8ceff5d6` |
 
 **`home-a11y.spec.ts` — 2 failures here, `14/14` green on Lane A's own run:**
@@ -19427,7 +19427,7 @@ if (style.overflowX === 'auto' || style.overflowX === 'scroll') continue;
 | **Module** | **Product Surface** — the accounts list |
 | **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** |
 | **Severity** | 🟠 — ⛔ **four of the five clipped strings are `Not reported`, which is the product declining to invent a value.** ⚡ **Clipping THAT is worse than clipping data: the customer is left unable to read the one label that explains an absence** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` — Lane A. ⚠️ The row was stale; BOTH halves are implemented and promoted.** ✅ **Verified with `git show origin/integration:frontend/tests/e2e/visual.spec.ts`, not by reading a working tree six commits ahead of it.** ⛔ **`sr-only` is excluded from the clipping filter** — Tailwind's `.sr-only` IS `width:1px; overflow:hidden`, so every one satisfied the test by construction. ⛔ **`settled()` now waits for `main [data-skeleton]` to empty**, bounded, so the assertions look at the page rather than at its skeleton. ⚠️ **QE verifies and closes.** ⚠️ **The prior state, kept rather than rewritten** ([§2](../CLAUDE.md)): **`OPEN`** |
 | **Found** | **2026-08-22 by QE**, cycle 262's browser gate, **measured** rather than inferred |
 | **Commit found** | `119c5f8a` (`origin/main`, the promoted commit) |
 

@@ -79,6 +79,50 @@ describe('📁 the list is what the person opened', () => {
   });
 });
 
+describe('🔴 B-1033 — adjacent rows are separated, or two links read as one control', () => {
+  /**
+   * 🔴 **[B-1033](../../../docs/BUGS.md) — 0px between two adjacent 37px links
+   * on a phone**, measured by QE in a browser on `8ceff5d6`.
+   *
+   * ⚠️ **QE cited WCAG 2.5.8 as one violation and it has three clauses with
+   * different subjects.** ⛔ **`24 × 24` — 37px clears it.** ⛔ **`44px on
+   * mobile` applies to PRIMARY actions only, and whether a recents row is
+   * primary collides with the design's own `1fr × 160px` footprint** — 📁 five
+   * rows at 44px is 220px before padding, **so the design states two things
+   * that cannot both hold** ([C-1553](../../../docs/LANE_COORDINATION.md)),
+   * and this lane did not resolve it by shrinking a row.
+   *
+   * ✅ **The separation clause is the one that unambiguously failed**, and it
+   * is fixed. ⛔ **It was NOT witnessed** — the fix is on `origin/integration`
+   * and nothing here asserts it, **so it could be removed by a spacing tidy-up
+   * and nothing would say so.**
+   *
+   * ⚡ **`gap-2` is 8px, which is the clause's own number** — 📁 §05 draws the
+   * rows at `gap:0` with a rule between, **and a divider is not a gap**: two
+   * links flush against one another are one target to a coarse pointer.
+   */
+  it('⛔ puts real space between rows, not only a dividing rule', () => {
+    recents.mockReturnValue({
+      data: [viewed('a1', 0), viewed('a2', 2)],
+      isPending: false,
+      isError: false,
+      error: null,
+    });
+
+    render(<RecentsCard />);
+
+    const rows = screen.getAllByRole('link');
+    expect(rows.length, 'two rows, or the separation below has no subject').toBe(2);
+
+    const list = rows[0]?.parentElement;
+    // ⚡ **`classList`, never `toContain`** — 📁 [B-1062](../../../docs/BUGS.md)
+    // is the row where `toContain('col-span-7')` matched
+    // `smalllaptop:col-span-7` and could not see the property it named.
+    expect(list?.classList.contains('gap-2')).toBe(true);
+    expect(list?.classList.contains('gap-0')).toBe(false);
+  });
+});
+
 describe('🔴 an unread history and an empty one are different answers', () => {
   it('⛔ a failed read never says there were none', () => {
     // 📁 Session Continuity tier 4: "recents unavailable… no fabricated history."
