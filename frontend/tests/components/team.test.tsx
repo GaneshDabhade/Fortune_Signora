@@ -751,7 +751,14 @@ describe('handing the organization over is one operation', () => {
     });
 
     // ⛔ **The control may not exceed what contains it**, whatever the address.
-    expect(control.className).toContain('max-w-full');
+    //
+    // ⚠️ **`classList`, not `toContain`** — 🔴 **this read
+    // `toContain('max-w-full')`, which `smalllaptop:max-w-full` satisfies**, so
+    // making the bound responsive-only would leave the assertion green and the
+    // handset overflowing. 📁 **The same shape as [B-1062](../../../docs/BUGS.md)**:
+    // **the class it must NOT be is a substring of the class it must be**, and
+    // Tailwind's variant prefixes make that systematic.
+    expect(control.classList.contains('max-w-full')).toBe(true);
     // ⛔ **And the text inside it ends in an ellipsis rather than a clip** —
     // 📁 `visual.spec.ts`: *"Ellipsis is deliberate and allowed; silent
     // clipping is not."*
