@@ -2,11 +2,59 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `319ee4b4`, 2026-08-28.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `fd3f42e2`, 2026-08-28.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
 > **It is a dashboard, not an engineering journal.** [`SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) answers a different question — *"what should the next session know?"* — and does not repeat what is here. Historical implementation detail belongs in ADRs and module documentation; **the appendices below are dated records and are never rewritten to match the present.**
+
+---
+
+## Cycle 278 — promoted `fd3f42e27fad`, 2026-08-28
+
+| | |
+|---|---|
+| **Promoted** | **`fd3f42e27fad2637be51346fe6ba360719a7d367`** — `promoted == certified`, 6 commits, **zero merge commits**. `--audit-main` holds across 2486 |
+| **Gates** | **5465 pytest · 95.03% · 679 Security Invariants · mypy strict 958 · import-linter 37/37 · tsc clean · frontend 4396 in 255 files · eslint clean · smoke 24 stages in 407s · scenario 208** |
+| **DR** | ✅ passed |
+| **Migrations** | none — head unchanged at `0066` |
+| **Attempts** | **one** — B-1088's workaround held |
+
+**Lane A, six commits, all of them witnesses on surfaces that already looked covered.**
+
+### 🔴 Two guards, both binding, pointing opposite ways — and the louder one won
+
+📁 **`settings-structure.test.tsx` compares `SETTINGS_NAV` against the design document's own `navGroups`, verbatim.** ⚡ **That guard is why Settings stopped being six index cards that appear in no design.** ⛔ **But the design documents are written in the platform's vocabulary throughout** — *"Name your workspace"*, *"Workspace URL"* — **so the structure guard REQUIRED `Workspace` on screen, while [`vocabulary.test.tsx`](frontend/tests/components/vocabulary.test.tsx) could not see the file it was in.**
+
+🔴 **The platform's word reached a customer with two tests agreeing everything was fine.** ⚠️ **Not two guards disagreeing — two guards AGREEING, on a premise neither declared**: *the design's words are the screen's words*, which [ADR-0034](docs/architecture/adr/0034-ubiquitous-language.md) makes false on every screen in this product. **The whole point of the ADR is that the frontend edge translates.**
+
+✅ **The repair is DIRECTIONAL, which is what makes it a repair**: the translation is applied to the **design's** side only, so `SETTINGS_NAV` carrying `Workspace` is still compared against a translated `Organization` and still fails. **A symmetric translation would have made both sides agree on either word — a guard that has stopped guarding.** ✅ **And it carries a vacuity test**: if the design were ever refreshed without the platform word, the translation would pass everything while enforcing nothing, and **the next person to reintroduce `Workspace` would find the guard agreeing with them.**
+
+⚡ **Three of the four strings were the literal `'Workspace'`; the fourth was `'Workspace-wide'`.** **A grep for `'Workspace'` finds two of four. The render found all four.**
+
+### ⛔ The screen after a skipped CRM is where a false claim is least likely to be checked
+
+📁 **The design writes *"Signora read 8,412 accounts and 96 calls from your CRM"* on onboarding's completion screen — and screen `07` makes connecting a CRM skippable.** 🔴 **So that sentence is false for anybody who skipped it, on the screen immediately after they skipped**, which is the lowest-scrutiny moment in the whole flow: a person finishing onboarding is reading for reassurance, not for accuracy.
+
+✅ **Asserted as ABSENT rather than trusted**: no source named, no call count, neither illustrative figure, and no money figure anywhere ([ADR-0409](docs/architecture/adr/) §5 — a partial `OPEN_ACV` sum understates silently).
+
+⚡ **And three kinds of nothing on three cards** — *still reading* · *could not read* · *there is no such number*. ⛔ **A zero on that page does not read as "the read failed"; it reads as "Signora found nothing"** — a verdict about the customer's business rather than about our pipeline, on the one page whose whole job is to report what was found. 📁 **[P-A](docs/DOMAIN_DISCOVERY_REGISTER.md) at its sharpest.**
+
+### ⚠️ A fire test that did not fire is the finding
+
+**On onboarding's workspace step, all sixteen tests passed on the first run.** ⛔ **Lane A reintroduced both defects the source claims to have fixed and all sixteen STILL passed**: one assertion reproduced a defect's shape without its precondition, the other asserted a state that was true before the check resolved.
+
+✅ **Fixing those surfaced a real defect the file had all along** — **a *failed* availability check rendered as *Checking…* forever**, on the field carrying onboarding's only irreversible decision. ⚡ **That is [P-A](docs/DOMAIN_DISCOVERY_REGISTER.md) wearing a third face: not empty, not an error — permanently pending, which reads as *working* rather than as *broken*.** ⛔ **Worse than the empty case, because nobody suspects it.**
+
+### 📁 A panel with a test that could not see it render
+
+**`data-rights-panel.tsx` already had `leave-organization.test.tsx`** — careful work that does `readFileSync` and greps the source with comments stripped. ⛔ **Every assertion in it would pass if the panel threw on mount.** ✅ **The render reaches three things the grep structurally cannot**: the copy a customer actually reads (copy held in a variable never appears in the file), the `ApiError` versus non-`ApiError` branch, and the dialog.
+
+⚠️ **And a jsdom trap worth recording**: `getByText` found the confirmation copy while the dialog was **closed**. `Dialog` is a native `<dialog>` closed with `.close()`, so it is `display:none` and out of the a11y tree — **jsdom honours that for `getByRole` and not for `getByText`.** ⚡ **The ambiguity error was the only reason it surfaced**: a query matching once would have passed while reading whichever copy came first in the DOM, **and the panel's sentence and the dialog's are deliberately different.**
+
+### ✅ [C-1578](docs/LANE_COORDINATION.md) raised and correctly refused rather than guessed
+
+**The design says the organization URL is `3–32`; the producer says `63` in three places.** ⛔ **Not a range disagreement a lane may settle**: `63` is the DNS-label maximum and the address renders as a path segment, **so picking it decides whether the address IS a DNS label.** ✅ **Constants untouched; the new witness asserts the minimum only, where the two agree.**
 
 ---
 

@@ -71,7 +71,18 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-28, `319ee4b4`
+## Current — as of 2026-08-28, `fd3f42e2`
+
+> ⚡ **Cycle 278 Closeout. 6 commits, Lane A, no migrations, eight gates on the FIRST attempt.**
+>
+> ✅ **No board rows removed** — this cycle promoted no `TASK-nnn`.
+>
+> 🔴 **Two guards, both binding, pointing opposite ways**: `settings-structure` required the platform's word on screen while `vocabulary` could not see the file. **Repaired directionally, with a vacuity test.**
+>
+> ✅ **[C-1578](LANE_COORDINATION.md) raised — organization URL `3–32` vs `63`. Product decision; constants untouched.**
+>
+> 📁 **QE queue, none of it gating: `vitest.config.ts` pin ([B-1088](BUGS.md)) · `vocabulary.test.tsx` `ROOTS` widened to `lib` · [B-1086](BUGS.md)'s production-build run.**
+
 
 > ⚡ **Cycle 277 Closeout. 8 commits, Lane A, no migrations, eight gates on the SECOND attempt.**
 >

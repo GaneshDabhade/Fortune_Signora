@@ -1,5 +1,25 @@
 # Session Handoff
 
+> ## Cycle 278 — promoted `fd3f42e27fad`, 2026-08-28 · **two guards agreeing on an undeclared premise, and a fire test that did not fire**
+>
+> **`main` = `fd3f42e27fad2637be51346fe6ba360719a7d367` = the certified commit.** **ZERO merges**, `--audit-main` holds across 2486. `pytest` **5465** · **95.03%** · **679 invariants** · `mypy` **958** · `import-linter` **37/37** · `tsc` · frontend **4396/255** · `eslint` · smoke **24/407s** · scenario **208** · DR ✅. **No migration; head `0066`. Certified on the FIRST attempt.**
+>
+> 🔴 **TWO GUARDS, BOTH BINDING, POINTING OPPOSITE WAYS.** **`settings-structure.test.tsx` compares `SETTINGS_NAV` against the design document verbatim — and the design documents are written in the PLATFORM's vocabulary throughout.** ⛔ **So the structure guard REQUIRED `Workspace` on screen while `vocabulary.test.tsx` could not see the file.** ⚠️ **Not two guards disagreeing — two guards AGREEING on a premise neither declared** (*the design's words are the screen's words*), **which [ADR-0034](architecture/adr/0034-ubiquitous-language.md) makes false on every screen.** ✅ **Repaired DIRECTIONALLY — the design's side only — so the implementation still cannot smuggle the platform word in, plus a vacuity test so a design refresh cannot turn the translation into a silent no-op.**
+>
+> ⚡ **`'Workspace'` ×3 and `'Workspace-wide'` ×1. A grep for `'Workspace'` finds two of four; the render found all four.**
+>
+> ⚠️ **A FIRE TEST THAT DID NOT FIRE IS THE FINDING.** **Sixteen tests passed on onboarding's workspace step; reintroducing both defects the source claims to fix left all sixteen passing.** ✅ **Fixing the two vacuous assertions surfaced a real defect the file had all along: a FAILED availability check rendered as *Checking…* FOREVER**, on the field carrying onboarding's only irreversible decision. ⛔ **[P-A](DOMAIN_DISCOVERY_REGISTER.md)'s third face — not empty, not an error, permanently pending, which reads as *working*.**
+>
+> ⛔ **ONBOARDING'S COMPLETION SCREEN IS WHERE A FALSE CLAIM IS LEAST LIKELY TO BE CHECKED.** **The design writes *"Signora read 8,412 accounts and 96 calls from your CRM"* and screen `07` makes connecting a CRM SKIPPABLE.** ✅ **Figures asserted ABSENT rather than trusted.**
+>
+> 📁 **A PANEL WITH A TEST THAT COULD NOT SEE IT RENDER.** **`leave-organization.test.tsx` greps the source — every assertion in it would pass if the panel threw on mount.** ⚠️ **jsdom trap: `getByText` finds copy inside a CLOSED native `<dialog>`; `getByRole` does not.**
+>
+> ✅ **[C-1578](LANE_COORDINATION.md) — organization URL is `3–32` in the design and `63` in the producer. NOT a lane's to settle: `63` is the DNS-label maximum, so picking it decides whether the address IS a DNS label.**
+>
+> ⚡ **QE'S OWN QUEUE, none of it gating: (1) `vitest.config.ts` pin for [B-1088](BUGS.md), (2) widen `vocabulary.test.tsx`'s `ROOTS` to `lib`, (3) [B-1086](BUGS.md)'s production-build run — the experiment that has been reported once and still not performed.**
+
+> ---
+>
 > ## Cycle 277 — promoted `319ee4b451d3`, 2026-08-28 · **a gate that failed on QE's own shell, and three instruments QE was wrong to doubt**
 >
 > **`main` = `319ee4b451d38c5ff458e3c4a2268f869ac08b49` = the certified commit.** **ZERO merges**, `--audit-main` holds across 2478. `pytest` **5465** · **95.03%** · **679 invariants** · `mypy` **958** · `import-linter` **37/37** · `tsc` · frontend **4336/250** · `eslint` · smoke **24/152s** · scenario **208** · DR ✅. **No migration; head `0066`.**
