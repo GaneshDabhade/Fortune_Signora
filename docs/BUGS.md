@@ -11601,7 +11601,7 @@ return round((datetime.now(timezone.utc) - then).total_seconds() / 86400, 1)
 | **Module** | Platform Foundation — [`infra/coordination.py`](../infra/coordination.py) `premature_releases`, [`backend/tests/test_coordination_source.py`](../backend/tests/test_coordination_source.py) |
 | **Current assignee** | **Lane C** |
 | **Severity** | 🔴 · ⛔ **Blocking Quality Defect — nothing in the repository can certify.** `pytest` fails on `main`, on `integration`, and on every candidate built from them |
-| **Status** | ✅ **`FIXED`** — **Lane C, 2026-08-07.** ⚡ **QE's diagnosis was exactly right and the repair is the one it named**, `premature_releases(rows, outstanding)`. ⛔ **Applied to all three siblings, not only the one the failing case caught**: `stale_sequencing` and `blocked_on_integration` called `_outstanding_rows()` internally too, and repairing only the tested one is precisely how this input moved up a frame the first time. **Regression test — `test_the_release_guards_are_pure_functions_of_their_arguments`, which asserts the *property* across all three rather than the repair.** ⚠️ **`VERIFIED` is QE's and is not set here** |
+| **Status** | ✅ **`VERIFIED` — QE, 2026-08-28, at `3d4ff473`**, on the property rather than only the witness — see below. *(was `FIXED` — **Lane C, 2026-08-07.** ⚡ **QE's diagnosis was exactly right and the repair is the one it named**, `premature_releases(rows, outstanding)`. ⛔ **Applied to all three siblings, not only the one the failing case caught**: `stale_sequencing` and `blocked_on_integration` called `_outstanding_rows()` internally too, and repairing only the tested one is precisely how this input moved up a frame the first time. **Regression test — `test_the_release_guards_are_pure_functions_of_their_arguments`, which asserts the *property* across all three rather than the repair.** ⚠️ **`VERIFIED` is QE's and is not set here** |
 | **Found** | 2026-08-07 by QE, cycle 94, on the first poll after connectivity was restored |
 
 **Steps to reproduce.** Against **`origin/main`**, in a clean worktree:
@@ -11616,6 +11616,30 @@ cd /tmp/m/backend && uv run pytest tests/test_coordination_source.py -q
 **Expected.** `17 passed`. ⚡ **This exact tree certified 90 minutes earlier with `pytest 4021 passed`** — [`6fdb6ccbbc5c`](../certification/reports/6fdb6ccbbc5c.md), and `7e33de1e` is its Closeout, which changes nothing executable.
 
 **Actual.** The same tree, the same command, a different answer.
+
+### ✅ VERIFIED — QE, 2026-08-28, at `3d4ff473`
+
+⚡ **Verified on the PROPERTY the fix exists for — *a gate must answer the same way twice* — rather than only on the witness passing.**
+
+**Behavioural**, run from two different clone states:
+
+| branch | result |
+|---|---|
+| `lane-qe-cycle280` *(ahead of `main`)* | **46 passed** |
+| `main` | **46 passed** |
+
+⛔ **Identical, which is the whole claim.** 📁 The row's `Actual` was *"the same tree, the same command, a different answer."*
+
+**Structural**, because a behavioural pass on two branches is consistent with a fix that has simply not been exercised:
+
+```python
+def premature_releases(rows: list[Task], outstanding: frozenset[str]) -> list[Task]:
+```
+
+✅ **`outstanding` is an argument**, and the function performs no `git` call and no filesystem read. 📁 **Its own docblock names this row**: *"this called `_outstanding_rows()` internally, which shells out to `git cherry` and greps commit messages for task ids — so the answer depended on which refs the running clone happened to have fetched."*
+
+⚠️ **QE's first attempt to run the witness produced `46 errors` on both branches and QE nearly reported the test broken.** ⛔ **It was the invocation**: `conftest.py` refuses without `SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1`, ⚡ **the third guard to refuse QE on this day, and the third to refuse rather than warn.**
+
 
 ### ⛔ Nothing in the repository changed. A lane pushed a commit message
 
@@ -20572,6 +20596,59 @@ await expect(page.locator('#shell-utility-panel')).toHaveAttribute('data-state',
 | **Status** | **`OPEN`** |
 | **Found** | **2026-08-27 by QE**, refusing to attribute six extra failures to a candidate |
 | **Commit found** | `8c247dd6` |
+
+### ✅ 2026-08-28 — the experiment ran, and there were TWO causes rather than one
+
+⚠️ **Cycle 276's Closeout said this run had happened. It had not** — corrected in place there. **This is the run.**
+
+#### ⚡ Cause ① — `next dev` compiles on demand. CONFIRMED, and fixed by serving a production build.
+
+**Two full runs against the production topology on 3100** *(standalone Next build, `server.js`)*:
+
+| | run 1 | run 2 |
+|---|---|---|
+| passed | **446** | 437 |
+| failed | **11** | 12 |
+| did not run | 0 | 8 |
+| 🔴 **`ERR_ABORTED` · `ECONNRESET` · `ECONNREFUSED`** | ⚡ **0** | ⚡ **0** |
+
+⛔ **Against `next dev` the same suite produced them by the dozen.** ✅ **That was the falsifiable prediction and it held.**
+
+⚠️ **The COUNTS are not comparable to the `next dev` baselines** — different server, freshly seeded data, a later tree. **The ERROR CLASS is, and it went from *many* to *zero*.**
+
+#### 🔴 Cause ② — the suite mutates state and is not idempotent across runs. NEW, and the production build does not fix it.
+
+**The failing SET was the actual complaint, and it is now mostly stable:**
+
+| | |
+|---|---|
+| failing in **both** runs | ⚡ **10** |
+| run 1 only | **1** — `auth-credential-journeys.spec.ts:155` *forgot password*, which **passed** in run 2 |
+| run 2 only | **2** — `onboarding-journey.spec.ts:38` and `commercial-profile.spec.ts:90` |
+
+📁 **Against `next dev`, ZERO of eleven reproduced.** ✅ **10 of 11 is attribution substantially restored.**
+
+⛔ **And the residue has a cause of its own.** `onboarding-journey.spec.ts` is a **serial** file in the `[mutating]` project; its first test failed at 16s in run 2 and **8 dependents were skipped** — which is the whole of the *"did not run"* count.
+
+✅ **Demonstrated rather than argued:**
+
+```
+reseed the Playground, then run that file alone   →  12 passed (31.6s)
+```
+
+⚡ **The same file that failed run 2 passes 12/12 against fresh data.** ⛔ **Run 1 mutated the state run 2 started from.**
+
+### ✅ What this means for how QE runs the suite
+
+| | |
+|---|---|
+| **Serve a production build** | ⛔ **never `next dev`.** A dev server's first request per route pays a 15–30s compile, and the `expect` timeout is 15s |
+| **Reseed before every run** | ⛔ **not only before the first.** `[mutating]` specs complete onboarding, create organizations and record decisions — **a second run is a different experiment** |
+
+⚠️ **Both are properties of the HARNESS rather than of any candidate**, which is why every browser figure published before today is provisional. ⛔ **The [B-1084](#b-1084) family — five of the ten stable failures — is genuine and was always genuine; it was invisible inside the noise.**
+
+⚡ **`auth-credential-journeys.spec.ts:155` remains genuinely flaky** — failed run 1, passed run 2, on the same tree and server with no reseed between them. **That is a third thing and it is not explained here.**
+
 
 ### ⚖️ Why 🟠 and not 🔴, with the conflict of interest on the record
 
