@@ -44,6 +44,28 @@ export function CopyableId({ value, className }: { value: string; className?: st
       onClick={copy}
       // ♿ `2.1.1` — reachable by keyboard, in visual order.
       className={cn(
+        /**
+         * 🔴 **The 24px floor is STATED, not inherited** — 📁 `Workspace Setup`
+         * `2.5.8`: *"Row actions and **copy buttons** are ≥ 24px with 8px
+         * separation."*
+         *
+         * ⛔ **It was `px-2 py-1 text-2xs` and nothing else**, so the height was
+         * `8px + whatever line-height this button happened to inherit`.
+         * ⚡ **`--text-2xs` is 11px and the config sets it size-only** — the
+         * paired leading belongs to the tuple roles, not this one — **so a
+         * parent with `leading-none` would render a 19px target and a parent
+         * with `leading-6` a 32px one, from identical markup.**
+         *
+         * ⚠️ **A target whose size depends on where it is placed is not a
+         * target size**, which is the lesson 📁
+         * [`icon-button.tsx`](./icon-button.tsx) already records: *"`px-1`
+         * around a `›` is padding round a narrow glyph, not a target."*
+         *
+         * ✅ **`inline-flex` is what makes `min-h` bite** and centres the text
+         * inside it; **`coarse:min-h-11` is the repository's own touch floor**,
+         * the same one `Button` and the accounts toolbar use.
+         */
+        'inline-flex min-h-6 items-center coarse:min-h-11',
         'mt-1 rounded px-2 py-1 font-mono text-2xs text-content-subtle transition-colors',
         'hover:bg-surface-sunken hover:text-content-muted',
         className,

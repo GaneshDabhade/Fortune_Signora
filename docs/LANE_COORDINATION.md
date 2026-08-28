@@ -16323,6 +16323,61 @@ perhaps twenty lines — **and it answers C-1567's architectural question as a
 side effect**, which is 📁 [§2](../CLAUDE.md)'s *decision wearing a document's
 clothes*.
 
+### C-1577 · The implementation authority holds TWO revisions of one screen, and counts them as two screens
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-28, opening `Workspace Setup` to audit its `a11y` claims |
+| **Module** | — 📁 **the design snapshot itself**: [`docs/design-snapshot/screens/`](design-snapshot/screens/) and [`MANIFEST.md`](design-snapshot/MANIFEST.md) |
+| **Owner of the answer** | 🔴 **Lane C · Product Office** — 📁 [D-138](DECISION_REGISTER.md) makes the snapshot the implementation authority and Product Office its custodian. ⛔ **No implementation lane may delete a file from it** |
+| **Status** | **`OPEN`** — ⚠️ **blocking nobody today**, and the reason is luck rather than design: see below |
+
+### ⛔ The finding
+
+**`screens/` holds 35 files. Two of them are the same screen:**
+
+| | bytes | hash |
+|---|---|---|
+| `Fortune Signora Workspace Setup.dc.html` | 89,041 | `b35a3edc1a3e72d5` |
+| **`Workspace Setup.dc.html`** | 88,918 | `25f1f80610ac0e68` |
+
+⚡ **It is the ONLY file in the directory without the `Fortune Signora ` prefix** — measured, not eyeballed: stripping the prefix from all 35 names leaves 34 unique, and the one collision is this.
+
+### 📁 They are not identical, and the difference is a layout decision
+
+**Twelve diff lines, all in the logo row:**
+
+> **Prefixed**: `display:flex;align-items:center;gap:10px;**row-gap:6px;flex-wrap:wrap**` with the actions in their own wrapping `<span>` and `white-space:nowrap` on the filename.
+>
+> **Un-prefixed**: `display:flex;align-items:center;gap:10px` — **no wrap**, actions inline.
+
+⛔ **A lane implementing that row cannot tell which one to follow**, and both are in the authority with equal standing. ⚠️ **The prefixed one READS as the later refinement** — wrapping is a responsive improvement, not a regression — **but this lane is guessing, which is the whole problem.**
+
+### 🔴 And `MANIFEST.md`'s own count is off by one, for this reason
+
+📁 **The header reads**: *"`screens/` holds 35 files · **34 screen designs** and one audit document."*
+
+| | |
+|---|---|
+| 35 files | ✅ |
+| minus `Fortune Signora Entry Coverage Review.dc.html` | 📁 the manifest itself calls it *"NOT a screen specification"* |
+| minus one duplicate | ⛔ **not counted** |
+| **distinct screens** | 🔴 **33, not 34** |
+
+⚠️ **That row has been wrong four times already by its own record**, and it documents each correction. **This is the fifth, and its cause is different from the other four**: they were stale counts of a changing directory; **this one is an accurate count of a directory that contains a duplicate nobody noticed.**
+
+### ⚡ Why it blocks nobody today, and why that is not reassuring
+
+**The twelve differing lines are the logo upload row, and logo upload has no producer** — no image endpoint, no object-storage port reachable from the frontend, nothing on the person's record carrying a logo. 📁 **The same measurement [`avatar-area.tsx`](../frontend/app/(app)/profile/avatar-area.tsx) records for the person's avatar.**
+
+⛔ **So the ambiguity sits precisely where nothing can be built.** ⚠️ **It stops being harmless the day upload ships**, and by then nobody will remember there were two files.
+
+### ✅ What a ruling needs to say
+
+**Which revision is the snapshot's**, and **that the other is removed rather than left beside it** — 📁 [§2](../CLAUDE.md): *truth has exactly one authoritative representation; a stored copy of a derivable fact is a defect waiting for the two to disagree.* ⚡ **These two already disagree.**
+
+⚠️ **And `MANIFEST.md`'s hashes did their job**: they are per-file and neither went stale. 📁 **It is the summary row that cannot count**, which is the lesson that document already draws about itself — *"a figure that must be updated by hand will not be."*
+
 ### C-1576 · A permission on Home is drawn as a failure, because the scope ladder has no region-scope permission state
 
 | | |
