@@ -2,11 +2,67 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `fd3f42e2`, 2026-08-28.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `3d4ff473`, 2026-08-28.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
 > **It is a dashboard, not an engineering journal.** [`SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) answers a different question — *"what should the next session know?"* — and does not repeat what is here. Historical implementation detail belongs in ADRs and module documentation; **the appendices below are dated records and are never rewritten to match the present.**
+
+---
+
+## Cycle 279 — promoted `3d4ff473b8ff`, 2026-08-28
+
+| | |
+|---|---|
+| **Promoted** | **`3d4ff473b8ffdd6207a15a8cf92c3251b52496c8`** — `promoted == certified`, 5 commits, **zero merge commits**. `--audit-main` holds across 2493 |
+| **Gates** | **5465 pytest · 95.03% · 679 Security Invariants · mypy strict 958 · import-linter 37/37 · tsc clean · frontend 4426 in 258 files · eslint clean · smoke 24 stages in 213s · scenario 208** |
+| **DR** | ✅ passed |
+| **Migrations** | none — head unchanged at `0066` |
+| **Composition** | **two QE slices, with three of Lane A's rebased on top** |
+
+⚠️ **An earlier run on this same SHA was interrupted by a machine restart and was re-run WHOLE rather than resumed.** ⛔ **An interrupted run has no result — not a partial one — and the gates that had already gone green carry no credit.**
+
+### ✅ [B-1088](docs/BUGS.md) fixed — the suite's environment is its own, not the operator's
+
+⛔ **Cycle 277's certification reported `frontend-suite 9 failed` against a candidate that touched no authentication file.** The cause was the launch: `env SIGNORA_ENVIRONMENT=lane-qe make certify` exports the variable into vitest, where `isDeployed()` treats anything outside `['local','test']` as deployed — **so a real [ADR-0033](docs/architecture/adr/) safety check on the console email transport fired on a suite that was never deployed anywhere.**
+
+🔴 **The trap is that naming the environment is the DOCUMENTED remedy.** 📁 `require-e2e-url` instructs exactly that, written for [B-1014](docs/BUGS.md) after a suite was pointed at port 80, **and neither message mentions the other.**
+
+✅ **Pinned in `vitest.config.ts`, not in `make certify`** — fixing the caller would leave `npx vitest run`, an IDE and every lane's own loop carrying the same dependency. ⚡ **`test` was chosen over `local` on a measurement**: the only comparisons in `lib/auth/config.ts` are `?? 'local'`, the two-element allow-list and `=== 'demo'`, **so the two are behaviourally identical.** **Proven: 4398 passed in 256 files under `SIGNORA_ENVIRONMENT=lane-qe`, the exact condition that produced the nine.**
+
+### ✅ [B-1089](docs/BUGS.md) fixed — the guard that names too-narrow populations had one
+
+**`vocabulary.test.tsx` walked `['app','components']` and never `lib`**, so four customer-read strings in `lib/settings/sections.ts` reached `/settings` carrying the platform word **while the guard was green.**
+
+⚡ **It is the file's own scar one level up.** Its comment on `humanReadable` records a population of **props** that was too narrow and shipped *"Signora could not load your workspaces"*; **this was a population of directories.** ⛔ **Both fail silently.**
+
+✅ **The witnesses test the population, not the constant** — one asserts a `lib/settings/` file actually reached `SOURCES`, ⛔ **not that `ROOTS` contains the string `'lib'`, which would be the constant asserting itself.** **All three fired**: remove `lib` → fails · empty the exception → fails on `"Knowledge graph"` · point the exception at a clean file → the staleness witness fails.
+
+⛔ **One exception, carrying the id of the decision that ends it.** `lib/research/capability.ts` labels a capability `Knowledge graph` while all eight siblings are customer phrases. **Neither a lane nor QE may choose its replacement** — 📁 [C-1579](docs/LANE_COORDINATION.md), the product owner's. ⚡ **An exception without an id is the too-wide-and-silent failure arriving by accretion**: nobody widens the guard, they add one more line, and every line is individually defensible.
+
+### 🔴 A guard caught QE inventing a citation, four hours after QE corrected a false claim
+
+⛔ **The first version of the B-1089 fix cited `B-1089` in a comment before the row existed.** ✅ 📁 [`row-citations.test.tsx`](frontend/tests/components/row-citations.test.tsx) failed the full suite — *"file the row, or remove the citation"* — **and it did not appear when the guard was run in isolation.** ⚠️ ***"The guard passes"* was true and useless**; a repository-wide check is not exercised by running the file you edited.
+
+⚡ **That guard is [B-1069](docs/BUGS.md), filed after `B-3180` was cited as precedent in an argument about registers not carrying untrue claims — and `B-3180` had never existed.** **Its own conclusion applies: knowing the failure mode did not prevent committing it, which is an argument for a guard rather than for care.**
+
+### ⚠️ Measured this cycle: QE's verification debt, and it is QE's own
+
+📁 §20e: *"Verifies and closes — **QE, never the lane that fixed it**."* **Measured at the promoted commit:**
+
+| | |
+|---|---|
+| `FIXED` awaiting `VERIFIED` | **186** |
+| — fixed by a lane, **QE's to verify** | 🔴 **121** |
+| — fixed **by QE**, structurally unclosable under the rule | **43** |
+| — attribution unclear from the `Status` cell | 22 |
+| `VERIFIED` | **38** |
+
+⛔ **Of the 18 🔴 awaiting verification, 13 are lane-authored and QE's to close** — including [B-305](docs/BUGS.md), *a session-termination control that did not terminate the session*, `FIXED` on 2026-08-03 and **unverified for 25 days.**
+
+⚠️ **The split matters and *186 unverified* is the plausible-but-wrong number.** **43 say explicitly *"NOT `VERIFIED` — QE wrote it and does not verify its own work"*** — ⛔ **not neglected, unclosable.** **There is no second party, and a row that can never close makes a register that only grows.** ✅ **That is a question for the product owner rather than something QE resolves by self-awarding.**
+
+⚡ **The 121 are simply overdue.** **QE has been running the lifecycle faithfully and treating verification as the part that happens later.** **Eight of the 18 🔴 name a regression witness in the row and are cheap to close; ten name none.** ⛔ **Recorded here as a measurement rather than a resolution.**
 
 ---
 

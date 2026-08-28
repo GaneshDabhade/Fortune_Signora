@@ -71,7 +71,18 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-28, `fd3f42e2`
+## Current — as of 2026-08-28, `3d4ff473`
+
+> ⚡ **Cycle 279 Closeout. 5 commits — two QE slices with three of Lane A's rebased on top. No migrations.**
+>
+> ⚠️ **An earlier certification of this SHA was interrupted by a machine restart and was re-run whole, not resumed.**
+>
+> ✅ **No board rows removed** — this cycle promoted no `TASK-nnn`.
+>
+> ✅ **[B-1088](BUGS.md) and [B-1089](BUGS.md) both FIXED by QE**, each with a witness fire-tested in both directions. ⛔ **`VERIFIED` left unset on both — QE wrote them.**
+>
+> 🔴 **QE's verification debt measured: 186 `FIXED` awaiting `VERIFIED`, 121 of them lane-authored and QE's.** **Draining the 🔴 before 281.**
+
 
 > ⚡ **Cycle 278 Closeout. 6 commits, Lane A, no migrations, eight gates on the FIRST attempt.**
 >

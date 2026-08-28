@@ -1,5 +1,23 @@
 # Session Handoff
 
+> ## Cycle 279 — promoted `3d4ff473b8ff`, 2026-08-28 · **two QE gate fixes, and a measured verification debt of QE's own**
+>
+> **`main` = `3d4ff473b8ffdd6207a15a8cf92c3251b52496c8` = the certified commit.** **ZERO merges**, `--audit-main` holds across 2493. `pytest` **5465** · **95.03%** · **679 invariants** · `mypy` **958** · `import-linter` **37/37** · `tsc` · frontend **4426/258** · `eslint` · smoke **24/213s** · scenario **208** · DR ✅. **No migration; head `0066`.**
+>
+> ⚠️ **An earlier run on this SHA was interrupted by a machine restart and was RE-RUN WHOLE.** ⛔ **An interrupted run has no result — not a partial one.**
+>
+> ✅ **[B-1088](BUGS.md) FIXED — `env: { SIGNORA_ENVIRONMENT: 'test' }` pinned in `vitest.config.ts`.** ⛔ **NOT in `make certify`**: fixing the caller leaves `npx vitest run`, an IDE and every lane's loop carrying the same dependency. ⚡ **Proven at 4398/256 under `SIGNORA_ENVIRONMENT=lane-qe`**, the exact condition that produced `frontend-suite 9 failed` in 277. 🔴 **Naming the environment is still the DOCUMENTED remedy in `require-e2e-url`, and the two messages still do not know about each other.**
+>
+> ✅ **[B-1089](BUGS.md) FIXED — `vocabulary.test.tsx` `ROOTS` widened to include `lib`.** **Four customer-read strings reached `/settings` while the guard was green.** ⚡ **The witness asserts a `lib/settings/` file actually reached `SOURCES`, not that `ROOTS` contains `'lib'`** — the second would be the constant asserting itself. **`'Knowledge graph'` excused pending [C-1579](LANE_COORDINATION.md), with a staleness witness that fails when the exception stops excusing anything.**
+>
+> 🔴 **QE'S VERIFICATION DEBT, MEASURED FOR THE FIRST TIME: 186 rows are `FIXED` awaiting `VERIFIED`.** **121 are lane-authored and QE's to close** — **13 of the 18 🔴, including [B-305](BUGS.md), a session-termination control that did not terminate the session, unverified for 25 days.** ⛔ **43 are QE-authored and say *"NOT `VERIFIED` — QE wrote it"*: not neglected, UNCLOSABLE, because no second party exists.** ⚠️ **That half is a product-owner question, not QE's to self-award.** ✅ **Eight of the 18 🔴 name a regression witness and are cheap; ten name none.**
+>
+> ⚡ **NEXT: drain the 🔴 verifications before cutting 281.** **Lane A's tip is well above the pin — three or more commits are 280's.**
+>
+> ⛔ **STILL NOT DONE: [B-1086](BUGS.md)'s production-build browser run.** **Every browser figure QE has published remains provisional.**
+
+> ---
+>
 > ## Cycle 278 — promoted `fd3f42e27fad`, 2026-08-28 · **two guards agreeing on an undeclared premise, and a fire test that did not fire**
 >
 > **`main` = `fd3f42e27fad2637be51346fe6ba360719a7d367` = the certified commit.** **ZERO merges**, `--audit-main` holds across 2486. `pytest` **5465** · **95.03%** · **679 invariants** · `mypy` **958** · `import-linter` **37/37** · `tsc` · frontend **4396/255** · `eslint` · smoke **24/407s** · scenario **208** · DR ✅. **No migration; head `0066`. Certified on the FIRST attempt.**
