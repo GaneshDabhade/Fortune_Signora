@@ -12,6 +12,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { CONTENT_GRID, Column, Columns, Container } from '@/components/ui/container';
+import { ReadingColumn } from '@/app/(app)/reading-column';
 
 describe('the design’s three numbers live in one place', () => {
   it('📁 12 columns · 24px gutters · 1600px maximum, as data', () => {
@@ -92,6 +93,44 @@ describe('the column axis is opted into, never inherited', () => {
     const { container } = render(<Column span={7}>seven</Column>);
 
     expect(container.firstElementChild?.className).toContain('col-span-7');
+  });
+
+  it('🔴 B-1062 — a column is FULL WIDTH below the column axis, never a fraction of a handset', () => {
+    /**
+     * 🔴 **[B-1062](../../../docs/BUGS.md) measured a settings screen at 375px:
+     * 211px of content and 117px empty — 56% of the viewport.** ⛔ **That is
+     * what an unprefixed `col-span-8` does to a phone.**
+     *
+     * ✅ **`col-span-12` is the unconditional BASE and the span is prefixed**,
+     * so the twelve-column axis begins where the design draws one — ⚡ *"One
+     * region on the twelve-column axis, **from 1024 up**."*
+     *
+     * ⚠️ **The test above asserts `toContain('col-span-7')`, which passes on
+     * `smalllaptop:col-span-7` just as happily** — ⛔ **so it cannot see this
+     * property at all.** **This is the assertion that can.**
+     */
+    const { container } = render(<Column span={8}>eight</Column>);
+    const classes = container.firstElementChild?.className ?? '';
+
+    // ✅ **Full width by default** — a handset gets the whole content region.
+    expect(classes.split(/\s+/)).toContain('col-span-12');
+    // ⛔ **And the span is CONDITIONAL**, or the base above is overridden at
+    // every width and the row's measurement comes straight back.
+    expect(classes).toContain('smalllaptop:col-span-8');
+    expect(classes.split(/\s+/)).not.toContain('col-span-8');
+  });
+
+  it('⚡ and the narrow reading column inherits exactly that, rather than restating it', () => {
+    // 📁 `ReadingColumn` is the one consumer the five settings routes share.
+    // ⛔ **Nine `span={8}` literals would be nine copies of one decision**
+    // ([§2](../../../CLAUDE.md)), and this is the assertion that the shared
+    // definition is what they actually get.
+    const { container } = render(<ReadingColumn>body</ReadingColumn>);
+    const column = container.querySelector('[data-testid="content-columns"]')
+      ?.firstElementChild;
+
+    expect(column?.className.split(/\s+/)).toContain('col-span-12');
+    expect(column?.className).toContain('smalllaptop:col-span-8');
   });
 
   it('⛔ the twelve spans are all present and all distinct', () => {
