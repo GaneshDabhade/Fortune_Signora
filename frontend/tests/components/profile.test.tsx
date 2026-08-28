@@ -259,9 +259,10 @@ describe('screen 03 · appearance is the account\'s, not the browser\'s', () => 
     expect(card?.classList.contains('rounded-lg')).toBe(true);
     // 📁 The selected card takes the brand border AND the brand tint.
     expect(card?.classList.contains('border-accent')).toBe(true);
-    expect(card?.className, 'the selected card is not filled with the brand tint').toContain(
-      'bg-accent-subtle',
-    );
+    expect(
+      card?.classList.contains('bg-accent-subtle'),
+      'the selected card is not filled with the brand tint',
+    ).toBe(true);
   });
 
   it('⛔ does not paint the page itself', async () => {

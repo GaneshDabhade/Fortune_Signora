@@ -95,7 +95,7 @@ describe('the one card every authentication screen sits in', () => {
     render(<AuthShell title="Sign in">{null}</AuthShell>);
 
     for (const dropped of ['rounded-none', 'border-0', 'shadow-none']) {
-      expect(card().className).toContain(dropped);
+      expect(card().classList.contains(dropped)).toBe(true);
     }
   });
 

@@ -35,7 +35,7 @@ describe('the container caps and centres', () => {
 
     const box = screen.getByTestId('content-container');
     expect(box.classList.contains('mx-auto')).toBe(true);
-    expect(box.className).toContain(`max-w-[${CONTENT_GRID.maxWidth}px]`);
+    expect(box.classList.contains(`max-w-[${CONTENT_GRID.maxWidth}px]`)).toBe(true);
   });
 
   it('📁 the gutter yields below 640 — *"chrome yields before data"*', () => {

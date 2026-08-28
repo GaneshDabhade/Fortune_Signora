@@ -48,14 +48,14 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 beforeEach(() => {
   /**
-   * 🔴 **This file ran on the WALL CLOCK, and it recorded a cycle
-   * `NOT CERTIFIED`.**
+   * 🔴 **[B-1092](../../docs/BUGS.md) — this file ran on the WALL CLOCK, and it
+   * recorded a cycle `NOT CERTIFIED`.**
    *
-   * ⚠️ **QE's row for it is not cited here yet, deliberately.** ⛔ **The row was
-   * filed on QE's branch and has not reached `integration`**, and
-   * `row-citations.test.tsx` refuses a citation to a row this tree cannot see
-   * — **which is the guard doing exactly its job.** ✅ **The id goes in when
-   * the row does.**
+   * ⚠️ **The id was withheld for two days, deliberately.** ⛔ **The row was
+   * filed on QE's branch and had not reached this tree**, and
+   * `row-citations.test.tsx` refuses a citation to a row it cannot resolve —
+   * **which is the guard doing exactly its job, to its own author.** ✅ **The
+   * row is here now, so the id is.**
    *
    * ⛔ **`arrived = Date.now() - start` with real timers means the offsets are
    * DURATIONS**, and `'0:rej'` requires the 0ms caller to reach the fetch stub

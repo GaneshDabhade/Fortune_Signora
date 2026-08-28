@@ -122,7 +122,7 @@ describe('📁 a filter chip is one object, named, and says whether it is applie
       <FilterChip field="Period" value="" options={OPTIONS} onChange={() => {}} />,
     );
     const available = empty.container.firstElementChild as HTMLElement;
-    expect(available.className).toContain('border');
+    expect(available.classList.contains('border')).toBe(true);
     empty.unmount();
 
     const set = render(

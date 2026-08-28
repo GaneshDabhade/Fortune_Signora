@@ -21119,3 +21119,40 @@ expect(className).toContain('max-w-full')      // passes on smalllaptop:max-w-fu
 | **The 18** | **fix now** — they are ambiguous against tokens that exist, enumerated, and finite |
 | **The other 28** | ⚡ **convention going forward**: `expect([...el.classList]).toContain('x')` is exact by construction and costs nothing |
 | **The one already taken** | 📁 `team.test.tsx` → `max-w-full`, **fixed by Lane A** because [B-1019](#b-1019)'s closure rested on it, and *"closing a row while citing a witness that cannot see the regression would have been a weak close"* |
+
+### 🔴 Seventh instance — *"bare single-word literal"* is not the same property as *"token family"*
+
+⚠️ **Lane A re-ran the sweep with the subject pinned to QE's definition and got 58, not 46.** ⛔ **The gap is not tree difference** — `a36a9b5f` contains Lane A's tree in full. **It is the row's own separate exclusion**: *"11 bare single-word literals"*, exempted on the strength of one example.
+
+📁 **Measured on `17ee25be^`, positive · `className` subject · single-word literal — five distinct:**
+
+| literal | is there a bare class by that name? | verdict |
+|---|---|---|
+| `ai` | ⛔ **no** — `text-ai`, `bg-ai-subtle`, `border-ai-line` | ✅ **family. Exempt** |
+| `warning` | ⛔ **no** — `Badge` renders `bg-warning-subtle text-warning` | ✅ **family. Exempt** |
+| `invisible` (×3) | ✅ **yes**, and `group-hover:invisible` satisfies the substring | 🔴 **instance** |
+| `sticky` | ✅ **yes**, and `laptop:sticky` satisfies it | 🔴 **instance** |
+| `border` | ✅ **yes** — **and `border-border` satisfies it with the width class GONE** | 🔴 **instance, and the worst one** |
+
+> ⛔ **A bare single word is not evidence of a family; it is evidence of a SHORT class**, and a short class is the one most likely to be a prefix of a longer real one. ⚡ **Two of the five are families. Three are the defect at its most severe.**
+
+### ✅ `border` — fire-tested on the product, both directions
+
+📁 `filter-chip.tsx` declares `available: 'border border-border text-content-muted'` — 📁 *"an APPLIED control and an AVAILABLE one must not read alike."*
+
+**One character changed in the product** — `border` → `laptop:border`, which is a plausible responsive edit and leaves the colour class untouched:
+
+| assertion | result |
+|---|---|
+| `expect(available.className).toContain('border')` | ⛔ **7 passed — GREEN** |
+| `expect(available.classList.contains('border')).toBe(true)` | ✅ **1 failed** |
+
+⚠️ **`border-border` alone kept the old assertion green while the chip lost its border on every handset** — **the exact behaviour that test exists to state, unguarded, with no failing test anywhere.** ⛔ **This is not *ambiguous against a variant a change could introduce*; it is ambiguous against a class that is already on the element.**
+
+### 📁 Lane A's half, closed
+
+**58 = 52 (`17ee25be`) + 6 more.** ⛔ **The six were missed by BOTH sweeps** — four because the literal is a variable or a template (`toContain(dropped)`, `` toContain(`max-w-[${…}px]`) ``), two because the call spans lines. ✅ **Converted, with `table.test.tsx`'s `'sticky left-0'` split into two**, since an adjacency-dependent literal also fails spuriously when a class string is reordered.
+
+⚠️ **Left alone, and named so the next sweep does not convert them**: the two families above, `container.test.tsx:139`'s `.split(/\s+/)` (already the corrected form), and every `.not.toContain` (stricter, never looser).
+
+> 🔴 **Six measurements became eight, and the eighth still moved the number.** ⚡ **Each correction was a constraint nobody had written down** — subject, polarity, literal shape, and now *what a single word is evidence of*. ⛔ **The population was never the hard part; the definition was, every time.**

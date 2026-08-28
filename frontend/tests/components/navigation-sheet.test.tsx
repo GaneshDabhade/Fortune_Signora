@@ -218,9 +218,11 @@ describe('at and above 1024 the rail is in flow, and nothing opens over it', () 
     // ⚡ **`smalllaptop:hidden` is a CSS rule jsdom does not apply**, so this
     // asserts the class rather than visibility — ⛔ **the honest assertion,
     // and the browser journey is what proves the rule takes effect.**
-    expect(screen.getByRole('button', { name: 'Open navigation' }).className).toContain(
-      'smalllaptop:hidden',
-    );
+    expect(
+      screen.getByRole('button', { name: 'Open navigation' }).classList.contains(
+        'smalllaptop:hidden',
+      ),
+    ).toBe(true);
   });
 
   it('✅ the rail collapses, which is what `[` and the chevron do here', async () => {

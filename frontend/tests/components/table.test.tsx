@@ -92,7 +92,8 @@ describe('📁 rule ① — pinned identity', () => {
     const { container } = grid();
     const headers = [...container.querySelectorAll('th')];
     expect(headers).toHaveLength(2);
-    expect(headers[0]?.className).toContain('sticky left-0');
+    expect(headers[0]?.classList.contains('sticky')).toBe(true);
+    expect(headers[0]?.classList.contains('left-0')).toBe(true);
     expect(headers[1]?.className).not.toContain('left-0');
   });
 });

@@ -141,13 +141,16 @@ describe('📁 the design tints it, and only it', () => {
   it('✅ the assistant carries the intelligence tint and Settings does not', () => {
     render(<Navigation role="owner" roleKnown />);
 
-    // ⚠️ **`toContain` deliberately, and this is the case it is FOR.** ⛔ **`ai`
-    // is not a class; it is the token FAMILY** — `text-ai`, `bg-ai-subtle`,
-    // `border-ai-line` all satisfy the claim *"carries the intelligence tint"*.
-    // ⚡ **Converting this to `classList` would assert a class that does not
-    // exist**, which is why the substring sweep does not propose a blanket
-    // rewrite. ⚠️ **QE's row id is not cited: it is filed on their branch and
-    // `row-citations.test.tsx` refuses a row this tree cannot see.**
+    // ⚠️ **`toContain` deliberately, and this is the case it is FOR** — 📁
+    // [B-1091](../../docs/BUGS.md). ⛔ **`ai` is not a class; it is the token
+    // FAMILY** — `text-ai`, `bg-ai-subtle`, `border-ai-line` all satisfy the
+    // claim *"carries the intelligence tint"*. ⚡ **Converting this to
+    // `classList` would assert a class that does not exist**, which is why the
+    // substring sweep does not propose a blanket rewrite. ⚠️ **The suite is
+    // what said so, not the diff**: this line and `container.test.tsx`'s
+    // `smalllaptop:col-span-7` look identical to the fifty it was right to
+    // convert. ✅ **`auth-mode-indicator.test.tsx`'s `warning` is the third**:
+    // `Badge` renders `bg-warning-subtle text-warning` and no bare `warning`.
     expect(
       screen.getByRole('button', { name: 'Ask Signora' }).className,
     ).toContain('ai');
