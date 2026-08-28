@@ -82,6 +82,38 @@ function designNav(): DesignItem[] {
 /** ⚡ `&amp;` is markup; the screen renders the character. */
 const decode = (label: string) => label.replace(/&amp;/g, '&');
 
+/**
+ * ⛔ **The design's word is not always the screen's word, and that is a RULE
+ * rather than a divergence.**
+ *
+ * 📁 **[ADR-0034](../../../docs/architecture/adr/0034-ubiquitous-language.md)**:
+ * *"a customer says Organization; the platform says workspace… the translation
+ * lives at the frontend edge and never travels inward."* ⚡ **The design
+ * documents are written in the platform's vocabulary throughout** — *"Name
+ * your workspace"*, *"Workspace URL"* — **and every screen translates them.**
+ *
+ * 🔴 **Without this, the guard demanded an ADR-0034 violation.** ⛔ **Two
+ * rules, both binding, pointing opposite ways** — and the guard was the louder
+ * one, so the register's word won on screen until a render test asked.
+ *
+ * ⚠️ **Applied to the DESIGN's side, never to the implementation's**, so the
+ * implementation still cannot introduce the platform word: `Workspace` in
+ * `SETTINGS_NAV` would be compared against a translated `Organization` and
+ * fail, which is exactly what should happen.
+ *
+ * ⚡ **This is the same KIND of transformation `decode` is** — markup to
+ * rendered text, platform vocabulary to customer vocabulary — **and it is
+ * spelled out rather than folded into a looser comparison.**
+ */
+const CUSTOMER_WORD: readonly (readonly [RegExp, string])[] = [
+  [/\bWorkspace\b/g, 'Organization'],
+  [/\bworkspace\b/g, 'organization'],
+];
+
+function asShown(label: string): string {
+  return CUSTOMER_WORD.reduce((text, [term, word]) => text.replace(term, word), decode(label));
+}
+
 describe('📁 Settings is the design’s page', () => {
   it('carries the design’s eleven sections, in the design’s order', () => {
     expect(SETTINGS_SECTIONS.map((section) => section.id)).toEqual(designAnchors());
@@ -96,8 +128,29 @@ describe('📁 Settings is the design’s page', () => {
         group.items.map((item) => `${group.label} / ${item.label} → ${item.section}`),
       ),
     ).toEqual(
-      design.map((item) => `${item.group} / ${decode(item.label)} → ${item.section}`),
+      design.map((item) => `${asShown(item.group)} / ${asShown(item.label)} → ${item.section}`),
     );
+  });
+
+  /**
+   * ⚠️ **The translation must not silently become a no-op.**
+   *
+   * ⛔ **If the design were ever refreshed without the platform word, `asShown`
+   * would still pass on every comparison while enforcing nothing** — and the
+   * next person to reintroduce `Workspace` into `SETTINGS_NAV` would find the
+   * guard agreeing with them. ✅ **So the guard asserts that it is actually
+   * doing work**, and fails loudly if the premise stops holding.
+   */
+  it('⚡ and the ADR-0034 translation is load-bearing, not decorative', () => {
+    const design = designNav();
+    const raw = design.map((item) => `${item.group} / ${decode(item.label)}`);
+    const shown = design.map((item) => `${asShown(item.group)} / ${asShown(item.label)}`);
+
+    expect(
+      raw.filter((entry, i) => entry !== shown[i]),
+      'the design no longer uses the platform word here — remove the translation ' +
+        'rather than leaving one that enforces nothing',
+    ).not.toEqual([]);
   });
 
   /**

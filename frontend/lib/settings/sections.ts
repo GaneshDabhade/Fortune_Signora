@@ -57,7 +57,18 @@ export interface SettingsSection {
 export const SETTINGS_SECTIONS: readonly SettingsSection[] = [
   {
     id: 'workspace',
-    title: 'Workspace',
+    /**
+     * ⛔ **`Organization`, not the design's `Workspace`** — 📁
+     * [ADR-0034](../../../docs/architecture/adr/0034-ubiquitous-language.md):
+     * *"a customer says Organization; the platform says workspace."* ⚡ **The
+     * translation lives at the frontend edge**, so the anchor stays `#workspace`
+     * — it is addressing, not prose — **and only what is READ changes.**
+     *
+     * 🔴 **This shipped as `Workspace` and rendered as a section heading.**
+     * ⚠️ **`vocabulary.test.tsx` walks `app` and `components`; this string
+     * lives in `lib`**, so the guard never saw it.
+     */
+    title: 'Organization',
     meta: 'Identity, region and fiscal calendar',
     supply: 'supplied',
   },
@@ -97,7 +108,8 @@ export const SETTINGS_SECTIONS: readonly SettingsSection[] = [
   {
     id: 'security',
     title: 'Security',
-    meta: 'Workspace-wide',
+    // ⛔ **ADR-0034** — the meta line is read, so it takes the customer word.
+    meta: 'Organization-wide',
     supply: 'absent',
     // ⚠️ **Deliberately names where the real control IS.** ⛔ A section saying
     // only *"not available"* on a screen whose subtitle promises attribution
@@ -116,7 +128,9 @@ export const SETTINGS_SECTIONS: readonly SettingsSection[] = [
   {
     id: 'flags',
     title: 'Feature flags',
-    meta: 'Opt in per workspace',
+    // ⛔ **ADR-0034** — same rule; `section: 'workspace'` below is an ANCHOR
+    // and stays, because addressing is not prose.
+    meta: 'Opt in per organization',
     supply: 'absent',
     absence:
       'There is nothing to opt into yet. When a capability ships behind a flag it will appear here, with what turning it on changes.',
@@ -170,7 +184,8 @@ export interface SettingsNavGroup {
  */
 export const SETTINGS_NAV: readonly SettingsNavGroup[] = [
   {
-    label: 'Workspace',
+    // ⛔ **ADR-0034 again** — this is the navigation group a customer reads.
+    label: 'Organization',
     items: [
       { label: 'General', section: 'workspace' },
       { label: 'Branding', section: 'branding' },
