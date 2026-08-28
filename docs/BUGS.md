@@ -20473,6 +20473,17 @@ role=null aria-live=polite  "Navigated to /w/4e158d14-ab29-4b23-b99d-a8b10986f8e
 
 ⛔ **So `PASS no unresolved 🔴` is true of the bug register and false of the repository**, and every dashboard figure QE publishes inherits that.
 
+### 📁 Promotions made while these two were open — measured, and appended each cycle
+
+| promotion | C-1567 | C-1568 | gate said |
+|---|---|---|---|
+| **`3ba57bdc`** — cycle 280 | 🔴 open | 🔴 open | `PASS no unresolved 🔴` |
+| **`a36a9b5f`** — cycle 281 | 🔴 open | 🔴 open | `PASS no unresolved 🔴` |
+
+⛔ **Cycle 281's promotion was made with both rows open, knowingly, and this line is the record of that rather than a discovery.** ⚡ **QE checked `LANE_COORDINATION.md` directly at Closeout because this row said to, found both still `OPEN`, and promoted anyway** — because **C-1567's fix moves where the theme is stored and `lib/state` is 🔴 tier**, so no lane may make it and blocking every promotion until a product-owner ADR lands would freeze the repository on a decision no lane can take.
+
+> ⚠️ **That reasoning is QE's and QE has an interest in it**, exactly as this row's sibling [B-1075](#b-1075) says out loud about its own severity. **If the product owner reads the blocking rule as covering 🔴 rows in either register, then cycles 280 and 281 were both promoted against it** and the remedy is the escalation this row already asks for, not a QE re-reading.
+
 ### ⚠️ Why they are in the coordination register, and why that is not Lane A's mistake
 
 **Two reasons, and both are legitimate:**
