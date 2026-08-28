@@ -2,11 +2,70 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `cf1d31db`, 2026-08-28.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `319ee4b4`, 2026-08-28.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
 > **It is a dashboard, not an engineering journal.** [`SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) answers a different question — *"what should the next session know?"* — and does not repeat what is here. Historical implementation detail belongs in ADRs and module documentation; **the appendices below are dated records and are never rewritten to match the present.**
+
+---
+
+## Cycle 277 — promoted `319ee4b451d3`, 2026-08-28
+
+| | |
+|---|---|
+| **Promoted** | **`319ee4b451d38c5ff458e3c4a2268f869ac08b49`** — `promoted == certified`, 8 commits, **zero merge commits**. `--audit-main` holds across 2478 |
+| **Gates** | **5465 pytest · 95.03% · 679 Security Invariants · mypy strict 958 · import-linter 37/37 · tsc clean · frontend 4336 in 250 files · eslint clean · smoke 24 stages in 152s · scenario 208** |
+| **DR** | ✅ passed — PostgreSQL, Redis, API, workers and relay restarted; nothing lost |
+| **Migrations** | none — head unchanged at `0066`; reversibility **not applicable** rather than ticked |
+
+**Lane A, eight commits**: witnesses on five surfaces nothing rendered — Home's activation cards, the AI reasoning card, the Companies toolbar (666 lines, the largest unwitnessed file), onboarding's Connect step, and Security Center. Plus two accessibility repairs: the current organization row was **announced and invisible** (`aria-current` and nothing else, on the list that exists to tell you which organization you are in), and a copy button whose target size was inherited rather than stated.
+
+### 🔴 Certification failed once, and the cause was QE's own shell — [B-1088](docs/BUGS.md)
+
+⛔ **Attempt 1 recorded `NOT CERTIFIED` with `frontend-suite 9 failed`, against a lane's candidate that was innocent.** QE launched with `env SIGNORA_ENVIRONMENT=lane-qe make certify`, which exported the variable into vitest:
+
+```ts
+function environmentName() { return process.env.SIGNORA_ENVIRONMENT ?? 'local'; }
+function isDeployed()      { return !['local','test'].includes(environmentName()); }
+```
+
+⚡ **`lane-qe` is neither**, so the suite believed it was deployed and a real safety check on the console email transport fired — **correctly.** ✅ **Proved in the right order**: the candidate touches no auth file, then an isolated run with the variable unset gave **4336 passed in 250 files**, which is the figure that later certified.
+
+🔴 **The trap is that naming the environment is the DOCUMENTED remedy.** `require-e2e-url` instructs `SIGNORA_ENVIRONMENT=lane-a make …`, written because [B-1014](docs/BUGS.md) cost a suite pointed at port 80. **Following it for `make certify` breaks an unrelated gate, and neither message mentions the other.** ⚠️ **Every piece is individually correct — the allow-list, ADR-0033, the test.** ⛔ **The defect is that the suite's declared input is the tree and its actual input is the tree AND the operator's shell** — §2's *hidden inputs*, and **the same sentence as [B-1086](docs/BUGS.md) with *compile state* in place of *shell*.**
+
+### ✅ [B-1086](docs/BUGS.md) is diagnosed — it is a harness fault, not a product one
+
+📁 **Measured in `web-275.log`, the server log of the run that produced the eleven phantom failures.** The app is served with `next dev`, which compiles each route **on demand**:
+
+```
+GET /profile           29,483ms   ✓ Compiled /profile          in 28s
+GET /profile/security  26,096ms   ✓ Compiled /profile/security in 22.5s
+GET /signin            25,686ms   ✓ Compiled /signin           in 24.8s
+GET /register          19,484ms   ✓ Compiled /register         in 18.8s
+```
+
+⛔ **Eleven requests exceeded the 15s `expect` timeout; the run reported eleven failures. Every one returned `200`** — the server answered correctly, it was compiling. **The failing journeys were the auth ones, routing through three of the four slowest compiles.**
+
+⚡ **It explains every property that made the suite unattributable** — including why a re-run on an unchanged tree reproduced **zero** and failed six *different* tests: **the compile cache is warm the second time, so the cost is paid once per route per server rather than once per test.**
+
+⚠️ **Stated as a hypothesis, not a proof.** `11 == 11` plus a per-route match is not a controlled experiment. **The falsifiable prediction is that a production-build run has no connection-class failures**, and that run has not happened — see the correction to cycle 276 below.
+
+⛔ **The consequence QE owns: every browser figure published to date was measured against `next dev`**, so 274's *21 against 24* compared two runs whose compile caches differed. **A 3-failure delta was read as signal and may have been which routes were cold.** ✅ **All of them are provisional until a production-build run exists.**
+
+### ⚠️ Three instruments suspected, three times the instrument was right
+
+**QE proposed widening `state-check.py`'s ownership matcher after measuring 32 rows using a heading it cannot see.** ⛔ **Lane A asked the question QE skipped — *who introduced the heading* — and the answer was Lane A, all 32, in one sitting.** ⚡ ***Thirty-two rows using a heading* and *thirty-two rows written by one lane in one sitting* are the same count and opposite facts.**
+
+🔴 **Worse, the proposed fix would have matched `| **Owner of what remains** | **Not Lane A, and not Lane B.** … |` and read *"Lane A"* out of a sentence that says *not Lane A*** — a false **positive** ownership reading, silently, rather than merely a permissive one. **The row was withdrawn; exact-name matching is correct as designed.**
+
+**Twice more the same way**: the HEAD-stability guard QE was about to propose already exists and is wired ([B-1025](docs/BUGS.md), `__main__.py:589`), and a hand-rolled replica of `vocabulary.test.tsx` reported **109** offenders where the guard reports **3** — because the replica scanned every string literal, including `/workspaces`, `workspace:read` and forty query keys, **all explicitly permitted by ADR-0034.**
+
+> ⚡ **The rule QE is taking from all three: when a number an existing instrument produces is wanted, run the instrument.** ⛔ **A replica is a second representation of the instrument's contract, and it is always more permissive than the original** — **which is the fixture rule Lane A stated at the start of the session, pointed at a measurement instead of a test double.**
+
+### 📁 A gap in a guard QE owns
+
+**`vocabulary.test.tsx` has `ROOTS = ['app', 'components']` and never walks `lib`.** Lane A measured it, fixed the two live offenders, restored the file untouched, and left the decision to QE — **which is the line drawn exactly right.** ⚡ **It is the guard's own `subject` scar one level up**: the population of *props* was too narrow once and shipped *"Signora could not load your workspaces"* while green; **the population of *directories* is too narrow now.** ✅ **Both fail silently, which is the worst way for a guard to be wrong.** **Queued as a QE slice with a witness that fails without `lib`.**
 
 ---
 
@@ -34,6 +93,16 @@
 ⚡ **A suite that is green AND quiet has one fewer place for something to hide.** 📁 **This cycle proved why**: Lane A found three test files whose mocks answered every unmatched path with a page of accounts — **and in two, the queue is positional, so an unmatched `/saved-views` call CONSUMED a paginated page and shifted which page an assertion was reading.** ⛔ **Those tests PASSED while asserting against a page they did not believe they were reading.** ⚠️ **The only surface evidence was a React key warning nobody read** — **and an unread warning is functionally identical to no warning at all.**
 
 ### ⚠️ The browser suite ran as an EXPERIMENT and deliberately gated nothing
+
+> 🔴 **CORRECTED 2026-08-28 by QE, during cycle 277's Closeout. THE CLAIM BELOW IS FALSE AND IS PRESERVED RATHER THAN DELETED.**
+>
+> ⛔ **The production build completed. The browser suite never ran against it.** ✅ **Measured, not recalled:** `frontend/test-results/.last-run.json` and `playwright-report/index.html` are both stamped **`2026-08-27 12:41`** — **cycle 275** — and carry 275's six failures. **No Playwright run followed the 276 build**, and `.next/BUILD_ID` is absent.
+>
+> ⚠️ **What did happen**: `build-276.log` shows a completed route table, and an API ran on 8200 from 08:29 to 09:39. ⛔ **QE then promoted rather than continue waiting — correctly — and wrote this paragraph as though the run it had planned had also occurred.**
+>
+> 🔴 **This is the §2 defect in the document whose whole purpose is to be trusted**, written by the lane that owns it. **A dashboard that reports an experiment nobody performed is worse than one that reports nothing**, and the same Closeout that recorded *"waiting on evidence you have declared non-decisive is a way of letting it decide"* also recorded the evidence as gathered.
+>
+> ✅ **The paragraph is corrected here rather than rewritten**, because §2 forbids falsifying a dated record to match the present — **including to make QE look consistent.**
 
 📁 **[B-1086](docs/BUGS.md) records that the suite cannot currently attribute a regression.** ⛔ **So a conventional run would have produced a number nobody could act on.** ✅ **Instead it ran against a PRODUCTION BUILD of the pinned commit, testing B-1086's own hypothesis** — that the phantom failures came from the dev server stalling on on-demand compilation.
 

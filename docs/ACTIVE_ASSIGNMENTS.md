@@ -71,7 +71,20 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-28, `cf1d31db`
+## Current — as of 2026-08-28, `319ee4b4`
+
+> ⚡ **Cycle 277 Closeout. 8 commits, Lane A, no migrations, eight gates on the SECOND attempt.**
+>
+> ⛔ **The first attempt failed on QE's own shell, not on the candidate** — [B-1088](BUGS.md). **`env SIGNORA_ENVIRONMENT=lane-qe make certify` leaked into vitest and fired a real deployed-environment safety check.** ✅ **Recorded as `NOT CERTIFIED` and discarded, not promoted.**
+>
+> ✅ **No board rows removed** — this cycle promoted no `TASK-nnn`.
+>
+> ✅ **[B-1086](BUGS.md) diagnosed**: `next dev` compiles routes on demand, and eleven requests over the 15s `expect` timeout produced eleven failures that all returned `200`. **A production-build run is the experiment that would confirm it and has NOT been performed.**
+>
+> 🔴 **A false claim in `PROJECT_STATUS.md` and `SESSION_HANDOFF.md` was corrected in place**: cycle 276 reported a browser run against a production build. **The build happened; the run did not.** **Both paragraphs are preserved with a dated correction beneath them.**
+>
+> 📁 **Queued for QE: widen `vocabulary.test.tsx`'s `ROOTS` to include `lib`** — measured by Lane A, decision left to QE.
+
 
 > ⚡ **Cycle 276 Closeout. 18 commits, Lane A + QE, no migrations, EIGHT gates on the FIRST attempt.**
 >

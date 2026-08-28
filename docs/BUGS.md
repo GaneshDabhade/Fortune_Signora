@@ -20518,7 +20518,7 @@ await expect(page.locator('#shell-utility-panel')).toHaveAttribute('data-state',
 
 ---
 
-### B-1086 · 🔴 The browser suite cannot currently attribute a regression — the failing set moves on an unchanged tree
+### B-1086 · 🟠 The browser suite cannot currently attribute a regression — the failing set moves on an unchanged tree
 
 | | |
 |---|---|
@@ -20578,3 +20578,131 @@ page.waitForURL: Test timeout of 60000ms exceeded
 
 > ⚡ **The first repair is to make the two distinguishable in the record**: a connection abort must not be counted as a test failure. **A suite that cannot tell *the product is wrong* from *the server did not answer* is reporting one number for two questions**, which is the same defect as [B-1083](BUGS.md) one level up.
 
+
+### ✅ 2026-08-28 — the mechanism, measured from the run's own server log
+
+⛔ **B-1086 is a HARNESS fault, not a product one, and not a flaky-test one.** ⚡ **The app was serving with `next dev`, which compiles each route ON DEMAND the first time a test touches it.**
+
+📁 **`playwright.config.ts`:** `workers: 1` · `fullyParallel: false` · `retries: 0` · **no `webServer`** — *"a lane already has its own dev server on its own port."* ⚠️ **So the run is SERIAL and the server is EXTERNAL and long-lived**, which rules out worker contention and makes the server's own behaviour the only variable.
+
+**Timeouts in force:** `timeout: 60_000` · **`expect: { timeout: 15_000 }`**.
+
+### 📁 Measured in `web-275.log` — the server log of the very run that produced the eleven
+
+| | |
+|---|---|
+| compiles in the run | **159** |
+| **compiles exceeding the 15s `expect` timeout** | **7** |
+| **requests exceeding 15s** | ⚡ **11** |
+| slowest compile | **28s** (`/profile`, 2497 modules) |
+| slowest request | **29,483ms** |
+
+⚡ **Eleven slow requests, and 275 reported ELEVEN failures.**
+
+### 🔴 And each slow request is its route's first compile, to the second
+
+| request | took | that route's compile |
+|---|---|---|
+| `GET /profile` | **29,483ms** | ✓ Compiled `/profile` in **28s** |
+| `GET /profile/security` | **26,096ms** | ✓ Compiled `/profile/security` in **22.5s** |
+| `GET /signin` | **25,686ms** | ✓ Compiled `/signin` in **24.8s** |
+| `GET /register` | **19,484ms** | ✓ Compiled `/register` in **18.8s** |
+
+⛔ **Every one returned `200`.** ⚡ **The server answered correctly — it was compiling.**
+
+📁 **And B-1086 already recorded which journeys failed**: *"auth and session journeys — `forgot password`, `signing out everywhere`, `revoking a session`, `the root path redirects`."* **Those route through `/signin`, `/register` and `/profile/security` — three of the four slowest compiles in the run.**
+
+### ✅ This explains every property that made the suite unattributable
+
+| observed | mechanism |
+|---|---|
+| **zero of eleven reproduced on an unchanged tree** | the second run's compile cache is warm — **the cost is paid once per route per server, not once per test** |
+| **six DIFFERENT tests failed instead** | whichever test first touches a cold route pays the compile |
+| **errors are `ERR_ABORTED` / `ECONNRESET`, never assertion failures** | the browser abandons a navigation the `expect` timeout has already failed |
+| **failures track POSITION, not spec** | ⚡ **exactly Lane A's predicted discriminator, arrived at from the log instead of the experiment** |
+
+⚠️ **A plausible causal story was available and it would have been wrong** — the candidate genuinely touched `register-form.tsx` and `enrolment.tsx`. **The eleven were the routes those files happen to live on, which is the same coincidence that made the story convincing.**
+
+### ⛔ What this does NOT establish
+
+**It is a numerical and per-route match, not a controlled experiment.** ⚠️ **`11 == 11` could be coincidence, and I am not treating a matching count as proof.** ✅ **It makes a falsifiable prediction, which is the point:**
+
+> **Serve a PRODUCTION build — `next build && next start` — and the connection-class failures should disappear, because there is no on-demand compilation to wait for.**
+
+⛔ **If they persist against a production build, this diagnosis is wrong** and the harness fault is elsewhere. ✅ **Either way the run decides it, and the run is cheap.**
+
+### ⚠️ The wider consequence, which is worse than the eleven
+
+📁 **Every browser figure QE has published since the suite began was measured against `next dev`.** ⛔ **The ~21 "persistent failures" baseline may contain an unknown number of compile-timeout artefacts**, and **the 274 candidate-vs-baseline comparison (21 vs 24) compared two runs whose compile caches were in different states.** ⚡ **Neither number was wrong to record; both were read as more comparable than they were.**
+
+### B-1088 · 🟡 The frontend suite's result depends on the operator's shell, and the documented remedy for one gate breaks it
+
+| | |
+|---|---|
+| **Module** | — **repository tooling.** 📁 [`frontend/vitest.config.ts`](../frontend/vitest.config.ts) · [`Makefile`](../Makefile):546 · 📁 [`frontend/lib/auth/config.ts`](../frontend/lib/auth/config.ts):255 |
+| **Current assignee** | **QE** — 📁 §20e: *a defect in a gate is QE's to fix* |
+| **Severity** | 🟡 — ⛔ **it fails loudly and corrupts nothing.** ⚠️ **But it fails as a NINE-FAILURE frontend-suite gate naming a lane's candidate**, which is the expensive part |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-28 by QE**, certifying cycle 277 — **and very nearly reported against Lane A's branch** |
+| **Commit found** | `319ee4b4` |
+
+### ⛔ What happens
+
+```
+$ env SIGNORA_ENVIRONMENT=lane-qe make certify
+  frontend-suite      9 failed
+  · gate 'frontend-suite' failed: 9 failed
+```
+
+```
+Error: The console email transport writes verification and password-reset links
+to stdout, which puts a credential in a log file.
+SIGNORA_ENVIRONMENT='lane-qe' is a deployed environment.
+```
+
+**With the variable UNSET, the same tree:**
+
+```
+$ env -u SIGNORA_ENVIRONMENT npx vitest run
+  Test Files  250 passed (250)
+       Tests  4336 passed (4336)
+```
+
+### 📁 The mechanism, and every piece of it is correct in isolation
+
+```ts
+export function environmentName(): string {
+  return process.env.SIGNORA_ENVIRONMENT ?? 'local';
+}
+function isDeployed(): boolean {
+  return !['local', 'test'].includes(environmentName());
+}
+```
+
+✅ **The allow-list is deliberately restrictive** — 📁 its own comment: *"the safe direction for a name nobody has thought about yet is the one that refuses."* ✅ **`resolveEmailTransport` throwing on a deployed environment is [ADR-0033](architecture/adr/) working.** ✅ **The test asserting it is a real safety test.**
+
+⛔ **And `lane-qe` is not `local` or `test`, so a lane naming its own environment makes its own frontend suite believe it is deployed.**
+
+### 🔴 The trap is that naming the environment is the DOCUMENTED remedy
+
+📁 **`Makefile`, `require-e2e-url`, on a different failure entirely:**
+
+> *"Name the environment explicitly:  `SIGNORA_ENVIRONMENT=lane-a make …`"*
+
+⚠️ **That instruction exists because [B-1014](BUGS.md) cost a suite pointed at port 80.** ⛔ **Following it for `make certify` breaks a gate that has nothing to do with it** — **so the repository documents a remedy for one failure that causes another**, and neither message mentions the other.
+
+### ⚡ This is B-1086's shape, one instrument over
+
+📁 **§2 — *hidden inputs are architecture defects*: *"any input that influences behaviour without being part of the declared contract."*** ⛔ **The frontend suite's declared inputs are the tree. Its actual inputs are the tree AND the operator's shell.** ⚡ **B-1086 is the same sentence with *compile state* in place of *shell*** — and both were found the same way: a result that changed while the tree did not.
+
+### ✅ The fix, and where it belongs
+
+⛔ **NOT in `make certify`.** **Fixing the caller leaves every other invocation — `npx vitest run`, an IDE, a lane's own loop — carrying the same dependency.**
+
+✅ **`vitest.config.ts` pins `SIGNORA_ENVIRONMENT=test` for the suite**, so the environment is part of the suite's own contract rather than the caller's. 📁 **`test` is already in the allow-list**, so nothing else moves.
+
+⚠️ **A regression test must fail without the pin** — set `SIGNORA_ENVIRONMENT=lane-qe` in the harness and assert the suite still passes. ⛔ **Otherwise the fix is the pin and the witness is the pin, which is one representation asserting itself.**
+
+### ⚠️ What this cost, stated plainly
+
+⛔ **A full certification run — 15 minutes — and a NOT-CERTIFIED record naming `319ee4b4`**, which was discarded per 📁 [`attempts.py`](../backend/tests/certification/attempts.py). ⚡ **The candidate touches no auth file**, which is what stopped the report: `git diff --name-only origin/integration HEAD | grep -iE 'auth|config'` returned nothing. ⛔ **Had the candidate touched one, a plausible causal story would have been available and it would have been wrong** — 📁 the identical near-miss B-1086 records.

@@ -1,5 +1,23 @@
 # Session Handoff
 
+> ## Cycle 277 — promoted `319ee4b451d3`, 2026-08-28 · **a gate that failed on QE's own shell, and three instruments QE was wrong to doubt**
+>
+> **`main` = `319ee4b451d38c5ff458e3c4a2268f869ac08b49` = the certified commit.** **ZERO merges**, `--audit-main` holds across 2478. `pytest` **5465** · **95.03%** · **679 invariants** · `mypy` **958** · `import-linter` **37/37** · `tsc` · frontend **4336/250** · `eslint` · smoke **24/152s** · scenario **208** · DR ✅. **No migration; head `0066`.**
+>
+> 🔴 **[B-1088](BUGS.md) — CERTIFICATION FAILED ONCE ON QE'S OWN SHELL, AGAINST AN INNOCENT CANDIDATE.** **`env SIGNORA_ENVIRONMENT=lane-qe make certify` exports the variable into vitest, where `isDeployed()` treats anything outside `['local','test']` as deployed** — so a real safety check on the console email transport fired and the gate reported **`frontend-suite 9 failed`**. ⛔ **THE TRAP IS THAT NAMING THE ENVIRONMENT IS THE DOCUMENTED REMEDY**: `require-e2e-url` instructs exactly that, written for [B-1014](BUGS.md), and neither message mentions the other. ✅ **Unset, the same tree gives 4336/250.** ⚡ **The suite's declared input is the tree; its actual input is the tree AND the operator's shell.**
+>
+> ✅ **[B-1086](BUGS.md) IS DIAGNOSED — IT IS A HARNESS FAULT.** **`next dev` compiles routes on demand**: `GET /profile` took **29,483ms** beside `✓ Compiled /profile in 28s`, `/signin` 25,686ms beside 24.8s, `/register` 19,484ms beside 18.8s. **Eleven requests over the 15s `expect` timeout; eleven failures; every one returned `200`.** ⚡ **Which is why a re-run reproduced zero — the compile cache is warm, so the cost is paid once per route per server, not once per test.** ⛔ **STATED AS A HYPOTHESIS: the falsifiable prediction is that a production-build run has no connection-class failures, and THAT RUN STILL HAS NOT HAPPENED.**
+>
+> ⛔ **SO EVERY BROWSER FIGURE QE HAS PUBLISHED IS PROVISIONAL.** **274's *21 against 24* compared two runs whose compile caches differed, and a 3-failure delta was read as signal.**
+>
+> ⚠️ **THREE TIMES QE SUSPECTED AN INSTRUMENT AND THE INSTRUMENT WAS RIGHT.** **A `state-check.py` widening was withdrawn** — it would have read *"Lane A"* out of `| **Owner of what remains** | **Not Lane A, and not Lane B.** …`, a false **positive**. **A HEAD-stability guard QE was about to propose already exists and is wired ([B-1025](BUGS.md)).** **A hand-rolled replica of `vocabulary.test.tsx` reported 109 offenders where the guard reports 3**, because it counted `/workspaces`, `workspace:read` and forty query keys — **all permitted by ADR-0034.** ⚡ **The rule: when a number an instrument already produces is wanted, RUN THE INSTRUMENT. A replica is always more permissive than the original.**
+>
+> 📁 **A GAP IN A GUARD QE OWNS, LEFT FOR QE TO CLOSE.** **`vocabulary.test.tsx` has `ROOTS = ['app','components']` and never walks `lib`** — four customer-read strings on `/settings` carried the platform word, invisible to it. **It is the guard's own `subject` scar one level up: the prop population was too narrow once, the directory population is too narrow now, and both fail green.**
+>
+> ⚡ **NEXT CYCLE'S INPUT: `origin/lane-a-product-surface-r4` is well above the pin — Lane A has continued past it and rebases before 278 is cut.**
+
+> ---
+>
 > ## Cycle 276 — promoted `cf1d31db0782`, 2026-08-28 · **a docstring that shipped on Home, and a suite that runs as an experiment**
 >
 > **`main` = `cf1d31db0782` = the certified commit.** **ZERO merges**, `--audit-main` holds across 2468. `pytest` **5465** · **95.03%** · **679 invariants** · `mypy` **958** · `import-linter` **37/37** · `tsc` · frontend **4287/243** · `eslint` at `--max-warnings=0` · smoke **24/321s** · scenario **208** · DR ✅. **No migration.**
@@ -7,6 +25,8 @@
 > 🔴 **[B-1085](BUGS.md) — AN UNBRACED JSX BLOCK COMMENT IS A TEXT NODE AND REACT RENDERS IT.** **It shipped above the fold on Home, immediately above *"You are working in Northwind Global"*, to everyone with more than one organization, through several promotions.** ⛔ **`tsc` and `eslint` both passed — a text node is valid JSX** — **and NOTHING IN THE REPOSITORY RENDERED `WorkspaceStrip` AT ALL.** ⚡ **A component with no test is not a coverage gap; it is a surface with no witness.** ✅ **`react/jsx-no-comment-textnodes` now registered.**
 >
 > ⚠️ **THE BROWSER SUITE RAN AS AN EXPERIMENT AND GATED NOTHING, DELIBERATELY.** 📁 **[B-1086](BUGS.md): the suite cannot attribute a regression** — eleven failures in 275, **zero reproduced on a re-run of the same tree.** ✅ **So it ran against a PRODUCTION BUILD of the pinned commit, to test B-1086's own hypothesis.** ⛔ **The certification record says explicitly that it gated nothing, so nobody later reads the promotion as having waited for it.**
+>
+> > 🔴 **CORRECTED 2026-08-28, cycle 277's Closeout. THE SENTENCE ABOVE IS FALSE AND IS KEPT RATHER THAN DELETED.** ⛔ **The production build completed; the suite never ran against it.** ✅ **`test-results/.last-run.json` and `playwright-report/index.html` are both stamped `2026-08-27 12:41` — cycle 275 — and carry 275's six failures.** ⚠️ **QE promoted rather than keep waiting, which was right, and then wrote up the run it had planned as though it had also happened.** 📁 **§2, in the two documents whose only job is to be believed.**
 >
 > 🔴 **A SUITE-MOCK DEFECT THAT CHANGES HOW TO READ ANY GREEN RUN.** **Three test files' mocks answered EVERY unmatched path with a page of accounts.** ⛔ **In two, the queue is POSITIONAL — so an unmatched `/saved-views` call CONSUMED a paginated page and shifted which page an assertion was reading. THOSE TESTS PASSED.** ⚠️ **The only evidence was a React key warning nobody read.** ⚡ **An unread warning is functionally identical to no warning at all — which is why *zero React warnings* is now reported as its own line beside the 4287.**
 >
