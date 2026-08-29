@@ -20934,6 +20934,52 @@ page.waitForURL: Test timeout of 60000ms exceeded
 
 📁 **Every browser figure QE has published since the suite began was measured against `next dev`.** ⛔ **The ~21 "persistent failures" baseline may contain an unknown number of compile-timeout artefacts**, and **the 274 candidate-vs-baseline comparison (21 vs 24) compared two runs whose compile caches were in different states.** ⚡ **Neither number was wrong to record; both were read as more comparable than they were.**
 
+### B-1087 · 🟠 A phase-count assertion that a screen which never loads satisfies BEST — the fourth face of the vacuity family
+
+| | |
+|---|---|
+| **Module** | **QE's own instruments** — 📁 [`frontend/tests/e2e/perception.spec.ts`](../frontend/tests/e2e/perception.spec.ts):152, :163 |
+| **Current assignee** | **QE** — §20e: repository-wide journey specs are QE's |
+| **Severity** | 🟠 — ⛔ **the test has measured nothing since it was written**, and reports a pass while doing so |
+| **Status** | **`OPEN`** — ⚠️ **a fix exists in Lane A's tree and is NOT yet pushed.** ⛔ **Verified absent on `origin/lane-a-product-surface-r4` at `f4cff39f`: `:152` still reads `page.goto('/')` and `:163` still counts `ol > li`** |
+| **Found** | **2026-08-29 by Lane A**, closing [B-279](#b-279). **Filed by QE from QE's block** because the instrument is QE's — ⚡ **Lane A's `B-200`–`B-299` is exhausted and it correctly declined to allocate outside it** |
+| **Commit found** | `f4cff39f` |
+
+### ⛔ Two independent faults, and either alone makes it vacuous
+
+**The test is titled *"the accounts list settles in one phase, not four"*.**
+
+**①** 📁 **`:152` navigates to `/` — Home — not to the accounts list.**
+**②** 📁 **`:163` counts `ol > li`, but the accounts list is the shared `Table`, which renders `tbody > tr`.**
+
+⚡ **So every sample read `rows:0`.** **The content phase was unreachable**, and the assertion passed on three phases **none of which contained a row.**
+
+### 🔴 Why this is a NEW face and not another population error
+
+> **`phases.length <= 4` is satisfied BEST by a screen that never loads.** ⛔ **Fewer phases is *better* by that measure, and zero is best.**
+
+⚠️ **The population was not too wide or too narrow. The threshold was ORDERED so that total failure is the optimum.** ⛔ **A guard whose metric improves as the system does worse cannot fail for the reason it exists.**
+
+**The family so far, and each needs a different remedy:**
+
+| face | what was wrong | found |
+|---|---|---|
+| **population too narrow** | measured the states the code occupies, not those it can reach | [B-1091](#b-1091) |
+| **population too wide** | subject unconstrained, so the fix was counted as the defect | [B-1091](#b-1091) |
+| **population excluded the defect by construction** | *every settled state*, where the defect lived in a state never settled | Lane A, workspace chooser |
+| **true too early** | a wait satisfied by a state passed through on the way to the one meant — `Saved` is true after one write and after six | Lane A, [B-280](#b-280) |
+| ⚡ **optimum is failure** | **`<= 4` phases, and a screen that never renders scores zero** | **this row** |
+
+### ✅ The remedy Lane A built, and the part that matters
+
+**Point it at `/accounts`, count `ol > li, tbody > tr`** — ⚡ **genuinely both, because §20 lets the list render either** — **and add a FLOOR assertion that some phase contained a row.**
+
+**It then reads `rows:0 skeleton:true → rows:15 skeleton:false` — two phases, and the product passes on its merits.**
+
+> ⚡ **The floor assertion fired the moment it was added, and that is how the wrong selector surfaced.** ⛔ **It was not added and then given a subject to hunt** — the order matters, because a guard written after the fact tends to describe what the code already does.
+
+**⛔ A ceiling alone is never enough where zero is reachable. Every phase-count, latency-band or request-count assertion in this repository should be read for the same shape: does total failure score better than success?**
+
 ### B-1088 · 🟡 The frontend suite's result depends on the operator's shell, and the documented remedy for one gate breaks it
 
 | | |
