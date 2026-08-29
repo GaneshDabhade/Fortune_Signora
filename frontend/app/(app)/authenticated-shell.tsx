@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
 
 import { SessionLock } from '@/components/auth/session-lock';
@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { signOut, useSession } from '@/lib/auth/client';
 import { useViewerRole } from '@/lib/query/hooks/team';
 import { ResumeOnboarding } from '@/components/workspace/resume-onboarding';
-import { workspaceKnown } from '@/lib/shell/workspace-gate';
+import { workspaceChoiceRequired, workspaceKnown } from '@/lib/shell/workspace-gate';
 import { WorkspaceProvider, useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -154,6 +154,7 @@ function ShellForViewer({
    * mounting on this, so a context field would be an abstraction for one
    * caller.
    */
+  const router = useRouter();
   const [readFailed, setReadFailed] = useState(false);
   useEffect(() => {
     if (workspacesError) setReadFailed(true);
@@ -169,6 +170,42 @@ function ShellForViewer({
       workspaceCount: workspaces.length,
     });
   const role = viewer.role;
+
+  /**
+   * 🔴 **[B-245](../../../docs/BUGS.md) — rule 7 has a destination, and until
+   * now the shell had nowhere to send it.**
+   *
+   * 📁 The Workspace Chooser's rule 7 outcome is **WS-B, `/workspaces`**, and
+   * ⚡ **`app/workspaces/page.tsx` already draws it** — the provider simply
+   * never produced the state that reaches it, because it answered `workspaces[0]`
+   * instead.
+   *
+   * ⛔ **Not a new screen and not a new component.** ⚡ **The one thing missing
+   * was the navigation**, and it belongs here rather than in the provider:
+   * 📁 [§6](../../../CLAUDE.md) — the shell is the only consumer that decides
+   * what to mount, and a provider that routed would be state and routing in
+   * one object.
+   *
+   * ⚠️ **`replace`, not `push`.** 📁 The Entry document: *"entry resolution
+   * replaces history rather than pushing to it"* — ⛔ **a `push` would put the
+   * unresolved shell in history, and *back* would land on it and resolve
+   * forward again**, which is the loop that rule names.
+   *
+   * ⚡ **The route the person asked for is not lost**: they are choosing an
+   * organization, and 📁 the chooser's own contract is that selecting *"enters
+   * the workspace and lands per Entry"*. ⛔ **Preserving the path across a
+   * workspace they had not chosen yet would be scoping a screen to an
+   * organization nobody selected.**
+   */
+  const mustChoose = workspaceChoiceRequired({
+    isLoading: workspacesLoading,
+    error: readFailed,
+    activeWorkspace,
+    workspaceCount: workspaces.length,
+  });
+  useEffect(() => {
+    if (mustChoose) router.replace('/workspaces');
+  }, [mustChoose, router]);
 
   return (
     <AppShell

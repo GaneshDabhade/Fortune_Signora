@@ -9059,7 +9059,7 @@ const signedOut = page.waitForURL(/\/signin/, { timeout: 20_000 })
 | **Module** | **`workspace_tenancy`** *(the newest-first default)* · **`product_surface`** *(the resolution in [`workspace-provider.tsx`](../frontend/lib/state/workspace-provider.tsx))*. ⛔ **Not the journey that hit it** |
 | **Current assignee** | **The current assignee of `workspace_tenancy`** — joined from [`modules.toml`](coordination/modules.toml), ⛔ **not named here** ([C-213](#c-213)) |
 | **Severity** | 🟠 — ⛔ **wrong behaviour a customer would hit, and a suite-wide test hazard.** ⚡ **It is [B-229](#b-229) one generation on, and B-229's repair does not cover it** |
-| **Status** | ⚠️ **`OPEN`** — ⛔ **not fixed: the repair is a product decision about which organization a person lands in**, and that is not a lane's to take inside a feature slice ([§20e](../CLAUDE.md)) ⚠️ **ROUTED 2026-08-12 as [C-299](LANE_COORDINATION.md)** — ⛔ **filed 2026-08-11 and carried to nobody until now.** ⚡ **Third instance of the same class; see [C-298](LANE_COORDINATION.md) ⑤.** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-28.** ⚡ **The product decision it waited for was taken**: [C-299](LANE_COORDINATION.md) was `CLOSED` by Lane C on 2026-08-12 and **folded into `Fortune Signora Workspace Chooser.dc.html`**, whose §02 is an ordered list of eight rules. ⚠️ **QE verifies and closes.** ⚠️ **The prior state, kept rather than rewritten** ([§2](../CLAUDE.md)): **`OPEN`** — *"not fixed: the repair is a product decision about which organization a person lands in… ROUTED 2026-08-12 as C-299… filed 2026-08-11 and carried to nobody until now. Third instance of the same class; see [C-298](LANE_COORDINATION.md) ⑤."* |
 | **Found** | **2026-08-11, by Lane A**, building [TASK-1463](BACKLOG.md) §18 — **by doing it, and then by measuring what it cost** |
 | **Commit found** | **`5cdae81a`** |
 
@@ -9068,6 +9068,76 @@ const signedOut = page.waitForURL(/\/signin/, { timeout: 20_000 })
 **Expected.** The reader lands where they last were, or in an organization that holds their work.
 
 **Actual.** ⛔ **They land in the newly created, empty organization** — and **there is no way to leave it behind permanently**, because nothing in the product deletes an organization.
+
+#### ✅ FIXED 2026-08-28, Lane A — the eight rules audited, five shipped, three recorded absent
+
+⛔ **The defect was not that `workspaces[0]` was *a* default; it was that it was an INVENTED one.** ⚡ **The design's §02 answers this exact question**, so nothing here is a lane's word choice.
+
+| # | Rule | State |
+|---|---|---|
+| **1** | `WS_FROM_URL` — *"an explicit request always beats any stored preference"* | ✅ **Ships.** The segment wins, and only by passing the same membership check — it is input, never a grant |
+| **2** | `WS_URL_DENIED` vs `WS_URL_UNKNOWN` | ⛔ **Not shipped, and it is not a missing field.** 📁 The contract wants *denied* distinguished from *unknown*; 📁 [§7](../CLAUDE.md) is *"404, never 403… a security property, not an inconsistency to tidy up."* ⚠️ **[C-1582](LANE_COORDINATION.md); current behaviour unchanged** |
+| **3** | `WS_PINNED` — `prefs.defaultWorkspace` | ⛔ **No producer, and the DESIGN says so.** 📁 **U-02**: *"this document does not invent it as shipped capability… ship rules 1, 2, 4–8 only. Rule 3 is a no-op until the field exists, and selection degrades cleanly to last-used with no behavioural surprise."* ✅ **Exactly what shipped** |
+| **4** | `WS_LAST_USED` | ✅ **Ships — and its producer was repaired.** See below |
+| **5** | `WS_FELL_THROUGH` — skip an unhealthy workspace and say so | ⛔ **No producer.** `GET /workspaces` returns no standing, which is why `lib/entry/observed.ts` already declares membership standing UNOBSERVED. **[C-1582](LANE_COORDINATION.md)** |
+| **6** | `WS_SOLE` — *"nothing to choose"* | ✅ **Ships.** One membership is entered with no picker |
+| **7** | `WS_AMBIGUOUS` — *"the chooser is mandatory here and only here"* | ✅ **Ships, and it is the row.** ⛔ **`null` is the ANSWER, not the absence of one** |
+| **8** | `WS_NONE` | ✅ **Unchanged** — `/workspaces/none` and entry rule 10 already handle it |
+
+#### 🔴 Rule 4's producer was never written on ENTRY, so rule 4 could not fire
+
+📁 **The persistence table**: last-used is *"written on **every successful entry** and on every switch."* ⛔ **Only `setActiveWorkspace` wrote it.**
+
+⚠️ **So somebody who arrived by a shared link had entered an organization nothing recorded** — and returning later with no URL fell to rule 7 and was asked to choose the organization they had been working in that morning. ✅ **One writer, `rememberLastUsed`, two occasions** — and the switch keeps its **synchronous** write, because 📁 the contract is *"written on activation of a switch, BEFORE the route change, so a failed switch still records intent"* and an effect runs after the render.
+
+#### ✅ Rule 7 needed a destination, and the screen already existed
+
+⛔ **Nothing was built.** 📁 `app/workspaces/page.tsx` draws WS-B already. ⚡ **The missing piece was the navigation**, and it sits in the shell rather than the provider — a provider that routed would be state and routing in one object.
+
+⚠️ **`workspaceChoiceRequired` is a sibling of `workspaceKnown` rather than a fifth clause inside it**, because they answer different questions: *has the answer arrived?* renders a skeleton, *whose answer is it?* navigates. ⛔ **A skeleton cannot say *"we are waiting for you."***
+
+#### ⚡ The witness, and the two ends of the list
+
+📁 **`frontend/tests/components/workspace-selection.test.tsx`** — nine assertions over the walk, and 📁 **`tests/unit/workspace-gate.test.ts`** — seven over rule 7's boundary, and 📁 **`tests/components/authenticated-shell.test.tsx`** — three that something ACTS on it.
+
+⛔ **The fixture is newest-first, exactly as the API orders it** — *a fixture in any other order makes `workspaces[0]` look harmless.* ⚡ **And *not the newest* is asserted beside *not the oldest***: a guard forbidding only `[0]` passes on `[length - 1]`, **which is the same invention wearing the other end of the list.**
+
+✅ **Fire-tested.** Reintroducing `first.id` fails **five**; removing the shell's redirect fails **one**; relaxing rule 6's `> 1` to `>= 1` fails **two**, in two files; removing the entry-time write fails **one**. **Each guard fails on its own defect and no other.**
+
+#### 🔴 The browser found a second defect that seventeen component assertions did not
+
+⚠️ **Every assertion in `workspace-selection.test.tsx` was green, and the product was still wrong.** ⛔ **Measured in Chromium against the running stack**: choose an organization at `/workspaces`, then open `/accounts` — **and land back on `/workspaces`**, with a perfectly good last-used in `localStorage`. **A loop a customer could not leave.**
+
+🔴 **The cause was the walk living in a `useEffect`.** ⚡ **Between the membership list arriving and the effect running there is one render carrying *"settled, and nothing selected"*** — ⛔ **which is exactly rule 7's shape**, and the shell acts on rule 7 by navigating.
+
+⚠️ **`workspace-gate.ts` had already written the warning down**, in a docstring about a different row: *"the provider chooses the active workspace in an effect that runs AFTER the list arrives, so there is a render where loading has finished and `activeWorkspace` is still `null`."* ⛔ **It was read as a note about skeletons, and it was a note about a race.**
+
+✅ **The walk is now derived during the render** — 📁 **and the design asked for exactly that shape**: *"`selectWorkspace(url, memberships, prefs)` is **pure**, ordered exactly as section 2, and makes no network call."* ⚡ **A derivation cannot race itself.**
+
+⛔ **`chosen` remains state**, because an explicit switch is a fact about this tab that no input carries — ✅ **but it is an INPUT to the walk rather than the walk's only output**, so it can never be stale against a list that has since changed.
+
+#### ✅ The property is now guarded at the level the browser found it
+
+📁 **`no render may say "settled, and nothing selected" when there is a choice`** — it records **every** render's value, not the last one. ⛔ **`toContain(null)` is what the effect-based version failed, on the FIRST entry.** ⚡ **Fire-tested by putting the walk back in an effect**: that one assertion fails and the other sixteen stay green.
+
+📁 **And a journey**, in `organization-setup.spec.ts` where rule 7's precondition already lives: **create two organizations · clear last-used · expect `/workspaces` · assert the `h1` is focused (`2.4.3`) · choose · return to `/accounts` and assert the chooser is NOT offered again.**
+
+⚠️ **It establishes its own precondition and the first run proved why.** ⛔ **It inherited one** — the persona holds no seeded membership, so after the test above it had **exactly one** organization and **rule 6 correctly declined to offer a chooser.** ✅ **Two creations of its own**, so it holds under `-g` and `--repeat-each`. ⚡ **Fire-tested against the original defect**: with `workspaces[0]` restored the chooser is never offered and the journey fails.
+
+#### ⚠️ Verified in the browser, and these are the readings
+
+| | |
+|---|---|
+| **Rule 6** — one membership | ✅ `/accounts` stays `/accounts`. **No chooser** |
+| **Rule 7** — two, last-used cleared | ✅ `/accounts` → **`/workspaces`** |
+| **`2.4.3`** | ✅ `document.activeElement` is **`H1`**, not the filter |
+| **Search threshold** | ✅ **absent at 2 rows** — 📁 *"appears above 6 memberships"* |
+| **375px** | ✅ **no horizontal overflow** |
+| **Rule 4** — return visit | ✅ `/accounts`, **and the chooser is not offered again** |
+
+#### ⚠️ And the vocabulary guard could not see the leak it already had
+
+🔴 **`lib/entry/gates.ts:111` has carried `href: '/workspaces'` since it was written and never failed `vocabulary.test.tsx`** — the matcher's character class held `=`, `(` and whitespace but not `:`, **so `href="/x"` was caught and `href: '/x'` was not.** ⚡ **Widened by one character** (and dynamic segments now collapse like interpolations, so `/w/[workspace]/home` stops being a false positive). ⛔ **The route is not renamed** — 🔴 Routing — **and the path is excused by id against [C-1517](LANE_COORDINATION.md)**, with a companion assertion that fails if the exception ever forgives nothing.
 
 #### 🔴 The mechanism, measured
 

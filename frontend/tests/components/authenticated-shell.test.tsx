@@ -23,7 +23,11 @@ const workspaceState = vi.hoisted(() => ({
   error: null as unknown,
 }));
 
-vi.mock('next/navigation', () => ({ usePathname: () => '/settings' }));
+const replace = vi.hoisted(() => vi.fn());
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/settings',
+  useRouter: () => ({ replace, push: vi.fn(), prefetch: vi.fn() }),
+}));
 vi.mock('@/lib/auth/client', () => ({ useSession, signOut }));
 vi.mock('@/lib/query/hooks/team', () => ({ useViewerRole }));
 vi.mock('@/lib/state/workspace-provider', () => ({
@@ -271,5 +275,84 @@ describe('⚡ the shell is where two things must live exactly once', () => {
       'href',
       '/profile',
     );
+  });
+});
+
+/**
+ * 🔴 **[B-245](../../../docs/BUGS.md) — the shell is where rule 7 acquires a
+ * destination.**
+ *
+ * ⚠️ **`workspace-gate.test.ts` already asserts the predicate.** ⛔ **What it
+ * cannot see is whether anything ACTS on it** — and the whole defect was that
+ * the state was unreachable, not that the predicate was wrong.
+ */
+describe('🔴 B-245 — an ambiguous membership set is the person’s to resolve', () => {
+  it('✅ sends them to the chooser rather than guessing an organization', () => {
+    /**
+     * 📁 Rule 7's outcome is **WS-B, `/workspaces`** — a screen that already
+     * ships. ⛔ **The provider used to answer `workspaces[0]` over a
+     * newest-first list**, so the newest organization became every fresh
+     * browser's default and nothing in the product could undo it.
+     */
+    Object.assign(workspaceState, {
+      workspaces: [WORKSPACE, { id: 'w-2', name: 'Second' }],
+      activeWorkspace: null,
+      isLoading: false,
+      error: null,
+    });
+
+    render(
+      <AuthenticatedShell email="marta@northwind.com" name="Marta Reinhardt">
+        {null}
+      </AuthenticatedShell>,
+    );
+
+    expect(replace).toHaveBeenCalledWith('/workspaces');
+  });
+
+  it('⛔ and never for a sole membership, which rule 6 enters without asking', () => {
+    /**
+     * ⚠️ **`activeWorkspace` is null here too**, which is the point: the
+     * distinguishing fact is the COUNT, not the absence. ⚡ A guard keyed on
+     * *nothing selected* alone would route somebody with one organization to a
+     * list containing only it.
+     */
+    Object.assign(workspaceState, {
+      workspaces: [WORKSPACE],
+      activeWorkspace: null,
+      isLoading: false,
+      error: null,
+    });
+
+    render(
+      <AuthenticatedShell email="marta@northwind.com" name="Marta Reinhardt">
+        {null}
+      </AuthenticatedShell>,
+    );
+
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it('🔴 and never because the organization list failed to load', () => {
+    /**
+     * 📁 [P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md). ⛔ **A failed read
+     * reports an empty list**, and routing on it would tell somebody to pick
+     * from organizations the product could not read — **a statement about
+     * their access made from a fact about a request.**
+     */
+    Object.assign(workspaceState, {
+      workspaces: [],
+      activeWorkspace: null,
+      isLoading: false,
+      error: new Error('502'),
+    });
+
+    render(
+      <AuthenticatedShell email="marta@northwind.com" name="Marta Reinhardt">
+        {null}
+      </AuthenticatedShell>,
+    );
+
+    expect(replace).not.toHaveBeenCalled();
   });
 });

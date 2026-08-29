@@ -15,7 +15,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { workspaceKnown } from '@/lib/shell/workspace-gate';
+import { workspaceChoiceRequired, workspaceKnown } from '@/lib/shell/workspace-gate';
 
 const WS = { id: 'w1', name: 'Northwind' };
 
@@ -116,5 +116,80 @@ describe('⛔ an absent error is not a failure', () => {
         workspaceCount: 0,
       }),
     ).toBe(false);
+  });
+});
+
+/**
+ * 🔴 **[B-245](../../docs/BUGS.md) — rule 7 is a REFUSAL to guess, and it has
+ * exactly one shape.**
+ *
+ * 📁 `Fortune Signora Workspace Chooser.dc.html` §02 rule 7, `WS_AMBIGUOUS`:
+ * *"Two or more active memberships and no pin, no last-used. The system
+ * genuinely cannot decide. **The chooser is mandatory here and only here.**"*
+ *
+ * ⛔ **The *only here* is the half worth guarding.** ⚡ Every other row of this
+ * describe is a case where asking would be wrong — 📁 *"a confirmation screen
+ * between authentication and work taxes every login to serve a minority of
+ * them."*
+ */
+describe('🔴 rule 7 — the chooser is mandatory in exactly one case', () => {
+  const AMBIGUOUS = {
+    isLoading: false,
+    error: null,
+    activeWorkspace: null,
+    workspaceCount: 2,
+  } as const;
+
+  it('✅ two memberships and nothing selected is the case it is for', () => {
+    expect(workspaceChoiceRequired(AMBIGUOUS)).toBe(true);
+  });
+
+  it('⛔ one membership is rule 6 — "nothing to choose"', () => {
+    /**
+     * 📁 Rule 6, `WS_SOLE`: *"No picker, no confirmation, no strip."*
+     * ⚠️ **`> 1` and not `>= 1`**, and this is the assertion that pins the
+     * difference — a person with one organization who was asked to choose it
+     * would be reading a screen with one row and no decision on it.
+     */
+    expect(workspaceChoiceRequired({ ...AMBIGUOUS, workspaceCount: 1 })).toBe(false);
+  });
+
+  it('⛔ no memberships is rule 8, and it has its own screen', () => {
+    // 📁 Rule 8, `WS_NONE` → WS-D. ⛔ **A chooser with nothing to choose from
+    // is not the answer to "you are in no organization".**
+    expect(workspaceChoiceRequired({ ...AMBIGUOUS, workspaceCount: 0 })).toBe(false);
+  });
+
+  it('⛔ a read still in flight has not established anything', () => {
+    // ⚡ **The list arrives before the selection effect runs**, so there is a
+    // render with `activeWorkspace === null` and the answer merely late.
+    expect(workspaceChoiceRequired({ ...AMBIGUOUS, isLoading: true })).toBe(false);
+  });
+
+  it('🔴 a FAILED read must never be read as a choice to make', () => {
+    /**
+     * 📁 [P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md) — *a failed read
+     * must never render as an empty result.* ⛔ **A failure reports zero
+     * memberships**, and sending somebody to the chooser because their
+     * organizations could not be loaded states something about their access
+     * from a fact about a request.
+     *
+     * ⚠️ **Asserted at a count that WOULD otherwise qualify**, so the error
+     * clause is what makes this false and not the count.
+     */
+    expect(workspaceChoiceRequired({ ...AMBIGUOUS, error: new Error('502') })).toBe(false);
+    expect(
+      workspaceChoiceRequired({ ...AMBIGUOUS, error: true, workspaceCount: 4 }),
+    ).toBe(false);
+  });
+
+  it('⛔ and a workspace already selected is not a question', () => {
+    expect(
+      workspaceChoiceRequired({ ...AMBIGUOUS, activeWorkspace: { id: 'w-1' } }),
+    ).toBe(false);
+  });
+
+  it('⚡ `undefined` error is absence, not failure — the same trap `workspaceKnown` fell into', () => {
+    expect(workspaceChoiceRequired({ ...AMBIGUOUS, error: undefined })).toBe(true);
   });
 });

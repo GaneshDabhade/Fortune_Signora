@@ -45,6 +45,77 @@ export function lastUsedWorkspaceId(): string | null {
   return window.localStorage.getItem(ACTIVE_WORKSPACE_KEY);
 }
 
+/**
+ * 🔴 **The only writer of the last-used key** — 📁 the Workspace Chooser's
+ * persistence table, *"written on every successful entry and on every
+ * switch."*
+ *
+ * ⛔ **One implementation, two occasions**, which is the distinction
+ * [§2](../../../CLAUDE.md) draws: entry records what a person reached, a
+ * switch records what they chose, and **both are the same fact about the same
+ * device.** ⚡ **Two `setItem` calls in two files would be two representations
+ * of one rule**, and the one nobody maintained would be the one that drifted.
+ */
+function rememberLastUsed(workspaceId: string): void {
+  window.localStorage.setItem(ACTIVE_WORKSPACE_KEY, workspaceId);
+}
+
+/**
+ * 🔴 **Which organization this person is in — the Workspace Chooser's §02,
+ * ordered exactly as the document orders it.**
+ *
+ * 📁 **The design asks for this shape by name**: *"`selectWorkspace(url,
+ * memberships, prefs)` is **pure**, ordered exactly as section 2, and makes no
+ * network call. Eight branches, eight fixtures."*
+ *
+ * ⛔ **Pure, and that is load-bearing rather than tidy.** ⚡ **The walk used to
+ * run in an effect**, so between the membership list arriving and the effect
+ * running there was one render carrying *"settled, and nothing selected"* —
+ * **which is indistinguishable from rule 7**, and the shell acted on it.
+ * 📁 [B-245](../../../docs/BUGS.md).
+ *
+ * ## 📁 The rules this ships, and the three it does not
+ *
+ * | | |
+ * |---|---|
+ * | **1** `WS_FROM_URL` | ✅ *"An explicit request always beats any stored preference — this is the rule that makes links work."* |
+ * | **4** `WS_LAST_USED` | ✅ *"The most common path for anyone with several memberships."* |
+ * | **6** `WS_SOLE` | ✅ *"Nothing to choose."* |
+ * | **7** `WS_AMBIGUOUS` | ✅ ⛔ **`null`, and it is the ANSWER rather than the absence of one** |
+ * | **3** `WS_PINNED` | ⛔ **No producer, and the design says so** — U-02: *"ship rules 1, 2, 4–8 only… selection degrades cleanly to last-used"* |
+ * | **2** · **5** | ⛔ **No producer** — `GET /workspaces` carries no standing. 📁 [C-1582](../../../docs/LANE_COORDINATION.md) |
+ *
+ * ⚠️ **Every candidate passes the same membership check.** ⛔ **The URL segment
+ * and the stored id are both INPUT, never a grant** — a tampered value selects
+ * nothing, and the server re-verifies membership on every request regardless
+ * ([§13](../../../CLAUDE.md)).
+ */
+export function selectWorkspace(input: {
+  readonly workspaces: readonly { readonly id: string }[];
+  /** The `/w/:workspace` segment, if this tab is on one. */
+  readonly fromUrl: string | null;
+  /** An explicit switch made in this tab. ⛔ Not a preference; a fact. */
+  readonly chosen: string | null;
+  /** `sig.ws.lastUsed`'s value, per device. */
+  readonly lastUsed: string | null;
+}): string | null {
+  const isAMember = (id: string | null): id is string =>
+    id !== null && input.workspaces.some((w) => w.id === id);
+
+  // ① 📁 **Rule 1** — and it beats everything below it, including a switch
+  //    made in this tab: a link names a destination and the person followed it.
+  if (isAMember(input.fromUrl)) return input.fromUrl;
+  // ⚡ **A choice already made HERE.** ⛔ Without it, a list refetch would
+  //    re-run the walk and could move somebody mid-session.
+  if (isAMember(input.chosen)) return input.chosen;
+  // ② 📁 **Rule 4** — last used on this device, when it is still a membership.
+  if (isAMember(input.lastUsed)) return input.lastUsed;
+  // ③ 📁 **Rule 6** — *"exactly one active membership. Nothing to choose."*
+  if (input.workspaces.length === 1) return input.workspaces[0]?.id ?? null;
+  // ④ 📁 **Rule 7** — ⛔ **inventing one here is the defect B-245 is.**
+  return null;
+}
+
 interface WorkspaceContextValue {
   workspaces: Workspace[];
   activeWorkspace: Workspace | null;
@@ -68,7 +139,7 @@ const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const { data, isLoading, error } = useWorkspaces();
   const invalidateScope = useInvalidateWorkspaceScope();
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const [chosen, setChosen] = useState<string | null>(null);
 
   /**
    * 🔴 **The URL segment, and it is EXACTLY as untrusted as the stored id** —
@@ -95,34 +166,117 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
   const workspaces = useMemo(() => data?.items ?? [], [data]);
 
+  /**
+   * 🔴 **[B-245](../../../docs/BUGS.md) — the default was *the newest
+   * organization*, and nothing in the product could ever undo it.**
+   *
+   * ⛔ **This ended `return isStillAMember ? stored : first.id`.** 📁 The list
+   * is newest-first (`repositories.py:81`, *"apply newest-first keyset
+   * ordering"*), **so every organization a person created became the default
+   * for every browser of theirs that had no stored choice** — ⚡ **and nothing
+   * in the product deletes an organization**, so the effect was permanent.
+   *
+   * ⚠️ **A salesperson who creates a second organization to try something out
+   * was put into it on every new device, ahead of the one holding their book
+   * of business.**
+   *
+   * ## ✅ The rules, and they are the Workspace Chooser's own §02
+   *
+   * 📁 [C-299](../../../docs/LANE_COORDINATION.md) was `CLOSED` on 2026-08-12
+   * and **folded into `Fortune Signora Workspace Chooser.dc.html`**, so the
+   * default is specified rather than open. **Four of its eight rules decide
+   * this branch:**
+   *
+   * | | |
+   * |---|---|
+   * | **1** `WS_FROM_URL` | *"An explicit request always beats any stored preference — this is the rule that makes links work."* |
+   * | **4** `WS_LAST_USED` | *"The most common path for anyone with several memberships."* |
+   * | **6** `WS_SOLE` | *"Nothing to choose."* |
+   * | **7** `WS_AMBIGUOUS` | *"The system genuinely cannot decide… the chooser is mandatory here and only here."* |
+   *
+   * ⛔ **Rule 7 is what `first.id` was standing in for, and it is not a
+   * fallback — it is a REFUSAL to guess.** 📁 *"Automatic routing is the
+   * default… the chooser is mandatory in exactly one case."*
+   *
+   * ⚠️ **Rule 3 (`prefs.defaultWorkspace`) is deliberately absent**, and the
+   * design says so itself — 📁 **U-02**: *"Rule 3 reads `prefs.defaultWorkspace`,
+   * which does not exist. This document does not invent it as shipped
+   * capability… ship rules 1, 2, 4–8 only. Rule 3 is a no-op until the field
+   * exists, and selection degrades cleanly to last-used."*
+   *
+   * ⚠️ **Rule 5's health fall-through is absent for the same reason** — `GET
+   * /workspaces` returns `id · name · created_at · updated_at` and **no
+   * standing**, which is why `lib/entry/observed.ts` declares membership
+   * standing UNOBSERVED. 📁 [C-1582](../../../docs/LANE_COORDINATION.md)
+   * records the producer gap. ⛔ **Not simulated**: a workspace guessed
+   * healthy is exactly the fabricated continuity the design forbids.
+   */
+  /**
+   * ⛔ **Read ONCE, at mount, and never during a render that could disagree
+   * with the last one.** ⚠️ **`null` on the server** — there is no `window`,
+   * and *"nothing stored"* is the honest answer there.
+   */
+  const [storedAtMount] = useState<string | null>(() =>
+    typeof window === 'undefined' ? null : window.localStorage.getItem(ACTIVE_WORKSPACE_KEY),
+  );
+
+  /**
+   * 🔴 **Derived during the render, NOT in an effect** — and that is
+   * [B-245](../../../docs/BUGS.md)'s second half, which the browser found and
+   * no component test could.
+   *
+   * ⛔ **The walk used to live in a `useEffect`, so between the list arriving
+   * and the effect running there was a render carrying *"settled, and nothing
+   * selected"*** — ⚡ **which is indistinguishable from rule 7.** ⚠️ **The
+   * shell read that render and sent a person who had a perfectly good stored
+   * choice back to the chooser**, on every navigation. **Measured in the
+   * browser: choose an organization, go to `/accounts`, land on
+   * `/workspaces` again.**
+   *
+   * ✅ **A derivation cannot race itself.** 📁 And the design already asked
+   * for exactly this shape: *"`selectWorkspace(url, memberships, prefs)` is
+   * **pure**, ordered exactly as section 2, and makes no network call."*
+   *
+   * ⚡ **`chosen` remains state** because an explicit switch is a fact about
+   * this tab that no input carries — ⛔ **but it is an INPUT to the walk
+   * rather than the walk's only output**, so it can never be stale with
+   * respect to a list that has since changed.
+   */
+  const activeId = selectWorkspace({
+    workspaces,
+    fromUrl,
+    chosen,
+    lastUsed: storedAtMount,
+  });
+
+  /**
+   * 🔴 **📁 The persistence table: last-used is *"written on every successful
+   * entry and on every switch."*** ⛔ **It was written only on a switch.**
+   *
+   * ⚠️ **So a person who arrived by deep link had entered a workspace that was
+   * never recorded** — and returning later with no URL fell to rule 7 and was
+   * asked to choose an organization they had been working in that morning.
+   * ⚡ **Rule 4 cannot fire on a producer nothing writes.**
+   */
   useEffect(() => {
-    const first = workspaces[0];
-    if (first === undefined) return;
-
-    const stored = window.localStorage.getItem(ACTIVE_WORKSPACE_KEY);
-    const isStillAMember = stored !== null && workspaces.some((w) => w.id === stored);
-    // ⚡ **The URL wins over the stored id when both are valid** — a shared
-    // link must open the workspace it names, not the last one this browser
-    // happened to use. ⛔ **But it wins only if it passes the SAME check.**
-    const urlIsAMember = fromUrl !== null && workspaces.some((w) => w.id === fromUrl);
-
-    setActiveId((current) => {
-      if (urlIsAMember) return fromUrl;
-      if (current !== null && workspaces.some((w) => w.id === current)) return current;
-      return isStillAMember ? stored : first.id;
-    });
-  }, [workspaces, fromUrl]);
+    if (activeId !== null) rememberLastUsed(activeId);
+  }, [activeId]);
 
   const setActiveWorkspace = useCallback(
     (workspaceId: string) => {
-      setActiveId((previous) => {
+      setChosen((previous) => {
         // Drop the outgoing workspace's cached data. Leaving it would show
         // one tenant's rows under another tenant's header until each query
         // happened to go stale.
         if (previous && previous !== workspaceId) void invalidateScope(previous);
         return workspaceId;
       });
-      window.localStorage.setItem(ACTIVE_WORKSPACE_KEY, workspaceId);
+      // ⛔ **Synchronously, and NOT left to the effect above.** 📁 The
+      // contract is *"last-used is written on activation of a switch, BEFORE
+      // the route change, so a failed switch still records intent"* — ⚡ and
+      // an effect runs after the render, by which time the caller has already
+      // pushed. **One writer, two occasions.**
+      rememberLastUsed(workspaceId);
     },
     [invalidateScope],
   );

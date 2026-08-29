@@ -251,16 +251,54 @@ describe('the platform vocabulary never reaches a customer', () => {
    * filesystem side. ✅ **The term check still bites on the LITERAL segments**:
    * `/workspace/${id}` normalises to `/workspace/*` and is still caught.
    */
-  const asRendered = (path: string) => path.replace(/\$\{[^}]*\}/g, '*');
+  const asRendered = (path: string) =>
+    path
+      .replace(/\$\{[^}]*\}/g, '*')
+      // ⚡ **A Next dynamic segment is a placeholder, not text.** 🔴 Widening
+      // the matcher above surfaced `components/shell/navigation.tsx`'s
+      // `href: '/w/[workspace]/home'` — ⛔ **and no customer ever sees that
+      // string.** 📁 `resolved()` substitutes the id before the rail renders
+      // it ([B-1060](../../../docs/BUGS.md)), so the address bar reads
+      // `/w/<uuid>/home`. **The same collapse the interpolation already gets,
+      // for the same reason.**
+      .replace(/\[[^\]]*\]/g, '*');
 
-  it('routes a customer to no path named after a platform concept', () => {
-    // The address bar is user-visible text. `/workspaces` was a redirect
-    // target for three slices and never a route — the vocabulary leak and a
-    // dead link were the same defect.
-    const offenders = SOURCES.flatMap(({ name, source }) =>
+  /**
+   * 🔴 **A shipped ROUTE whose name is under decision, and it is not this
+   * lane's to rename** — 📁 [C-1517](../../../docs/LANE_COORDINATION.md).
+   *
+   * ⚠️ **The route assertion's original reason is half spent.** It read:
+   * *"`/workspaces` was a redirect target for three slices and never a route —
+   * the vocabulary leak and a dead link were the same defect."* ⛔ **The dead
+   * link is gone**: `app/workspaces/page.tsx` draws WS-B, and four entry rules
+   * plus the Workspace Chooser's rule 7 all land on it.
+   *
+   * ⚡ **What remains is a genuine conflict between two ratified things.**
+   * 📁 [ADR-0034](../../../docs/architecture/adr/0034-ubiquitous-language.md)
+   * exempts identifiers — *"no table, column, **API path**, JWT claim, module,
+   * type or architecture document is renamed"* — and this guard's own premise
+   * is that **an address bar is text somebody reads.** ⛔ **Both are
+   * defensible and a lane may not choose**, so the path is excused by id and
+   * the question is recorded rather than settled by whoever wrote the last
+   * link.
+   *
+   * ⛔ **Renaming the route is 🔴 Routing** and would move four entry rules, a
+   * page, a layout and a gate action.
+   */
+  const ROUTE_AWAITING_A_PRODUCT_DECISION: readonly (readonly [string, string])[] = [
+    ['/workspaces', 'C-1517'],
+  ];
+
+  function routeOffenders(sources: typeof SOURCES): string[] {
+    return sources.flatMap(({ name, source }) =>
       [
         ...prose(source).matchAll(
-          /(?:href|router\.(?:push|replace))[=(\s]+["'`](\/[^"'`]*)/g,
+          // ⚡ **`:` is in the class, and it was not.** 🔴 `href="/x"` was
+          // caught and `href: '/x'` was not — 📁 `lib/entry/gates.ts:111`
+          // carries `action: { label: …, href: '/workspaces' }`, and this
+          // guard has never seen it. ⛔ **One character wider is the
+          // difference between a rule about JSX and a rule about routing.**
+          /(?:href|router\.(?:push|replace))[=(:\s]+["'`](\/[^"'`]*)/g,
         ),
       ]
         .map((match) => asRendered(match[1] ?? ''))
@@ -269,8 +307,34 @@ describe('the platform vocabulary never reaches a customer', () => {
         )
         .map((path) => `${name}: ${path}`),
     );
+  }
+
+  const EXCUSED_ROUTES = new Set(ROUTE_AWAITING_A_PRODUCT_DECISION.map(([path]) => path));
+
+  it('routes a customer to no path named after a platform concept', () => {
+    // The address bar is user-visible text.
+    const offenders = routeOffenders(SOURCES).filter(
+      (entry) => ![...EXCUSED_ROUTES].some((path) => entry.endsWith(`: ${path}`)),
+    );
 
     expect(offenders).toEqual([]);
+  });
+
+  /**
+   * ⛔ **The same discipline the prose exceptions carry**: an excused path that
+   * nothing routes to any more is forgiveness with no subject, and it would sit
+   * here quietly permitting a term after the decision that allowed it had been
+   * taken.
+   */
+  it('⚡ and every excused ROUTE is still excusing something', () => {
+    const all = routeOffenders(SOURCES);
+    for (const [path, item] of ROUTE_AWAITING_A_PRODUCT_DECISION) {
+      expect(
+        all.filter((entry) => entry.endsWith(`: ${path}`)),
+        `${path} is excused pending ${item} and nothing routes there any more — ` +
+          'remove the exception rather than leaving one that forgives nothing',
+      ).not.toEqual([]);
+    }
   });
 
   it('sends a customer only to routes that exist', () => {

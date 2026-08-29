@@ -55,3 +55,50 @@ export function workspaceKnown(input: {
    */
   return !input.isLoading && (input.activeWorkspace !== null || input.workspaceCount === 0);
 }
+
+/**
+ * 🔴 **Whether the person must choose** — 📁 the Workspace Chooser's **rule 7**,
+ * `WS_AMBIGUOUS`: *"Two or more active memberships and no pin, no last-used.
+ * The system genuinely cannot decide. The chooser is mandatory here and only
+ * here."*
+ *
+ * ## ⛔ Why this exists rather than a fifth clause in `workspaceKnown`
+ *
+ * ⚠️ **`workspaceKnown` answers *has the answer arrived?* and it is still
+ * right to say NO here** — the list has settled and nothing is selected, which
+ * is genuinely not an answer about *which organization this is*.
+ *
+ * ⚡ **This is a different question: *whose answer is it?*** ⛔ **And it has a
+ * different consequence** — the shell renders a skeleton while the answer is
+ * merely late, and **navigates when the answer is the person's to give.**
+ * Collapsing the two would make a skeleton mean *"we are waiting for you"*,
+ * which no skeleton can say.
+ *
+ * ## 🔴 [B-245](../../../docs/BUGS.md) is what the absence cost
+ *
+ * ⛔ **The provider used to answer for them** — `workspaces[0]`, over a
+ * newest-first list — **so the newest organization became every fresh
+ * browser's default, permanently, and nothing in the product deletes one.**
+ *
+ * ⚠️ **`> 1`, not `>= 1`.** 📁 **Rule 6**: *"exactly one active membership —
+ * nothing to choose. No picker, no confirmation, no strip."* ⛔ **A person
+ * with one organization must never see the chooser**, and the provider enters
+ * it for them; **a count of one reaching here would be a defect upstream, not
+ * a reason to ask.**
+ *
+ * ⚡ **`error` short-circuits first, and it is not defensive noise.** ⛔ A
+ * failed read reports zero memberships, and **routing somebody to the chooser
+ * because their organizations could not be loaded would state something about
+ * their access from a fact about a request** — 📁
+ * [P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md).
+ */
+export function workspaceChoiceRequired(input: {
+  readonly isLoading: boolean;
+  readonly error: unknown;
+  readonly activeWorkspace: unknown;
+  readonly workspaceCount: number;
+}): boolean {
+  if (input.error) return false;
+  if (input.isLoading) return false;
+  return input.activeWorkspace === null && input.workspaceCount > 1;
+}

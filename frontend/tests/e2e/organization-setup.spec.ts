@@ -82,6 +82,88 @@ test.describe('a customer sets up an organization', () => {
     await expect(page.getByRole('main').getByRole('combobox')).toHaveCount(0);
   });
 
+  /**
+   * 🔴 **[B-245](../../../docs/BUGS.md) — which organization a person lands in
+   * when they have several and have chosen none.**
+   *
+   * ⚡ **It belongs in THIS file and nowhere else**: the test above has just
+   * created a second organization, which is B-245's precondition and is exactly
+   * the state the row describes — *"a salesperson who creates a second
+   * organization to try something out."* ⛔ **A spec of its own would have to
+   * manufacture the same state a second time**, and this project already runs
+   * as `MUTATOR` for the reason [B-1017](../../../docs/BUGS.md) gives.
+   *
+   * ⚠️ **The regression this catches is one no component test found.** The walk
+   * used to run in an effect, so a render carried *"settled, and nothing
+   * selected"* — **and the shell read it as rule 7 and navigated.** ⚡ **Measured
+   * here first**: choose an organization, open `/accounts`, land back on
+   * `/workspaces`, with a perfectly good last-used in `localStorage`.
+   */
+  test('@regression the chooser is offered once, and the choice sticks', async ({ page }) => {
+    /**
+     * ⛔ **This test establishes its own precondition rather than inheriting
+     * one.** ⚠️ **It did not, and the run said so**: the test above creates one
+     * organization, and this persona holds no seeded membership — 📁
+     * [B-1017](../../../docs/BUGS.md) is why the mutating journeys run as a
+     * persona of their own — **so the count was exactly one and rule 6
+     * correctly declined to offer a chooser.**
+     *
+     * ⚡ **Two creations here, so the state holds under `-g` and under
+     * `--repeat-each`**, where the test above may not have run at all. ⛔ **A
+     * precondition that depends on another test's side effect is a
+     * precondition nobody can see.**
+     */
+    for (const name of [unique(), unique()]) {
+      await page.goto('/settings/organization');
+      await page.getByLabel('Organization name').fill(name);
+      await page.getByRole('button', { name: 'Create organization' }).click();
+      await expect(page.getByText(name).first()).toBeVisible({ timeout: 20_000 });
+    }
+
+    // 📁 **Rule 7** — *"two or more active memberships and no pin, no
+    // last-used… the chooser is mandatory here and only here."*
+    await page.evaluate(() => window.localStorage.removeItem('signora.activeWorkspaceId'));
+    await page.goto('/accounts');
+    await expect(page).toHaveURL(/\/workspaces$/, { timeout: 20_000 });
+    await expect(page.getByRole('heading', { name: 'Choose an organization' })).toBeVisible();
+
+    /**
+     * ⛔ **Rule 7's precondition, established from the SCREEN rather than from
+     * a side channel.** ⚠️ **A `fetch('/api/proxy/workspaces')` from the page
+     * carries no Authorization header** — the proxy mints one from the session
+     * — **so it answered `0` and the precondition assertion refused the run**,
+     * which is the guard behaving correctly about the wrong measurement.
+     *
+     * ⚡ **The rows the chooser draws ARE the membership count**, and asserting
+     * on them means the precondition and the subject are the same fact.
+     */
+    const rows = page.getByRole('main').getByRole('button');
+    await expect(
+      rows,
+      'rule 7 needs two or more memberships, and the chooser is offering fewer — ' +
+        'the assertions below would pass for the wrong reason',
+    ).not.toHaveCount(1);
+    expect(await rows.count()).toBeGreaterThan(1);
+
+    // ♿ 📁 `2.4.3` — *"WS-B places focus on the h1 on load, **not the search
+    // field**, so the list is announced before the control."*
+    await expect(page.locator('h1')).toBeFocused();
+
+    // 📁 **Rule 4** — the choice is recorded and the next visit does not ask.
+    await page.getByRole('main').getByRole('button').first().click();
+    await expect(page).not.toHaveURL(/\/workspaces$/, { timeout: 20_000 });
+
+    await page.goto('/accounts');
+    // 🔴 **The regression.** ⛔ **Not `toHaveURL(/accounts/)` alone** — that
+    // would pass on a redirect that happened to return here. ⚡ **The claim is
+    // that the chooser is NOT offered again**, so the chooser is what is
+    // asserted against.
+    await expect(page).toHaveURL(/\/accounts$/, { timeout: 20_000 });
+    await expect(
+      page.getByRole('heading', { name: 'Choose an organization' }),
+    ).toHaveCount(0);
+  });
+
   test('never shows the customer the platform word', async ({ page }) => {
     await page.goto('/settings/organization');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();

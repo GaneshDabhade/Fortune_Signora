@@ -2207,7 +2207,38 @@ tests/unit/scope.test.ts:20:} from '@/lib/shell/scope';
 | **Owner** | 🔴 **Product owner**, through Lane C — ⛔ **[ADR-0034](architecture/adr/0034-ubiquitous-language.md) is ratified and the design snapshot is the implementation authority ([D-138](DECISION_REGISTER.md)); a lane may not choose between them** |
 | **Type** | ⚠️ **A conflict between a ratified ADR and the finalized design.** ✅ **Not blocking — implemented in the direction the ADR and the shipped product already take, and raised rather than resolved quietly** |
 | **Blocks** | ✅ **Nothing.** ⚡ **The screen is built; only which noun it uses is in question** |
-| **Status** | **`OPEN`** |
+| **Status** | **`OPEN`** — ⚠️ **and it has a SECOND face, added 2026-08-28** |
+
+### ⚡ AMENDED 2026-08-28, Lane A — the PATH is a second face of the same question, and it was invisible
+
+🔴 **This item was raised about the chooser's COPY.** ⚠️ **Implementing [B-245](BUGS.md) surfaced the same question one layer down: the ROUTE is `/workspaces`, and a customer's address bar reads it.**
+
+⛔ **Two ratified things disagree, and both are defensible:**
+
+| | |
+|---|---|
+| 📁 **ADR-0034** | *"no table, column, **API path**, JWT claim, module, type or architecture document is renamed"* — ⚡ **the chooser page's own docstring already reasons this way**: *"The ROUTE is unchanged."* |
+| 📁 **`vocabulary.test.tsx`**, ADR-0034's own enforcement | **A path in `href` or `router.push` is an offender** — its premise is that an address bar is text somebody reads |
+
+### 🔴 The guard could not see the leak it already had
+
+⛔ **`lib/entry/gates.ts:111` carries `action: { label: 'Go to your organizations', href: '/workspaces' }` and has never failed this guard.** ⚡ **The matcher was `(?:href|router\.(?:push|replace))[=(\s]+` — `href="/x"` matched and `href: '/x'` did not**, because `:` was not in the character class. 📁 **Same axis as [B-1091](BUGS.md): the population was narrower than the property.**
+
+✅ **Widened by one character**, which surfaced two genuine offenders and one false one:
+
+| | |
+|---|---|
+| `lib/entry/gates.ts` → `/workspaces` | 🔴 **Real, and pre-existing** — the guard simply could not reach it |
+| `app/(app)/authenticated-shell.tsx` → `/workspaces` | 🔴 **Real**, added by B-245's rule-7 redirect |
+| `components/shell/navigation.tsx` → `/w/[workspace]/home` | ⛔ **False.** A Next dynamic segment is a placeholder, and `resolved()` substitutes the id before the rail renders it ([B-1060](BUGS.md)) — **the address bar reads `/w/<uuid>/home`.** ✅ **Collapsed the same way `${…}` already was** |
+
+### ✅ What was done, and what was NOT
+
+⛔ **The route is NOT renamed** — 🔴 Routing, and it would move four entry rules, a page, a layout and a gate action. ⛔ **The guard is NOT weakened**: it is strictly wider than before.
+
+✅ **The path is excused BY ID**, `['/workspaces', 'C-1517']`, and a companion assertion fails if the exception ever forgives nothing — **the same no-stale-forgiveness discipline the prose exceptions already carry.** ⚡ **Fire-tested both ways**: an unexcused platform path still fails, and a stale entry fails loudly.
+
+⚠️ **So the ruling now decides two things at once**: the noun in the copy, and whether a URL segment is *text a customer reads* or *an identifier ADR-0034 exempts.*
 
 ### 🔴 The two documents use different words for one concept
 
@@ -17412,6 +17443,42 @@ rather than its licence. **QE picking it is no better than a lane picking it**
 statement and a producer disagreeing, recorded rather than resolved.
 
 ---
+
+### C-1582 · The Workspace Chooser needs four facts about a membership, and `GET /workspaces` returns none of them
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-28, implementing [B-245](BUGS.md) against `Fortune Signora Workspace Chooser.dc.html` |
+| **Module** | `workspace_tenancy` — `interface/schemas.py`, `interface/router.py` |
+| **Owner** | 🔴 **Product owner / Architecture** — ⚡ **two of the four the design itself already routes to them**, as U-02 and its own §06 |
+| **Status** | **`OPEN`** — ⚠️ **blocking nothing.** ⛔ **Rules 1, 4, 6, 7 and 8 ship; 2, 3 and 5 are recorded absent rather than simulated** |
+
+### ⛔ What the read returns today
+
+`GET /workspaces` → `WorkspaceResponse` = **`id · name · slug · created_at · updated_at`**. ⚡ **Every workspace it returns is one the caller is a member of**, and it says nothing about the membership.
+
+### 📁 The four facts the design's §02 and §03 require
+
+| # | Fact | Design needs it for | Producer today |
+|---|---|---|---|
+| **①** | **Workspace standing** — *active · read-only · suspended · archived · deleted · outage* | 📁 **Rule 5** `WS_FELL_THROUGH` — *"a pin or last-used exists but that workspace is unhealthy… the next healthy membership is entered and the skip is stated in one sentence."* And 📁 *"health is evaluated before rules 3, 4 and 6 select"* | ⛔ **None.** `lib/entry/observed.ts` already declares membership standing **UNOBSERVED**, so this is a second surface hitting one gap |
+| **②** | **`prefs.defaultWorkspace`** — a pinned default, server-side per identity | 📁 **Rule 3** `WS_PINNED` | ⛔ **None — and the design says so.** 📁 **U-02**: *"Rule 3 reads `prefs.defaultWorkspace`, which does not exist. This document does not invent it as shipped capability."* ✅ **Its interim is what shipped**: *"ship rules 1, 2, 4–8 only… selection degrades cleanly to last-used with no behavioural surprise"* |
+| **③** | **Invitations addressed to ME** | 📁 §03 `chooserGroups` — a **`Pending invitation`** group, and the contract's *"unavailable memberships and pending invitations are rendered in both surfaces, at reduced emphasis, **never filtered out**"* | ⛔ **None.** `/workspaces/{id}/invitations` is **workspace-scoped and admin-facing** — it answers *who have I invited*, never *who has invited me*. **A different question needing a different read** |
+| **④** | **A membership that ENDED, with when and by whom** | 📁 §03's **`No longer available`** group — *"Access removed · Removed 6 Aug by K. Bruun"* — and 📁 `rowRules`: *"an archived or revoked workspace disappearing from the list reads as data loss"* | ⛔ **None.** A membership that ended is simply absent from the list, which is exactly what that rule forbids |
+
+### ⛔ Rule 2 is a fifth gap and it is a security question, not a field
+
+📁 **Rule 2** distinguishes ***"the URL names a workspace and the person is not a member"*** (`WS_URL_DENIED`, → WS-C) from ***"it does not exist"*** (`WS_URL_UNKNOWN`, → 404), and the contract says *"distinguishes denied from unknown **before any fallback is attempted**, and never reveals whether an unknown slug exists."*
+
+🔴 **Those two sentences are in tension with [§7](../CLAUDE.md)**, which is unambiguous: ***"a caller who is not a member of the workspace they name gets `404`, never `403`. This is a security property (it prevents workspace enumeration), not an inconsistency to tidy up."***
+
+⚠️ **The design may well mean *two screens for one server answer* — WS-C rendered from the client's own membership list without asking the server anything.** ⛔ **Lane A does not decide that**, and the current behaviour is unchanged: an id that is not in the caller's list selects nothing, exactly as the platform rule requires.
+
+### ✅ What shipped without any of them
+
+**Rules 1 · 4 · 6 · 7 · 8**, which need only the URL, `localStorage`, and the membership count — [B-245](BUGS.md). ⛔ **Nothing simulates the missing facts**: no guessed standing, no synthesised invitation, no fabricated *"no longer available"* row. 📁 The design's own words for why: *"if a tier has no record, the screen renders empty rather than reconstructing a plausible state. **Fabricated continuity is worse than none.**"*
+
+⚡ **The gap is one read's shape, not five features** — ① ③ and ④ are all *"what is this person's standing in each workspace, including the ones that ended"*, which is `GET /workspaces` answering about the **membership** rather than about the workspace.
 
 ### C-1581 · A `select` projection over an existing query — is that *adding to* `lib/query`, or *modifying* it?
 
