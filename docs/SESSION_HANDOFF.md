@@ -1,22 +1,21 @@
 # Session Handoff
 
-> ## Cycle 282 — promoted `d02a984b04e7`, 2026-08-29 · **three 🔴 rows verified in a browser after 25 days, and the number B-283 asked for**
+> ## Cycle 283 — promoted `7e08bac50d8e`, 2026-08-29 · **a Security Invariant that asserted the path its row was not filed about**
 >
-> **`main` = `d02a984b04e730ecfbb66304cf68b00022513390` = the certified commit.** **ZERO merges**, `--audit-main` holds across 2523. `pytest` **5465** · **95.03%** · **679 invariants** · `mypy` **958** · `import-linter` **37/37** · `tsc` · frontend **4483/264** · `eslint` · smoke **24/281s** · scenario **208** · DR ✅. **No migration; head `0066`.**
+> **`main` = `7e08bac50d8e8ce633aa25cb6361ec840c2bd17c` = the certified commit.** **ZERO merges**, `--audit-main` holds across 2528. `pytest` **5466** · **95.03%** · **680 invariants** · `mypy` **958** · `import-linter` **37/37** · `tsc` · frontend **4511/265** · `eslint` · smoke **24/264s** · scenario **208** · DR ✅. **No migration; head `0066`.**
 >
 > **What the next session most needs to know:**
 >
-> ⚡ **The browser gate ran against a PRODUCTION build and closed [B-303](BUGS.md), [B-304](BUGS.md), [B-305](BUGS.md)** — `FIXED` since 2026-08-03, unverified for 25 days. **103 passed, 1 failed, 1 skipped.**
+> ⚡ **Security Invariants 679 → 680.** [B-206](BUGS.md)'s guard asserted `LeaveWorkspace` while the row is titled *"a removed member kept full access"* — two separate use cases at `composition.py:203-204`. **Fire-tested by breaking `RemoveMember`, not `resolve_role`**, so the remove link is provably covered rather than assumed.
 >
-> ⚡ **[B-283](BUGS.md)'s measurement exists: `0.0185` CLS on `/accounts`.** Passes `<0.1`; the scrollbar fix holds. ⚠️ **~6x Lane A's predicted `0.003`, and HOME WAS NOT MEASURED — the instrument holds one test and it is not Home.**
+> ⚡ **[B-1087](BUGS.md) — `phases.length <= 4` is satisfied BEST by a screen that never loads.** ⛔ **A ceiling alone is never enough where zero is reachable.** **The sweep is scoped and Lane A holds it**: every phase-count, latency-band and request-count assertion.
 >
-> ⛔ **[B-1090](BUGS.md) reproduced and its remedy demonstrated**: the production topology has **no Better Auth provisioning step**, so a stack reporting every container healthy returns `HTTP 500` on sign-up with **zero tables in `auth`**. **`auth:migrate` as OWNER against 5433 fixes it — run it before any browser work on prod-local.**
+> ⚠️ **Narrowing a guard is escalated; STRENGTHENING one is not.** **A weaker guard that is wrong passes silently; a stronger one fails loudly.** [B-1094](BUGS.md) omitted this and cost Lane A a round trip.
 >
-> ⛔ **[B-1094](BUGS.md) filed and NOT fixed**: the clipping guard flags a deliberately scrollable table — `DIV.w-full.overflow-x-auto`, `overflow: auto`, `scrollWidth 933` vs `clientWidth 683`. ✅ **MEASURED, independently by QE and Lane A.** ⚠️ **This line first said it was a derivation and blamed missing `libnspr4`/`libasound2` on the workstation — BOTH WRONG.** ⛔ **The libraries are in `~/.cache/ms-playwright-deps/lib`; QE searched `~/.cache/ms-playwright/` and missed the `-deps` suffix.** ✅ **`playwright.config.ts:151` supplies that path via `launchOptions.env` ([B-1088](BUGS.md)'s fix) — a bare probe must set `LD_LIBRARY_PATH` itself.**
+> ⛔ **The prod stack is STOPPED, not torn down.** ✅ **`docker compose … stop`, so `signora-prod_prod_postgres17_data` survives with the `auth` schema and Playground seed intact** — the next browser run skips provisioning. **Never `make down` it casually: that is `down -v`.**
 >
-> 🔴 **Two live 🔴 defects — [C-1567](LANE_COORDINATION.md), [C-1568](LANE_COORDINATION.md) — sit in the coordination register where the promotion gate cannot see them** ([B-1082](BUGS.md)). **This promotion was made knowingly, and widening the gate is escalated rather than made.**
->
-> ⚠️ **Verification debt, measured with `registers.py::bug_rows` rather than a sweep: 194 `FIXED` awaiting `VERIFIED` against 43 `VERIFIED`.** ⛔ **An earlier QE sweep reported 91/148 — it matched "`VERIFIED` is QE's" inside FIXED rows. Use the reader.**
+> 🔴 **Identifier blocks: Lane A's `B-200`–`B-299` is EXHAUSTED and QE's `B-1000`–`B-1099` is at 93/100**, with two apparent gaps referenced and therefore not free. **Both need extending by the product owner.**
+
 
 
 

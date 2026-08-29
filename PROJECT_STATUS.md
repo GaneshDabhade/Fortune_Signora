@@ -2,11 +2,68 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `d02a984b`, 2026-08-29.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `7e08bac5`, 2026-08-29.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
 > **It is a dashboard, not an engineering journal.** [`SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) answers a different question — *"what should the next session know?"* — and does not repeat what is here. Historical implementation detail belongs in ADRs and module documentation; **the appendices below are dated records and are never rewritten to match the present.**
+
+---
+
+## Cycle 283 — promoted `7e08bac50d8e`, 2026-08-29
+
+| | |
+|---|---|
+| **Promoted** | **`7e08bac50d8e8ce633aa25cb6361ec840c2bd17c`** — `promoted == certified`, 3 commits, **zero merge commits**. `--audit-main` holds across **2528** |
+| **Gates** | **5466 pytest · 95.03% · 680 Security Invariants · mypy strict 958 · import-linter 37/37 · tsc clean · frontend 4511 in 265 files · eslint clean · smoke 24 stages in 264s · scenario 208** |
+| **DR** | ✅ passed — idempotency ledger intact, invariants green against the restarted stack |
+| **Migrations** | ⚠️ **not applicable rather than skipped** — nothing under `backend/migrations` changed; **66 versions on both `main` and the candidate** |
+| **Composition** | **Lane A's B-245, rebased and re-gated by them; QE's B-206 removal invariant; one row** |
+
+### ✅ Security Invariants rise 679 → 680, and the guard it replaces asserted the wrong path
+
+**[B-206](docs/BUGS.md) is titled *"a removed member kept full access"*.** ⛔ **`TestMembershipRevocation` asserted the property through `LeaveWorkspace` only** — and `composition.py:203-204` wires **`leave_workspace` and `remove_member` as two separate use cases.**
+
+**The property has two links**: ① removal ends the membership, ② `resolve_role` refuses an ended one. ⚡ **Link ① was guarded only by a module unit test**, which is exactly the fragility that docstring gives as its own reason for existing.
+
+**Fire-tested by breaking `RemoveMember`, not `resolve_role`** — Lane A's correction, and the right one: weakening the filter fails *both* tests and proves only what the leave-path test already showed.
+
+| | |
+|---|---|
+| `…_ended_by_REMOVAL` | 🔴 **failed** |
+| leave-path invariant · positive control | ✅ **both stayed green** |
+
+### ⚡ B-1087 — a fifth face of vacuity, and the only one whose optimum is failure
+
+📁 **`perception.spec.ts` has measured nothing since it was written**: `:152` navigates to Home rather than the accounts list, `:163` counts `ol > li` where the shared `Table` renders `tbody > tr`. **Every sample read `rows:0`.**
+
+> ⛔ **`phases.length <= 4` is satisfied BEST by a screen that never loads. Fewer is better; zero is best.**
+
+**The population was neither too wide nor too narrow — the threshold was ORDERED so that total failure is the optimum.** ⚡ **The generalisation: a ceiling alone is never enough where zero is reachable**, and every phase-count, latency-band and request-count assertion in this repository should be read for that shape.
+
+⚠️ **Filed `OPEN`, not `FIXED`.** **Lane A's fix is uncommitted in their tree**, and QE verified that rather than accepting the report: `:152` and `:163` are unchanged on the promoted commit.
+
+### 📁 Narrowing a guard needs authority; strengthening one does not
+
+**The asymmetry [B-1094](docs/BUGS.md) turned on, stated once so it is not re-litigated:**
+
+| | if the change is wrong |
+|---|---|
+| **Narrowing** | ⛔ the guard stops failing on a real defect — **silently, forever** |
+| **Strengthening** | ✅ it fails loudly on something that was fine — **you find out immediately** |
+
+**Only the first is escalated.** ⚠️ **B-1094 did not say so, and Lane A correctly declined a sweep it did not need permission for.**
+
+### ⛔ Still knowingly promoted with two live 🔴 the gate cannot see
+
+**[C-1567](docs/LANE_COORDINATION.md) and [C-1568](docs/LANE_COORDINATION.md)** — unchanged from cycle 282, and [B-1082](docs/BUGS.md) records why `certification-guard.py` cannot see them.
+
+### 🔴 Identifier blocks are exhausting, and this needs a product-owner decision
+
+| block | state |
+|---|---|
+| **Lane A `B-200`–`B-299`** | ⛔ **fully allocated.** Lane A **declined to allocate outside it** and recorded a finding inside another row instead — correct, and it is what B-200/B-201 cost QE |
+| **QE `B-1000`–`B-1099`** | ⚠️ **93 of 100.** **Two of the seven apparent gaps are REFERENCED**, so not free — measured with `git grep`, not by counting headings ([B-263](docs/BUGS.md)) |
 
 ---
 
