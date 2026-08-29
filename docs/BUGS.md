@@ -21005,7 +21005,7 @@ page.waitForURL: Test timeout of 60000ms exceeded
 | **Module** | **QE's own instruments** — 📁 [`frontend/tests/e2e/perception.spec.ts`](../frontend/tests/e2e/perception.spec.ts):152, :163 |
 | **Current assignee** | **QE** — §20e: repository-wide journey specs are QE's |
 | **Severity** | 🟠 — ⛔ **the test has measured nothing since it was written**, and reports a pass while doing so |
-| **Status** | **`OPEN`** — ⚠️ **a fix exists in Lane A's tree and is NOT yet pushed.** ⛔ **Verified absent on `origin/lane-a-product-surface-r4` at `f4cff39f`: `:152` still reads `page.goto('/')` and `:163` still counts `ol > li`** |
+| **Status** | ✅ **`FIXED` — Lane A, `2996cded`.** ⚡ **QE read the file itself before flipping this, not the report**: `:167` is `page.goto('/accounts')`, `:189` counts `ol > li, tbody > tr`, and **`:214` is the floor** — `phases.some((shape) => /^rows:[1-9]/.test(shape))`, which excludes `rows:0` by construction and sits **before** the ceiling at `:222`. **`VERIFIED` is QE's, after the cycle that promotes it.** |
 | **Found** | **2026-08-29 by Lane A**, closing [B-279](#b-279). **Filed by QE from QE's block** because the instrument is QE's — ⚡ **Lane A's `B-200`–`B-299` is exhausted and it correctly declined to allocate outside it** |
 | **Commit found** | `f4cff39f` |
 
@@ -21043,6 +21043,59 @@ page.waitForURL: Test timeout of 60000ms exceeded
 > ⚡ **The floor assertion fired the moment it was added, and that is how the wrong selector surfaced.** ⛔ **It was not added and then given a subject to hunt** — the order matters, because a guard written after the fact tends to describe what the code already does.
 
 **⛔ A ceiling alone is never enough where zero is reachable. Every phase-count, latency-band or request-count assertion in this repository should be read for the same shape: does total failure score better than success?**
+
+### ✅ The sweep this row asked for — Lane A read all 25, and the answer is a RULE
+
+> ⚡ **A ceiling is safe when the measurement window is closed by a READINESS ASSERTION, and unsafe when it is closed by a CLOCK or a fixed sample count.**
+
+**That is worth more than the list it came from, and it explains why the siblings are safe.** 📁 **`perception`'s `timeToFirstAction < 15_000` and `tokens <= 6` look like this shape and are not**: `measure()` takes a `ready()` callback which is `expect(accountLinks.first()).toBeVisible(...)`. ⛔ **A screen that renders nothing does not report a fast time — it throws inside `ready()`.** **The floor was already there, as a wait.**
+
+🔴 **Which is exactly why the phase-count test was the broken sibling: its window closed on an 8-second CLOCK, not on content.** **Same file, same author, same assertion shape — and that one difference decided it.**
+
+**One more genuinely unfloored case found and fixed: `cold-boot-frame.spec.ts:44`.** ⛔ **The filter is what makes it reachable:**
+
+```ts
+if (n > 0) counts.add(n);                       // zero filtered OUT of the population
+expect([...counts].length).toBeLessThanOrEqual(2);   // empty set passes
+```
+
+⚠️ **And `toBeVisible()` on `main` above it does NOT cover it** — the content region and the rail are different elements, and *"the frame is never blank"* is a claim about the frame.
+
+**Left one-sided deliberately, and named**: `daily-usage:83` and `home-viewports:295` already carry explicit floors.
+
+### ⚠️ One case Lane A left alone and asked QE to check — and the reasoning holds
+
+📁 **`home-viewports:229`, `rows <= 3` at 390px, no explicit floor.** ⚡ **It has a DE FACTO one**: the next assertion needs the *"See all N in Signals"* link **visible**, and `attention-card.tsx:264` renders it `block phone:hidden` when `entries.length <= MAX` — so at 390px a card with too few rows hides it and the test fails.
+
+⛔ **It is a floor by accident, not by intent.** **If that class ever changes, the guard goes vacuous silently** — which is this row's whole subject. ✅ **Lane A was right not to add an assertion to a test whose contract it would be changing on a hunch, and right to name it rather than fix it quietly.**
+### B-1095 · 🟡 The authenticated setup passes on a quiet machine by 0.3s, and every authenticated browser project waits on it
+
+| | |
+|---|---|
+| **Module** | **QE's own instruments** — the shared e2e setup, `chooseOrganization`'s wait |
+| **Current assignee** | **QE** — §20e: repository-wide journey infrastructure |
+| **Severity** | 🟡 — ⛔ **wrong only under load, and it fails LOUDLY when it does.** ⚠️ **Not 🟠: no customer-facing behaviour is involved, and nothing silently passes** |
+| **Status** | **`OPEN`** |
+| **Found** | **2026-08-29 by Lane A**, reported unprompted while closing [B-279](#b-279) |
+| **Commit found** | `2996cded` |
+
+**Measured, not estimated: the setup timed out at a 20s budget under parallel load, and passed alone at 20.3s.** ⛔ **0.3s of margin is not headroom**, and `chooseOrganization`'s wait is the marginal quantity — **on the path of every authenticated project.**
+
+### ✅ What Lane A did NOT do, and it is the reason this row exists rather than a green run
+
+⛔ **It did not widen the timeout.** ⚡ **That is the flake-hiding move [B-1092](#b-1092) refuses** — the same class as the wall-clock gate that made certification depend on machine load. **It ran `--workers=1`, said so, and reported the margin.**
+
+> ⚠️ **A measurement that passes at 20.3s against a 20s budget has already failed once. Reporting it is the finding; the pass is not.**
+
+### ⛔ It does NOT threaten certification, and QE checked rather than accepting the framing
+
+📁 **`REQUIRED_GATES` is `pytest · mypy · tsc · import-linter · security-invariants · smoke · frontend-suite · eslint`.** ⚡ **There is no browser gate**, and `smoke` is API-level. **So this is a risk to browser runs only.**
+
+⚠️ **Lane A framed it as *"worth knowing before you certify 284"*, which reads as a certification risk. It is not one** — and the distinction matters, because a latent flake outside the gates is prioritised differently from one inside them.
+
+### ✅ What a fix needs to establish
+
+**Why the wait is marginal at all** — a 20s budget met at 20.3s on an idle machine suggests the budget was fitted to observed behaviour rather than derived from it. ⛔ **Widening it is not the fix**; understanding what takes 20s is.
 
 ### B-1088 · 🟡 The frontend suite's result depends on the operator's shell, and the documented remedy for one gate breaks it
 
