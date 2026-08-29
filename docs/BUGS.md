@@ -21025,7 +21025,38 @@ Error: clipped text on the accounts list
 
 ✅ **Corroborated by the differential**: `/accounts` is the only one of the four screens that renders `<Table>` (`page.tsx:807`); `settings`, `connections` and `your business` import it nowhere and all three passed.
 
-> ⚠️ **STATED AS A DERIVATION, NOT A MEASUREMENT.** ⛔ **QE could not read the computed `overflowX` directly**: a standalone probe would not launch — this workstation lacks `libnspr4` and `libasound2`, which the Playwright runner supplies and a bare `chromium.launch()` does not. **The reasoning above is from source plus the four-screen differential. It should be confirmed with a computed-style read before the guard is changed.**
+### ✅ MEASURED — 2026-08-29, and the derivation above was correct
+
+> ⚠️ **This section originally read *"STATED AS A DERIVATION, NOT A MEASUREMENT"* and claimed this workstation lacks `libnspr4` and `libasound2`.** ⛔ **That claim was FALSE and is corrected here; the original wording is preserved in this note** (§2 — correct a claim about the present, never quietly).
+
+**The computed read, taken independently by QE and by Lane A, flags EXACTLY ONE element:**
+
+```
+tag        DIV
+class      w-full overflow-x-auto      <- components/ui/table.tsx:103
+overflow   auto     overflowX  auto    <- the `visible && visible` exclusion misses it
+scrollWidth 933  clientWidth 683  excess 250
+```
+
+⚡ **It is the deliberately scrollable wrapper, exactly as derived.** ⛔ **Nothing is clipped: `overflow-x: auto` scrolls, so every column is reachable.** **The guard's own rule is *"ellipsis is deliberate and allowed; silent clipping is not"* — and `auto` is not silent either.**
+
+### ⛔ Why QE's probe would not launch, and it was not the workstation
+
+📁 **`libnspr4.so` and `libasound.so.2` ARE on this machine — in `~/.cache/ms-playwright-deps/lib`.** ⚠️ **QE searched `~/.cache/ms-playwright/` and missed the `-deps` suffix**, then reported the machine as deficient.
+
+✅ **`playwright.config.ts:151` passes `launchOptions.env = browserEnvironment()`**, which prepends that directory to `LD_LIBRARY_PATH` — and its own comment says why: *"the suite passed 119/119 in a terminal that happened to export `LD_LIBRARY_PATH`, and could not launch a browser at all in one that did not."* ⚡ **[B-1088](#b-1088)'s fix is what makes the runner work where a bare `chromium.launch()` fails.** **A bare probe must set it:**
+
+```bash
+LD_LIBRARY_PATH="$HOME/.cache/ms-playwright-deps/lib:$LD_LIBRARY_PATH" node probe.mjs
+```
+
+⚠️ **Found by Lane A, who read the config QE had not.** ⛔ **The error is the same axis as everything else in this cycle: a population — one directory — searched narrower than the property, *where could these libraries be*.**
+
+### ✅ The remedy, now that the property is measured — AWAITING A DECISION
+
+**The clause that settles it:** *an element that can scroll its own overflow is not clipping* — **admit `auto` and `scroll` alongside `visible`, rather than instead of it, so `overflow: hidden` still fails.**
+
+⛔ **QE has NOT made the change.** ⚠️ **It narrows what a guard flags, and this row declared that escalated rather than made** — reversing that on a measurement QE itself asked for would be the escalation dissolving the moment it became convenient. ✅ **Lane A has offered to re-run the computed read against a changed guard, and any change must ship with a companion assertion that an `overflow: hidden` overflow still FAILS** — otherwise the fix disarms the guard instead of correcting it.
 
 ### ⚡ Why this is B-1065's shape, one layer out
 

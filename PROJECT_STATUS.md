@@ -40,7 +40,15 @@
 
 ### ⛔ Not measured, and named rather than implied
 
-**[B-1094](docs/BUGS.md)** — the clipping guard flags `/accounts`, deterministically. **QE could not read the computed `overflowX`**: this workstation lacks `libnspr4`/`libasound2`, which the Playwright runner supplies and a bare `chromium.launch()` does not. **The conclusion — that the flagged element is the deliberately scrollable `overflow-x: auto` wrapper — is a DERIVATION from source plus a four-screen differential, and is filed as needing a computed-style read before the guard is changed.**
+**[B-1094](docs/BUGS.md)** — the clipping guard flags `/accounts`, deterministically.
+
+> ⚠️ **CORRECTED 2026-08-29, same day.** This entry originally reported the finding as **not measured**, and stated that *"this workstation lacks `libnspr4`/`libasound2`"*. ⛔ **Both are now false and the original wording is preserved in this note** (§2).
+
+✅ **It IS measured** — independently by QE and by Lane A. The filter flags **exactly one element**: `DIV.w-full.overflow-x-auto` (`components/ui/table.tsx:103`), `overflow: auto`, `scrollWidth 933` against `clientWidth 683`. **The derivation was correct: it is the deliberately scrollable wrapper, and nothing is clipped.**
+
+⛔ **The workstation was never deficient.** `libnspr4.so` and `libasound.so.2` are in `~/.cache/ms-playwright-deps/lib`; **QE searched `~/.cache/ms-playwright/` and missed the `-deps` suffix.** `playwright.config.ts:151` supplies that path via `launchOptions.env` — **[B-1088](docs/BUGS.md)'s own fix** — which is why the runner launches where a bare probe does not. **Found by Lane A, who read the config QE had not.**
+
+⚠️ **The guard is still NOT fixed, and that is deliberate**: narrowing what a guard flags is a contract change, and this row declared it escalated. **A remedy is stated and awaits a decision.**
 
 **The browser suite is not a required gate**, so nothing was promoted on a false pass — and the failure is **not** a regression from this candidate, which never touched the accounts list.
 

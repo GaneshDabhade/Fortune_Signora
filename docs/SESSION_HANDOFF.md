@@ -12,7 +12,7 @@
 >
 > ⛔ **[B-1090](BUGS.md) reproduced and its remedy demonstrated**: the production topology has **no Better Auth provisioning step**, so a stack reporting every container healthy returns `HTTP 500` on sign-up with **zero tables in `auth`**. **`auth:migrate` as OWNER against 5433 fixes it — run it before any browser work on prod-local.**
 >
-> ⛔ **[B-1094](BUGS.md) filed and NOT fixed**: the clipping guard flags a deliberately scrollable table. **The conclusion is a derivation, not a measurement** — a bare `chromium.launch()` will not start on this workstation (`libnspr4`, `libasound2`), though the Playwright runner does.
+> ⛔ **[B-1094](BUGS.md) filed and NOT fixed**: the clipping guard flags a deliberately scrollable table — `DIV.w-full.overflow-x-auto`, `overflow: auto`, `scrollWidth 933` vs `clientWidth 683`. ✅ **MEASURED, independently by QE and Lane A.** ⚠️ **This line first said it was a derivation and blamed missing `libnspr4`/`libasound2` on the workstation — BOTH WRONG.** ⛔ **The libraries are in `~/.cache/ms-playwright-deps/lib`; QE searched `~/.cache/ms-playwright/` and missed the `-deps` suffix.** ✅ **`playwright.config.ts:151` supplies that path via `launchOptions.env` ([B-1088](BUGS.md)'s fix) — a bare probe must set `LD_LIBRARY_PATH` itself.**
 >
 > 🔴 **Two live 🔴 defects — [C-1567](LANE_COORDINATION.md), [C-1568](LANE_COORDINATION.md) — sit in the coordination register where the promotion gate cannot see them** ([B-1082](BUGS.md)). **This promotion was made knowingly, and widening the gate is escalated rather than made.**
 >
