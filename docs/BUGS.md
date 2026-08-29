@@ -6579,7 +6579,27 @@ logger.info("connecting to postgres://signora_app:S3cr3tPassw0rd@db:5432/signora
 | **Module** | **`product_surface`** — [`tests/e2e/`](../frontend/tests/e2e/), six specs |
 | **Current assignee** | ⚡ **Lane A**, joined from [`modules.toml`](coordination/modules.toml) |
 | **Severity** | 🟠 — ⛔ **six journeys cannot reach an account**, and each reports a different-looking failure |
-| **Status** | **`OPEN` — PRE-EXISTING BASELINE ISSUE.** ⛔ **Not introduced by Lane A and not accepted by having been found** — product owner, 2026-08-18, relayed by QE: *"do not turn pre-existing baseline failures into Lane A defects"*. ⚠️ **Quoted from the relay; no `D-` row is cited because none was named to this lane** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-29.** ⚡ **Most of it by [B-245](#b-245), whose mechanism this row was describing without either lane noticing.** ⚠️ **QE verifies and closes.** ⚠️ **The prior state, kept rather than rewritten** ([§2](../CLAUDE.md)): **`OPEN` — PRE-EXISTING BASELINE ISSUE.** *"Not introduced by Lane A and not accepted by having been found — product owner, 2026-08-18, relayed by QE: 'do not turn pre-existing baseline failures into Lane A defects'."* |
+
+#### ✅ FIXED 2026-08-29, Lane A — **3 + 4 + 2 failing became 15 / 15**
+
+🔴 **The cause was [B-245](#b-245) and this row said so**: *"the attention list of an **empty organization**."* ⚡ **That is B-245's mechanism verbatim** — the newest-first default put every fresh browser into an organization with no accounts — **and the locator resolving to nothing was the symptom, one row over.**
+
+📁 **Measured after B-245's fix**: `/` → `/w/<id>/home` with **5** account links, `/accounts` → **15**.
+
+#### 🔴 What remained was `signIn` waiting for the MIDDLE of a redirect
+
+⛔ **`SignInPage.signIn` ended at `url.pathname === '/'`, which is where entry resolution BEGINS.** ⚡ **That worked only while `/` always resolved to a workspace**; B-245 made rule 7 reachable, **and a fresh sign-in has no last-used by construction** — so `confidence.spec.ts` waited fifteen seconds on `/workspaces` for a heading that was never coming.
+
+✅ **It delegates to `chooseOrganization` — the third caller, not a fourth copy.** 📁 `auth.setup.ts` had already written the reason: *"a fresh sign-in anywhere in the suite meets the same chooser, and `resilience`'s sign-out journey was failing on it."* ⚠️ **`resilience.spec.ts` had patched it at its own call site**, which is how a helper acquires three copies.
+
+#### ⚠️ And collapsing two waits into one budget was my first attempt, which failed
+
+⛔ **Delegating straight from the click gave the sign-in POST, the entry resolution AND the chooser a single 20s window.** 🔴 **On a loaded dev server `resilience.spec.ts` spent it all reaching `/`** — the trace said so precisely: *`navigated to "/"` twice and then nothing.*
+
+✅ **Two waits, two budgets.** **`/` is the sign-in's own success signal** — the credential exchange completed and the resolver has the page — **so waiting for it is an assertion about sign-in, and what follows is an assertion about entry.** ⚡ **17 / 17 in `resilience.spec.ts` after the split**, from 15 / 17.
+
+
 | **Found** | **2026-08-18**, baselining an unrelated slice. ⚠️ **Not by any gate** — Playwright is in none |
 | **Commit found** | `19149dc6` (`origin/integration`) |
 
@@ -6667,9 +6687,37 @@ this row on a resemblance. **Re-measure on the rebased tree.**
 | **Module** | **`product_surface`** — [`profile-journey.spec.ts`](../frontend/tests/e2e/profile-journey.spec.ts):246 |
 | **Current assignee** | ⚡ **Lane A**, joined from [`modules.toml`](coordination/modules.toml) |
 | **Severity** | 🟡 |
-| **Status** | **`OPEN` — PRE-EXISTING BASELINE ISSUE** |
-| **Found** | **2026-08-18**, in the same baseline |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-29, and the row's SUBJECT had moved.** ⚠️ **QE verifies and closes.** ⚠️ **The prior state, kept rather than rewritten** ([§2](../CLAUDE.md)): **`OPEN` — PRE-EXISTING BASELINE ISSUE** |
+| **Found** | **2026-08-18**, in the same baseline · **Fixed 2026-08-29** |
 | **Commit found** | `19149dc6` (`origin/integration`) |
+
+#### ⚠️ AUDIT 2026-08-29, Lane A — the theme passes, and something else fails
+
+🔴 **Measured before touching anything.** `profile-journey.spec.ts` `-g "keeps it as System"` — ✅ **passes, in isolation and in a full-file run.** ⛔ **The control this row names is not defective.**
+
+⚠️ **And the cited line no longer identifies an assertion**: `:246` is now `expect(getByRole('radio', { name: /^125%$/ })).toBeChecked()`. **The file moved under the row**, which is why a row must be re-measured rather than believed.
+
+✅ **What DOES fail, and it is the same family:** the test above it — *"every accessibility preference survives a reload"* — **fails on `Concise`**, `screen_reader_verbosity`. **10 of 11 in a full-file run; 11 of 11 in isolation.**
+
+#### 🔴 The cause, and the first theory was wrong
+
+⛔ **First hypothesis: a lost update.** `ChangePreferencesUseCase` reads the row and `save()` writes **every column**, with no lock — so two `PATCH`es in flight could each read the pre-change row and the later commit would drop its sibling. ⚡ **The panel sets six preferences in succession, so six are in flight.**
+
+✅ **Written as a full-stack integration test — `tests/integration/test_api_preferences.py`, two concurrent `PATCH`es through `asyncio.gather` — and it PASSED.** ⛔ **So the theory was wrong and no fix was built on it.** ⚠️ **The test stays**: the property *neither change is lost* is worth holding whether or not it is currently violated, and it is paired with a control asserting that separated writes still leave untouched fields alone.
+
+🔴 **The real cause is the test, and the file already knew it one test down.** 📁 The theme test's own words: *"the reload waits for the WRITE, not for a word — **`Saved` is already on screen**, so waiting for it again would wait for nothing and reload mid-`PATCH`, and **a reload that cancels the request under test reports a persistence failure that never happened**."*
+
+⛔ **The accessibility test above it was never repaired.** `await expect(page.getByText('Saved').first()).toBeVisible()` is satisfied by the **first** `PATCH` to answer; **the reload then cancelled the last one.** ⚡ **In isolation the write wins the race; in a full-file run the machine is busier and it does not** — which is exactly why this passed alone and failed in the file, and why the row named the wrong control.
+
+#### ✅ `trackPreferenceWrites` — counting, because six listeners answer once
+
+⛔ **Not `waitForResponse` six times**: six listeners registered before the first click all resolve on the **same** response. ✅ **A request/`requestfinished` counter is the only shape that answers *are they all done?***
+
+⚠️ **And it asserts `started > 0` as well as `inFlight === 0`** — ⛔ **`inFlight === 0` is true before anything has been sent**, so a wait on it alone would pass on a screen that saved nothing. ✅ **Fire-tested**: called before any interaction it reports `"0 in flight"` and fails, rather than passing instantly.
+
+✅ **The restore block at the end is awaited too** — **these preferences are stored on the ACCOUNT**, so a test ending with writes in flight hands the next one a screen still changing under it.
+
+📁 **Result: 11 of 11 in a full-file run**, where it was 10 of 11.
 
 **Actual.** ⛔ **`getByRole('radio', { name: /^System\b/ })` resolves and is `unchecked`** — the input exists, so this is a *state* defect rather than a missing control.
 
@@ -6933,14 +6981,30 @@ SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run pytest
 
 | | |
 |---|---|
-| **Module** | **`product_surface`** — [`auth-journey.spec.ts`](../frontend/tests/e2e/auth-journey.spec.ts), *"signing out ends the session and the product is closed again"* |
+| **Module** | **`product_surface`** — ⚠️ **the row named [`auth-journey.spec.ts`](../frontend/tests/e2e/auth-journey.spec.ts) and the failing journey is [`resilience.spec.ts`](../frontend/tests/e2e/resilience.spec.ts):101.** ⛔ **Kept rather than corrected in place**, because which file a defect was believed to be in is part of the record |
 | **Current assignee** | ⚡ **Lane A**, joined from [`modules.toml`](coordination/modules.toml) |
 | **Severity** | 🟡 |
-| **Status** | **`OPEN` — PRE-EXISTING BASELINE ISSUE** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-29.** ⚠️ **QE verifies and closes.** ⚠️ **Prior state: `OPEN` — PRE-EXISTING BASELINE ISSUE** |
 | **Found** | **2026-08-18**, in the same baseline |
 | **Commit found** | `19149dc6` (`origin/integration`) |
 
-⚠️ **It passes in isolation and fails in a full run** — 📁 measured both ways on Lane A's branch (31 passed running `auth-journey.spec.ts` alone) **and it fails on `integration` too**, so it is neither Lane A's nor purely an ordering artifact of one tree.
+#### ✅ FIXED 2026-08-29, Lane A — and the row named the wrong file
+
+⚠️ **`auth-journey.spec.ts`'s *"signing out ends the session and the product is closed again"* PASSES**, in isolation and in a full run. 🔴 **The failing journey is `resilience.spec.ts:101` — *"closes the product in every tab, not only the one that clicked"*** — a different file, a different test, the same sentence in its title. **Third row this cycle whose subject had moved.**
+
+#### 🔴 The order-dependence was never mysterious: a helper that clicked `.first()`
+
+⛔ **`reachMorning` in `auth-journey.spec.ts` was a SECOND implementation of `chooseOrganization`** ([§2](../CLAUDE.md)) **and the weaker one**: it clicked `.first()`, while the shared helper prefers the row named *Playground* — **the seeded organization every account-backed assertion is written against.**
+
+⚡ **Invisible until somebody has two organizations**, which is the ordinary state after any journey that creates one. **Then `.first()` is whatever the newest-first list leads with**, and a signed-in person lands in an **empty** organization **with a perfectly good `home` test id** — ⛔ **so the helper reported success and every assertion after it failed on absent data.**
+
+✅ **That is the whole of *"passes in isolation and fails in a full run"*: the helper's answer depended on how many organizations earlier specs had left behind.** ⚡ **It now delegates** — one implementation, three callers.
+
+📁 **`resilience.spec.ts`: 17 / 17**, from 15 / 17 — and `:147`, *"saving a product twice does not create two"*, was failing for the same reason and passes with it.
+
+⚠️ **The prior state, kept rather than rewritten** ([§2](../CLAUDE.md)):
+
+> ⚠️ **It passes in isolation and fails in a full run** — 📁 measured both ways on Lane A's branch (31 passed running `auth-journey.spec.ts` alone) **and it fails on `integration` too**, so it is neither Lane A's nor purely an ordering artifact of one tree.
 
 ⛔ **Order-dependence is a property worth keeping in the row**: a defect that only appears after other specs have run is one a targeted re-run will always report as fixed.
 

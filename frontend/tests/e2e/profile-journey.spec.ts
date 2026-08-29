@@ -34,6 +34,57 @@ import { OWNER } from './fixtures/personas';
  * outside this slice. **This journey establishes the context the way a person
  * arriving through the shell already would.**
  */
+/**
+ * 🔴 **Wait for the WRITES, not for a word** — [B-280](../../../docs/BUGS.md).
+ *
+ * ⛔ **`await expect(page.getByText('Saved')).toBeVisible()` is satisfied by the
+ * FIRST `PATCH` to come back**, and six controls set in succession are six of
+ * them in flight. ⚡ **So the reload that followed could — and in a full-file
+ * run did — cancel the last one**, and the assertion after it reported a
+ * persistence failure that never happened.
+ *
+ * ⚠️ **This file already knew the lesson one test down**: *"the reload waits
+ * for the WRITE, not for a word… a reload that cancels the request under test
+ * reports a persistence failure that never happened."* ⛔ **The theme test was
+ * repaired and the accessibility test above it was not**, which is why it
+ * passed alone and failed in the file — **and why the row describing it named
+ * the wrong control.**
+ *
+ * ⛔ **Not `waitForResponse` six times.** Six listeners registered before the
+ * first click all resolve on the same response; **counting is the only shape
+ * that answers *are they all done?***
+ */
+function trackPreferenceWrites(page: import('@playwright/test').Page): () => Promise<void> {
+  let inFlight = 0;
+  let started = 0;
+  const isWrite = (url: string, method: string) =>
+    url.includes('/preferences') && method === 'PATCH';
+
+  page.on('request', (request) => {
+    if (isWrite(request.url(), request.method())) {
+      inFlight += 1;
+      started += 1;
+    }
+  });
+  const settle = (request: import('@playwright/test').Request) => {
+    if (isWrite(request.url(), request.method())) inFlight -= 1;
+  };
+  page.on('requestfinished', settle);
+  page.on('requestfailed', settle);
+
+  return async () => {
+    // ⚡ **`started` is asserted too.** ⛔ **`inFlight === 0` is true before
+    // anything has been sent**, so waiting on it alone would be a wait that
+    // passes on a screen that saved nothing — the vacuity this repository keeps
+    // meeting.
+    await expect
+      .poll(() => (started > 0 && inFlight === 0 ? 'settled' : `${inFlight} in flight`), {
+        timeout: 30_000,
+      })
+      .toBe('settled');
+  };
+}
+
 async function openProfile(page: import('@playwright/test').Page): Promise<void> {
   await page.goto('/accounts');
   await page.goto('/profile');
@@ -184,6 +235,7 @@ test.describe('Workflow 9 · a person makes Signora theirs', () => {
      * exists not to make.
      */
     test.slow();
+    const written = trackPreferenceWrites(page);
     await openSection(page, 'Accessibility');
     await expect(page.getByRole('heading', { name: 'Accessibility' })).toBeVisible();
     // ⚡ **The controls are disabled until the read lands**, so a click before
@@ -232,6 +284,9 @@ test.describe('Workflow 9 · a person makes Signora theirs', () => {
     await page.getByText('Concise', { exact: true }).click();
     await expect(page.getByText('Saved').first()).toBeVisible();
 
+    // ⛔ **Every write, not the first one to answer.** 📁 See
+    // `trackPreferenceWrites` — this is what the reload below was beating.
+    await written();
     await page.reload();
     await expect(page.getByRole('heading', { name: 'Accessibility' })).toBeVisible();
 
@@ -250,6 +305,10 @@ test.describe('Workflow 9 · a person makes Signora theirs', () => {
     await page.getByRole('checkbox', { name: /^Underline links\b/ }).setChecked(true);
     await page.getByText('100%', { exact: true }).click();
     await page.getByText('Detailed', { exact: true }).click();
+    // ⚠️ **The restore is awaited too.** ⛔ **A test that ends with writes in
+    // flight hands the next one a screen still changing under it** — and these
+    // preferences are stored on the ACCOUNT, so it leaks across the file.
+    await written();
   });
 
   /**

@@ -72,12 +72,47 @@ export class SignInPage {
    * The destination is the assertion: a sign-in that succeeds and lands
    * somewhere that does not exist is the exact shape of B-304, and a wait on a
    * timeout rather than on a URL would have reported it as green.
+   *
+   * ## 🔴 `/` is a resolver, so waiting for it was waiting for the middle
+   *
+   * ⛔ **This ended at `url.pathname === '/'`** — ⚡ **which is where entry
+   * resolution BEGINS**, not where it lands. **Callers then proceeded while
+   * the redirect was still in flight.**
+   *
+   * ⚠️ **It worked only while `/` always resolved to a workspace.** 🔴
+   * [B-245](../../../docs/BUGS.md) made the Workspace Chooser's **rule 7**
+   * reachable — *"two or more active memberships and no pin, no last-used"* —
+   * **and a fresh sign-in has no last-used by construction.** ⛔ **So
+   * `confidence.spec.ts` landed on `/workspaces` and waited fifteen seconds
+   * for a heading that was never coming.**
+   *
+   * ✅ **`chooseOrganization` is the third caller of the same helper, not a
+   * fourth copy of the reasoning.** 📁 `auth.setup.ts` already says why it was
+   * extracted: *"a fresh sign-in anywhere in the suite meets the same chooser,
+   * and `resilience`'s sign-out journey was failing on it."* ⚡ **Choosing also
+   * records the last-used**, so every later entry in that context takes rule 4
+   * rather than the chooser again.
    */
   async signIn(persona: Persona): Promise<void> {
     await this.open();
     await this.email.fill(persona.email);
     await this.password.fill(PASSWORD);
     await this.submit.click();
+    /**
+     * ⚠️ **Two waits, not one budget spanning both** — and collapsing them is
+     * what a first attempt at this got wrong.
+     *
+     * ⛔ **`chooseOrganization` alone gave the sign-in POST, the entry
+     * resolution and the chooser a single 20s window**, and on a loaded dev
+     * server `resilience.spec.ts` spent it all reaching `/`. ⚡ **The trace
+     * showed the symptom precisely: `navigated to "/"` twice and then nothing.**
+     *
+     * ✅ **`/` is the sign-in's OWN success signal** — the credential exchange
+     * completed and the resolver has the page. **Waiting for it first is an
+     * assertion about sign-in; what follows is an assertion about entry**, and
+     * they are two claims with two budgets.
+     */
     await this.page.waitForURL((url) => url.pathname === '/', { timeout: 20_000 });
+    await chooseOrganization(this.page);
   }
 }

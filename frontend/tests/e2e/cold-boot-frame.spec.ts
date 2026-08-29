@@ -41,6 +41,29 @@ test('🔴 the rail keeps its destination count while the workspace resolves', a
    * about the workspace half and says so** — it allows the role transition and
    * would fail on a third value, which is what this row removed.
    */
+  /**
+   * ⛔ **The floor, and without it the ceiling is satisfied BEST by a rail
+   * that never renders**, which is the ceiling-with-no-floor shape QE is filing.
+   * ⚠️ **Their row id is not cited: it is on their branch and
+   * `row-citations.test.tsx` refuses a row this tree cannot resolve.**
+   *
+   * ⚡ **`if (n > 0)` above is what makes that reachable**: zero is filtered
+   * out of the population, so **a cold boot that painted no rail at all
+   * contributes nothing, `counts` is empty, and `0 <= 2` passes.** ⚠️ **Fewer
+   * distinct shapes is *better* by this measure and none is best of all** —
+   * which is precisely the ordering that turns a budget into a guard that
+   * cannot fail.
+   *
+   * ✅ **`toBeVisible()` on `main` above does not cover it**: the content
+   * region and the rail are different elements, and 📁 *"the frame is never
+   * blank"* is a claim about the frame.
+   */
+  expect(
+    [...counts].length,
+    'no frame ever carried a rail, so nothing was sampled — the assertion below ' +
+      'would pass on a cold boot that never painted the frame',
+  ).toBeGreaterThan(0);
+
   expect([...counts].length, `rail destination counts seen: ${[...counts]}`).toBeLessThanOrEqual(2);
 });
 

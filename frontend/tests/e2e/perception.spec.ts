@@ -149,7 +149,22 @@ test.describe('how many times a screen changes shape', () => {
   test('@journey the accounts list settles in one phase, not four', async ({
     page,
   }) => {
-    await page.goto('/');
+    /**
+     * 🔴 **This measured Home and called it the accounts list** — 📁
+     * [B-279](../../../docs/BUGS.md)'s slice.
+     *
+     * ⛔ **`page.goto('/')` is entry resolution**, and it lands on
+     * `/w/:workspace/home`. ⚡ **Home draws cards, not `ol > li` rows**, so
+     * every sample read `rows:0` — **and the loop's exit condition, *a shape
+     * with rows and no skeleton*, was unreachable.**
+     *
+     * ⚠️ **The observed run: `rows:0 skeleton:true → gone → rows:0
+     * skeleton:false`.** ⛔ **Three phases, comfortably under four, and NOT
+     * ONE of them contained a row.** ✅ **It passed by never seeing the thing
+     * it is named after** — and it would have gone on passing if the accounts
+     * list had stopped loading altogether.
+     */
+    await page.goto('/accounts');
 
     // Sample what `main` contains as it loads. **Each distinct shape is a
     // moment the customer's eye has to re-find its place**, and four of them
@@ -160,7 +175,18 @@ test.describe('how many times a screen changes shape', () => {
       const shape = await page
         .locator('main')
         .evaluate((element) => {
-          const rows = element.querySelectorAll('ol > li').length;
+          /**
+           * ⛔ **`ol > li` alone has never matched this screen.** 📁 The
+           * accounts list is the shared `Table`, which renders `tbody > tr`
+           * (`table.tsx:127`, `:154`) — **so the row count was 0 on every
+           * sample and the loop's content phase was unreachable.**
+           *
+           * ⚡ **Both, because §20 makes it genuinely both**: *"tables become
+           * row cards"* below 1024, so the same list is a table on a laptop
+           * and a list on a handset. **A selector naming one of them measures
+           * one viewport.**
+           */
+          const rows = element.querySelectorAll('ol > li, tbody > tr').length;
           const skeletons = element.querySelectorAll('[data-skeleton]').length;
           return `rows:${rows} skeleton:${skeletons > 0}`;
         })
@@ -176,6 +202,20 @@ test.describe('how many times a screen changes shape', () => {
       description: phases.join(' → '),
     });
     process.stdout.write(`\n  loading phases: ${phases.join(' → ')}\n`);
+
+    /**
+     * ⛔ **Content must actually have arrived, and this assertion is the one
+     * that was missing.**
+     *
+     * ⚡ **`phases.length <= 4` is satisfied by a screen that never loads** —
+     * fewer shapes is *better* by that measure, and **zero shapes is best of
+     * all.** 🔴 **A budget on a count is vacuous unless something pins the
+     * floor**, which is the shape this suite keeps meeting.
+     */
+    expect(
+      phases.some((shape) => /^rows:[1-9]/.test(shape)),
+      `no phase ever contained a row, so nothing was measured: ${phases.join(' → ')}`,
+    ).toBe(true);
 
     // Empty → skeleton → content is three, and is the most a screen should
     // need. More means the page is assembling itself in front of the reader.

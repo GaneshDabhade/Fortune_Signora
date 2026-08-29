@@ -15,6 +15,7 @@
 import { expect, test } from './fixtures/signora';
 
 import { OWNER, PASSWORD } from './fixtures/personas';
+import { chooseOrganization } from './pages/signin';
 
 /**
  * **Walk the design's ladder to Home, as a customer does** —
@@ -30,15 +31,28 @@ import { OWNER, PASSWORD } from './fixtures/personas';
  * the ladder finishes: 📁 rule 24's Home.
  */
 async function reachMorning(page: import('@playwright/test').Page): Promise<void> {
-  await page.waitForURL(/\/workspaces$|\/w\/[0-9a-f-]+\/home$/, { timeout: 30_000 });
-  if (new URL(page.url()).pathname === '/workspaces') {
-    await page
-      .getByRole('list', { name: 'Your organizations' })
-      .getByRole('button')
-      .first()
-      .click();
-  }
-  await page.waitForURL(/\/w\/[0-9a-f-]+\/home$/, { timeout: 30_000 });
+  /**
+   * 🔴 **This was a second implementation of `chooseOrganization`, and the
+   * weaker one** — 📁 [B-281](../../../docs/BUGS.md), [§2](../../../CLAUDE.md).
+   *
+   * ⛔ **It clicked `.first()`.** ⚡ **`chooseOrganization` prefers the row
+   * named *Playground*** — the seeded organization the account-backed
+   * assertions are written against — **and falls back to the first only when
+   * there is no such row.**
+   *
+   * ⚠️ **That difference is invisible until somebody has two organizations**,
+   * which is the ordinary state after any journey that creates one. **Then
+   * `.first()` is whichever the newest-first list happens to lead with**, and
+   * a signed-in person lands in an empty organization with a perfectly good
+   * `home` test id — **so this helper reported success and every assertion
+   * after it failed on absent data.**
+   *
+   * ⛔ **Which is exactly the order-dependence B-281 records**: *"it passes in
+   * isolation and fails in a full run."* ⚡ **Nothing about the ordering was
+   * mysterious — the helper's answer depended on how many organizations
+   * earlier specs had left behind.**
+   */
+  await chooseOrganization(page);
   await expect(page.getByTestId('home')).toBeVisible();
 }
 
