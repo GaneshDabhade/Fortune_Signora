@@ -2,11 +2,67 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `7e08bac5`, 2026-08-29.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `b7cdb9c8`, 2026-08-29.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
 > **It is a dashboard, not an engineering journal.** [`SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) answers a different question — *"what should the next session know?"* — and does not repeat what is here. Historical implementation detail belongs in ADRs and module documentation; **the appendices below are dated records and are never rewritten to match the present.**
+
+---
+
+## Cycle 284 — promoted `b7cdb9c863fa`, 2026-08-29
+
+| | |
+|---|---|
+| **Promoted** | **`b7cdb9c863fa…`** — `promoted == certified`, 2 commits, **zero merge commits**. `--audit-main` holds |
+| **Gates** | **5468 pytest · 95.05% · 680 Security Invariants · mypy strict 959 · import-linter 37/37 · tsc clean · frontend 4511 in 265 files · eslint clean · smoke 24 stages in 150s · scenario 208** |
+| **DR** | ✅ passed |
+| **Migrations** | ⚠️ **not applicable rather than skipped** — 66 versions on both sides |
+
+### 🔴 Four of Lane A's five closures were the ROW being wrong, not a defect being fixed
+
+**Lane A reported this against its own interest and QE is recording it in their words:**
+
+> **B-245 was the live product defect. B-279 was mostly B-245. B-280, B-281 and B-196 were instrument or register defects.**
+
+⛔ **A status report that counted those five the same way would be flattering the lane.** ⚡ **A register that misdescribes its rows misroutes work** — and the cost was demonstrated, not argued.
+
+### ⛔ B-196 — a stale row aimed a lane at code somebody had already tested
+
+**The row prescribed two tests. Both existed on `integration`, by those exact names.** Lane A read the row, opened the use case, and **started writing them again.** ⚡ **Running the file first is the only thing that stopped it.**
+
+🔴 **And the attempt was actively harmful.** Adding a `writes` counter to the **shared** fake — which `_CountingPreferences` subclasses and calls `super().save()` on — **double-counted, and six passing tests went red.**
+
+> ⛔ **A stale `OPEN` row does not merely waste a lane's time. It aims that lane at code somebody already tested, and the second author's version arrives without the first author's context and can break it.**
+
+**QE verified independently rather than accepting the report**: `test_preferences_use_cases.py:195`, `:226`, `_CountingPreferences` at `:175`, **11 passed**. ⚡ **Load-bearing by construction** — a positive control asserts `writes == 1`, and the idempotency test asserts **exact equality after two executes**, so removing the guard makes it 2.
+
+### ⚡ The design-backed witness that no screenshot could replace
+
+**`resend-timer`** — 📁 the design says *"the resend timer starts at 45s and **doubles**"*.
+
+⛔ **A version resetting to 45s every time looks correct on any single screenshot** — right first interval, right format, right attempt count — **and offers the control four times too eagerly by the third attempt.** ⚡ **Only the design's sentence makes it a defect at all.**
+
+**Lane A checked both components were RENDERED before writing witnesses** — *"I did not want to write a witness for something nothing calls"* — which is the line between coverage and decoration.
+
+### ⚠️ QE nearly reported that Lane A's tests covered nothing
+
+**QE measured `origin/lane-a-product-surface-r4` and fetched AFTERWARDS**, so it read the previous tip while believing it had the current one, and got **zero newly witnessed.** ✅ **Re-checked the ref before reporting; the commit witnesses exactly five symbols.** ⛔ **Same shape as the `-deps` directory error, two cycles running.**
+
+### 📁 Population definitions differed a fourth time, and both stand
+
+| | |
+|---|---|
+| **Lane A** | **2 unwitnessed of 131 components** |
+| **QE** | **24 of 236 exported symbols by name**, 8 of them PascalCase |
+
+⚠️ **QE's is the looser criterion and has a NAMED false-positive class**: *"the name appears anywhere in `tests/`"* cannot see a component exercised through composition — `CardBody` and `CardHeader` almost certainly are. ⛔ **Not-named is not unwitnessed**, and QE handed the eight over as a candidate list with the defect stated rather than as a finding.
+
+### 🔴 The constraint is now DECISIONS, not capacity
+
+**Six of Lane A's seven remaining rows wait on a ruling, not on a lane** — C-1567, C-1548, C-1547, C-1500, C-1553, C-1580. ⚡ **Lane A declined to manufacture adjacent work and said so**, which §20e makes the correct report.
+
+**Awaiting the product owner:** **[B-1094](docs/BUGS.md)'s `overflow` clause** · **Lane A's `B-200`–`B-299`, exhausted** · **QE's `B-1000`–`B-1099`, four ids left** · **those six rulings** · **a 🟢 finding neither lane would squeeze into a full block** (`FIRST_RESEND_DELAY_SECONDS`, exported with no consumer).
 
 ---
 

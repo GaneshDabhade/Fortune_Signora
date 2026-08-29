@@ -1,20 +1,23 @@
 # Session Handoff
 
-> ## Cycle 283 — promoted `7e08bac50d8e`, 2026-08-29 · **a Security Invariant that asserted the path its row was not filed about**
+> ## Cycle 284 — promoted `b7cdb9c863fa`, 2026-08-29 · **a stale row aimed a lane at code somebody had already tested**
 >
-> **`main` = `7e08bac50d8e8ce633aa25cb6361ec840c2bd17c` = the certified commit.** **ZERO merges**, `--audit-main` holds across 2528. `pytest` **5466** · **95.03%** · **680 invariants** · `mypy` **958** · `import-linter` **37/37** · `tsc` · frontend **4511/265** · `eslint` · smoke **24/264s** · scenario **208** · DR ✅. **No migration; head `0066`.**
+> **`main` = `b7cdb9c863fa…` = the certified commit.** **ZERO merges.** `pytest` **5468** · **95.05%** · **680 invariants** · `mypy` **959** · `import-linter` **37/37** · `tsc` · frontend **4511/265** · `eslint` · smoke **24/150s** · scenario **208** · DR ✅. **No migration; head `0066`.**
 >
 > **What the next session most needs to know:**
 >
-> ⚡ **Security Invariants 679 → 680.** [B-206](BUGS.md)'s guard asserted `LeaveWorkspace` while the row is titled *"a removed member kept full access"* — two separate use cases at `composition.py:203-204`. **Fire-tested by breaking `RemoveMember`, not `resolve_role`**, so the remove link is provably covered rather than assumed.
+> 🔴 **The constraint is DECISIONS, not capacity.** **Six of Lane A's seven remaining rows wait on a ruling** — C-1567, C-1548, C-1547, C-1500, C-1553, C-1580 — **and both `B-` blocks are exhausted or nearly so.** ⛔ **Do not read an idle lane as an available one.**
 >
-> ⚡ **[B-1087](BUGS.md) — `phases.length <= 4` is satisfied BEST by a screen that never loads.** ⛔ **A ceiling alone is never enough where zero is reachable.** **The sweep is scoped and Lane A holds it**: every phase-count, latency-band and request-count assertion.
+> ⛔ **[B-196](BUGS.md) is the cautionary row.** It prescribed two tests that **already existed by those exact names**; Lane A started writing them again and **broke six passing tests** by adding a counter to the shared fake. ⚡ ***Run the thing before believing the row about it*** — five for five this cycle.
 >
-> ⚠️ **Narrowing a guard is escalated; STRENGTHENING one is not.** **A weaker guard that is wrong passes silently; a stronger one fails loudly.** [B-1094](BUGS.md) omitted this and cost Lane A a round trip.
+> ⚠️ **Four of Lane A's five closures were the ROW being wrong, not a defect being fixed.** **B-245 was the only live product defect.** **Do not count them the same way.**
 >
-> ⛔ **The prod stack is STOPPED, not torn down.** ✅ **`docker compose … stop`, so `signora-prod_prod_postgres17_data` survives with the `auth` schema and Playground seed intact** — the next browser run skips provisioning. **Never `make down` it casually: that is `down -v`.**
+> ⚠️ **QE measured a ref and fetched afterwards, and nearly reported that Lane A's tests covered nothing.** ⛔ **Check the ref is current before reporting a measurement of somebody else's work.** Same shape as the `-deps` error one cycle earlier.
 >
-> 🔴 **Identifier blocks: Lane A's `B-200`–`B-299` is EXHAUSTED and QE's `B-1000`–`B-1099` is at 93/100**, with two apparent gaps referenced and therefore not free. **Both need extending by the product owner.**
+> ⛔ **The prod stack is STOPPED, not torn down** — `docker compose … stop`, so the `auth` schema and Playground seed survive. **Never `make down` casually: that is `down -v`.**
+>
+> ⚡ **`8d5782b7` on `lane-a-product-surface-r4` carries executable change and opens 285.** **It will conflict in `docs/BUGS.md`; take both sides — the edits are in different rows.**
+
 
 
 
