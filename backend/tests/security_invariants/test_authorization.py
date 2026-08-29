@@ -23,6 +23,9 @@ from modules.workspace_tenancy.application.use_cases import (
 from modules.workspace_tenancy.application.use_cases.leave_workspace import (
     LeaveWorkspaceCommand,
 )
+from modules.workspace_tenancy.application.use_cases.remove_member import (
+    RemoveMemberCommand,
+)
 from modules.workspace_tenancy.domain.entities import WorkspaceRole
 from modules.workspace_tenancy.infrastructure.composition import (
     build_query_service,
@@ -273,6 +276,67 @@ class TestMembershipRevocation:
         ) as session:
             query_service = build_query_service(session)
 
+            assert await query_service.resolve_role(workspace_id, member) is None
+            assert await query_service.get_membership(workspace_id, member) is None
+
+    async def test_resolve_role_refuses_a_membership_ended_by_REMOVAL(
+        self, session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        """The path B-206 was actually filed about, and the one the test above
+        does not walk.
+
+        `LeaveWorkspace` and `RemoveMember` are two use cases (composition.py
+        :203-204). The invariant above exercises only the first, and reasons
+        that asserting at `resolve_role` covers both. That is true of the
+        *filter* — but the property has two links, and the second one is
+        `remove_member` ending the membership at all. That link is guarded
+        only by `modules/workspace_tenancy/tests/test_remove_member.py`, a
+        module unit test.
+
+        Which is precisely the fragility the docstring above cites as its own
+        reason for existing: *"a slice that reshapes the leave endpoint would
+        take a feature test with it."* A slice that reshapes the **remove**
+        endpoint would do the same — and removal, not leaving, is what
+        `member:remove` revoked nothing for between M1 and 2026-08-05.
+        """
+        owner, member = uuid4(), uuid4()
+        workspace_id = await _create_workspace(session_factory, name="Removals", user_id=owner)
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=owner
+        ) as session:
+            membership = await build_use_cases(session).add_member.execute(
+                AddMemberInput(
+                    workspace_id=workspace_id,
+                    user_id=member,
+                    role=WorkspaceRole.MEMBER,
+                    added_by=owner,
+                ),
+                correlation_id=uuid4(),
+            )
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=member
+        ) as session:
+            assert await build_query_service(session).resolve_role(workspace_id, member) == "member"
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=owner
+        ) as session:
+            await build_use_cases(session).remove_member.execute(
+                RemoveMemberCommand(
+                    workspace_id=workspace_id,
+                    membership_id=membership.id,
+                    removed_by=owner,
+                    reason="Left the company",
+                ),
+                now=datetime.now(UTC),
+            )
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=member
+        ) as session:
+            query_service = build_query_service(session)
             assert await query_service.resolve_role(workspace_id, member) is None
             assert await query_service.get_membership(workspace_id, member) is None
 

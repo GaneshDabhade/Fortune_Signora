@@ -19656,7 +19656,7 @@ if (style.overflowX === 'auto' || style.overflowX === 'scroll') continue;
 | **Module** | **`workspace_tenancy`** — [`infrastructure/query_service.py`](../backend/modules/workspace_tenancy/infrastructure/query_service.py), `WorkspaceQueryService.get_membership` |
 | **Current assignee** | **Lane A**, joined from [`modules.toml`](coordination/modules.toml) |
 | **Severity** | 🔴 · **Blocking Quality Defect.** **Removal did not revoke access.** A tenancy control that records an intention and does not enforce it is the failure `CLAUDE.md` §13 exists to prevent |
-| **Status** | **`FIXED` — Lane A**, 2026-08-05, in the [TASK-437](BACKLOG.md) slice that found it. **`VERIFIED` is QE's** |
+| **Status** | **`VERIFIED` — QE, 2026-08-29.** ✅ **The fix holds**: with production code intact, `resolve_role` and `get_membership` both return `None` after a removal. ⚡ **And the guard is now load-bearing on the REMOVE path, which it was not.** |
 | **Found** | 2026-08-05, building the leave endpoint, by an acceptance test that asserted a leaver could no longer read the organization — **and got `200`** |
 
 **Steps to reproduce**, before the fix:
@@ -19696,6 +19696,28 @@ removed person GETs /workspaces/{id}/members                  → 200  ← shoul
 **One `WHERE` clause**, plus the docstring that says it is a security control rather than a tidiness.
 
 **Regression tests are end-to-end and asserted through the customer's door**: a removed member and a departed member each get `404` from the members list and from the workspace itself. **The first attempt seeded a membership row directly and PostgreSQL refused it** — row-level security doing its job — which is §20e's *"test data enters the way a customer's data enters"* arriving as an error rather than as a rule somebody remembered. **The end-to-end version is the stronger assertion anyway**, because it travels the dependency chain a request actually travels.
+
+### ✅ VERIFIED — QE, 2026-08-29, and the guard had a gap the row's own title names
+
+**`TestMembershipRevocation` asserted the property through `LeaveWorkspace` only.** 📁 **`composition.py:203-204` wires `leave_workspace` and `remove_member` as two separate use cases**, and **removal — not leaving — is what this row is about**: `member:remove` revoked nothing from M1 until 2026-08-05.
+
+⛔ **The docstring claimed it held *"for leaving, removal, and any future way a membership ends"*.** ⚡ **True of the FILTER, but the property has two links** — ① `remove_member` ends the membership, ② `resolve_role` refuses an ended one. **Link ① was guarded only by a module unit test**, which is exactly the fragility the docstring gives as its own reason for existing.
+
+✅ **`test_resolve_role_refuses_a_membership_ended_by_REMOVAL` added to the Security Invariants suite** (§20a: extending it is permitted, and §20e makes it QE's).
+
+### ⚡ Fire-tested by breaking `RemoveMember`, not `resolve_role` — and the distinction is the whole point
+
+**Lane A's correction, and it was right:** weakening `resolve_role` fails *both* tests and proves only that the filter is load-bearing, which the leave-path test already showed. **The claim is that the REMOVE link is separately covered.**
+
+**So the defect went back into `RemoveMember` itself** — `await self._memberships.end(membership)` replaced with `pass`, so the removal ends the membership in memory and never persists it:
+
+| | |
+|---|---|
+| **`…_ended_by_REMOVAL`** | 🔴 **FAILED** |
+| the leave-path invariant | ✅ **stayed green** |
+| the positive control | ✅ **stayed green** |
+
+⚡ **1 failed, 2 passed — the discrimination the fire test existed to produce.** ✅ **Production file restored via `git checkout` and re-verified: 15 passed, `mypy --strict` clean.**
 
 ### B-205 · Three documents disagree about whether the People bounded context is buildable
 
