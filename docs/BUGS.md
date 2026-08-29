@@ -5750,11 +5750,30 @@ infra/certification-guard.py:1421 Argument 1 to "len" has incompatible type "obj
 | **Module** | **`workspace_tenancy`** — [`application/use_cases/preferences.py`](../backend/modules/workspace_tenancy/application/use_cases/preferences.py) |
 | **Current assignee** | **The current assignee of `workspace_tenancy`** — joined from [`modules.toml`](coordination/modules.toml) |
 | **Severity** | 🟠 · ⛔ **Blocking Quality Defect** ([§20e](../CLAUDE.md)): **coverage below the floor prevents promotion**, so it holds every lane's finished work, not only this one's |
-| **Status** | 🔵 **`OPEN`** |
+| **Status** | ✅ **`FIXED` — and it has been for at least five cycles.** ⚠️ **Verified by Lane A 2026-08-29, not fixed by it.** ⚠️ **QE verifies and closes.** ⚠️ **Prior state: 🔵 `OPEN`** |
 | **Found** | **2026-08-13, cycle 220**, by certification. **All six gates passed; the CONDITION failed** |
 | **Commit found** | **`9da34ec0`** |
 
 **Actual.** `NOT CERTIFIED · coverage 94.96% is below 95.0%`.
+
+### ✅ AUDIT 2026-08-29, Lane A — both halves are closed, and the row is the last thing still saying otherwise
+
+⚠️ **Measured before writing a line**, which is the only reason this did not become a duplicate:
+
+| | |
+|---|---|
+| **① the untested branch** | ✅ **`test_preferences_use_cases.py` carries `TestASecondDismissalWritesNothing` and `TestUnskippingSomethingNeverSkipped`** — **exactly the two tests this row prescribes** — over a `_CountingPreferences` fake. **11 passed.** ✅ **Present on `origin/integration`**, not only locally |
+| **② the spent headroom** | ✅ **`PROJECT_STATUS.md` reports `95.03%` on the last five cycles**, against a floor of 95.0 |
+
+### 🔴 I nearly wrote the fix a second time, and the near-miss is the finding
+
+⛔ **I read the row, opened the use case, confirmed the guard was there, and started writing the two tests it names.** ⚡ **Only running the file first showed 11 already-passing tests** — including the two, by the same names, with a better fake than the one I was about to build.
+
+⚠️ **And the attempt was actively harmful.** I added a `writes` counter to the SHARED `FakePersonPreferencesRepository`; 📁 `_CountingPreferences` **subclasses it** and calls `super().save()`, **so every pre-existing assertion double-counted and six passing tests went red.** ✅ **Reverted; 11 passing again.**
+
+> ⛔ **A stale `OPEN` row does not merely waste a lane's time — it aims that lane at code somebody already tested**, and the second author's version arrives without the first's context. ⚡ **This is the fifth row this cycle whose subject had moved**, after [B-279](#b-279), [B-280](#b-280), [B-281](#b-281) and the twelve found in the drain.
+
+✅ **The method that caught it is the one that catches all of them: run the thing before believing the row about it.**
 
 ### 🔴 Two facts, and reporting either alone would be wrong
 
