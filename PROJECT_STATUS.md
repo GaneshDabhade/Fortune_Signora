@@ -2,11 +2,55 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `a36a9b5f`, 2026-08-28.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `d02a984b`, 2026-08-29.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
 > **It is a dashboard, not an engineering journal.** [`SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) answers a different question — *"what should the next session know?"* — and does not repeat what is here. Historical implementation detail belongs in ADRs and module documentation; **the appendices below are dated records and are never rewritten to match the present.**
+
+---
+
+## Cycle 282 — promoted `d02a984b04e7`, 2026-08-29
+
+| | |
+|---|---|
+| **Promoted** | **`d02a984b04e730ecfbb66304cf68b00022513390`** — `promoted == certified`, 2 commits, **zero merge commits**. `--audit-main` holds across **2523** |
+| **Gates** | **5465 pytest · 95.03% · 679 Security Invariants · mypy strict 958 · import-linter 37/37 · tsc clean · frontend 4483 in 264 files · eslint clean · smoke 24 stages in 281s · scenario 208** |
+| **DR** | ✅ passed — idempotency ledger intact, 679 invariants green against the restarted stack |
+| **Migrations** | ⚠️ **not applicable rather than skipped** — certify *planned* the gate because the candidate touches backend, but no file under `backend/migrations` changed and the version count is **66 on both `main` and the candidate** |
+| **Composition** | **two of Lane A's slices**, rebased onto the rewritten `integration`. **The pre-rewrite SHA was not certified** |
+
+### ✅ Three 🔴 rows verified against a production build, after 25 days unverified
+
+**[B-303](docs/BUGS.md), [B-304](docs/BUGS.md), [B-305](docs/BUGS.md) — `FIXED` since 2026-08-03 and never verified.** Closed here with **an actual run**, not a source-level assertion.
+
+| | |
+|---|---|
+| **B-305** | 📁 `auth-journey.spec.ts:216` — *signing out ends the session and the product is closed again*, **passed in 13.2s**. Directly the row's subject |
+| **B-304** | 📁 `auth-journey.spec.ts:33`/`:41` wait on `/workspaces` or `/w/<id>/home`; every signing-in test passed. **A 404 cannot satisfy that wait.** ⚠️ **The OAuth journey was SKIPPED — the credential path only** |
+| **B-303** | ⚡ Real seeded data through `/api/proxy` — the ARIA snapshot shows `link "Porterfield Health Systems"` and six populated columns |
+
+### ⚡ The layout-shift measurement B-283 asked for
+
+**`0.018493623873058536` on `/accounts`**, production build, reseeded. **Threshold `<0.1` — passes. The scrollbar fix is holding (`0.277 → 0.0185`).**
+
+⚠️ **But Lane A predicted `≈0.003`, written down before the run, and the residual is ~6x that.** ⛔ **HOME WAS NOT MEASURED and no Home number is reported** — the instrument holds exactly one test and it covers `/accounts`. **Every Home prediction remains untested.**
+
+📁 **The draw was stated before the run and was FAVOURABLE** — `Porterfield Health Systems`, SCORED, at position 1. **A favourable draw makes a green number corroboration, not evidence.**
+
+### ⛔ Not measured, and named rather than implied
+
+**[B-1094](docs/BUGS.md)** — the clipping guard flags `/accounts`, deterministically. **QE could not read the computed `overflowX`**: this workstation lacks `libnspr4`/`libasound2`, which the Playwright runner supplies and a bare `chromium.launch()` does not. **The conclusion — that the flagged element is the deliberately scrollable `overflow-x: auto` wrapper — is a DERIVATION from source plus a four-screen differential, and is filed as needing a computed-style read before the guard is changed.**
+
+**The browser suite is not a required gate**, so nothing was promoted on a false pass — and the failure is **not** a regression from this candidate, which never touched the accounts list.
+
+### 🔴 Knowingly promoted with two live 🔴 defects the gate cannot see
+
+**[C-1567](docs/LANE_COORDINATION.md) and [C-1568](docs/LANE_COORDINATION.md)** are 🔴 and describe wrong behaviour today, but they live in the **coordination** register and `certification-guard.py` reads **only** `docs/BUGS.md` — **[B-1082](docs/BUGS.md)**. **`PASS no unresolved 🔴` is true of the bug register and false of the repository.** ⛔ **Not fixed inside a cycle: widening what blocks a promotion is a contract change to a gate, and that is escalated.**
+
+### 📁 A finding QE withdrew rather than defended
+
+**B-1093 was filed and dropped before it was pushed.** It claimed the register readers could not distinguish a severity cell from prose. **Measured directly: `registers.py::bug_rows` reports `blocks_promotion=0` across 389 rows with 0 malformed, and is correct on every row QE's ad-hoc scan misread.** ⛔ **The defect was QE's sweep, not the instrument** — and the same sweep also mis-stated verification debt as 91 when the real reader says **194**.
 
 ---
 

@@ -6857,6 +6857,28 @@ rather than causing it. ⛔ **Left open deliberately.**
 frozen foundation ([§20c](../CLAUDE.md)), where a change affects every screen.
 **That makes it its own slice with its own verification, not a Home one.**
 
+### ✅ MEASURED — QE, 2026-08-29, cycle 282. The number the row asked for.
+
+**`visual.spec.ts:154` — *the accounts list does not jump once it has loaded*, run against a PRODUCTION BUILD on prod-local (3100), reseeded first.**
+
+| | |
+|---|---|
+| **Cumulative layout shift on `/accounts`** | ⚡ **`0.018493623873058536`** |
+| The gate's threshold | `< 0.1` — **passes** |
+| The row's recorded baseline | `0.277 → 0.003` |
+| Lane A's prediction, written down BEFORE the run | **≈ 0.003** |
+
+⚡ **The scrollbar fix is holding: 0.277 → 0.0185 is the large improvement the row claims.**
+⚠️ **But the residual is ~6x the predicted 0.003**, and that gap is a finding rather than a pass — **the prediction was recorded in advance precisely so this could not be rationalised afterwards.**
+
+⛔ **HOME WAS NOT MEASURED, and no Home number is reported.** 📁 **The instrument covers `/accounts` only** — `test.describe('the layout settles')` holds exactly one test. **Lane A's Home predictions (≈0.10, and 0.28 meaning the fix is not holding) remain UNTESTED**, and QE's own addition — *a Home residual near zero would also be a finding* — is likewise untested.
+
+### ⚠️ What this measurement does NOT establish
+
+**One run, one machine, headless, one viewport.** 📁 **The draw was stated before the run and was FAVOURABLE** — `Porterfield Health Systems`, SCORED, at position 1 (7 scored / 5 unscored in the first 12). **A favourable draw makes a green number corroboration, not evidence.**
+
+**The residual named in the STATUS block above is unchanged**: `card.attention`'s skeleton has no declared height, and that is not this measurement's to close.
+
 ### B-282 · 🟡 `make test` truncates the database `make demo-seed` fills, and the repository already solved this exactly once
 
 | | |
@@ -16692,7 +16714,7 @@ const resolved = viewer.resolved && workspaceKnown;
 | **Module** | None — `frontend/app/(app)/authenticated-shell.tsx`, the application shell |
 | **Current assignee** | **Lane B**, End-to-End Product Validation |
 | **Severity** | 🔴 — **a session-termination control that does not terminate the session.** On a shared machine, a person who signed out was still signed in, and the product had told them otherwise by navigating away from itself |
-| **Status** | **`FIXED`** — Lane B, 2026-08-03. **`VERIFIED` is QE's** |
+| **Status** | **`VERIFIED` — QE, 2026-08-29, cycle 282**, against a **production build** on the prod-local topology (3100/8100), reseeded first. 📁 **`auth-journey.spec.ts:216` — *signing out ends the session and the product is closed again*, passed in 13.2s.** ⚡ **Directly this row's subject**, not an adjacent assertion. |
 | **Found** | 2026-08-03, by Lane B, on the first run of an authenticated Playwright journey |
 
 **Steps to reproduce.** Sign in. Click **Sign out**.
@@ -16724,7 +16746,7 @@ const resolved = viewer.resolved && workspaceKnown;
 | **Module** | None — `frontend/lib/auth/client.ts`, the authentication client |
 | **Current assignee** | **Lane B**, End-to-End Product Validation |
 | **Severity** | 🔴 — **the first screen after authentication was *"That address does not lead anywhere"*, for every person, by every method** |
-| **Status** | **`FIXED`** — Lane B, 2026-08-03. **`VERIFIED` is QE's** |
+| **Status** | **`VERIFIED` — QE, 2026-08-29, cycle 282**, against a **production build** on the prod-local topology (3100/8100), reseeded first. 📁 **`auth-journey.spec.ts:33` and `:41`** — the sign-in helpers wait on `/workspaces` or `/w/<id>/home`, and every test that signs in passed. ⚡ **A 404 cannot satisfy that wait.** ⚠️ **The OAuth journey at `:251` was SKIPPED**, so this verifies the credential path only. |
 | **Found** | 2026-08-03, by Lane B, driving the real sign-in form in a browser |
 
 **Steps to reproduce.** Sign in with an address and a password.
@@ -16750,7 +16772,7 @@ const resolved = viewer.resolved && workspaceKnown;
 | **Module** | None — `frontend/lib/api/client.ts` named a route; `frontend/app/api/proxy/` was never built |
 | **Current assignee** | **Lane B**, End-to-End Product Validation |
 | **Severity** | 🔴 — **the entire product, in every environment, since M1.2.** Every screen rendered its shell and its empty state and never once its own data |
-| **Status** | **`FIXED`** — Lane B, 2026-08-03. **`VERIFIED` is QE's** |
+| **Status** | **`VERIFIED` — QE, 2026-08-29, cycle 282**, against a **production build** on the prod-local topology (3100/8100), reseeded first. ⚡ **Real seeded data rendered through `/api/proxy`** — the failure artifact's own ARIA snapshot shows `link "Porterfield Health Systems"` and six populated columns on `/accounts`. ⚠️ **Indirect but decisive**: the route this row says never existed is the route 103 passing tests loaded every screen through. |
 | **Found** | 2026-08-03, by Lane B, watching the network while a signed-in owner opened the attention list |
 
 **Steps to reproduce.** Sign in as the owner of a seeded organization and open `/`.
@@ -20973,6 +20995,44 @@ const ROOTS = ['app', 'components'];
 
 ⚡ **That is [B-1069](#b-1069)'s guard doing exactly its job, on QE, four hours after QE wrote up a false claim in a dashboard.** **Same class: a citation is the evidence, so nobody checks the evidence.**
 
+### B-1094 · 🟠 The clipping guard flags a deliberately scrollable table, and it is B-1065's shape one layer out
+
+| | |
+|---|---|
+| **Module** | **QE's own instruments** — 📁 [`frontend/tests/e2e/visual.spec.ts`](../frontend/tests/e2e/visual.spec.ts):84 |
+| **Current assignee** | **QE** — §20e: QE *"creates, maintains, extends and retires repository-wide automated tests"* |
+| **Severity** | 🟠 — ⛔ **the guard reports a defect the product does not have.** ⚠️ **Not 🔴: the browser suite is not a required gate, so nothing was promoted on a false pass** |
+| **Status** | **`OPEN` — ⛔ deliberately NOT fixed by QE inside a cycle.** ⚡ **Narrowing what a guard flags is a contract change, and that is escalated rather than made** — the same reasoning as [B-1082](#b-1082) |
+| **Found** | **2026-08-29 by QE**, running the browser suite against a production build for [B-303](#b-303)/[B-304](#b-304)/[B-305](#b-305) |
+| **Commit found** | `d02a984b` — **and it is NOT a regression from it**: the candidate never touched the accounts list |
+
+### 📁 Reproduction — deterministic, not flaky
+
+**`the accounts list clips no text` fails; the other three screens pass.** ⚡ **Re-run in isolation and it reproduces**, so this is not [B-1086](#b-1086)'s non-idempotency.
+
+```
+Error: clipped text on the accounts list
++   "PreviewCompanySegmentOpen ACVRenewalOwnerTags›Porterfield He",
+```
+
+### ⛔ Why it is the guard and not the table
+
+**The filter at `:92-116` excludes `overflow: visible`, `text-overflow: ellipsis` and `.sr-only`. It does NOT exclude `overflow-x: auto`** — the approved pattern for wide content, where a customer *can* reach the rest by scrolling.
+
+📁 **`components/ui/table.tsx` nests two wrappers**: `:78` `overflow-hidden rounded-xl …` outside, `:103` `w-full overflow-x-auto` inside.
+
+⚡ **The inner one is `w-full`, so its `clientWidth` equals the outer's and its `scrollWidth` is the table's — it overflows and IS scrollable.** ⛔ **The outer cannot overflow, because its only child is exactly its own width.** **So the element the guard flags is the deliberately scrollable one.**
+
+✅ **Corroborated by the differential**: `/accounts` is the only one of the four screens that renders `<Table>` (`page.tsx:807`); `settings`, `connections` and `your business` import it nowhere and all three passed.
+
+> ⚠️ **STATED AS A DERIVATION, NOT A MEASUREMENT.** ⛔ **QE could not read the computed `overflowX` directly**: a standalone probe would not launch — this workstation lacks `libnspr4` and `libasound2`, which the Playwright runner supplies and a bare `chromium.launch()` does not. **The reasoning above is from source plus the four-screen differential. It should be confirmed with a computed-style read before the guard is changed.**
+
+### ⚡ Why this is B-1065's shape, one layer out
+
+📁 **[B-1065](#b-1065) excluded `.sr-only`** — *"text deliberately not shown"*. **This is `overflow-x: auto`** — *text deliberately reachable by scrolling*. ⛔ **Both are cases where "content wider than its box" is correct behaviour, and the guard's population was wider than its property both times.**
+
+⚠️ **That is the same axis as [B-1091](#b-1091), and it is the seventh instance.**
+
 ### B-1090 · 🟠 A production-topology stack reports healthy and rejects every registration, because only one of the two schemas has a provisioning step
 
 | | |
@@ -20980,7 +21040,7 @@ const ROOTS = ['app', 'components'];
 | **Module** | **`platform_foundation`** — 📁 [`infra/docker-compose.prod.yml`](../infra/docker-compose.prod.yml) `migrate:` · [`Makefile`](../Makefile) `up:` |
 | **Current assignee** | **Lane C** — current assignee of `platform_foundation` in [`modules.toml`](coordination/modules.toml). ⛔ **`infra/` is Lane C's under [D-022](DECISION_REGISTER.md)**, and this is new provisioning rather than the repair of a gate QE runs |
 | **Severity** | 🟠 — ⛔ **no customer can create an account on a stack provisioned exactly as the production topology defines it.** ⚠️ **Not 🔴: it is latent until M14.5 provisions that topology, and every local workflow already runs the missing step.** ⚡ **But 📁 [§20b](../CLAUDE.md) binds every milestone to keeping the application *deployable to* that topology, and a topology that cannot register a user is not** |
-| **Status** | **`OPEN`** |
+| **Status** | **`OPEN`** — ⚡ **independently reproduced 2026-08-29, cycle 282, and the remedy demonstrated.** ⛔ **A stack whose every container reported healthy returned `HTTP 500` on `/api/auth/sign-up/email`, and the `auth` schema held ZERO tables.** ✅ **`auth:migrate` as OWNER against 5433 created `user, session, account, verification, twoFactor`; the same registration then returned `HTTP 200` with a real user id.** 📁 **The fix is a provisioning step in the production topology — nothing else changed.** ⚠️ **QE's first probe checked `public.user` and was WRONG — the tables live in the `auth` schema. The 500 was real either way, but the schema check had to be redone.** |
 | **Found** | **2026-08-28 by QE**, attempting to verify [B-231](#b-231) against a real endpoint after establishing that `make smoke` never touches `/api/auth/sign-up` |
 | **Commit found** | `3d4ff473` |
 
